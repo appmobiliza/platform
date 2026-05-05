@@ -16,11 +16,15 @@ This Turborepo includes the following packages/apps:
 
 ### Apps and Packages
 
+- `api`: backend Node service for the Mobiliza platform
 - `docs`: a [Next.js](https://nextjs.org/) app
 - `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- `@mobiliza/contracts`: shared domain contracts for backend layers
+- `@mobiliza/db`: repository implementations and database adapters
+- `@mobiliza/domain`: business rules and use cases
+- `@mobiliza/ui`: a stub React component library shared by both `web` and `docs` applications
+- `@mobiliza/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
+- `@mobiliza/typescript-config`: `tsconfig.json`s used throughout the monorepo
 
 Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 

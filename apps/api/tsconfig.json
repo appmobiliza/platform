@@ -1,7 +1,9 @@
 {
-  "extends": "@mobiliza/typescript-config/react-library.json",
+  "extends": "../../config/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "dist",
+    "rootDir": "src",
+    "types": ["node"],
     "strictNullChecks": true
   },
   "include": ["src"],
