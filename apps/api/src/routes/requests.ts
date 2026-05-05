@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { CreateRequestInput } from "@mobiliza/contracts";
+import { createRequestInputSchema, type CreateRequestInput } from "@mobiliza/contracts";
 import { createRequest, listRequests, type RequestRepository } from "@mobiliza/domain";
 import type { ApiRoute } from "./types.js";
 
@@ -26,23 +26,13 @@ async function readJsonBody(request: IncomingMessage): Promise<Record<string, un
 }
 
 function toCreateRequestInput(body: Record<string, unknown>): CreateRequestInput {
-  const studentId = typeof body.studentId === "string" ? body.studentId : "";
-  const origin = typeof body.origin === "string" ? body.origin : "";
-  const destination = typeof body.destination === "string" ? body.destination : "";
-  const notes = typeof body.notes === "string" ? body.notes : undefined;
-  const requestedAt = typeof body.requestedAt === "string" ? body.requestedAt : undefined;
+  const parsed = createRequestInputSchema.safeParse(body);
 
-  if (!studentId || !origin || !destination) {
+  if (!parsed.success) {
     throw new Error("Invalid request payload");
   }
 
-  return {
-    studentId,
-    origin,
-    destination,
-    notes,
-    requestedAt,
-  };
+  return parsed.data;
 }
 
 function createRequestListRoute(requestRepository: RequestRepository): ApiRoute {

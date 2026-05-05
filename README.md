@@ -20,7 +20,7 @@ This Turborepo includes the following packages/apps:
 - `docs`: a [Next.js](https://nextjs.org/) app
 - `web`: another [Next.js](https://nextjs.org/) app
 - `@mobiliza/contracts`: shared domain contracts for backend layers
-- `@mobiliza/db`: repository implementations and database adapters
+- `@mobiliza/db`: **Drizzle ORM + PostgreSQL** repository implementations and database adapters
 - `@mobiliza/domain`: business rules and use cases
 - `@mobiliza/ui`: a stub React component library shared by both `web` and `docs` applications
 - `@mobiliza/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
@@ -35,6 +35,23 @@ This Turborepo has some additional tools already setup for you:
 - [TypeScript](https://www.typescriptlang.org/) for static type checking
 - [ESLint](https://eslint.org/) for code linting
 - [Prettier](https://prettier.io) for code formatting
+- [Drizzle ORM](https://orm.drizzle.team/) for database access (PostgreSQL + NeonDB)
+
+## Database Setup
+
+The Mobiliza backend uses **Drizzle ORM** with **PostgreSQL** (via NeonDB for cloud deployment).
+
+### Quick Start
+
+1. Create a PostgreSQL database (e.g., on [NeonDB](https://neon.tech))
+2. Create `.env` file in the project root:
+   ```
+   DATABASE_URL=postgresql://username:password@host:5432/dbname
+   PORT=3001
+   ```
+3. Run: `pnpm dev`
+
+For detailed setup instructions, see [packages/db/DATABASE_SETUP.md](packages/db/DATABASE_SETUP.md)
 
 ### Build
 
