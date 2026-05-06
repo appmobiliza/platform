@@ -204,6 +204,9 @@ importers:
       '@mobiliza/typescript-config':
         specifier: workspace:*
         version: link:../../config/typescript-config
+      '@types/node':
+        specifier: ^22.15.3
+        version: 22.15.3
       eslint:
         specifier: ^9.39.1
         version: 9.39.1
