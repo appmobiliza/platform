@@ -4,6 +4,7 @@
 node_modules
 .pnp
 .pnp.js
+.pnpm-store
 
 # Local env files
 .env
@@ -36,3 +37,12 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+# Text
+text.md
+escopo.md
+claude.md
+gpt.md
+
+# Arquivos de exploração
+.notebook/
