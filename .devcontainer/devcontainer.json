@@ -1,0 +1,24 @@
+{
+  "name": "Mobiliza Sandbox",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      "moby": false
+    }
+  },
+  "forwardPorts": [3000, 8081, 3333],
+  "portsAttributes": {
+    "3000": { "label": "Next.js Web", "onAutoForward": "notify" },
+    "8081": { "label": "Expo Metro", "onAutoForward": "ignore" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "sst-dev.opencode",
+        "bradlc.vscode-tailwindcss",
+        "dbaeumer.vscode-eslint"
+      ]
+    }
+  },
+  "postCreateCommand": "pnpm install"
+}
