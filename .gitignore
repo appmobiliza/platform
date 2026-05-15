@@ -46,3 +46,6 @@ gpt.md
 
 # Arquivos de exploração
 .notebook/
+
+# Devcontainer local setup (git config pessoal, etc)
+.devcontainer/setup.local.sh
