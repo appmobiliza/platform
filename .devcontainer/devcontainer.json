@@ -21,5 +21,6 @@
     }
   },
   "remoteUser": "node",
-  "postCreateCommand": "corepack enable pnpm && pnpm install && curl -fsSL https://opencode.ai/install | bash"
+  "postCreateCommand": "corepack enable pnpm && pnpm install && curl -fsSL https://opencode.ai/install | bash",
+  "postStartCommand": "curl -fsSL https://opencode.ai/install | bash"
 }
