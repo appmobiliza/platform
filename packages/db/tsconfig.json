@@ -1,10 +1,11 @@
 {
-  "extends": "../../config/typescript-config/base.json",
+  "extends": "@mobiliza/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src",
-    "strictNullChecks": true
+    "rootDir": ".",
+    "strictNullChecks": true,
+    "types": ["node"]
   },
-  "include": ["src"],
+  "include": ["src", "./drizzle.config.ts"],
   "exclude": ["node_modules", "dist"]
 }

@@ -1,41 +1,24 @@
-import postgres from "postgres";
-import { drizzle } from "drizzle-orm/postgres-js";
-import type { RequestRepository } from "@mobiliza/domain";
-import { getDatabaseUrl } from "./env.js";
-import { createRequestRepository } from "./repositories.js";
-import * as schema from "./schema.js";
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
+import * as schema from "./schema";
 
-export interface DatabaseClient {
-  requests: RequestRepository;
-  db: ReturnType<typeof drizzle>;
-  connection: ReturnType<typeof postgres>;
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL não definida. Verifique suas variáveis de ambiente.");
 }
 
-let clientInstance: DatabaseClient | null = null;
+/**
+ * Cliente HTTP do Neon — compatível com ambientes serverless (Vercel, Cloudflare
+ * Workers) e com servidores Node.js tradicionais.
+ *
+ * Para ambientes com conexões persistentes (servidor dedicado no Railway ou
+ * Fly.io), considere trocar para `drizzle-orm/neon-serverless` com WebSocket
+ * pool, que oferece melhor performance em alta concorrência.
+ */
+const sql = neon(process.env.DATABASE_URL);
 
-export function createDatabase(): DatabaseClient {
-  const databaseUrl = getDatabaseUrl();
-  const connection = postgres(databaseUrl);
-  const db = drizzle(connection, { schema });
+export const db = drizzle(sql, {
+  schema,
+  logger: process.env.NODE_ENV === "development",
+});
 
-  return {
-    requests: createRequestRepository(db),
-    db,
-    connection,
-  };
-}
-
-export function getDatabaseClient(): DatabaseClient {
-  if (!clientInstance) {
-    clientInstance = createDatabase();
-  }
-
-  return clientInstance;
-}
-
-export async function closeDatabase(): Promise<void> {
-  if (clientInstance) {
-    await clientInstance.connection.end();
-    clientInstance = null;
-  }
-}
+export type Database = typeof db;

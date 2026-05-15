@@ -1,33 +1,27 @@
 {
   "name": "@mobiliza/db",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./dist/index.js"
-    }
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "lint": "eslint --max-warnings 0",
-    "check-types": "tsc -p tsconfig.json --noEmit",
-    "migrate": "drizzle-kit migrate:mysql",
-    "generate": "drizzle-kit generate:pg --schema=./src/schema.ts"
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@mobiliza/contracts": "workspace:*",
-    "@mobiliza/domain": "workspace:*",
-    "drizzle-orm": "^0.36.3",
-    "postgres": "^3.4.4"
+    "@neondatabase/serverless": "^1.1.0",
+    "better-auth": "^1.6.11",
+    "drizzle-orm": "^0.45.2"
   },
   "devDependencies": {
-    "@mobiliza/eslint-config": "workspace:*",
     "@mobiliza/typescript-config": "workspace:*",
-    "@types/node": "^22.15.3",
-    "drizzle-kit": "^0.25.0",
-    "eslint": "^9.39.1",
-    "typescript": "5.9.2"
+    "@types/node": "^25.8.0",
+    "drizzle-kit": "^0.31.10",
+    "typescript": "6.0.3"
   }
 }
