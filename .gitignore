@@ -49,3 +49,16 @@ gpt.md
 
 # Devcontainer local setup (git config pessoal, etc)
 .devcontainer/setup.local.sh
+
+# Expo
+.expo/
+expo-env.d.ts
+nativewind-env.d.ts
+
+# Test backups
+*.test.tsx.bak
+*.test.ts.bak
+
+# Mobile
+apps/mobile/.expo/
+apps/mobile/dist/
