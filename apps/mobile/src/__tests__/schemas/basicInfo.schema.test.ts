@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vitest';
 import { BasicInfoSchema } from '../../schemas/basicInfo.schema';
 
 // Helper function to safely get first issue path

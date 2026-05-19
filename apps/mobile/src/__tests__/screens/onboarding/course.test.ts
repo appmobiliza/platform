@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vitest';
 import { CourseInfoSchema } from '@/schemas/courseInfo.schema';
 import { courseOptions, shiftOptions, campusOptions } from '@/constants';
 import type { CourseInfo } from '@/types';

@@ -1,13 +1,27 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   parseApiError,
   isValidationError,
   isApiError,
   transformUserResponseToUser,
   transformOnboardingDataToApiRequest,
+  authenticateWithGoogle,
+  validateSession,
+  logout,
+  submitOnboarding,
+  getUserById,
   endpoints,
+  HTTP_STATUS,
+  API_ERROR_CODES,
 } from '@/services/api';
 import type { UserResponse, OnboardingApiRequest } from '@/types/api';
+
+// Mock global fetch
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
+
+beforeEach(() => {
+  mockFetch.mockClear();
+});
 
 /**
  * API Service Unit Tests
@@ -265,6 +279,246 @@ describe('API Service', () => {
     it('should generate correct byId endpoint', () => {
       expect(endpoints.user.byId('abc')).toBe('/api/user/abc');
       expect(endpoints.user.byId('123')).toBe('/api/user/123');
+    });
+  });
+
+  describe('HTTP_STATUS', () => {
+    it('should have correct status codes', () => {
+      expect(HTTP_STATUS.OK).toBe(200);
+      expect(HTTP_STATUS.CREATED).toBe(201);
+      expect(HTTP_STATUS.BAD_REQUEST).toBe(400);
+      expect(HTTP_STATUS.UNAUTHORIZED).toBe(401);
+      expect(HTTP_STATUS.FORBIDDEN).toBe(403);
+      expect(HTTP_STATUS.NOT_FOUND).toBe(404);
+      expect(HTTP_STATUS.VALIDATION_ERROR).toBe(422);
+      expect(HTTP_STATUS.SERVER_ERROR).toBe(500);
+    });
+  });
+
+  describe('API_ERROR_CODES', () => {
+    it('should have correct error codes', () => {
+      expect(API_ERROR_CODES.VALIDATION_ERROR).toBe('VALIDATION_ERROR');
+      expect(API_ERROR_CODES.SERVER_ERROR).toBe('SERVER_ERROR');
+      expect(API_ERROR_CODES.INTERNAL_ERROR).toBe('INTERNAL_ERROR');
+      expect(API_ERROR_CODES.NETWORK_ERROR).toBe('NETWORK_ERROR');
+      expect(API_ERROR_CODES.UNAUTHORIZED).toBe('UNAUTHORIZED');
+      expect(API_ERROR_CODES.INVALID_TOKEN).toBe('INVALID_TOKEN');
+    });
+  });
+
+  describe('authenticateWithGoogle', () => {
+    it('should call correct endpoint with POST method', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ token: 'abc123', user: {} }),
+      });
+
+      await authenticateWithGoogle('google-token-123');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/auth/google'),
+        expect.objectContaining({
+          method: 'POST',
+        })
+      );
+    });
+
+    it('should return AuthResponse on success', async () => {
+      const mockResponse = { token: 'abc123', user: { id: 'user-1', name: 'Test' } };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      });
+
+      const result = await authenticateWithGoogle('google-token-123');
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('should throw ApiError on HTTP error', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        json: () => Promise.resolve({ code: 'SERVER_ERROR', message: 'Server error' }),
+      });
+
+      await expect(authenticateWithGoogle('invalid-token')).rejects.toMatchObject({
+        code: 'SERVER_ERROR',
+      });
+    });
+  });
+
+  describe('validateSession', () => {
+    it('should send Bearer token in Authorization header', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ valid: true }),
+      });
+
+      await validateSession('session-token-123');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/auth/session'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer session-token-123',
+          }),
+        })
+      );
+    });
+
+    it('should return SessionResponse on success', async () => {
+      const mockResponse = { valid: true, user: { id: 'user-1' } };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      });
+
+      const result = await validateSession('valid-token');
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('should throw ApiError on unauthorized', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        json: () => Promise.resolve({ code: 'UNAUTHORIZED', message: 'Invalid token' }),
+      });
+
+      await expect(validateSession('expired-token')).rejects.toMatchObject({
+        code: 'UNAUTHORIZED',
+      });
+    });
+  });
+
+  describe('logout', () => {
+    it('should call DELETE method', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ success: true }),
+      });
+
+      await logout();
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/auth/session'),
+        expect.objectContaining({
+          method: 'DELETE',
+        })
+      );
+    });
+
+    it('should return success response', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ success: true }),
+      });
+
+      const result = await logout();
+      expect(result).toEqual({ success: true });
+    });
+  });
+
+  describe('submitOnboarding', () => {
+    it('should send data with Authorization header', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ success: true, user: {} }),
+      });
+
+      const data: OnboardingApiRequest = {
+        name: 'Test',
+        phone: '82999998888',
+        gender: 'Masculino',
+        course: 'CC',
+        shift: 'Integral',
+        campus: 'Campus A.C. Simões',
+        matricula: '23415364',
+        accessibility: { disabilityType: ['physical'], needsAudioDescription: false },
+      };
+
+      await submitOnboarding(data, 'token123'); // Function adds "Bearer " prefix
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/onboarding'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer token123',
+          }),
+        })
+      );
+    });
+
+    it('should return OnboardingResponse on success', async () => {
+      const mockResponse = { success: true, user: { id: 'user-1' } };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      });
+
+      const data: OnboardingApiRequest = {
+        name: 'Test',
+        phone: '82999998888',
+        gender: 'Masculino',
+        course: 'CC',
+        shift: 'Integral',
+        campus: 'Campus A.C. Simões',
+        matricula: '23415364',
+        accessibility: { disabilityType: ['physical'], needsAudioDescription: false },
+      };
+
+      const result = await submitOnboarding(data, 'token');
+      expect(result).toEqual(mockResponse);
+    });
+  });
+
+  describe('getUserById', () => {
+    it('should call correct user endpoint', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ id: 'user-123', name: 'Test' }),
+      });
+
+      await getUserById('user-123', 'token'); // Function adds "Bearer " prefix
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/user/user-123'),
+        expect.objectContaining({
+          method: 'GET',
+        })
+      );
+    });
+
+    it('should return UserResponse on success', async () => {
+      const mockUser: UserResponse = {
+        id: 'user-123',
+        name: 'João Silva',
+        phone: '82999998888',
+        gender: 'Masculino',
+        course: 'CC',
+        shift: 'Integral',
+        campus: 'Campus A.C. Simões',
+        matricula: '23415364',
+        accessibility: { disabilityType: ['physical'], needsAudioDescription: false },
+        createdAt: '2024-01-01T00:00:00Z',
+      };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockUser),
+      });
+
+      const result = await getUserById('user-123', 'token');
+      expect(result).toEqual(mockUser);
+    });
+
+    it('should handle 404 not found error', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        json: () => Promise.resolve({ code: 'SERVER_ERROR', message: 'Not found' }),
+      });
+
+      await expect(getUserById('nonexistent', 'token')).rejects.toMatchObject({
+        code: 'SERVER_ERROR',
+      });
     });
   });
 });

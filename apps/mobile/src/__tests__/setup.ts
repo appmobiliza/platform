@@ -1,37 +1,28 @@
 import '@testing-library/jest-dom';
-import { vi, type Mock } from 'vitest';
+
+// ============================================
+// REACT NATIVE JEST POLYFILLS MOCK
+// ============================================
+
+// Mock @react-native/js-polyfills/error-guard to prevent import errors
+jest.mock('@react-native/js-polyfills/error-guard', () => ({}));
 
 // ============================================
 // REACT NATIVE MOCKS
 // ============================================
 
-const mockRN = {
-  View: 'View',
-  Text: 'Text',
-  TouchableOpacity: 'TouchableOpacity',
-  Modal: 'Modal',
-  FlatList: 'FlatList',
-  Pressable: 'Pressable',
-  TextInput: 'TextInput',
-  Switch: 'Switch',
-  ScrollView: 'ScrollView',
-  ActivityIndicator: 'ActivityIndicator',
-  StyleSheet: {
-    create: (styles: Record<string, unknown>) => styles,
-  },
-};
-
-vi.mock('react-native', () => mockRN);
+// jest-expo provides react-native mock with StyleSheet.flatten
+// Only add additional mocks if needed
 
 // ============================================
 // EXPO-ROUTER MOCK
 // ============================================
 
-vi.mock('expo-router', () => ({
+jest.mock('expo-router', () => ({
   useRouter: () => ({
-    push: vi.fn(),
-    replace: vi.fn(),
-    back: vi.fn(),
+    push: jest.fn(),
+    replace: jest.fn(),
+    back: jest.fn(),
   }),
   useLocalSearchParams: () => ({}),
   Link: 'Link',
@@ -44,7 +35,7 @@ vi.mock('expo-router', () => ({
 // LUCIDE ICONS MOCK
 // ============================================
 
-vi.mock('lucide-react-native', () => ({
+jest.mock('lucide-react-native', () => ({
   Accessibility: 'AccessibilityIcon',
   ArrowLeft: 'ArrowLeftIcon',
   ChevronDown: 'ChevronDownIcon',
@@ -59,29 +50,62 @@ vi.mock('lucide-react-native', () => ({
 // EXPO-IMAGE MOCK
 // ============================================
 
-vi.mock('expo-image', () => ({
-  Image: 'Image',
-}));
+jest.mock('expo-image', () => {
+  const RN = jest.requireActual('react-native');
+  const React = require('react');
+  return {
+    Image: React.forwardRef((props: Record<string, unknown>, ref: unknown) => {
+      return React.createElement(RN.View, { ...props, testID: props.testID }, props.children);
+    }),
+  };
+});
 
 // ============================================
 // REACT NATIVE REANIMATED MOCK
 // ============================================
 
-vi.mock('react-native-reanimated', () => ({
-  FadeIn: vi.fn(() => (Component: unknown) => Component),
-  FadeOut: vi.fn(() => (Component: unknown) => Component),
-  default: vi.fn(),
+jest.mock('react-native-reanimated', () => ({
+  FadeIn: jest.fn(() => (Component: unknown) => Component),
+  FadeOut: jest.fn(() => (Component: unknown) => Component),
+  default: jest.fn(),
 }));
+
+// ============================================
+// EXPO-MODULES-CORE MOCK
+// ============================================
+
+jest.mock('expo-modules-core', () => ({
+  Platform: {
+    select: jest.fn((obj: Record<string, unknown>) => obj.native ?? obj.default ?? obj.web ?? {}),
+  },
+  NativeModulesProxy: {},
+  requireNativeModule: jest.fn(),
+  requireOptionalNativeModule: jest.fn(),
+  createSnapshotFriendlyRef: jest.fn(() => ({ current: null })),
+}));
+
+// ============================================
+// EXPO FETCH MOCK
+// ============================================
+
+jest.mock('expo/src/winter/fetch/ExpoFetchModule', () => ({}));
+jest.mock('expo/src/winter/fetch/fetch', () => ({ fetch: jest.fn() }));
+jest.mock('expo/src/winter', () => ({}));
+jest.mock('expo/src/winter/FormData', () => ({ installFormDataPatch: jest.fn() }));
 
 // ============================================
 // SILENCE CONSOLE WARNINGS IN TESTS
 // ============================================
 
-vi.spyOn(console, 'warn').mockImplementation(() => {});
-vi.spyOn(console, 'error').mockImplementation(() => {});
+const originalWarn = console.warn;
+const originalError = console.error;
 
-// ============================================
-// EXPORT VI FOR USE IN TESTS
-// ============================================
+beforeAll(() => {
+  console.warn = jest.fn();
+  console.error = jest.fn();
+});
 
-export { vi };
+afterAll(() => {
+  console.warn = originalWarn;
+  console.error = originalError;
+});

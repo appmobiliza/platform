@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vitest';
 import { AccessibilitySchema } from '@/schemas/accessibility.schema';
 import type { AccessibilityPrefs } from '@/types';
 

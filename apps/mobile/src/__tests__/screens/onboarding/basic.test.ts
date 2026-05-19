@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vitest';
 import { BasicInfoSchema } from '@/schemas/basicInfo.schema';
 import { genderOptions } from '@/constants';
 import type { BasicInfo } from '@/types';
