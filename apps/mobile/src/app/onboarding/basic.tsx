@@ -8,16 +8,39 @@ import { Select } from "../../components/ui/Select";
 import { StepIndicator } from "../../components/ui/StepIndicator";
 
 import { genderOptions } from "@/constants";
+import { BasicInfoSchema, type BasicInfoInput } from "@/schemas";
 
 export default function BasicInfo() {
 	const router = useRouter();
+
+	const [name, setName] = useState("");
+	const [phone, setPhone] = useState("");
 	const [gender, setGender] = useState("");
+	const [errors, setErrors] = useState<Partial<Record<keyof BasicInfoInput, string>>>({});
 
 	const steps = [
 		{ id: "basic", title: "Dados Básicos" },
 		{ id: "course", title: "Universidade" },
 		{ id: "accessibility", title: "Acessibilidade" },
 	];
+
+	const handleContinue = () => {
+		const data: BasicInfoInput = { name, phone, gender };
+		const result = BasicInfoSchema.safeParse(data);
+
+		if (!result.success) {
+			const fieldErrors: Partial<Record<keyof BasicInfoInput, string>> = {};
+			result.error.issues.forEach((issue) => {
+				const field = issue.path[0] as keyof BasicInfoInput;
+				fieldErrors[field] = issue.message;
+			});
+			setErrors(fieldErrors);
+			return;
+		}
+
+		setErrors({});
+		router.push("/onboarding/course");
+	};
 
 	return (
 		<View className="flex-1 bg-white">
@@ -44,12 +67,18 @@ export default function BasicInfo() {
 					<Input
 						label="Nome Completo"
 						placeholder="Fulano da Silva Júnior"
+						value={name}
+						onChangeText={setName}
+						error={errors.name}
 					/>
 
 					<Input
 						label="Telefone"
 						placeholder="(DDD) XXXXX-XXXX"
 						keyboardType="phone-pad"
+						value={phone}
+						onChangeText={setPhone}
+						error={errors.phone}
 					/>
 
 					<Select
@@ -58,13 +87,11 @@ export default function BasicInfo() {
 						onSelect={setGender}
 						options={genderOptions}
 						placeholder="Selecione seu gênero"
+						error={errors.gender}
 					/>
 				</View>
 
-				<Button
-					className="mt-8"
-					onPress={() => router.push("/onboarding/course")}
-				>
+				<Button className="mt-8" onPress={handleContinue}>
 					Continuar
 				</Button>
 			</ScrollView>

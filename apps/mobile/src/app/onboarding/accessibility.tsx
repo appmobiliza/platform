@@ -6,6 +6,8 @@ import { Button } from "../../components/ui/Button";
 import { Header } from "../../components/ui/Header";
 import { StepIndicator } from "../../components/ui/StepIndicator";
 
+import { AccessibilitySchema, type AccessibilityInput } from "@/schemas";
+
 const INITIAL_OPTIONS = [
 	{ id: "physical", label: "Deficiência física ou\nmobilidade reduzida", icon: Accessibility },
 	{ id: "hearing", label: "Deficiência auditiva", icon: Ear },
@@ -17,6 +19,7 @@ export default function AccessibilityInfo() {
 	const router = useRouter();
 	const [audioEnabled, setAudioEnabled] = useState(false);
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
+	const [errors, setErrors] = useState<Partial<Record<keyof AccessibilityInput, string>>>({});
 
 	const toggleSelection = (id: string) => {
 		setSelectedIds((prev) =>
@@ -29,6 +32,28 @@ export default function AccessibilityInfo() {
 		{ id: "course", title: "Universidade" },
 		{ id: "accessibility", title: "Acessibilidade" },
 	];
+
+	const handleFinish = () => {
+		const data: AccessibilityInput = {
+			disabilityType: selectedIds,
+			needsAudioDescription: audioEnabled,
+		};
+		const result = AccessibilitySchema.safeParse(data);
+
+		if (!result.success) {
+			const fieldErrors: Partial<Record<keyof AccessibilityInput, string>> = {};
+			result.error.issues.forEach((issue) => {
+				const field = issue.path[0] as keyof AccessibilityInput;
+				fieldErrors[field] = issue.message;
+			});
+			setErrors(fieldErrors);
+			return;
+		}
+
+		setErrors({});
+		// TODO: Integrar com API quando backend estiver pronto
+		router.push("/");
+	};
 
 	return (
 		<View className="flex-1 bg-white">
@@ -50,6 +75,10 @@ export default function AccessibilityInfo() {
 				</Text>
 
 				<StepIndicator steps={steps} currentStepId="accessibility" />
+
+				{errors.disabilityType && (
+					<Text className="text-sm text-red-500 mt-4">{errors.disabilityType}</Text>
+				)}
 
 				<View className="mt-8 flex-row flex-wrap justify-between">
 					{INITIAL_OPTIONS.map((option) => {
@@ -106,7 +135,7 @@ export default function AccessibilityInfo() {
 					/>
 				</View>
 
-				<Button onPress={() => router.push("/")}>Concluir</Button>
+				<Button onPress={handleFinish}>Concluir</Button>
 			</ScrollView>
 		</View>
 	);
