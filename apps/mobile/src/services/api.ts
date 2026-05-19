@@ -11,9 +11,8 @@ import type {
   ApiError,
   GoogleAuthRequest,
   OnboardingApiRequest,
-  HTTP_STATUS,
-  API_ERROR_CODES,
 } from '../types/api';
+import { HTTP_STATUS, API_ERROR_CODES } from '../types/api';
 
 // ============================================
 // CONFIG
