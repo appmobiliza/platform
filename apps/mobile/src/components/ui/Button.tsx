@@ -62,6 +62,9 @@ export const Button = forwardRef<
 					.filter(Boolean)
 					.join(" ")}
 				disabled={disabled || loading}
+				accessibilityLabel={typeof children === "string" ? children : "Botão"}
+				accessibilityRole="button"
+				accessibilityState={{ disabled: disabled || loading }}
 				{...props}
 			>
 				{loading ? (

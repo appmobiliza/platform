@@ -41,6 +41,9 @@ export const Select = forwardRef<React.ElementRef<typeof TouchableOpacity>, Sele
             error && "border-red-500",
             className,
           ].filter(Boolean).join(" ")}
+          accessibilityLabel={label}
+          accessibilityHint="Duplo toque para abrir opções"
+          accessibilityRole="button"
           {...props}
         >
           <Text className={selectedOption ? "text-neutral-900 text-base" : "text-neutral-400 text-base"}>
@@ -61,7 +64,10 @@ export const Select = forwardRef<React.ElementRef<typeof TouchableOpacity>, Sele
             >
               <View className="flex-row items-center justify-between px-6 py-4 border-b border-neutral-200">
                 <Text className="text-lg font-bold text-neutral-900">{label || "Selecione"}</Text>
-                <TouchableOpacity onPress={() => setModalVisible(false)} className="p-2 -mr-2">
+                <TouchableOpacity onPress={() => setModalVisible(false)} className="p-2 -mr-2"
+                  accessibilityLabel="Fechar"
+                  accessibilityRole="button"
+                >
                   <X size={24} color="#525252" />
                 </TouchableOpacity>
               </View>
@@ -69,10 +75,14 @@ export const Select = forwardRef<React.ElementRef<typeof TouchableOpacity>, Sele
                 data={options}
                 keyExtractor={(item) => item.value}
                 contentContainerStyle={{ padding: 16 }}
+                accessibilityRole="list"
+                accessibilityLabel={`Opções de ${label || "seleção"}`}
                 renderItem={({ item }) => (
                   <TouchableOpacity
                     activeOpacity={0.7}
                     onPress={() => handleSelect(item.value)}
+                    accessibilityLabel={item.label}
+                    accessibilityRole="button"
                     className={[
                       "py-4 px-4 rounded-xl mb-2",
                       item.value === value ? "bg-brand-primary/10" : "bg-transparent",

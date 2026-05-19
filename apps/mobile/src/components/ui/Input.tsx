@@ -30,6 +30,8 @@ export const Input = forwardRef<TextInput, InputProps>(
 						.filter(Boolean)
 						.join(" ")}
 					placeholderTextColor="#a3a3a3"
+					accessibilityLabel={label}
+					accessibilityHint={props.placeholder}
 					{...props}
 				/>
 				{error && (

@@ -26,6 +26,8 @@ export function Header({ title, onBack, showBack = true }: HeaderProps) {
 					onPress={handleBack}
 					className="mr-4 p-2 -ml-2"
 					activeOpacity={0.7}
+					accessibilityLabel="Voltar"
+					accessibilityRole="button"
 				>
 					<ArrowLeft size={24} color="#171717" />
 				</TouchableOpacity>
