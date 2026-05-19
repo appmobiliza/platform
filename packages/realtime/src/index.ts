@@ -95,6 +95,7 @@ export type { RealtimeAdapter, RealtimeClientAdapter, RealtimeProvider } from '.
 export type {
   SupabaseAdapterOptions,
   AblyAdapterOptions,
+  AblyClientAdapterOptions,
   WebSocketAdapterOptions,
   PusherAdapterOptions,
   RealtimePayload,
@@ -107,4 +108,5 @@ export { MockRealtimeAdapter } from './adapters/server/mock'
 // Adaptadores client-side
 export { SupabaseClientAdapter } from './adapters/client/supabase'
 export { WebSocketClientAdapter } from './adapters/client/websocket'
+export { AblyClientAdapter } from './adapters/client/ably'
 export { MockClientAdapter } from './adapters/client/mock'

@@ -3,7 +3,7 @@ import type {
   RealtimePayload,
   PusherAdapterOptions,
   Unsubscribe,
-} from '../types'
+} from '../../types'
 
 // `pusher` (server SDK) é instalado apenas quando REALTIME_PROVIDER=pusher
 type PusherServer = import('pusher')

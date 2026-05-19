@@ -2,7 +2,7 @@ import type {
   RealtimeAdapter,
   RealtimePayload,
   Unsubscribe,
-} from '../types'
+} from '../../types'
 
 type Handler = (data: RealtimePayload) => void
 

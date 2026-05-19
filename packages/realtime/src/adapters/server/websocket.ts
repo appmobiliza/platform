@@ -4,7 +4,7 @@ import type {
   RealtimePayload,
   Unsubscribe,
   WebSocketAdapterOptions,
-} from '../types'
+} from '../../types'
 
 // `ws` é a implementação de WebSocket para Node.js
 // O consumidor é responsável por instalar o pacote `ws`

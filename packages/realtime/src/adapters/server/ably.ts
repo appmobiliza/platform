@@ -3,7 +3,7 @@ import type {
   RealtimePayload,
   AblyAdapterOptions,
   Unsubscribe,
-} from '../types'
+} from '../../types'
 
 // `ably` é instalado apenas quando REALTIME_PROVIDER=ably
 type AblyRealtime = import('ably').Realtime

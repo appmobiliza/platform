@@ -3,7 +3,7 @@ import type {
   RealtimePayload,
   SupabaseAdapterOptions,
   Unsubscribe,
-} from '../types'
+} from '../../types'
 
 // Importação lazy para não forçar a dependência em quem não usa Supabase
 // O consumidor é responsável por instalar `@supabase/supabase-js`
@@ -13,8 +13,7 @@ type RealtimeChannel = import('@supabase/supabase-js').RealtimeChannel
 /**
  * Adaptador server-side para o **Supabase Realtime**.
  *
- * Usa Broadcast para comunicação muitos-para-muitos — adequado para
- * eventos de sala de reunião (participantes, votações, presença).
+ * Usa Broadcast para comunicação muitos-para-muitos.
  *
  * ## Variáveis de ambiente esperadas
  * ```
@@ -94,6 +93,6 @@ export class SupabaseRealtimeAdapter implements RealtimeAdapter {
       })
       this.channels.set(channel, ch)
     }
-    return this.channels.get(channel)!
+    return this.channels.get(channel)
   }
 }
