@@ -2,12 +2,9 @@
 
 import { Bar, BarChart, LabelList, XAxis, YAxis } from "recharts";
 
-import {
-	type ChartConfig,
-	ChartContainer,
-	ChartTooltip,
-	ChartTooltipContent,
-} from "@/components/ui/chart";
+import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
+
+import { cn } from "@/lib/utils";
 
 export const description = "A horizontal bar chart";
 
@@ -19,11 +16,15 @@ type ChartData = {
 interface Props {
 	data: ChartData[];
 	config: ChartConfig;
+	className?: string;
 }
 
-export function HorizontalBarsChart({ data, config }: Props) {
+export function HorizontalBarsChart({ data, config, className }: Props) {
 	return (
-		<ChartContainer config={config}>
+		<ChartContainer
+			config={config}
+			className={cn("h-full min-h-0 w-full aspect-auto", className)}
+		>
 			<BarChart
 				accessibilityLayer
 				data={data}
