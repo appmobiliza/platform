@@ -23,7 +23,6 @@
 	--color-ring: var(--ring);
 	--color-input: var(--input);
 	--color-border: var(--border);
-	--color-destructive: var(--destructive);
 	--color-accent-foreground: var(--accent-foreground);
 	--color-accent: var(--accent);
 	--color-muted-foreground: var(--muted-foreground);
@@ -38,6 +37,35 @@
 	--color-card: var(--card);
 	--color-foreground: var(--foreground);
 	--color-background: var(--background);
+
+	/* Success */
+	--color-success-border: var(--success-border);
+	--color-success-muted-hover: var(--success-muted-hover);
+	--color-success-muted: var(--success-muted);
+	--color-success-foreground: var(--success-foreground);
+	--color-success: var(--success);
+
+	/* Warning */
+	--color-warning-border: var(--warning-border);
+	--color-warning-muted-hover: var(--warning-muted-hover);
+	--color-warning-muted: var(--warning-muted);
+	--color-warning-foreground: var(--warning-foreground);
+	--color-warning: var(--warning);
+
+	/* Info */
+	--color-info-border: var(--info-border);
+	--color-info-muted-hover: var(--info-muted-hover);
+	--color-info-muted: var(--info-muted);
+	--color-info-foreground: var(--info-foreground);
+	--color-info: var(--info);
+
+	/* Destructive */
+	--color-destructive-border: var(--destructive-border);
+	--color-destructive-muted-hover: var(--destructive-muted-hover);
+	--color-destructive-muted: var(--destructive-muted);
+	--color-destructive-foreground: var(--destructive-foreground);
+	--color-destructive: var(--destructive);
+
 	--radius-sm: calc(var(--radius) * 0.6);
 	--radius-md: calc(var(--radius) * 0.8);
 	--radius-lg: var(--radius);
@@ -105,9 +133,6 @@
 	--accent: oklch(0.957 0.015 202.3); /* primary-light #E6F4F5 */
 	--accent-foreground: oklch(0.439 0.075 203.7); /* primária #005E65 */
 
-	/* ── Destrutivo ──────────────────────────────────────────────── */
-	--destructive: oklch(0.623 0.188 24.7); /* #E24B4A */
-
 	/* ── Bordas e inputs ─────────────────────────────────────────── */
 	--border: oklch(0.881 0.005 106.8); /* Gray-200 #D8D8D4 */
 	--input: oklch(0.771 0.007 116); /* Gray-300 #B4B5B0 — borda de input */
@@ -136,6 +161,42 @@
 	); /* primária — item ativo texto */
 	--sidebar-border: oklch(0.881 0.005 106.8); /* Gray-200 */
 	--sidebar-ring: oklch(0.578 0.097 204); /* primary-mid */
+
+	/* ── Success ────────────────────────────────────────────────── */
+	--success: oklch(0.623 0.168 136); /* Green/500 #639922 */
+	--success-foreground: oklch(0.334 0.103 136); /* Green/800 #27500A */
+
+	--success-muted: oklch(0.944 0.051 126); /* Green/50 #EAF3DE */
+	--success-muted-hover: oklch(0.861 0.103 126); /* Green/200 #C0DD97 */
+
+	--success-border: oklch(0.623 0.168 136); /* Green/500 #639922 */
+
+	/* ── Warning ────────────────────────────────────────────────── */
+	--warning: oklch(0.673 0.158 68); /* Amber/500 #BA7517 */
+	--warning-foreground: oklch(0.353 0.088 68); /* Amber/800 #633806 */
+
+	--warning-muted: oklch(0.949 0.04 78); /* Amber/50 #FAEEDA */
+	--warning-muted-hover: oklch(0.846 0.118 78); /* Amber/200 #FAC775 */
+
+	--warning-border: oklch(0.673 0.158 68); /* Amber/500 #BA7517 */
+
+	/* ── Info ───────────────────────────────────────────────────── */
+	--info: oklch(0.523 0.152 248); /* Blue/600 #185FA5 */
+	--info-foreground: oklch(0.373 0.126 248); /* Blue/800 #0C447C */
+
+	--info-muted: oklch(0.949 0.03 244); /* Blue/50 #E6F1FB */
+	--info-muted-hover: oklch(0.848 0.067 244); /* Blue/200 #B5D4F4 */
+
+	--info-border: oklch(0.523 0.152 248); /* Blue/600 #185FA5 */
+
+	/* ── Destructive ────────────────────────────────────────────── */
+	--destructive: oklch(0.623 0.188 24.7); /* Red/500 #E24B4A */
+	--destructive-foreground: oklch(0.374 0.129 24.7); /* Red/800 #791F1F */
+
+	--destructive-muted: oklch(0.947 0.03 24); /* Red/50 #FCEBEB */
+	--destructive-muted-hover: oklch(0.845 0.073 24); /* Red/200 #F7C1C1 */
+
+	--destructive-border: oklch(0.543 0.168 24.7); /* Red/600 #A32D2D */
 }
 
 .dark {
@@ -167,9 +228,6 @@
 	--accent: oklch(0.279 0.045 201.9); /* primary-dark-bg #032F32 */
 	--accent-foreground: oklch(0.724 0.098 202.1); /* primary-dark-fg #4DB8C0 */
 
-	/* ── Destrutivo ──────────────────────────────────────────────── */
-	--destructive: oklch(0.763 0.11 19.9); /* #F09595 — mais suave no dark */
-
 	/* ── Bordas e inputs ─────────────────────────────────────────── */
 	--border: oklch(0.303 0.008 196.9); /* Gray-700 #2A3030 */
 	--input: oklch(0.384 0.009 197); /* Gray-600 #3E4545 */
@@ -197,6 +255,42 @@
 	); /* primary-dark-fg — item ativo texto */
 	--sidebar-border: oklch(0.303 0.008 196.9); /* Gray-700 */
 	--sidebar-ring: oklch(0.724 0.098 202.1); /* primary-dark-fg */
+
+	/* ── Success ────────────────────────────────────────────────── */
+	--success: oklch(0.517 0.132 136); /* Green/600 #3B6D11 */
+	--success-foreground: oklch(0.861 0.103 126); /* Green/200 #C0DD97 */
+
+	--success-muted: oklch(0.263 0.066 136); /* Green/900 #173404 */
+	--success-muted-hover: oklch(0.334 0.103 136); /* Green/800 #27500A */
+
+	--success-border: oklch(0.517 0.132 136); /* Green/600 #3B6D11 */
+
+	/* ── Warning ────────────────────────────────────────────────── */
+	--warning: oklch(0.523 0.126 68); /* Amber/600 #854F0B */
+	--warning-foreground: oklch(0.846 0.118 78); /* Amber/200 #FAC775 */
+
+	--warning-muted: oklch(0.262 0.065 68); /* Amber/900 #412402 */
+	--warning-muted-hover: oklch(0.353 0.088 68); /* Amber/800 #633806 */
+
+	--warning-border: oklch(0.523 0.126 68); /* Amber/600 #854F0B */
+
+	/* ── Info ───────────────────────────────────────────────────── */
+	--info: oklch(0.523 0.152 248); /* Blue/600 #185FA5 */
+	--info-foreground: oklch(0.848 0.067 244); /* Blue/200 #B5D4F4 */
+
+	--info-muted: oklch(0.242 0.089 248); /* Blue/900 #042C53 */
+	--info-muted-hover: oklch(0.373 0.126 248); /* Blue/800 #0C447C */
+
+	--info-border: oklch(0.523 0.152 248); /* Blue/600 #185FA5 */
+
+	/* ── Destructive ────────────────────────────────────────────── */
+	--destructive: oklch(0.543 0.168 24.7); /* Red/600 #A32D2D */
+	--destructive-foreground: oklch(0.845 0.073 24); /* Red/200 #F7C1C1 */
+
+	--destructive-muted: oklch(0.292 0.094 24); /* Red/900 #501313 */
+	--destructive-muted-hover: oklch(0.374 0.129 24.7); /* Red/800 #791F1F */
+
+	--destructive-border: oklch(0.543 0.168 24.7); /* Red/600 #A32D2D */
 }
 
 @layer base {
