@@ -20,7 +20,6 @@ import {
 	SidebarFooter,
 	SidebarHeader,
 	SidebarMenu,
-	SidebarMenuButton,
 	SidebarMenuItem,
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
@@ -67,31 +66,24 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	return (
-		<Sidebar collapsible="offcanvas" {...props}>
+		<Sidebar collapsible="icon" {...props}>
 			<SidebarHeader>
 				<SidebarMenu>
-					<SidebarMenuItem className="flex items-start gap-2 flex-col p-4 border-b border-border">
-						{/* <SidebarMenuButton
-							asChild
-							className="data-[slot=sidebar-menu-button]:p-1.5!"
-						>
-							<a href="#">
-								<span className="text-base font-semibold">
-									Mobiliza
-								</span>
-							</a>
-						</SidebarMenuButton> */}
-						<div className="flex flex-row items-center justify-between w-full">
-							<Logo className="h-5 w-auto" />
+					<SidebarMenuItem className="flex flex-col items-start gap-2 group-data-[collapsible=icon]:gap-0">
+						<div className="flex w-full flex-row items-center justify-between gap-2 group-data-[collapsible=icon]:w-fit group-data-[collapsible=icon]:justify-start group-data-[collapsible=icon]:gap-0">
+							<div className="w-31.5 shrink-0 overflow-hidden transition-[width,opacity] duration-200 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0">
+								<Logo className="h-5 w-31.5 max-w-none" />
+							</div>
 							<SidebarTrigger />
 						</div>
-						<span className="text-sm font-norma text-muted-foreground">
+						<span className="max-h-5 overflow-hidden text-sm font-normal text-muted-foreground transition-[max-height,opacity,transform,margin-top] duration-200 group-data-[collapsible=icon]:pointer-events-none group-data-[collapsible=icon]:-mt-2 group-data-[collapsible=icon]:max-h-0 group-data-[collapsible=icon]:opacity-0">
 							Painel NAC
 						</span>
 					</SidebarMenuItem>
 				</SidebarMenu>
 			</SidebarHeader>
 			<SidebarContent>
+				<div className="border-b border-border pt-4 text-sm font-medium" />
 				<NavMain items={data.navMain} />
 			</SidebarContent>
 			<SidebarFooter>
