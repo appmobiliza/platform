@@ -28,7 +28,7 @@ const data = {
 	user: {
 		name: "shadcn",
 		email: "m@example.com",
-		avatar: "/avatars/shadcn.jpg",
+		avatar: "https://github.com/meninocoiso.png",
 	},
 	navMain: [
 		{
@@ -69,12 +69,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 		<Sidebar collapsible="icon" {...props}>
 			<SidebarHeader>
 				<SidebarMenu>
-					<SidebarMenuItem className="flex flex-col items-start group-data-[collapsible=icon]:gap-0 pt-4 md:pt-2">
+					<SidebarMenuItem className="flex flex-col items-start group-data-[collapsible=icon]:gap-0 pt-2">
 						<div className="flex w-full flex-row items-center justify-between transition-all duration-300 ease-in-out">
 							<div className="w-36 shrink-0 overflow-hidden pl-4 transition-[width,opacity,padding] duration-300 ease-in-out group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:pl-0 group-data-[collapsible=icon]:opacity-0">
 								<Logo className="h-5 w-31.5 max-w-none" />
 							</div>
-							<SidebarTrigger className="hidden md:flex" />
+							<SidebarTrigger />
 						</div>
 						<span className="max-h-5 overflow-hidden text-sm font-normal text-muted-foreground transition-[max-height,opacity,transform,margin-top] duration-300 ease-in-out group-data-[collapsible=icon]:pointer-events-none group-data-[collapsible=icon]:-mt-2 group-data-[collapsible=icon]:max-h-0 group-data-[collapsible=icon]:opacity-0 pl-4 mt-2">
 							Painel NAC
