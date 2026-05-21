@@ -6,9 +6,12 @@ import {
 	Users,
 } from "lucide-react";
 
+import { HorizontalBarsChart } from "@/components/horizontal-bars-chart";
+import { RoutePreview } from "@/components/route-preview";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardAction,
@@ -17,6 +20,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import type { ChartConfig } from "@/components/ui/chart";
 
 import { cn } from "@/lib/utils";
 
@@ -60,6 +64,11 @@ enum ScholarStatus {
 	OFFLINE = "Offline",
 }
 
+enum RequestStatus {
+	ATTENDING = "Em atendimento",
+	FINISHED = "Finalizado",
+}
+
 const scholars = [
 	{
 		name: "Lucas Carvalho",
@@ -97,6 +106,72 @@ const alertData = {
 	delay: 4,
 	name: "Maria Aparecida",
 };
+
+const mostRequestedRoutes = [
+	{ route: "IC → RU", requests: 15 },
+	{ route: "IC → Biblioteca", requests: 10 },
+	{ route: "RU → IC", requests: 8 },
+	{ route: "Biblioteca → IC", requests: 5 },
+];
+
+const lastRequests = [
+	{
+		route: "IC → RU",
+		startTime: "10:15",
+		endTime: null,
+		scholar: "Lucas Carvalho",
+		student: "João Pedro",
+		status: RequestStatus.ATTENDING,
+	},
+	{
+		route: "IC → Biblioteca",
+		startTime: "10:00",
+		endTime: null,
+		scholar: "Maria Costa",
+		student: "Ana Beatriz",
+		status: RequestStatus.ATTENDING,
+	},
+	{
+		route: "RU → IC",
+		startTime: "09:45",
+		endTime: "10:05",
+		scholar: "Rafael Souza",
+		student: "Carlos Eduardo",
+		status: RequestStatus.FINISHED,
+	},
+	{
+		route: "Biblioteca → RU",
+		startTime: "09:30",
+		endTime: "09:50",
+		scholar: "Juliana Oliveira",
+		student: "Fernanda Santos",
+		status: RequestStatus.FINISHED,
+	},
+	{
+		route: "IC → RU",
+		startTime: "09:15",
+		endTime: "09:35",
+		scholar: "Bruno Martinez",
+		student: "Gustavo Ferreira",
+		status: RequestStatus.FINISHED,
+	},
+];
+
+const chartData = [
+	{ label: "07", value: 2 },
+	{ label: "08", value: 4 },
+	{ label: "09", value: 3 },
+	{ label: "10", value: 5 },
+	{ label: "11", value: 4 },
+	{ label: "12", value: 6 },
+];
+
+const chartConfig = {
+	value: {
+		label: "Horário",
+		color: "var(--chart-1)",
+	},
+} satisfies ChartConfig;
 
 export default function DashboardPage() {
 	return (
@@ -212,6 +287,119 @@ export default function DashboardPage() {
 													? "Em atendimento"
 													: "Offline"}
 										</Badge>
+									</li>
+								),
+							)}
+						</ul>
+					</CardContent>
+				</Card>
+
+				<Card>
+					<CardHeader>
+						<CardTitle>Demanda por horário — semana</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<HorizontalBarsChart
+							data={chartData}
+							config={chartConfig}
+						/>
+					</CardContent>
+				</Card>
+
+				<Card>
+					<CardHeader>
+						<CardTitle>Rotas mais solicitadas</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<ul className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2">
+							{mostRequestedRoutes.map((route, index) => (
+								<li
+									key={index}
+									className="flex justify-between"
+								>
+									<span>{route.route}</span>
+									<span className="text-muted-foreground">
+										{route.requests}x
+									</span>
+								</li>
+							))}
+						</ul>
+					</CardContent>
+				</Card>
+
+				<Card>
+					<CardHeader>
+						<CardTitle>Últimos atendimentos</CardTitle>
+						<CardAction>
+							<Button
+								variant={"outline"}
+								size={"xs"}
+								className="bg-transparent dark:bg-transparent"
+							>
+								Ver todos
+							</Button>
+						</CardAction>
+					</CardHeader>
+					<CardContent>
+						<ul className="flex flex-col gap-6">
+							{lastRequests.map(
+								(
+									{
+										route,
+										startTime,
+										endTime,
+										scholar,
+										student,
+										status,
+									},
+									index,
+								) => (
+									<li
+										key={index}
+										className="flex flex-col items-start justify-start gap-3 md:gap-4 w-full"
+									>
+										<div className="font-semibold flex flex-row items-start justify-between gap-4 w-full">
+											<div className="flex items-start justify-start flex-row gap-3">
+												<div
+													className={cn(
+														`h-2 w-2 mt-1.5 rounded-full`,
+														{
+															"bg-green-500":
+																status ===
+																RequestStatus.FINISHED,
+															"bg-yellow-500 animate-pulse":
+																status ===
+																RequestStatus.ATTENDING,
+														},
+													)}
+												/>
+												<div className="flex flex-col items-start justify-start gap-1">
+													<span className="flex-wrap">
+														{scholar} →{" "}
+														<br className="flex md:hidden" />{" "}
+														{student}
+													</span>
+													<span className="text-xs font-normal text-muted-foreground">
+														Iniciado às 10h17
+													</span>
+												</div>
+											</div>
+											<Badge
+												className="border-none"
+												variant={
+													status ===
+													RequestStatus.ATTENDING
+														? "warning"
+														: "success"
+												}
+											>
+												{status ===
+												RequestStatus.ATTENDING
+													? "Em atendimento"
+													: "Finalizado"}
+											</Badge>
+										</div>
+										<RoutePreview />
 									</li>
 								),
 							)}

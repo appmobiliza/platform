@@ -1,5 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar";
-import Logo from "@/components/logo";
+import Logo from "@/components/temp-icons/logo";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function DashboardLayout({
