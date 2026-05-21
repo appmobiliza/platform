@@ -1,6 +1,8 @@
 import { Geist_Mono, Inter } from "next/font/google";
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
+
 import { cn } from "@/lib/utils";
 import "./globals.css";
 
@@ -28,7 +30,9 @@ export default function RootLayout({
 			)}
 		>
 			<body>
-				<ThemeProvider>{children}</ThemeProvider>
+				<ThemeProvider>
+					<TooltipProvider>{children}</TooltipProvider>
+				</ThemeProvider>
 			</body>
 		</html>
 	);
