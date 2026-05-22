@@ -1,14 +1,16 @@
 import { useState } from "react";
+
 import { useRouter } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
-import { Button } from "../../components/ui/Button";
-import { Header } from "../../components/ui/Header";
-import { Input } from "../../components/ui/Input";
-import { Select } from "../../components/ui/Select";
-import { StepIndicator } from "../../components/ui/StepIndicator";
 
-import { courseOptions, shiftOptions, campusOptions } from "@/constants";
-import { CourseInfoSchema, type CourseInfoInput } from "@/schemas";
+import { campusOptions, courseOptions, shiftOptions } from "@/constants";
+import { type CourseInfoInput, CourseInfoSchema } from "@/schemas";
+
+import { Button } from "../../components/old/Button_test";
+import { Header } from "../../components/old/Header";
+import { Input } from "../../components/old/Input";
+import { Select } from "../../components/old/Select";
+import { StepIndicator } from "../../components/old/StepIndicator";
 
 export default function CourseInfo() {
 	const router = useRouter();
@@ -17,7 +19,9 @@ export default function CourseInfo() {
 	const [shift, setShift] = useState("");
 	const [campus, setCampus] = useState("");
 	const [matricula, setMatricula] = useState("");
-	const [errors, setErrors] = useState<Partial<Record<keyof CourseInfoInput, string>>>({});
+	const [errors, setErrors] = useState<
+		Partial<Record<keyof CourseInfoInput, string>>
+	>({});
 
 	const steps = [
 		{ id: "basic", title: "Dados Básicos" },
@@ -30,7 +34,8 @@ export default function CourseInfo() {
 		const result = CourseInfoSchema.safeParse(data);
 
 		if (!result.success) {
-			const fieldErrors: Partial<Record<keyof CourseInfoInput, string>> = {};
+			const fieldErrors: Partial<Record<keyof CourseInfoInput, string>> =
+				{};
 			result.error.issues.forEach((issue) => {
 				const field = issue.path[0] as keyof CourseInfoInput;
 				fieldErrors[field] = issue.message;

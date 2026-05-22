@@ -1,15 +1,16 @@
-import { useRouter } from "expo-router";
 import { useEffect } from "react";
-import { View } from "react-native";
+
+import { useRouter } from "expo-router";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-import { Logo } from "../components/ui/Logo";
+
+import { Logo } from "@/assets/logo";
 
 export default function Splash() {
 	const router = useRouter();
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
-			router.replace("/login");
+			router.replace("/auth");
 		}, 2500);
 
 		return () => clearTimeout(timer);
@@ -19,9 +20,9 @@ export default function Splash() {
 		<Animated.View
 			entering={FadeIn.duration(500)}
 			exiting={FadeOut.duration(500)}
-			className="flex-1 items-center justify-center bg-brand-primary"
+			className="flex-1 items-center justify-center bg-primary"
 		>
-			<Logo light />
+			<Logo />
 		</Animated.View>
 	);
 }

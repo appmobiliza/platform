@@ -1,8 +1,9 @@
 import { useRouter } from "expo-router";
 import { CircleAlert } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
-import { Button } from "../../components/ui/Button";
-import { Header } from "../../components/ui/Header";
+
+import { Button } from "../../components/old/Button_test";
+import { Header } from "../../components/old/Header";
 
 export default function Unregistered() {
 	const router = useRouter();

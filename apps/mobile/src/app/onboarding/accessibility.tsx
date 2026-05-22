@@ -1,15 +1,21 @@
+import { useState } from "react";
+
 import { useRouter } from "expo-router";
 import { Accessibility, Ear, Ellipsis, Eye } from "lucide-react-native";
-import { useState } from "react";
 import { ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
-import { Button } from "../../components/ui/Button";
-import { Header } from "../../components/ui/Header";
-import { StepIndicator } from "../../components/ui/StepIndicator";
 
-import { AccessibilitySchema, type AccessibilityInput } from "@/schemas";
+import { type AccessibilityInput, AccessibilitySchema } from "@/schemas";
+
+import { Button } from "../../components/old/Button_test";
+import { Header } from "../../components/old/Header";
+import { StepIndicator } from "../../components/old/StepIndicator";
 
 const INITIAL_OPTIONS = [
-	{ id: "physical", label: "Deficiência física ou\nmobilidade reduzida", icon: Accessibility },
+	{
+		id: "physical",
+		label: "Deficiência física ou\nmobilidade reduzida",
+		icon: Accessibility,
+	},
 	{ id: "hearing", label: "Deficiência auditiva", icon: Ear },
 	{ id: "visual", label: "Cegueira ou\nbaixa visão", icon: Eye },
 	{ id: "other", label: "Outro tipo", icon: Ellipsis },
@@ -19,11 +25,15 @@ export default function AccessibilityInfo() {
 	const router = useRouter();
 	const [audioEnabled, setAudioEnabled] = useState(false);
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
-	const [errors, setErrors] = useState<Partial<Record<keyof AccessibilityInput, string>>>({});
+	const [errors, setErrors] = useState<
+		Partial<Record<keyof AccessibilityInput, string>>
+	>({});
 
 	const toggleSelection = (id: string) => {
 		setSelectedIds((prev) =>
-			prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+			prev.includes(id)
+				? prev.filter((item) => item !== id)
+				: [...prev, id],
 		);
 	};
 
@@ -41,7 +51,9 @@ export default function AccessibilityInfo() {
 		const result = AccessibilitySchema.safeParse(data);
 
 		if (!result.success) {
-			const fieldErrors: Partial<Record<keyof AccessibilityInput, string>> = {};
+			const fieldErrors: Partial<
+				Record<keyof AccessibilityInput, string>
+			> = {};
 			result.error.issues.forEach((issue) => {
 				const field = issue.path[0] as keyof AccessibilityInput;
 				fieldErrors[field] = issue.message;
@@ -77,7 +89,9 @@ export default function AccessibilityInfo() {
 				<StepIndicator steps={steps} currentStepId="accessibility" />
 
 				{errors.disabilityType && (
-					<Text className="text-sm text-red-500 mt-4">{errors.disabilityType}</Text>
+					<Text className="text-sm text-red-500 mt-4">
+						{errors.disabilityType}
+					</Text>
 				)}
 
 				<View className="mt-8 flex-row flex-wrap justify-between">
@@ -101,9 +115,7 @@ export default function AccessibilityInfo() {
 							>
 								<Icon
 									size={32}
-									color={
-										isSelected ? "#ffffff" : "#171717"
-									}
+									color={isSelected ? "#ffffff" : "#171717"}
 									strokeWidth={2}
 								/>
 								<Text
