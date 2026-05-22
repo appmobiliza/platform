@@ -1,31 +1,22 @@
-import {
-	Platform,
-	SafeAreaView,
-	ScrollView,
-	StatusBar,
-	Text,
-	View,
-} from "react-native";
+import { ScrollView, Text, View } from "react-native";
 
-import { Logo } from "../../../assets/logo";
-import { FloatingActionButton } from "../../components/old/FloatingActionButton";
+import { Logo } from "@/assets/logo";
+
 import { NewsCarousel } from "../../components/old/NewsCarousel";
 import { PlaceCard } from "../../components/old/PlaceCard";
 import { SearchBar } from "../../components/old/SearchBar";
 
 export default function Home() {
 	return (
-		<View className="flex-1 bg-brand-background">
-			<StatusBar barStyle="light-content" backgroundColor="#00635D" />
-
+		<View className="flex-1">
 			{/* Header Escuro */}
-			<View className="bg-[#006971] pt-14 pb-20 px-6 items-center">
-				<Logo size="lg" light />
+			<View className="bg-primary pt-14 pb-20 px-6 items-center">
+				<Logo />
 			</View>
 
 			{/* Main Content - Scrollable */}
-			<View className="flex-1 bg-[#006971] -mt-10">
-				<View className="flex-1 bg-white rounded-t-[32px] overflow-hidden">
+			<View className="flex-1 -mt-10">
+				<View className="flex-1 rounded-t-[32px] overflow-hidden">
 					<ScrollView
 						className="flex-1 px-6 pt-10"
 						showsVerticalScrollIndicator={false}
@@ -82,11 +73,6 @@ export default function Home() {
 					</ScrollView>
 				</View>
 			</View>
-
-			{/* FAB - Solicitar Atendimento */}
-			<FloatingActionButton
-				onPress={() => console.log("Solicitar Atendimento")}
-			/>
 		</View>
 	);
 }

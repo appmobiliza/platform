@@ -3,6 +3,11 @@ import { Stack } from "expo-router";
 
 import "../global.css";
 
+import { useColorScheme } from "react-native";
+
+import { useIsLoggedIn } from "@/lib/auth-store";
+import { THEME } from "@/lib/theme";
+
 // Set the animation options. This is optional.
 /* SplashScreen.setOptions({
 	duration: 1000,
@@ -10,17 +15,27 @@ import "../global.css";
 }); */
 
 export default function RootLayout() {
+	const isLoggedIn = useIsLoggedIn();
+
+	const colorScheme = useColorScheme();
+	const bgColor =
+		colorScheme === "dark" ? THEME.dark.background : THEME.light.background;
+
 	return (
 		<Stack
 			screenOptions={{
 				headerShown: false,
-				contentStyle: { backgroundColor: "red" },
+				contentStyle: { backgroundColor: bgColor },
 			}}
 		>
-			<Stack.Screen name="index" />
-			<Stack.Screen name="auth" />
-			<Stack.Screen name="onboarding" />
-			<Stack.Screen name="estudante" />
+			<Stack.Protected guard={isLoggedIn}>
+				<Stack.Screen name="(tabs)" />
+			</Stack.Protected>
+
+			<Stack.Protected guard={!isLoggedIn}>
+				<Stack.Screen name="auth" />
+				<Stack.Screen name="onboarding" />
+			</Stack.Protected>
 		</Stack>
 	);
 }

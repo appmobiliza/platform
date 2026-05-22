@@ -4,6 +4,8 @@ import { Linking, View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
+import { setIsLoggedIn } from "@/lib/auth-store";
+
 import GoogleIcon from "@/assets/google";
 import { Logo } from "@/assets/logo";
 
@@ -11,7 +13,8 @@ export default function Auth() {
 	const router = useRouter();
 
 	const handleLogin = () => {
-		router.push("/estudante/home");
+		setIsLoggedIn(true);
+		router.replace("/(tabs)");
 	};
 
 	const openURL = (url: string) => {
@@ -21,7 +24,7 @@ export default function Auth() {
 	};
 
 	return (
-		<View className="flex-1 bg-background">
+		<View className="flex-1">
 			{/* Top half: Brand color with logo */}
 			<View className="flex-[0.55] items-center justify-center bg-primary rounded-b-3xl">
 				<Logo />
