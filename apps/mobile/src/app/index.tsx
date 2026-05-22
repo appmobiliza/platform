@@ -1,17 +1,27 @@
-import { Text, View, StyleSheet } from "react-native";
+import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { View } from "react-native";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import { Logo } from "../components/ui/Logo";
 
-export default function Index() {
-  return (
-    <View style={styles.container}>
-      <Text className="font-bold text-4xl">Edit src/app/index.tsx to edit this screen.</Text>
-    </View>
-  );
+export default function Splash() {
+	const router = useRouter();
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			router.replace("/login");
+		}, 2500);
+
+		return () => clearTimeout(timer);
+	}, [router]);
+
+	return (
+		<Animated.View
+			entering={FadeIn.duration(500)}
+			exiting={FadeOut.duration(500)}
+			className="flex-1 items-center justify-center bg-brand-primary"
+		>
+			<Logo light />
+		</Animated.View>
+	);
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
