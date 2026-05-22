@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import { Text, TouchableOpacity, View } from "react-native";
+
 import { Button } from "../components/ui/Button";
 import { Logo } from "../components/ui/Logo";
 
@@ -7,13 +8,13 @@ export default function Login() {
 	const router = useRouter();
 
 	const handleLogin = () => {
-		router.push("/onboarding/unregistered");
+		router.push("/estudante/home");
 	};
 
 	return (
 		<View className="flex-1 bg-white">
 			{/* Top half: Brand color with logo */}
-			<View className="flex-[0.55] items-center justify-center bg-brand-primary rounded-b-3xl">
+			<View className="flex-[0.55] items-center justify-center bg-primary rounded-b-3xl">
 				<Logo light />
 			</View>
 

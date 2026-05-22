@@ -1,4 +1,5 @@
 import { forwardRef } from "react";
+
 import { Text, TextInput, View } from "react-native";
 
 interface InputProps extends React.ComponentPropsWithoutRef<typeof TextInput> {
