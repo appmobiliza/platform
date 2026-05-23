@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Image } from "expo-image";
+import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import { Linking, Pressable, useWindowDimensions, View } from "react-native";
 import Animated, {
 	Extrapolation,
@@ -50,6 +51,8 @@ export const NewsCarousel = ({
 		autoScroll && !reduceMotionEnabled && !screenReaderEnabled,
 	);
 	const resumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const hasMultipleItems = items.length > 1;
+	const currentNewsItem = items[currentIndex] ?? items[0];
 
 	const handleOpenLink = useCallback((link: string) => {
 		Linking.openURL(link).catch((error) => {
@@ -59,13 +62,24 @@ export const NewsCarousel = ({
 
 	const scrollToIndex = useCallback(
 		(index: number) => {
+			const nextIndex = Math.max(0, Math.min(index, items.length - 1));
+			currentIndexRef.current = nextIndex;
+			setCurrentIndex(nextIndex);
 			flatListRef.current?.scrollToOffset({
-				offset: index * scrollInterval,
+				offset: nextIndex * scrollInterval,
 				animated: true,
 			});
 		},
-		[scrollInterval],
+		[items.length, scrollInterval],
 	);
+
+	const handlePrevious = useCallback(() => {
+		scrollToIndex(currentIndexRef.current - 1);
+	}, [scrollToIndex]);
+
+	const handleNext = useCallback(() => {
+		scrollToIndex(currentIndexRef.current + 1);
+	}, [scrollToIndex]);
 
 	const onScroll = useAnimatedScrollHandler({
 		onScroll: (event) => {
@@ -99,6 +113,55 @@ export const NewsCarousel = ({
 
 	if (items.length === 0) {
 		return null;
+	}
+
+	if (screenReaderEnabled) {
+		return (
+			<View>
+				<View className="flex-row items-center justify-between px-4 mb-3 gap-3">
+					<Pressable
+						onPress={handlePrevious}
+						disabled={!hasMultipleItems}
+						accessibilityRole="button"
+						accessibilityLabel="Notícia anterior"
+						accessibilityHint="Volta para a notícia anterior"
+						className="h-11 w-11 items-center justify-center rounded-full bg-primary/80"
+					>
+						<ChevronLeft size={18} color="white" />
+					</Pressable>
+
+					<View className="flex-1 items-center">
+						<Text className="text-sm text-foreground/70">
+							{currentIndex + 1} de {items.length}
+						</Text>
+					</View>
+
+					<Pressable
+						onPress={handleNext}
+						disabled={!hasMultipleItems}
+						accessibilityRole="button"
+						accessibilityLabel="Próxima notícia"
+						accessibilityHint="Avança para a próxima notícia"
+						className="h-11 w-11 items-center justify-center rounded-full bg-primary/80"
+					>
+						<ChevronRight size={18} color="white" />
+					</Pressable>
+				</View>
+
+				<View className="items-center px-4">
+					{currentNewsItem ? (
+						<NewsCard
+							item={currentNewsItem}
+							index={currentIndex}
+							cardWidth={cardWidth}
+							scrollInterval={scrollInterval}
+							scrollX={scrollX}
+							onOpenLink={handleOpenLink}
+						/>
+					) : null}
+				</View>
+			</View>
+		);
 	}
 
 	return (
@@ -159,8 +222,6 @@ export const NewsCarousel = ({
 					/>
 				)}
 			/>
-
-			{/* auto-scroll control removed for accessibility: auto-scroll disabled when screen reader or reduce motion enabled */}
 
 			<View className="flex-row justify-center mt-1 gap-1.5">
 				{items.map((item, index) => (
