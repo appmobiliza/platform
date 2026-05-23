@@ -139,7 +139,7 @@
 
 	/* ── Bordas e inputs ─────────────────────────────────────────── */
 	--border: oklch(0.881 0.005 106.8); /* Gray-200 #D8D8D4 */
-	--input: oklch(0.771 0.007 116); /* Gray-300 #B4B5B0 — borda de input */
+	--input: oklch(0.973 0.003 84.6); /* Gray-300 #B4B5B0 — borda de input */
 	--ring: oklch(0.578 0.097 204); /* primary-mid #0A8A94 — focus ring */
 
 	/* ── Raio de borda ───────────────────────────────────────────── */

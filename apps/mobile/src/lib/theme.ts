@@ -2,7 +2,7 @@ export const THEME = {
 	light: {
 		background: "#F8F8F8",
 		bar: {
-			background: "#E9EFEF",
+			background: "#ededed",
 			label: {
 				default: "#3F4849",
 				selected: "#4A6365",

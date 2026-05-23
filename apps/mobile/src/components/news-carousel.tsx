@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { Image } from "expo-image";
 import { Linking, Pressable, useWindowDimensions, View } from "react-native";
@@ -21,16 +21,25 @@ export type NewsItem = {
 
 interface NewsCarouselProps {
 	items: NewsItem[];
+	autoScroll?: boolean;
+	autoScrollIntervalMs?: number;
 }
 
 const HORIZONTAL_PADDING = 16;
 const CARD_SPACING = 12;
+const DEFAULT_AUTO_SCROLL_INTERVAL_MS = 4000;
 
-export const NewsCarousel = ({ items }: NewsCarouselProps) => {
+export const NewsCarousel = ({
+	items,
+	autoScroll = false,
+	autoScrollIntervalMs = DEFAULT_AUTO_SCROLL_INTERVAL_MS,
+}: NewsCarouselProps) => {
 	const { width } = useWindowDimensions();
 	const cardWidth = Math.max(width - HORIZONTAL_PADDING * 2, 280);
 	const scrollInterval = cardWidth + CARD_SPACING;
 	const scrollX = useSharedValue(0);
+	const flatListRef = useRef<Animated.FlatList<NewsItem>>(null);
+	const currentIndexRef = useRef(0);
 
 	const handleOpenLink = useCallback((link: string) => {
 		Linking.openURL(link).catch((error) => {
@@ -38,11 +47,37 @@ export const NewsCarousel = ({ items }: NewsCarouselProps) => {
 		});
 	}, []);
 
+	const scrollToIndex = useCallback(
+		(index: number) => {
+			flatListRef.current?.scrollToOffset({
+				offset: index * scrollInterval,
+				animated: true,
+			});
+		},
+		[scrollInterval],
+	);
+
 	const onScroll = useAnimatedScrollHandler({
 		onScroll: (event) => {
 			scrollX.value = event.contentOffset.x;
 		},
 	});
+
+	useEffect(() => {
+		if (!autoScroll || items.length < 2) {
+			return;
+		}
+
+		const intervalId = setInterval(() => {
+			currentIndexRef.current =
+				(currentIndexRef.current + 1) % items.length;
+			scrollToIndex(currentIndexRef.current);
+		}, autoScrollIntervalMs);
+
+		return () => {
+			clearInterval(intervalId);
+		};
+	}, [autoScroll, autoScrollIntervalMs, items.length, scrollToIndex]);
 
 	if (items.length === 0) {
 		return null;
@@ -51,6 +86,7 @@ export const NewsCarousel = ({ items }: NewsCarouselProps) => {
 	return (
 		<View>
 			<Animated.FlatList
+				ref={flatListRef}
 				data={items}
 				horizontal
 				keyExtractor={(item) => item.link}
@@ -61,6 +97,11 @@ export const NewsCarousel = ({ items }: NewsCarouselProps) => {
 				decelerationRate="fast"
 				bounces={false}
 				onScroll={onScroll}
+				onMomentumScrollEnd={(event) => {
+					currentIndexRef.current = Math.round(
+						event.nativeEvent.contentOffset.x / scrollInterval,
+					);
+				}}
 				scrollEventThrottle={16}
 				contentContainerStyle={{
 					paddingHorizontal: HORIZONTAL_PADDING,
@@ -168,7 +209,7 @@ const NewsCard = ({
 				/>
 				<View className="absolute bottom-4 left-4 right-4">
 					<Text
-						className="text-white font-bold text-sm leading-5"
+						className="text-white font-bold text-base leading-5"
 						numberOfLines={3}
 					>
 						{item.label}

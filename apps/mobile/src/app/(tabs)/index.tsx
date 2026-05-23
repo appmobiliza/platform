@@ -93,19 +93,36 @@ export default function Home() {
 					<Text className="font-bold text-lg mb-3 pl-4">
 						Notícias
 					</Text>
-					<NewsCarousel items={newsItems} />
+					<NewsCarousel items={newsItems} autoScroll />
 				</View>
 
 				{/* Rotas Frequentes */}
 				<View className="px-4">
-					<Text className="font-bold text-lg mb-3">
+					<Text className="font-bold text-lg mb-2">
 						Rotas Frequentes
 					</Text>
-					<PlaceCard
-						title="Restaurante Universitário"
-						subtitle="Último deslocamento há 2 dias"
-						iconType="map"
-					/>
+					<View className="flex-col gap-2">
+						<PlaceCard
+							title="Restaurante Universitário"
+							subtitle="Último deslocamento há 2 dias"
+							iconType="map"
+						/>
+						<PlaceCard
+							title="Reitoria"
+							subtitle="Último deslocamento há 6 dias"
+							iconType="map"
+						/>
+						<PlaceCard
+							title="Biblioteca Central"
+							subtitle="Último deslocamento há 10 dias"
+							iconType="map"
+						/>
+						<PlaceCard
+							title="Instituto de Computação"
+							subtitle="Último deslocamento há 12 dias"
+							iconType="map"
+						/>
+					</View>
 				</View>
 			</View>
 		</ScrollView>
