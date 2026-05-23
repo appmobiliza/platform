@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Image } from "expo-image";
-import { Pause, Play } from "lucide-react-native";
-import { AccessibilityInfo, Linking, Pressable, useWindowDimensions, View } from "react-native";
+import { Linking, Pressable, useWindowDimensions, View } from "react-native";
 import Animated, {
 	Extrapolation,
 	interpolate,
@@ -13,6 +12,8 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { Text } from "@/components/ui/text";
+
+import { useAccessibilityPreferences } from "@/hooks/useAccessibilityPreferences";
 
 export type NewsItem = {
 	image: string;
@@ -43,8 +44,11 @@ export const NewsCarousel = ({
 	const flatListRef = useRef<Animated.FlatList<NewsItem>>(null);
 	const currentIndexRef = useRef(0);
 	const [currentIndex, setCurrentIndex] = useState(0);
-	const [reduceMotionEnabled, setReduceMotionEnabled] = useState(false);
-	const [isAutoScrolling, setIsAutoScrolling] = useState(autoScroll && !reduceMotionEnabled);
+	const { reduceMotionEnabled, screenReaderEnabled } =
+		useAccessibilityPreferences();
+	const [isAutoScrolling, setIsAutoScrolling] = useState(
+		autoScroll && !reduceMotionEnabled && !screenReaderEnabled,
+	);
 	const resumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	const handleOpenLink = useCallback((link: string) => {
@@ -86,47 +90,12 @@ export const NewsCarousel = ({
 		};
 	}, [isAutoScrolling, autoScrollIntervalMs, items.length, scrollToIndex]);
 
+	// Sync isAutoScrolling with prop and accessibility preferences
 	useEffect(() => {
-		let isMounted = true;
-
-		AccessibilityInfo.isReduceMotionEnabled()
-			.then((value) => {
-				if (isMounted) setReduceMotionEnabled(value);
-			})
-			.catch(() => {
-				if (isMounted) setReduceMotionEnabled(false);
-			});
-
-		const subscription = AccessibilityInfo.addEventListener(
-			'reduceMotionChanged',
-			(value) => {
-				if (isMounted) setReduceMotionEnabled(value);
-			}
+		setIsAutoScrolling(
+			autoScroll && !reduceMotionEnabled && !screenReaderEnabled,
 		);
-
-		return () => {
-			isMounted = false;
-			try {
-				const sub = subscription as
-					| { remove?: () => void }
-					| (() => void)
-					| undefined;
-				if (sub && typeof (sub as { remove?: () => void }).remove === "function") {
-					(sub as { remove: () => void }).remove();
-				} else if (typeof subscription === "function") {
-					// older RN returns an unsubscribe function
-					(subscription as unknown as () => void)();
-				}
-			} catch {
-				// ignore
-			}
-		};
-	}, []);
-
-	// Sync isAutoScrolling with prop and reduced motion preference
-	useEffect(() => {
-		setIsAutoScrolling(autoScroll && !reduceMotionEnabled);
-	}, [autoScroll, reduceMotionEnabled]);
+	}, [autoScroll, reduceMotionEnabled, screenReaderEnabled]);
 
 	if (items.length === 0) {
 		return null;
@@ -153,9 +122,14 @@ export const NewsCarousel = ({
 						if (resumeTimeoutRef.current) {
 							clearTimeout(resumeTimeoutRef.current);
 						}
-						if (!reduceMotionEnabled) {
+						// only schedule resume if neither reduceMotion nor screen reader is enabled
+						if (!reduceMotionEnabled && !screenReaderEnabled) {
 							resumeTimeoutRef.current = setTimeout(() => {
-								setIsAutoScrolling(autoScroll && !reduceMotionEnabled);
+								setIsAutoScrolling(
+									autoScroll &&
+										!reduceMotionEnabled &&
+										!screenReaderEnabled,
+								);
 							}, RESUME_AUTO_SCROLL_DELAY_MS);
 						}
 					}
@@ -186,31 +160,7 @@ export const NewsCarousel = ({
 				)}
 			/>
 
-			{autoScroll && !reduceMotionEnabled && (
-				<View className="flex-row justify-center mt-3 mb-2 absolute right-8">
-					<Pressable
-						onPress={() => {
-							setIsAutoScrolling((s) => !s);
-						}}
-						accessibilityRole="button"
-						accessibilityLabel={
-							isAutoScrolling
-								? "Pausar auto-scroll"
-								: "Retomar auto-scroll"
-						}
-						className="p-3 rounded-full bg-primary/80"
-					>
-						<Text className="text-sm text-white sr-only">
-							{isAutoScrolling ? "Pausar" : "Retomar"}
-						</Text>
-						{isAutoScrolling ? (
-							<Pause size={16} color="white" />
-						) : (
-							<Play size={16} color="white" />
-						)}
-					</Pressable>
-				</View>
-			)}
+			{/* auto-scroll control removed for accessibility: auto-scroll disabled when screen reader or reduce motion enabled */}
 
 			<View className="flex-row justify-center mt-1 gap-1.5">
 				{items.map((item, index) => (

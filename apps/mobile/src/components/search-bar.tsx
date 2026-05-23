@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 
 import { Search } from "lucide-react-native";
 import { styled } from "nativewind";
-import { AccessibilityInfo, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+
+import { useAccessibilityPreferences } from "@/hooks/useAccessibilityPreferences";
 
 const SearchIcon = styled(Search);
 
@@ -21,36 +23,10 @@ export function SearchBar({ examples, onPress }: SearchBarProps) {
 	const accessibilityHint = activeExamples.length
 		? `Abre a tela de busca. Exemplos: ${activeExamples.join(", ")}.`
 		: "Abre a tela de busca.";
-	const [reduceMotionEnabled, setReduceMotionEnabled] = useState(false);
+	const { reduceMotionEnabled } = useAccessibilityPreferences();
 	const [exampleIndex, setExampleIndex] = useState(0);
 	const [displayedText, setDisplayedText] = useState("");
 	const [phase, setPhase] = useState<AnimationPhase>("typing");
-
-	useEffect(() => {
-		let isMounted = true;
-
-		AccessibilityInfo.isReduceMotionEnabled()
-			.then((value) => {
-				if (isMounted) {
-					setReduceMotionEnabled(value);
-				}
-			})
-			.catch(() => {
-				if (isMounted) {
-					setReduceMotionEnabled(false);
-				}
-			});
-
-		const subscription = AccessibilityInfo.addEventListener(
-			"reduceMotionChanged",
-			setReduceMotionEnabled,
-		);
-
-		return () => {
-			isMounted = false;
-			subscription.remove();
-		};
-	}, []);
 
 	useEffect(() => {
 		if (reduceMotionEnabled || activeExamples.length === 0) {
