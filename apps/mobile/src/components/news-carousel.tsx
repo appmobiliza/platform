@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Image } from "expo-image";
-import { Linking, Pressable, useWindowDimensions, View } from "react-native";
+import { Pause, Play } from "lucide-react-native";
+import { AccessibilityInfo, Linking, Pressable, useWindowDimensions, View } from "react-native";
 import Animated, {
 	Extrapolation,
 	interpolate,
@@ -28,6 +29,7 @@ interface NewsCarouselProps {
 const HORIZONTAL_PADDING = 16;
 const CARD_SPACING = 12;
 const DEFAULT_AUTO_SCROLL_INTERVAL_MS = 4000;
+const RESUME_AUTO_SCROLL_DELAY_MS = 5000;
 
 export const NewsCarousel = ({
 	items,
@@ -40,6 +42,10 @@ export const NewsCarousel = ({
 	const scrollX = useSharedValue(0);
 	const flatListRef = useRef<Animated.FlatList<NewsItem>>(null);
 	const currentIndexRef = useRef(0);
+	const [currentIndex, setCurrentIndex] = useState(0);
+	const [reduceMotionEnabled, setReduceMotionEnabled] = useState(false);
+	const [isAutoScrolling, setIsAutoScrolling] = useState(autoScroll && !reduceMotionEnabled);
+	const resumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	const handleOpenLink = useCallback((link: string) => {
 		Linking.openURL(link).catch((error) => {
@@ -64,20 +70,63 @@ export const NewsCarousel = ({
 	});
 
 	useEffect(() => {
-		if (!autoScroll || items.length < 2) {
+		if (!isAutoScrolling || items.length < 2) {
 			return;
 		}
 
 		const intervalId = setInterval(() => {
 			currentIndexRef.current =
 				(currentIndexRef.current + 1) % items.length;
+			setCurrentIndex(currentIndexRef.current);
 			scrollToIndex(currentIndexRef.current);
 		}, autoScrollIntervalMs);
 
 		return () => {
 			clearInterval(intervalId);
 		};
-	}, [autoScroll, autoScrollIntervalMs, items.length, scrollToIndex]);
+	}, [isAutoScrolling, autoScrollIntervalMs, items.length, scrollToIndex]);
+
+	useEffect(() => {
+		let isMounted = true;
+
+		AccessibilityInfo.isReduceMotionEnabled()
+			.then((value) => {
+				if (isMounted) setReduceMotionEnabled(value);
+			})
+			.catch(() => {
+				if (isMounted) setReduceMotionEnabled(false);
+			});
+
+		const subscription = AccessibilityInfo.addEventListener(
+			'reduceMotionChanged',
+			(value) => {
+				if (isMounted) setReduceMotionEnabled(value);
+			}
+		);
+
+		return () => {
+			isMounted = false;
+			try {
+				const sub = subscription as
+					| { remove?: () => void }
+					| (() => void)
+					| undefined;
+				if (sub && typeof (sub as { remove?: () => void }).remove === "function") {
+					(sub as { remove: () => void }).remove();
+				} else if (typeof subscription === "function") {
+					// older RN returns an unsubscribe function
+					(subscription as unknown as () => void)();
+				}
+			} catch {
+				// ignore
+			}
+		};
+	}, []);
+
+	// Sync isAutoScrolling with prop and reduced motion preference
+	useEffect(() => {
+		setIsAutoScrolling(autoScroll && !reduceMotionEnabled);
+	}, [autoScroll, reduceMotionEnabled]);
 
 	if (items.length === 0) {
 		return null;
@@ -97,10 +146,26 @@ export const NewsCarousel = ({
 				decelerationRate="fast"
 				bounces={false}
 				onScroll={onScroll}
+				onScrollBeginDrag={() => {
+					// pause auto-scroll when user starts interacting
+					if (isAutoScrolling) {
+						setIsAutoScrolling(false);
+						if (resumeTimeoutRef.current) {
+							clearTimeout(resumeTimeoutRef.current);
+						}
+						if (!reduceMotionEnabled) {
+							resumeTimeoutRef.current = setTimeout(() => {
+								setIsAutoScrolling(autoScroll && !reduceMotionEnabled);
+							}, RESUME_AUTO_SCROLL_DELAY_MS);
+						}
+					}
+				}}
 				onMomentumScrollEnd={(event) => {
-					currentIndexRef.current = Math.round(
+					const idx = Math.round(
 						event.nativeEvent.contentOffset.x / scrollInterval,
 					);
+					currentIndexRef.current = idx;
+					setCurrentIndex(idx);
 				}}
 				scrollEventThrottle={16}
 				contentContainerStyle={{
@@ -121,16 +186,57 @@ export const NewsCarousel = ({
 				)}
 			/>
 
-			<View className="flex-row justify-center mt-3 gap-1.5">
+			{autoScroll && !reduceMotionEnabled && (
+				<View className="flex-row justify-center mt-3 mb-2 absolute right-8">
+					<Pressable
+						onPress={() => {
+							setIsAutoScrolling((s) => !s);
+						}}
+						accessibilityRole="button"
+						accessibilityLabel={
+							isAutoScrolling
+								? "Pausar auto-scroll"
+								: "Retomar auto-scroll"
+						}
+						className="p-3 rounded-full bg-primary/80"
+					>
+						<Text className="text-sm text-white sr-only">
+							{isAutoScrolling ? "Pausar" : "Retomar"}
+						</Text>
+						{isAutoScrolling ? (
+							<Pause size={16} color="white" />
+						) : (
+							<Play size={16} color="white" />
+						)}
+					</Pressable>
+				</View>
+			)}
+
+			<View className="flex-row justify-center mt-1 gap-1.5">
 				{items.map((item, index) => (
 					<CarouselDot
 						key={item.link}
 						index={index}
 						scrollInterval={scrollInterval}
 						scrollX={scrollX}
+						currentIndex={currentIndex}
+						onPress={() => {
+							currentIndexRef.current = index;
+							setCurrentIndex(index);
+							scrollToIndex(index);
+						}}
 					/>
 				))}
 			</View>
+
+			{/* Live region for screen readers to announce current slide */}
+			<Text
+				accessible
+				accessibilityLiveRegion="polite"
+				style={{ position: "absolute", left: -9999 }}
+			>
+				{`Notícia ${currentIndex + 1} de ${items.length}`}
+			</Text>
 		</View>
 	);
 };
@@ -224,9 +330,17 @@ interface CarouselDotProps {
 	index: number;
 	scrollInterval: number;
 	scrollX: SharedValue<number>;
+	currentIndex?: number;
+	onPress?: () => void;
 }
 
-const CarouselDot = ({ index, scrollInterval, scrollX }: CarouselDotProps) => {
+const CarouselDot = ({
+	index,
+	scrollInterval,
+	scrollX,
+	currentIndex,
+	onPress,
+}: CarouselDotProps) => {
 	const animatedStyle = useAnimatedStyle(() => {
 		const inputRange = [
 			(index - 1) * scrollInterval,
@@ -254,10 +368,20 @@ const CarouselDot = ({ index, scrollInterval, scrollX }: CarouselDotProps) => {
 		};
 	});
 
+	const selected =
+		typeof currentIndex === "number" ? currentIndex === index : false;
+
 	return (
-		<Animated.View
-			style={animatedStyle}
-			className="w-2 h-2 rounded-full bg-primary"
-		/>
+		<Pressable
+			onPress={onPress}
+			accessibilityRole="button"
+			accessibilityLabel={`Notícia ${index + 1}`}
+			accessibilityState={{ selected }}
+		>
+			<Animated.View
+				style={animatedStyle}
+				className={`w-2 h-2 rounded-full ${selected ? "bg-primary" : "bg-primary/50"}`}
+			/>
+		</Pressable>
 	);
 };
