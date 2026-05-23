@@ -15,5 +15,10 @@
 	"[typescript]": {
 		"editor.defaultFormatter": "biomejs.biome"
 	},
-	"js/ts.preferences.autoImportFileExcludePatterns": ["lucide-react"]
+	"js/ts.preferences.autoImportFileExcludePatterns": [
+		"lucide-react"
+	],
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "vscode.typescript-language-features"
+	}
 }
