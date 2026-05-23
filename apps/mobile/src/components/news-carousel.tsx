@@ -1,8 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Image } from "expo-image";
-import { ChevronLeft, ChevronRight } from "lucide-react-native";
-import { Linking, Pressable, useWindowDimensions, View } from "react-native";
+import { ChevronRight } from "lucide-react-native";
+import {
+	AccessibilityInfo,
+	findNodeHandle,
+	Linking,
+	Pressable,
+	useWindowDimensions,
+	View,
+} from "react-native";
 import Animated, {
 	Extrapolation,
 	interpolate,
@@ -51,8 +58,11 @@ export const NewsCarousel = ({
 		autoScroll && !reduceMotionEnabled && !screenReaderEnabled,
 	);
 	const resumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const hasMultipleItems = items.length > 1;
 	const currentNewsItem = items[currentIndex] ?? items[0];
+	const lastIndex = items.length - 1;
+
+	// Ref used to move accessibility focus to the card after navigation
+	const cardRef = useRef<View>(null);
 
 	const handleOpenLink = useCallback((link: string) => {
 		Linking.openURL(link).catch((error) => {
@@ -73,13 +83,26 @@ export const NewsCarousel = ({
 		[items.length, scrollInterval],
 	);
 
-	const handlePrevious = useCallback(() => {
-		scrollToIndex(currentIndexRef.current - 1);
-	}, [scrollToIndex]);
+	// Move accessibility focus to the card after navigation so the user
+	// immediately hears the new headline without extra swipes.
+	const focusCard = useCallback(() => {
+		// Small delay to let the state update and render settle first
+		setTimeout(() => {
+			const node = findNodeHandle(cardRef.current);
+			if (node) {
+				AccessibilityInfo.setAccessibilityFocus(node);
+			}
+		}, 100);
+	}, []);
 
 	const handleNext = useCallback(() => {
-		scrollToIndex(currentIndexRef.current + 1);
-	}, [scrollToIndex]);
+		const nextIndex =
+			currentIndexRef.current === lastIndex
+				? 0
+				: currentIndexRef.current + 1;
+		scrollToIndex(nextIndex);
+		focusCard();
+	}, [scrollToIndex, lastIndex, focusCard]);
 
 	const onScroll = useAnimatedScrollHandler({
 		onScroll: (event) => {
@@ -116,49 +139,42 @@ export const NewsCarousel = ({
 	}
 
 	if (screenReaderEnabled) {
+		const nextLabel =
+			currentIndex === lastIndex
+				? "Ir para a primeira notícia"
+				: "Próxima notícia";
+
 		return (
 			<View>
-				<View className="flex-row items-center justify-between px-4 mb-3 gap-3">
-					<Pressable
-						onPress={handlePrevious}
-						disabled={!hasMultipleItems}
-						accessibilityRole="button"
-						accessibilityLabel="Notícia anterior"
-						accessibilityHint="Volta para a notícia anterior"
-						className="h-11 w-11 items-center justify-center rounded-full bg-primary/80"
-					>
-						<ChevronLeft size={18} color="white" />
-					</Pressable>
-
-					<View className="flex-1 items-center">
-						<Text className="text-sm text-foreground/70">
-							{currentIndex + 1} de {items.length}
-						</Text>
-					</View>
-
-					<Pressable
-						onPress={handleNext}
-						disabled={!hasMultipleItems}
-						accessibilityRole="button"
-						accessibilityLabel="Próxima notícia"
-						accessibilityHint="Avança para a próxima notícia"
-						className="h-11 w-11 items-center justify-center rounded-full bg-primary/80"
-					>
-						<ChevronRight size={18} color="white" />
-					</Pressable>
-				</View>
-
 				<View className="items-center px-4">
 					{currentNewsItem ? (
 						<NewsCard
+							ref={cardRef}
 							item={currentNewsItem}
 							index={currentIndex}
+							length={items.length}
 							cardWidth={cardWidth}
 							scrollInterval={scrollInterval}
 							scrollX={scrollX}
 							onOpenLink={handleOpenLink}
 						/>
 					) : null}
+				</View>
+
+				<View className="absolute top-1/2 right-0 -translate-y-1/2">
+					<Pressable
+						onPress={handleNext}
+						accessibilityRole="button"
+						accessibilityLabel={nextLabel}
+						accessibilityHint="Navega em loop entre as notícias"
+						className="h-11 w-11 items-center justify-center rounded-full bg-primary/80"
+					>
+						<ChevronRight
+							size={18}
+							color="white"
+							importantForAccessibility="no-hide-descendants"
+						/>
+					</Pressable>
 				</View>
 			</View>
 		);
@@ -179,13 +195,13 @@ export const NewsCarousel = ({
 				bounces={false}
 				onScroll={onScroll}
 				onScrollBeginDrag={() => {
-					// pause auto-scroll when user starts interacting
+					// Pause auto-scroll when user starts interacting
 					if (isAutoScrolling) {
 						setIsAutoScrolling(false);
 						if (resumeTimeoutRef.current) {
 							clearTimeout(resumeTimeoutRef.current);
 						}
-						// only schedule resume if neither reduceMotion nor screen reader is enabled
+						// Only schedule resume if neither reduceMotion nor screen reader is enabled
 						if (!reduceMotionEnabled && !screenReaderEnabled) {
 							resumeTimeoutRef.current = setTimeout(() => {
 								setIsAutoScrolling(
@@ -215,6 +231,7 @@ export const NewsCarousel = ({
 					<NewsCard
 						item={item}
 						index={index}
+						length={items.length}
 						cardWidth={cardWidth}
 						scrollInterval={scrollInterval}
 						scrollX={scrollX}
@@ -223,7 +240,7 @@ export const NewsCarousel = ({
 				)}
 			/>
 
-			<View className="flex-row justify-center mt-1 gap-1.5">
+			<View className="flex-row justify-center mt-3 gap-1.5">
 				{items.map((item, index) => (
 					<CarouselDot
 						key={item.link}
@@ -240,7 +257,7 @@ export const NewsCarousel = ({
 				))}
 			</View>
 
-			{/* Live region for screen readers to announce current slide */}
+			{/* Live region announces slide changes to screen readers during swipe */}
 			<Text
 				accessible
 				accessibilityLiveRegion="polite"
@@ -255,19 +272,23 @@ export const NewsCarousel = ({
 interface NewsCardProps {
 	item: NewsItem;
 	index: number;
+	length: number;
 	cardWidth: number;
 	scrollInterval: number;
 	scrollX: SharedValue<number>;
 	onOpenLink: (link: string) => void;
+	ref?: React.Ref<View>;
 }
 
 const NewsCard = ({
 	item,
 	index,
+	length,
 	cardWidth,
 	scrollInterval,
 	scrollX,
 	onOpenLink,
+	ref,
 }: NewsCardProps) => {
 	const animatedStyle = useAnimatedStyle(() => {
 		const inputRange = [
@@ -283,25 +304,16 @@ const NewsCard = ({
 				[0.7, 1, 0.7],
 				Extrapolation.CLAMP,
 			),
-			transform: [
-				{
-					scale: interpolate(
-						scrollX.value,
-						inputRange,
-						[0.95, 1, 0.95],
-						Extrapolation.CLAMP,
-					),
-				},
-			],
 		};
 	});
 
 	return (
 		<Animated.View style={[{ width: cardWidth }, animatedStyle]}>
 			<Pressable
+				ref={ref}
 				onPress={() => onOpenLink(item.link)}
 				accessibilityRole="button"
-				accessibilityLabel={item.label}
+				accessibilityLabel={`Notícia ${index + 1} de ${length}: ${item.label}`}
 				accessibilityHint="Abre a notícia no navegador"
 				className="h-44 overflow-hidden rounded-3xl border border-border bg-card"
 			>
@@ -387,6 +399,7 @@ const CarouselDot = ({
 			onPress={onPress}
 			accessibilityRole="button"
 			accessibilityLabel={`Notícia ${index + 1}`}
+			accessibilityHint="Vai direto para essa notícia"
 			accessibilityState={{ selected }}
 		>
 			<Animated.View

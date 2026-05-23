@@ -49,6 +49,7 @@ export default function Home() {
 						Para onde vamos?
 					</Text>
 					<SearchBar
+						placeholder="Buscar por localizações"
 						examples={[
 							"Restaurante Universitário",
 							"CECA",

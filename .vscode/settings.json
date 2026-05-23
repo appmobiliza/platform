@@ -15,5 +15,21 @@
 	"[typescript]": {
 		"editor.defaultFormatter": "biomejs.biome"
 	},
-	"js/ts.preferences.autoImportFileExcludePatterns": ["lucide-react"]
+	"js/ts.preferences.autoImportFileExcludePatterns": ["lucide-react"],
+	"files.watcherExclude": {
+		"**/.git/**": true,
+		"**/.next/**": true,
+		"**/.turbo/**": true,
+		"**/dist/**": true,
+		"**/build/**": true,
+		"**/coverage/**": true,
+		"**/node_modules/**": true
+	},
+	"search.exclude": {
+		"**/.next": true,
+		"**/.turbo": true,
+		"**/dist": true,
+		"**/build": true
+	},
+	"js/ts.tsserver.automaticTypeAcquisition.enabled": false
 }

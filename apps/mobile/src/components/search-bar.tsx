@@ -8,28 +8,35 @@ import { useAccessibilityPreferences } from "@/hooks/useAccessibilityPreferences
 
 const SearchIcon = styled(Search);
 
-const DEFAULT_EXAMPLES = ["Restaurante Universitário", "CECA", "IQB"];
+const DEFAULT_PLACEHOLDER = "Buscar por localizações";
 
 type AnimationPhase = "typing" | "pausing" | "deleting";
 
 interface SearchBarProps {
 	examples?: string[];
+	placeholder?: string;
 	onPress?: () => void;
 }
 
-export function SearchBar({ examples, onPress }: SearchBarProps) {
-	const activeExamples = examples?.length ? examples : DEFAULT_EXAMPLES;
+export function SearchBar({ examples, placeholder, onPress }: SearchBarProps) {
+	const activeExamples = examples?.length ? examples : [];
+	const fixedPlaceholder = placeholder ?? DEFAULT_PLACEHOLDER;
 	const accessibilityLabel = "Abrir busca";
 	const accessibilityHint = activeExamples.length
 		? `Abre a tela de busca. Exemplos: ${activeExamples.join(", ")}.`
 		: "Abre a tela de busca.";
-	const { reduceMotionEnabled } = useAccessibilityPreferences();
+	const { reduceMotionEnabled, screenReaderEnabled } =
+		useAccessibilityPreferences();
+	const useStaticPlaceholder =
+		reduceMotionEnabled ||
+		screenReaderEnabled ||
+		activeExamples.length === 0;
 	const [exampleIndex, setExampleIndex] = useState(0);
 	const [displayedText, setDisplayedText] = useState("");
 	const [phase, setPhase] = useState<AnimationPhase>("typing");
 
 	useEffect(() => {
-		if (reduceMotionEnabled || activeExamples.length === 0) {
+		if (useStaticPlaceholder) {
 			setDisplayedText("");
 			setExampleIndex(0);
 			setPhase("typing");
@@ -79,12 +86,10 @@ export function SearchBar({ examples, onPress }: SearchBarProps) {
 		displayedText,
 		exampleIndex,
 		phase,
-		reduceMotionEnabled,
+		useStaticPlaceholder,
 	]);
 
-	const visibleText = reduceMotionEnabled
-		? (activeExamples[0] ?? "Restaurante Universitário")
-		: displayedText;
+	const visibleText = useStaticPlaceholder ? fixedPlaceholder : displayedText;
 
 	return (
 		<Pressable
