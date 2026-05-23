@@ -39,7 +39,7 @@ export const PlaceCard = ({
 				<Icon size={18} color="white" />
 			</View>
 			<View className="flex-1">
-				<Text className="font-bold text-base" numberOfLines={1}>
+				<Text className="font-bold text-lg" numberOfLines={1}>
 					{title}
 				</Text>
 				<Text className="text-sm mt-0.5" numberOfLines={1}>

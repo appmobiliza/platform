@@ -14,10 +14,10 @@ export default function Home() {
 	const router = useRouter();
 
 	return (
-		<View className="flex-1">
+		<ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
 			{/* Header Escuro */}
 			<View
-				className="bg-primary pb-16 px-4 flex justify-center items-center"
+				className="bg-primary pb-16 px-4 flex justify-center items-center mb-8"
 				style={{
 					paddingTop: insets.top + 64,
 				}}
@@ -25,13 +25,9 @@ export default function Home() {
 				<Logo height={30} width={188} />
 			</View>
 
-			{/* Main Content - Scrollable */}
-			<ScrollView
-				className="flex-1 px-4 py-10"
-				showsVerticalScrollIndicator={false}
-			>
-				<View className="mb-6 flex flex-col items-center justify-center gap-6">
-					<Text className="font-bold text-3xl text-center">
+			<View className="px-4 gap-6 mb-4">
+				<View className="flex flex-col items-center justify-center gap-6">
+					<Text className="font-bold text-4xl text-center">
 						Para onde vamos?
 					</Text>
 					<SearchBar
@@ -50,7 +46,7 @@ export default function Home() {
 				</View>
 
 				{/* Locais Recentes */}
-				<View className="mb-2">
+				<View>
 					<PlaceCard
 						title="Restaurante Universitário"
 						subtitle="Hoje, 12h35"
@@ -77,7 +73,7 @@ export default function Home() {
 				<NewsCarousel />
 
 				{/* Rotas Frequentes */}
-				<View className="mt-4 mb-8">
+				<View>
 					<Text className="font-bold text-lg mb-3">
 						Rotas Frequentes
 					</Text>
@@ -85,10 +81,9 @@ export default function Home() {
 						title="Restaurante Universitário"
 						subtitle="Último deslocamento há 2 dias"
 						iconType="map"
-						className="mb-3"
 					/>
 				</View>
-			</ScrollView>
-		</View>
+			</View>
+		</ScrollView>
 	);
 }
