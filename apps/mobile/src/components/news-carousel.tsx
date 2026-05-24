@@ -46,6 +46,14 @@ export const NewsCarousel = ({
 	autoScroll = false,
 	autoScrollIntervalMs = DEFAULT_AUTO_SCROLL_INTERVAL_MS,
 }: NewsCarouselProps) => {
+	const isWeb = Platform.OS === "web";
+	const webScrollSnapStyle = isWeb
+		? ({
+				scrollSnapType: "x mandatory",
+				scrollPaddingLeft: HORIZONTAL_PADDING,
+				scrollPaddingRight: HORIZONTAL_PADDING,
+			} as const as any)
+		: undefined;
 	const { width } = useWindowDimensions();
 	const cardWidth = Math.max(width - HORIZONTAL_PADDING * 2, 280);
 	const scrollInterval = cardWidth + CARD_SPACING;
@@ -163,6 +171,7 @@ export const NewsCarousel = ({
 							scrollInterval={scrollInterval}
 							scrollX={scrollX}
 							onOpenLink={handleOpenLink}
+							isWeb={isWeb}
 						/>
 					) : null}
 				</View>
@@ -193,10 +202,16 @@ export const NewsCarousel = ({
 				data={items}
 				horizontal
 				keyExtractor={(item) => item.link}
+				style={webScrollSnapStyle}
 				pagingEnabled={false}
 				showsHorizontalScrollIndicator={false}
-				snapToAlignment="start"
-				snapToInterval={scrollInterval}
+				snapToAlignment={isWeb ? undefined : "start"}
+				snapToInterval={isWeb ? undefined : scrollInterval}
+				snapToOffsets={
+					isWeb
+						? undefined
+						: items.map((_, index) => index * scrollInterval)
+				}
 				decelerationRate="fast"
 				bounces={false}
 				onScroll={onScroll}
@@ -241,6 +256,7 @@ export const NewsCarousel = ({
 						cardWidth={cardWidth}
 						scrollInterval={scrollInterval}
 						scrollX={scrollX}
+						isWeb={isWeb}
 						onOpenLink={handleOpenLink}
 					/>
 				)}
@@ -282,6 +298,7 @@ interface NewsCardProps {
 	cardWidth: number;
 	scrollInterval: number;
 	scrollX: SharedValue<number>;
+	isWeb: boolean;
 	onOpenLink: (link: string) => void;
 	ref?: React.Ref<View>;
 }
@@ -293,6 +310,7 @@ const NewsCard = ({
 	cardWidth,
 	scrollInterval,
 	scrollX,
+	isWeb,
 	onOpenLink,
 	ref,
 }: NewsCardProps) => {
@@ -312,9 +330,17 @@ const NewsCard = ({
 			),
 		};
 	});
+	const webSnapItemStyle = isWeb
+		? ({
+				scrollSnapAlign: "start",
+				scrollSnapStop: "always",
+			} as const as any)
+		: undefined;
 
 	return (
-		<Animated.View style={[{ width: cardWidth }, animatedStyle]}>
+		<Animated.View
+			style={[{ width: cardWidth }, webSnapItemStyle, animatedStyle]}
+		>
 			<Pressable
 				ref={ref}
 				onPress={() => onOpenLink(item.link)}
