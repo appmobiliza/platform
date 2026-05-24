@@ -31,18 +31,18 @@ export const PlaceCard = ({
 			accessibilityHint="Duplo toque para ver detalhes"
 			accessibilityRole="button"
 			className={cn(
-				"bg-card rounded-xl p-4 border border-border flex-row items-center gap-4",
+				"bg-card rounded-lg p-3 border border-border flex-row items-center gap-3",
 				className,
 			)}
 		>
-			<View className="p-3 rounded-md bg-primary">
+			<View className="p-2 rounded-md bg-primary">
 				<Icon size={18} color="white" />
 			</View>
 			<View className="flex-1">
-				<Text className="font-bold text-lg" numberOfLines={1}>
+				<Text className="font-bold text-base" numberOfLines={1}>
 					{title}
 				</Text>
-				<Text className="text-sm mt-0.5" numberOfLines={1}>
+				<Text className="text-xs mt-0.5" numberOfLines={1}>
 					{subtitle}
 				</Text>
 			</View>

@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 function Input({
 	className,
 	...props
-}: React.ComponentProps<typeof TextInput> & React.RefAttributes<TextInput>) {
+}: React.ComponentPropsWithoutRef<typeof TextInput>) {
 	return (
 		<TextInput
 			className={cn(

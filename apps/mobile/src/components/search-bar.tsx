@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 
 import { Search } from "lucide-react-native";
-import { styled } from "nativewind";
 import { Pressable, Text, View } from "react-native";
 
 import { useAccessibilityPreferences } from "@/hooks/useAccessibilityPreferences";
-
-const SearchIcon = styled(Search);
 
 const DEFAULT_PLACEHOLDER = "Buscar por localizações";
 
@@ -43,7 +40,7 @@ export function SearchBar({ examples, placeholder, onPress }: SearchBarProps) {
 			return;
 		}
 
-		const currentExample = activeExamples[exampleIndex];
+		const currentExample = activeExamples[exampleIndex] || "";
 		let timeout: ReturnType<typeof setTimeout>;
 
 		if (phase === "typing") {
@@ -100,7 +97,7 @@ export function SearchBar({ examples, placeholder, onPress }: SearchBarProps) {
 			className="w-full"
 		>
 			<View className="w-full flex-row items-center relative rounded-full border dark:border-transparent bg-input border-border dark:bg-input/50 h-14 px-4 shadow-sm shadow-black/5">
-				<SearchIcon className="text-foreground mr-3" size={20} />
+				<Search className="text-foreground mr-3" size={20} />
 				<Text
 					className="flex-1 text-foreground text-lg font-medium"
 					numberOfLines={1}

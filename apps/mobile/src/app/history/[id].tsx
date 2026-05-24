@@ -1,4 +1,3 @@
-import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
 	ArrowLeft,
@@ -16,7 +15,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import MapView from "../../components/old/Map";
+// import MapView from "../../components/ui/Map";
 
 export default function HistoryDetails() {
 	const { id } = useLocalSearchParams();
@@ -52,7 +51,7 @@ export default function HistoryDetails() {
 				<View className="px-6 pt-2 pb-6">
 					<View className="bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-sm mb-6">
 						<View className="h-48 w-full bg-gray-200">
-							<MapView
+							{/* <MapView
 								style={{ flex: 1 }}
 								initialRegion={{
 									latitude: -9.5539,
@@ -64,7 +63,7 @@ export default function HistoryDetails() {
 								zoomEnabled={false}
 								pitchEnabled={false}
 								rotateEnabled={false}
-							/>
+							/> */}
 						</View>
 						<View className="p-5">
 							<Text className="text-gray-900 font-bold text-xl mb-1">

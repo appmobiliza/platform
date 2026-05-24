@@ -1,31 +1,28 @@
 import { useRouter } from "expo-router";
-import { Platform, SafeAreaView, ScrollView, Text, View } from "react-native";
+import { Platform, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { FeaturedHistoryCard } from "../../components/old/FeaturedHistoryCard";
-import { SimpleHistoryItem } from "../../components/old/SimpleHistoryItem";
+import { FeaturedHistoryCard } from "@/components/featured-history-card";
+import { SimpleHistoryItem } from "@/components/simple-history-item";
+import { Text } from "@/components/ui/text";
 
 export default function History() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 
 	return (
-		<View className="flex-1 bg-brand-background">
+		<View className="flex-1 gap-4">
 			<View
-				className="px-6 bg-brand-background"
+				className="px-6 gap-4"
 				style={{
 					paddingTop: Math.max(
-						insets.top + 10,
+						insets.top + 16,
 						Platform.OS === "ios" ? 50 : 30,
 					),
 				}}
 			>
-				<Text className="text-gray-900 font-extrabold text-[36px] mt-2 mb-1">
-					Histórico
-				</Text>
-				<Text className="text-gray-900 font-bold text-[20px] mb-4">
-					Deslocamentos
-				</Text>
+				<Text className="font-extrabold text-4xl">Histórico</Text>
+				<Text className="font-bold text-xl">Deslocamentos</Text>
 			</View>
 
 			<ScrollView

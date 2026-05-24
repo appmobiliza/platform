@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import MapView, { Marker } from "../../../components/old/Map";
+// import MapView, { Marker } from "../../../components/ui/Map";
 
 export default function AddressMap() {
 	const router = useRouter();
@@ -47,7 +47,7 @@ export default function AddressMap() {
 			</View>
 
 			<View className="flex-1 relative">
-				<MapView
+				{/* <MapView
 					style={{ flex: 1 }}
 					initialRegion={{
 						latitude: -9.5539,
@@ -59,7 +59,7 @@ export default function AddressMap() {
 					<Marker
 						coordinate={{ latitude: -9.5539, longitude: -35.7722 }}
 					/>
-				</MapView>
+				</MapView> */}
 
 				{/* Current Location FAB */}
 				<TouchableOpacity

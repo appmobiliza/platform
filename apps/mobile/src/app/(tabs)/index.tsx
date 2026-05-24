@@ -33,7 +33,6 @@ export default function Home() {
 
 	return (
 		<ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-			{/* Header Escuro */}
 			<View
 				className="bg-primary pb-16 px-4 flex justify-center items-center mb-8"
 				style={{
@@ -45,7 +44,7 @@ export default function Home() {
 
 			<View className="gap-6 mb-4">
 				<View className="flex flex-col items-center justify-center gap-6 px-4">
-					<Text className="font-bold text-4xl text-center">
+					<Text className="font-bold text-3xl text-center">
 						Para onde vamos?
 					</Text>
 					<SearchBar
@@ -99,7 +98,7 @@ export default function Home() {
 
 				{/* Rotas Frequentes */}
 				<View className="px-4">
-					<Text className="font-bold text-lg mb-2">
+					<Text className="font-bold text-lg mb-3">
 						Rotas Frequentes
 					</Text>
 					<View className="flex-col gap-2">
