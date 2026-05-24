@@ -98,7 +98,7 @@ export function SearchBar({ examples, placeholder, onPress }: SearchBarProps) {
 			accessibilityHint={accessibilityHint}
 			className="w-full"
 		>
-			<View className="w-full flex-row items-center relative rounded-full border dark:border-transparent bg-input border-border dark:bg-input/50 h-14 px-4 shadow-sm shadow-black/5">
+			<View className="w-full flex-row items-center relative rounded-full border dark:border-transparent bg-input border-border dark:bg-input/50 h-14 px-4 shadow-sm shadow-black/5 text-foreground">
 				<Icon
 					icon={Search}
 					size={20}

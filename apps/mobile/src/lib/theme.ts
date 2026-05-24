@@ -36,4 +36,5 @@ export const THEME = {
 import { useUnstableNativeVariable as _useUnstableNativeVariable } from "nativewind";
 
 export const useUnstableNativeVariable = (name: string) =>
+	// @ts-expect-error - nativewind web stub returns never, but native works correctly
 	_useUnstableNativeVariable(name);

@@ -10,9 +10,9 @@ import {
 import { FlatList, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
-import { useUnstableNativeVariable } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
 const options = [
@@ -52,7 +52,6 @@ const options = [
 
 export default function Profile() {
 	const insets = useSafeAreaInsets();
-	const iconColor = useUnstableNativeVariable("foreground") || "foreground";
 
 	return (
 		<View className="flex-1 items-center justify-start">
@@ -87,8 +86,12 @@ export default function Profile() {
 								},
 							)}
 						>
-							<View className="w-16 h-16 rounded-full flex items-center justify-center">
-								<item.icon size={32} color={iconColor} />
+							<View className="w-16 h-16 rounded-full flex items-center justify-center text-foreground">
+								<Icon
+									icon={item.icon}
+									size={32}
+									color="foreground"
+								/>
 							</View>
 							<View className="ml-4 flex-1">
 								<Text className="font-medium text-lg">
