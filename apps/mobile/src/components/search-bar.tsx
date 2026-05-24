@@ -5,6 +5,8 @@ import { Pressable, Text, View } from "react-native";
 
 import { useAccessibilityPreferences } from "@/hooks/useAccessibilityPreferences";
 
+import { Icon } from "./ui/icon";
+
 const DEFAULT_PLACEHOLDER = "Buscar por localizações";
 
 type AnimationPhase = "typing" | "pausing" | "deleting";
@@ -97,7 +99,12 @@ export function SearchBar({ examples, placeholder, onPress }: SearchBarProps) {
 			className="w-full"
 		>
 			<View className="w-full flex-row items-center relative rounded-full border dark:border-transparent bg-input border-border dark:bg-input/50 h-14 px-4 shadow-sm shadow-black/5">
-				<Search className="text-foreground mr-3" size={20} />
+				<Icon
+					icon={Search}
+					size={20}
+					color="foreground"
+					style={{ marginRight: 12 }}
+				/>
 				<Text
 					className="flex-1 text-foreground text-lg font-medium"
 					numberOfLines={1}

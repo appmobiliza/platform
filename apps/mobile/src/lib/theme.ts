@@ -32,3 +32,8 @@ export const THEME = {
 		},
 	},
 };
+
+import { useUnstableNativeVariable as _useUnstableNativeVariable } from "nativewind";
+
+export const useUnstableNativeVariable = (name: string) =>
+	_useUnstableNativeVariable(name);

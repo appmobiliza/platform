@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import { Link } from "expo-router";
 import {
 	CircleUserRound,
 	GraduationCap,
@@ -6,11 +7,12 @@ import {
 	Settings,
 	Star,
 } from "lucide-react-native";
-import { FlatList, View } from "react-native";
+import { FlatList, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/components/ui/text";
 
+import { useUnstableNativeVariable } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
 const options = [
@@ -50,6 +52,7 @@ const options = [
 
 export default function Profile() {
 	const insets = useSafeAreaInsets();
+	const iconColor = useUnstableNativeVariable("foreground") || "foreground";
 
 	return (
 		<View className="flex-1 items-center justify-start">
@@ -74,26 +77,29 @@ export default function Profile() {
 				data={options}
 				keyExtractor={(item) => item.title}
 				renderItem={({ item, index }) => (
-					<View
-						className={cn(
-							"w-full flex-row items-center justify-center px-8 py-6 border-b",
-							{
-								"border-border": index < options.length - 1,
-							},
-						)}
-					>
-						<View className="w-16 h-16 rounded-full flex items-center justify-center">
-							<item.icon size="32" className="text-foreground" />
-						</View>
-						<View className="ml-4 flex-1">
-							<Text className="font-medium text-lg">
-								{item.title}
-							</Text>
-							<Text className="text-sm text-muted-foreground">
-								{item.description}
-							</Text>
-						</View>
-					</View>
+					<Link href={item.href} asChild>
+						<Pressable
+							android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
+							className={cn(
+								"w-full flex-row items-center justify-center px-8 py-6 border-b active:bg-accent/50 transition-colors",
+								{
+									"border-border": index < options.length - 1,
+								},
+							)}
+						>
+							<View className="w-16 h-16 rounded-full flex items-center justify-center">
+								<item.icon size={32} color={iconColor} />
+							</View>
+							<View className="ml-4 flex-1">
+								<Text className="font-medium text-lg">
+									{item.title}
+								</Text>
+								<Text className="text-sm text-muted-foreground">
+									{item.description}
+								</Text>
+							</View>
+						</Pressable>
+					</Link>
 				)}
 			/>
 		</View>
