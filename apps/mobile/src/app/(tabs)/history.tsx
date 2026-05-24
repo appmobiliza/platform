@@ -33,7 +33,7 @@ export default function History() {
 				<FeaturedHistoryCard
 					title="ICBS - Pista da UFAL"
 					date="6 de agosto • 19h"
-					onPress={() => router.push("/history/1")}
+					href={`/history/1`}
 				/>
 
 				<View className="mt-2">

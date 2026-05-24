@@ -63,7 +63,14 @@ export default function Profile() {
 			>
 				<Image
 					source={{ uri: "https://i.pravatar.cc/300" }}
-					className="w-24 h-24 rounded-full mb-4"
+					style={{
+						width: 96,
+						height: 96,
+						borderRadius: 48,
+						marginBottom: 16,
+						borderWidth: 2,
+						borderColor: "white",
+					}}
 					contentFit="cover"
 					contentPosition="center"
 				/>

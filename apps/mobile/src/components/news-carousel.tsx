@@ -6,6 +6,7 @@ import {
 	AccessibilityInfo,
 	findNodeHandle,
 	Linking,
+	Platform,
 	Pressable,
 	useWindowDimensions,
 	View,
@@ -88,6 +89,11 @@ export const NewsCarousel = ({
 	const focusCard = useCallback(() => {
 		// Small delay to let the state update and render settle first
 		setTimeout(() => {
+			if (Platform.OS === "web") {
+				cardRef.current?.focus?.();
+				return;
+			}
+
 			const node = findNodeHandle(cardRef.current);
 			if (node) {
 				AccessibilityInfo.setAccessibilityFocus(node);
@@ -172,7 +178,7 @@ export const NewsCarousel = ({
 						<ChevronRight
 							size={18}
 							color="white"
-							importantForAccessibility="no-hide-descendants"
+							aria-hidden={true}
 						/>
 					</Pressable>
 				</View>

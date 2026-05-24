@@ -1,3 +1,4 @@
+import { Link } from "expo-router";
 import { RotateCcw, Star } from "lucide-react-native";
 import { Text, TouchableOpacity, View } from "react-native";
 
@@ -8,25 +9,24 @@ import { Button } from "@/components/ui/button";
 interface FeaturedHistoryCardProps {
 	title: string;
 	date: string;
-	onPress?: () => void;
+	href: string;
 }
 
 export const FeaturedHistoryCard = ({
 	title,
 	date,
-	onPress,
+	href,
 }: FeaturedHistoryCardProps) => {
 	return (
-		<TouchableOpacity
-			activeOpacity={0.9}
-			onPress={onPress}
-			accessibilityLabel={`Deslocamento: ${title}`}
-			accessibilityHint="Duplo toque para ver detalhes"
-			accessibilityRole="button"
-			className="rounded-lg overflow-hidden mb-6 border border-white shadow-sm"
-		>
-			<View className="h-40 w-full bg-card">
-				{/* <MapView
+		<Link href={href} asChild>
+			<View
+				accessibilityLabel={`Deslocamento: ${title}`}
+				accessibilityHint="Duplo toque para ver detalhes"
+				accessibilityRole="button"
+				className="rounded-lg overflow-hidden mb-6 border border-white shadow-sm"
+			>
+				<View className="h-40 w-full bg-card">
+					{/* <MapView
 					style={{ flex: 1 }}
 					initialRegion={{
 						latitude: -9.5539,
@@ -39,38 +39,39 @@ export const FeaturedHistoryCard = ({
 					pitchEnabled={false}
 					rotateEnabled={false}
 				/> */}
-			</View>
-			<View className="bg-primary p-4">
-				<Text className="text-primary-foreground font-bold text-xl">
-					{title}
-				</Text>
-				<Text className="text-primary-foreground/80 text-sm mt-1">
-					{date}
-				</Text>
+				</View>
+				<View className="bg-primary p-4">
+					<Text className="text-primary-foreground font-bold text-xl">
+						{title}
+					</Text>
+					<Text className="text-primary-foreground/80 text-sm mt-1">
+						{date}
+					</Text>
 
-				<View className="flex-row gap-3 mt-4">
-					<Button
-						variant={"inverted"}
-						className="rounded-full bg-white"
-					>
-						<Star
-							size={16}
-							className="text-secondary-inverted-foreground"
-						/>
-						<Text className="font-medium">Avaliar</Text>
-					</Button>
-					<Button
-						variant={"inverted"}
-						className="rounded-full bg-white"
-					>
-						<RotateCcw
-							size={16}
-							className="text-secondary-inverted-foreground"
-						/>
-						<Text className="font-medium">Reagendar</Text>
-					</Button>
+					<View className="flex-row gap-3 mt-4">
+						<Button
+							variant={"inverted"}
+							className="rounded-full bg-white"
+						>
+							<Star
+								size={16}
+								className="text-secondary-inverted-foreground"
+							/>
+							<Text className="font-medium">Avaliar</Text>
+						</Button>
+						<Button
+							variant={"inverted"}
+							className="rounded-full bg-white"
+						>
+							<RotateCcw
+								size={16}
+								className="text-secondary-inverted-foreground"
+							/>
+							<Text className="font-medium">Reagendar</Text>
+						</Button>
+					</View>
 				</View>
 			</View>
-		</TouchableOpacity>
+		</Link>
 	);
 };

@@ -1,13 +1,52 @@
 import { useEffect, useState } from "react";
 
-import { AccessibilityInfo } from "react-native";
+import { AccessibilityInfo, Platform } from "react-native";
 
 export function useAccessibilityPreferences() {
-	const [reduceMotionEnabled, setReduceMotionEnabled] = useState(false);
+	const [reduceMotionEnabled, setReduceMotionEnabled] = useState(() => {
+		if (Platform.OS !== "web") {
+			return false;
+		}
+
+		if (
+			typeof window === "undefined" ||
+			typeof window.matchMedia !== "function"
+		) {
+			return false;
+		}
+
+		return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+	});
 	const [screenReaderEnabled, setScreenReaderEnabled] = useState(false);
 
 	useEffect(() => {
 		let mounted = true;
+
+		if (Platform.OS === "web") {
+			if (
+				typeof window === "undefined" ||
+				typeof window.matchMedia !== "function"
+			) {
+				return;
+			}
+
+			const mediaQuery = window.matchMedia(
+				"(prefers-reduced-motion: reduce)",
+			);
+			const handleChange = (event: MediaQueryListEvent) => {
+				if (mounted) {
+					setReduceMotionEnabled(event.matches);
+				}
+			};
+
+			setReduceMotionEnabled(mediaQuery.matches);
+			mediaQuery.addEventListener?.("change", handleChange);
+
+			return () => {
+				mounted = false;
+				mediaQuery.removeEventListener?.("change", handleChange);
+			};
+		}
 
 		AccessibilityInfo.isReduceMotionEnabled()
 			.then((v) => mounted && setReduceMotionEnabled(v))
