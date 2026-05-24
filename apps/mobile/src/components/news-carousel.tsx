@@ -10,6 +10,7 @@ import {
 	Pressable,
 	useWindowDimensions,
 	View,
+	type ViewStyle,
 } from "react-native";
 import Animated, {
 	Extrapolation,
@@ -41,19 +42,40 @@ const CARD_SPACING = 12;
 const DEFAULT_AUTO_SCROLL_INTERVAL_MS = 4000;
 const RESUME_AUTO_SCROLL_DELAY_MS = 5000;
 
+function getWebScrollSnapStyle(isWeb: boolean): ViewStyle | undefined {
+	if (!isWeb) {
+		return undefined;
+	}
+
+	return {
+		scrollSnapType: "x mandatory",
+		scrollPaddingLeft: HORIZONTAL_PADDING,
+		scrollPaddingRight: HORIZONTAL_PADDING,
+	} as ViewStyle;
+}
+
+function getWebSnapItemStyle(isWeb: boolean): ViewStyle | undefined {
+	if (!isWeb) {
+		return undefined;
+	}
+
+	return {
+		scrollSnapAlign: "start",
+		scrollSnapStop: "always",
+	} as ViewStyle;
+}
+
+function getNextIndex(currentIndex: number, lastIndex: number) {
+	return currentIndex === lastIndex ? 0 : currentIndex + 1;
+}
+
 export const NewsCarousel = ({
 	items,
 	autoScroll = false,
 	autoScrollIntervalMs = DEFAULT_AUTO_SCROLL_INTERVAL_MS,
 }: NewsCarouselProps) => {
 	const isWeb = Platform.OS === "web";
-	const webScrollSnapStyle = isWeb
-		? ({
-				scrollSnapType: "x mandatory",
-				scrollPaddingLeft: HORIZONTAL_PADDING,
-				scrollPaddingRight: HORIZONTAL_PADDING,
-			} as const as any)
-		: undefined;
+	const webScrollSnapStyle = getWebScrollSnapStyle(isWeb);
 	const { width } = useWindowDimensions();
 	const cardWidth = Math.max(width - HORIZONTAL_PADDING * 2, 280);
 	const scrollInterval = cardWidth + CARD_SPACING;
@@ -110,10 +132,7 @@ export const NewsCarousel = ({
 	}, []);
 
 	const handleNext = useCallback(() => {
-		const nextIndex =
-			currentIndexRef.current === lastIndex
-				? 0
-				: currentIndexRef.current + 1;
+		const nextIndex = getNextIndex(currentIndexRef.current, lastIndex);
 		scrollToIndex(nextIndex);
 		focusCard();
 	}, [scrollToIndex, lastIndex, focusCard]);
@@ -330,12 +349,7 @@ const NewsCard = ({
 			),
 		};
 	});
-	const webSnapItemStyle = isWeb
-		? ({
-				scrollSnapAlign: "start",
-				scrollSnapStop: "always",
-			} as const as any)
-		: undefined;
+	const webSnapItemStyle = getWebSnapItemStyle(isWeb);
 
 	return (
 		<Animated.View
