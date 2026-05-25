@@ -48,6 +48,7 @@ export const audioMessage = pgTable("audio_message", {
   transcription: text("transcription"),
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 /**
@@ -76,6 +77,7 @@ export const favoriteRoute = pgTable("favorite_route", {
     .references(() => campusLocation.id, { onDelete: "cascade" }),
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 /**
@@ -124,6 +126,7 @@ export const notification = pgTable("notification", {
   readAt: timestamp("read_at"),
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export type AudioMessage = typeof audioMessage.$inferSelect;

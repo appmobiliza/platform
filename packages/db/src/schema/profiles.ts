@@ -149,6 +149,9 @@ export const studentDisability = pgTable(
       .references(() => studentProfile.id, { onDelete: "cascade" }),
 
     disabilityType: disabilityTypeEnum("disability_type").notNull(),
+
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => [unique().on(table.studentProfileId, table.disabilityType)],
 );
