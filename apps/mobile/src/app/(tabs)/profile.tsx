@@ -55,33 +55,38 @@ export default function Profile() {
 
 	return (
 		<View className="flex-1 items-center justify-start">
-			<View
-				className="bg-primary pb-16 px-4 flex justify-center items-center w-full"
-				style={{
-					paddingTop: insets.top + 64,
-				}}
-			>
-				<Image
-					source={{ uri: "https://i.pravatar.cc/300" }}
-					style={{
-						width: 96,
-						height: 96,
-						borderRadius: 48,
-						marginBottom: 16,
-						borderWidth: 2,
-						borderColor: "white",
-					}}
-					contentFit="cover"
-					contentPosition="center"
-				/>
-				<Text className="font-bold text-2xl">Fulano da Silva</Text>
-				<Text className="font-normal text-lg">als@ic.ufal.br</Text>
-			</View>
-
 			<FlatList
 				className="w-full"
 				data={options}
 				keyExtractor={(item) => item.title}
+				ListHeaderComponent={
+					<View
+						className="bg-primary pb-16 px-4 flex justify-center items-center w-full"
+						style={{
+							paddingTop: insets.top + 64,
+						}}
+					>
+						<Image
+							source={{ uri: "https://i.pravatar.cc/300" }}
+							style={{
+								width: 96,
+								height: 96,
+								borderRadius: 48,
+								marginBottom: 16,
+								borderWidth: 2,
+								borderColor: "white",
+							}}
+							contentFit="cover"
+							contentPosition="center"
+						/>
+						<Text className="font-bold text-2xl">
+							Fulano da Silva
+						</Text>
+						<Text className="font-normal text-lg">
+							als@ic.ufal.br
+						</Text>
+					</View>
+				}
 				renderItem={({ item, index }) => (
 					<Link href={item.href} asChild>
 						<Pressable

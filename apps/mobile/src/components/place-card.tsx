@@ -3,7 +3,7 @@ import { TouchableOpacity, View } from "react-native";
 
 import { Text } from "@/components/ui/text";
 
-import { cn } from "@/utils/cn";
+import { cn } from "@/lib/utils";
 
 interface PlaceCardProps {
 	title: string;
