@@ -49,6 +49,7 @@ export const profilesRouter = router({
         campus: z.string().min(1).max(40),
         phone: z.string().regex(/^\d{10,11}$/),
         shift: z.enum(["morning", "afternoon", "night", "full_day"]),
+        gender: z.enum(["male", "female", "non_binary", "prefer_not_to_say"]),
         disabilityTypes: z
           .array(
             z.enum(["motor", "visual", "auditory", "deafblind", "autism", "other"]),

@@ -43,6 +43,16 @@ export const scholarShiftEnum = pgEnum("scholar_shift", [
   "night",
 ]);
 
+/*
+ * Gênero do estudante.
+ */
+export const genderEnum = pgEnum("gender", [
+  "male",
+  "female",
+  "non_binary",
+  "prefer_not_to_say",
+]);
+
 /**
  * Perfil do estudante com deficiência.
  * Estende `user` com informações específicas necessárias para o atendimento.
@@ -59,6 +69,7 @@ export const studentProfile = pgTable("student_profile", {
   campus: text("campus").notNull(),
   phone: text("phone").notNull(),
   shift: studentShiftEnum("shift").notNull(),
+  gender: genderEnum("gender").notNull(),
 
   /*
    * Campo livre para o estudante informar preferências de atendimento,
