@@ -14,7 +14,7 @@ export function Header({ title, description }: HeaderProps) {
 	const router = useRouter();
 
 	return (
-		<View className="gap-4 pt-12">
+		<View className="gap-4 pt-12 px-4">
 			<TouchableOpacity
 				className="text-foreground"
 				onPress={() => router.back()}

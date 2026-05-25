@@ -1,131 +1,83 @@
-import { useCallback, useState } from "react";
-
-import { ChevronDown } from "lucide-react-native";
-import { View } from "react-native";
+import { useRouter } from "expo-router";
+import { Controller, useForm } from "react-hook-form";
+import { ScrollView, View } from "react-native";
 
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
-import { Field } from "@/components/ui/field";
-import { Icon } from "@/components/ui/icon";
-import {
-	Sheet,
-	SheetClose,
-	SheetContent,
-	SheetDescription,
-	SheetFooter,
-	SheetHeader,
-	SheetItem,
-	SheetTitle,
-	SheetTrigger,
-} from "@/components/ui/select-sheet";
+import { SelectField } from "@/components/ui/select-field";
 import { Text } from "@/components/ui/text";
+
+import { zodResolver } from "@/lib/zod-resolver";
+
+import { type ProfileGenderInput, ProfileGenderSchema } from "@/schemas";
+import type { SelectOption } from "@/types";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const GENDER_OPTIONS = [
-	"Masculino",
-	"Feminino",
-	"Não binário",
-	"Prefiro não dizer",
-] as const;
-
-type GenderOption = (typeof GENDER_OPTIONS)[number];
+const GENDER_OPTIONS: SelectOption[] = [
+	{ label: "Masculino", value: "Masculino" },
+	{ label: "Feminino", value: "Feminino" },
+	{ label: "Não binário", value: "Não binário" },
+	{ label: "Prefiro não dizer", value: "Prefiro não dizer" },
+];
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function BasicProfileGender() {
-	// Valor confirmado — persiste entre aberturas do sheet.
-	const [selectedGender, setSelectedGender] = useState<GenderOption | null>(
-		null,
-	);
+	const router = useRouter();
 
-	// Rascunho local — sincronizado com o valor confirmado ao abrir o sheet
-	// e descartado ao fechar sem salvar.
-	const [draftGender, setDraftGender] = useState<GenderOption | null>(null);
+	const {
+		control,
+		handleSubmit,
+		formState: { errors },
+	} = useForm<ProfileGenderInput>({
+		resolver: zodResolver(ProfileGenderSchema),
+		defaultValues: {
+			gender: "Masculino",
+		},
+		mode: "onTouched",
+	});
 
-	// Sincroniza o draft com o valor salvo ao abrir o sheet.
-	const handleOpen = useCallback(() => {
-		setDraftGender(selectedGender);
-	}, [selectedGender]);
-
-	// Descarta o draft ao fechar — cobre todos os gestos de fechamento:
-	// botão "Fechar", arrastar para baixo e toque no backdrop.
-	const handleDismiss = useCallback(() => {
-		setDraftGender(selectedGender);
-	}, [selectedGender]);
-
-	// Promove o draft para valor confirmado.
-	// O SheetClose chama dismiss() logo após, disparando handleDismiss —
-	// mas como setSelectedGender é assíncrono (batch), o snapshot de
-	// selectedGender em handleDismiss ainda seria o valor antigo.
-	// Por isso resetamos o draft explicitamente aqui antes do dismiss.
-	const handleSave = useCallback(() => {
-		setSelectedGender(draftGender);
-		setDraftGender(draftGender); // evita flash de reset no onDismiss
-	}, [draftGender]);
+	const handleSave = handleSubmit(() => {
+		router.back();
+	});
 
 	return (
-		<View className="flex-1 gap-5 px-4 pt-6 text-foreground">
+		<View className="flex-1">
 			<Header
 				title="Gênero"
 				description="Este é o gênero com o qual você se identifica."
 			/>
 
-			<Field label="Gênero">
-				<Sheet closeOnSelect={false}>
-					<SheetTrigger asChild onPress={handleOpen}>
-						<Button
-							variant={"outline"}
-							className="w-full justify-between px-3 py-1"
-						>
-							<Text>{selectedGender ?? "Selecionar gênero"}</Text>
+			<ScrollView
+				className="flex-1"
+				keyboardShouldPersistTaps="handled"
+				contentContainerStyle={{
+					paddingHorizontal: 16,
+					paddingTop: 24,
+					paddingBottom: 32,
+				}}
+			>
+				<Controller
+					control={control}
+					name="gender"
+					render={({ field }) => (
+						<SelectField
+							label="Gênero"
+							description="Selecione o gênero com o qual você se identifica."
+							value={field.value}
+							placeholder="Selecionar gênero"
+							options={GENDER_OPTIONS}
+							onValueChange={field.onChange}
+							error={errors.gender?.message}
+						/>
+					)}
+				/>
 
-							<Icon
-								icon={ChevronDown}
-								size={20}
-								color="foreground"
-							/>
-						</Button>
-					</SheetTrigger>
-
-					<SheetContent onDismiss={handleDismiss} enableDynamicSizing>
-						<SheetHeader>
-							<SheetTitle>Gênero</SheetTitle>
-							<SheetDescription>
-								Selecione uma opção
-							</SheetDescription>
-						</SheetHeader>
-
-						<View className="pt-4 pb-2">
-							{GENDER_OPTIONS.map((gender) => (
-								<SheetItem
-									key={gender}
-									label={gender}
-									selected={draftGender === gender}
-									onPress={() => setDraftGender(gender)}
-								/>
-							))}
-						</View>
-
-						<SheetFooter>
-							<SheetClose asChild>
-								<Button onPress={handleSave}>
-									<Text>Salvar</Text>
-								</Button>
-							</SheetClose>
-
-							<SheetClose asChild>
-								<Button
-									variant="outline"
-									className="bg-transparent dark:bg-transparent mb-2"
-								>
-									<Text>Cancelar</Text>
-								</Button>
-							</SheetClose>
-						</SheetFooter>
-					</SheetContent>
-				</Sheet>
-			</Field>
+				<Button className="mt-8" onPress={handleSave}>
+					<Text>Salvar alterações</Text>
+				</Button>
+			</ScrollView>
 		</View>
 	);
 }

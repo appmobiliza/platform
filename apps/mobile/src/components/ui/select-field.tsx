@@ -50,6 +50,8 @@ function SelectField({
 						)}
 						accessibilityLabel={label}
 						accessibilityHint={description}
+						aria-invalid={Boolean(error)}
+						accessibilityState={{ invalid: Boolean(error) }}
 					>
 						<Text
 							className={cn(
