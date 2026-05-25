@@ -46,6 +46,7 @@ export const profilesRouter = router({
       z.object({
         enrollment: z.string().min(4).max(20),
         course: z.string().min(2).max(100),
+        campus: z.string().min(1).max(40),
         phone: z.string().regex(/^\d{10,11}$/),
         disabilityTypes: z
           .array(
@@ -100,6 +101,7 @@ export const profilesRouter = router({
       z.object({
         enrollment: z.string().min(4).max(20),
         course: z.string().min(2).max(100),
+        campus: z.string().min(1).max(40),
         shift: z.enum(["morning", "afternoon", "night"]),
         phone: z.string().regex(/^\d{10,11}$/),
       }),

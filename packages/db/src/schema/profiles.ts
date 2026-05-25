@@ -44,6 +44,7 @@ export const studentProfile = pgTable("student_profile", {
 
   enrollment: text("enrollment").notNull().unique(),
   course: text("course").notNull(),
+  campus: text("campus").notNull(),
   phone: text("phone").notNull(),
 
   /*
@@ -81,6 +82,7 @@ export const scholarProfile = pgTable("scholar_profile", {
 
   enrollment: text("enrollment").notNull().unique(),
   course: text("course").notNull(),
+  campus: text("campus").notNull(),
   phone: text("phone").notNull(),
   shift: shiftEnum("shift").notNull(),
 
