@@ -132,7 +132,7 @@ export const profilesRouter = router({
         })
         .returning();
 
-      return profile!;
+      return profile;
     }),
 
   /**
@@ -163,7 +163,7 @@ export const profilesRouter = router({
       .where(eq(schema.scholarProfile.id, profile.id))
       .returning();
 
-    return updated!;
+    return updated;
   }),
 
   // ─── Rotas do gestor ──────────────────────────────────────────────────────
@@ -219,6 +219,6 @@ export const profilesRouter = router({
         { scholarProfileId: input.scholarProfileId },
       );
 
-      return updated!;
+      return updated;
     }),
 });

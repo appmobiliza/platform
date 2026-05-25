@@ -53,7 +53,7 @@ export const locationsRouter = router({
         .values(input)
         .returning();
 
-      return location!;
+      return location;
     }),
 
   /**
