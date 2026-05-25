@@ -23,9 +23,21 @@ export const disabilityTypeEnum = pgEnum("disability_type", [
 ]);
 
 /**
- * Turnos de atuação dos bolsistas, conforme definidos no edital NAC.
+ * Turnos preferenciais do estudante. Estudantes podem selecionar
+ * qualquer turno, incluindo integral (manhã + tarde).
  */
-export const shiftEnum = pgEnum("shift", [
+export const studentShiftEnum = pgEnum("student_shift", [
+  "morning",
+  "afternoon",
+  "night",
+  "full_day",
+]);
+
+/**
+ * Turnos de atuação dos bolsistas, conforme definidos no edital NAC.
+ * Bolsistas NÃO podem ter turno integral — atuam em um turno específico.
+ */
+export const scholarShiftEnum = pgEnum("scholar_shift", [
   "morning",
   "afternoon",
   "night",
@@ -46,6 +58,7 @@ export const studentProfile = pgTable("student_profile", {
   course: text("course").notNull(),
   campus: text("campus").notNull(),
   phone: text("phone").notNull(),
+  shift: studentShiftEnum("shift").notNull(),
 
   /*
    * Campo livre para o estudante informar preferências de atendimento,
@@ -84,7 +97,7 @@ export const scholarProfile = pgTable("scholar_profile", {
   course: text("course").notNull(),
   campus: text("campus").notNull(),
   phone: text("phone").notNull(),
-  shift: shiftEnum("shift").notNull(),
+  shift: scholarShiftEnum("shift").notNull(),
 
   /*
    * Bolsistas precisam ser aprovados pela coordenação do NAC antes de
