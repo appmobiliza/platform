@@ -6,6 +6,7 @@ import {
 	BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { cva } from "class-variance-authority";
+import { CheckIcon } from "lucide-react-native";
 import type { PressableProps, ViewProps } from "react-native";
 import { Pressable, useColorScheme, View } from "react-native";
 
@@ -241,7 +242,7 @@ function SheetTitle({
 	return (
 		<Text
 			variant="h4"
-			className={cn("text-foreground text-center", className)}
+			className={cn("text-foreground text-left", className)}
 			{...props}
 		/>
 	);
@@ -254,7 +255,7 @@ function SheetDescription({
 	return (
 		<Text
 			variant="muted"
-			className={cn("text-muted-foreground text-center", className)}
+			className={cn("text-muted-foreground text-left", className)}
 			{...props}
 		/>
 	);
@@ -263,12 +264,11 @@ function SheetDescription({
 // ─── SheetItem ────────────────────────────────────────────────────────────────
 
 const sheetItemVariants = cva(
-	"flex-row items-center justify-between rounded-xl px-4 py-3 active:opacity-80",
+	"flex-row items-center justify-between px-4 py-4 active:bg-primary/10",
 	{
 		variants: {
 			selected: {
-				true: "bg-primary/10 border-primary/20 border",
-				false: "bg-secondary/40",
+				true: "bg-primary android:active:bg-primary",
 			},
 			disabled: {
 				true: "opacity-50",
@@ -313,20 +313,18 @@ const SheetItem = React.memo(function SheetItem({
 
 	return (
 		<Pressable
+			android_ripple={{ color: "rgba(0, 0, 0, 0.25)" }}
 			accessibilityRole="button"
 			accessibilityState={{ selected, disabled }}
 			disabled={disabled}
 			onPress={handlePress}
 			className={cn(sheetItemVariants({ selected, disabled }), className)}
 		>
-			<Text
-				className={cn(
-					"text-base",
-					selected && "text-primary font-semibold",
-				)}
-			>
+			<Text className={cn("text-base", selected && "text-white")}>
 				{label}
 			</Text>
+
+			<CheckIcon size={18} color={selected ? "white" : "transparent"} />
 		</Pressable>
 	);
 });

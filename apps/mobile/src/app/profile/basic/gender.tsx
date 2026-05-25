@@ -1,9 +1,12 @@
 import { useCallback, useState } from "react";
 
+import { ChevronDown } from "lucide-react-native";
 import { View } from "react-native";
 
 import { SettingsHeader } from "@/components/settings-header";
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
+import { Icon } from "@/components/ui/icon";
 import {
 	Sheet,
 	SheetClose,
@@ -68,51 +71,61 @@ export default function BasicProfileGender() {
 				description="Este é o gênero com o qual você se identifica."
 			/>
 
-			<Sheet closeOnSelect={false}>
-				<SheetTrigger asChild onPress={handleOpen}>
-					<Button>
-						<Text>{selectedGender ?? "Selecionar gênero"}</Text>
-					</Button>
-				</SheetTrigger>
+			<Field label="Gênero">
+				<Sheet closeOnSelect={false}>
+					<SheetTrigger asChild onPress={handleOpen}>
+						<Button
+							variant={"outline"}
+							className="bg-transparent dark:bg-transparent w-full justify-between"
+						>
+							<Text>{selectedGender ?? "Selecionar gênero"}</Text>
 
-				<SheetContent onDismiss={handleDismiss} enableDynamicSizing>
-					<SheetHeader>
-						<SheetTitle>Selecione o gênero</SheetTitle>
-						<SheetDescription>
-							Escolha uma opção e toque em Salvar para aplicar a
-							seleção.
-						</SheetDescription>
-					</SheetHeader>
-
-					<View className="gap-3 px-4 py-3">
-						{GENDER_OPTIONS.map((gender) => (
-							<SheetItem
-								key={gender}
-								label={gender}
-								selected={draftGender === gender}
-								onPress={() => setDraftGender(gender)}
+							<Icon
+								icon={ChevronDown}
+								size={20}
+								color="foreground"
 							/>
-						))}
-					</View>
+						</Button>
+					</SheetTrigger>
 
-					<SheetFooter>
-						<SheetClose asChild>
-							<Button onPress={handleSave}>
-								<Text>Salvar</Text>
-							</Button>
-						</SheetClose>
+					<SheetContent onDismiss={handleDismiss} enableDynamicSizing>
+						<SheetHeader>
+							<SheetTitle>Gênero</SheetTitle>
+							<SheetDescription>
+								Selecione uma opção
+							</SheetDescription>
+						</SheetHeader>
 
-						<SheetClose asChild>
-							<Button
-								variant="outline"
-								className="bg-transparent dark:bg-transparent mb-2"
-							>
-								<Text>Cancelar</Text>
-							</Button>
-						</SheetClose>
-					</SheetFooter>
-				</SheetContent>
-			</Sheet>
+						<View className="pt-3">
+							{GENDER_OPTIONS.map((gender) => (
+								<SheetItem
+									key={gender}
+									label={gender}
+									selected={draftGender === gender}
+									onPress={() => setDraftGender(gender)}
+								/>
+							))}
+						</View>
+
+						<SheetFooter>
+							<SheetClose asChild>
+								<Button onPress={handleSave}>
+									<Text>Salvar</Text>
+								</Button>
+							</SheetClose>
+
+							<SheetClose asChild>
+								<Button
+									variant="outline"
+									className="bg-transparent dark:bg-transparent mb-2"
+								>
+									<Text>Cancelar</Text>
+								</Button>
+							</SheetClose>
+						</SheetFooter>
+					</SheetContent>
+				</Sheet>
+			</Field>
 		</View>
 	);
 }
