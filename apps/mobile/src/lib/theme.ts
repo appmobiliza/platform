@@ -1,4 +1,5 @@
 export const THEME = {
+	primary: "#005E65",
 	light: {
 		background: "#F8F8F8",
 		bar: {

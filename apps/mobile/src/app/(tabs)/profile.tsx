@@ -21,7 +21,7 @@ const options = [
 		description:
 			"Atualize suas informações pessoais, como nome, email e telefone.",
 		icon: CircleUserRound,
-		href: "/profile/personal-data",
+		href: "/profile/basic",
 	},
 	{
 		title: "Acadêmico",
