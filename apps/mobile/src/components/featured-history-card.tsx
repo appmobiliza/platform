@@ -1,8 +1,9 @@
 import { Link } from "expo-router";
 import { RotateCcw, Star } from "lucide-react-native";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 
 // import MapView from "@/components/ui/map";
 
@@ -18,7 +19,7 @@ export const FeaturedHistoryCard = ({
 	href,
 }: FeaturedHistoryCardProps) => {
 	return (
-		<Link href={href} asChild>
+		<Link href={href} push asChild>
 			<View
 				accessibilityLabel={`Deslocamento: ${title}`}
 				accessibilityHint="Duplo toque para ver detalhes"
@@ -49,18 +50,12 @@ export const FeaturedHistoryCard = ({
 					</Text>
 
 					<View className="flex-row gap-3 mt-4">
-						<Button variant={"inverted"} className="rounded-full">
-							<Star
-								size={16}
-								className="text-secondary-inverted-foreground"
-							/>
+						<Button className="bg-white text-black hover:bg-muted active:bg-muted dark:active:bg-muted rounded-full">
+							<Star size={16} color="black" />
 							<Text className="font-medium">Avaliar</Text>
 						</Button>
-						<Button variant={"inverted"} className="rounded-full">
-							<RotateCcw
-								size={16}
-								className="text-secondary-inverted-foreground"
-							/>
+						<Button className="bg-white text-black hover:bg-muted active:bg-muted dark:active:bg-muted rounded-full">
+							<RotateCcw size={16} color="black" />
 							<Text className="font-medium">Reagendar</Text>
 						</Button>
 					</View>

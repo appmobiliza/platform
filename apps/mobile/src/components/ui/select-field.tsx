@@ -16,7 +16,7 @@ import {
 	SheetItem,
 	SheetTitle,
 	SheetTrigger,
-} from "./select-sheet";
+} from "./sheet";
 import { Text } from "./text";
 
 interface SelectFieldProps {

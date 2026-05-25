@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
+// import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 import { Header } from "@/components/header";
 import { StepIndicator } from "@/components/step-indicator";
@@ -45,20 +46,17 @@ export default function BasicInfo() {
 
 	return (
 		<View className="flex-1">
-			<Header title="Dados Básicos" />
+			<Header title="Cadastrar-se no Mobiliza" size="small" />
 
 			<ScrollView
 				className="flex-1"
 				keyboardShouldPersistTaps="handled"
-				contentContainerStyle={{
-					paddingHorizontal: 24,
-					paddingBottom: 32,
-				}}
+				contentContainerClassName="px-4"
 			>
-				<Text className="mb-2 mt-2 text-2xl font-bold">
+				{/* <Text className="mb-2 mt-2 text-2xl font-bold">
 					Cadastrar-se no Mobiliza
-				</Text>
-				<Text className="mb-6 text-sm leading-relaxed text-muted-foreground">
+				</Text> */}
+				<Text className="mb-6 text-base leading-relaxed text-muted-foreground">
 					Antes, precisamos de algumas informações suas para facilitar
 					os atendimentos do MobiUFAL
 				</Text>

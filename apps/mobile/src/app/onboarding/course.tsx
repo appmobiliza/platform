@@ -45,21 +45,19 @@ export default function CourseInfo() {
 
 	return (
 		<View className="flex-1">
-			<Header title="Cadastrar-se no Mobiliza" />
+			<Header title="Cadastrar-se no Mobiliza" size="small" />
 
 			<ScrollView
 				className="flex-1"
+				contentContainerClassName="px-4"
 				keyboardShouldPersistTaps="handled"
-				contentContainerStyle={{
-					paddingHorizontal: 24,
-					paddingBottom: 32,
-				}}
 			>
-				<Text className="mb-2 mt-2 text-2xl font-bold">
+				{/* <Text className="mb-2 mt-2 text-2xl font-bold">
 					Cadastrar-se no Mobiliza
-				</Text>
-				<Text className="mb-6 text-sm leading-relaxed text-muted-foreground">
-					Vamos fazer algumas poucas perguntas rápidas
+				</Text> */}
+				<Text className="mb-6 text-base leading-relaxed text-muted-foreground">
+					Agora, vamos fazer algumas perguntas rápidas sobre sua
+					relação com a universidade
 				</Text>
 
 				<StepIndicator steps={steps} currentStepId="course" />
@@ -130,6 +128,7 @@ export default function CourseInfo() {
 									onChangeText={field.onChange}
 									autoComplete="off"
 									autoCapitalize="none"
+									maxLength={20}
 									autoCorrect={false}
 									accessibilityLabel="Matrícula"
 									aria-invalid={Boolean(errors.matricula)}

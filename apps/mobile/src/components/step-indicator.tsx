@@ -1,5 +1,7 @@
 import { Text, View } from "react-native";
 
+import { cn } from "@/lib/utils";
+
 interface Step {
 	id: string;
 	title: string;
@@ -14,36 +16,27 @@ export function StepIndicator({ steps, currentStepId }: StepIndicatorProps) {
 	const currentIndex = steps.findIndex((step) => step.id === currentStepId);
 
 	return (
-		<View
-			className="flex-row w-full justify-between mt-4"
-			accessibilityLabel={`Passo ${currentIndex + 1} de ${steps.length}`}
-		>
+		<View className="flex-row w-full justify-between gap-2">
 			{steps.map((step, index) => {
 				const isActive = index === currentIndex;
 				return (
 					<View key={step.id} className="flex-1 items-center">
 						<Text
 							accessibilityLabel={`${step.title}, passo ${index + 1} de ${steps.length}`}
-							className={[
-								"text-sm font-semibold mb-2",
-								isActive
-									? "text-brand-primary"
-									: "text-muted-foreground",
-							]
-								.filter(Boolean)
-								.join(" ")}
+							className={cn(
+								"text-sm font-semibold mb-2 text-muted-foreground",
+								isActive && "text-primary",
+							)}
 						>
 							{step.title}
 						</Text>
 						<View
-							className={[
-								"h-1 w-full rounded-full",
-								isActive
-									? "bg-brand-primary"
-									: "bg-neutral-200",
-							]
-								.filter(Boolean)
-								.join(" ")}
+							className={cn(
+								"h-1 w-full rounded-full bg-muted-foreground",
+								{
+									"bg-primary": isActive,
+								},
+							)}
 						/>
 					</View>
 				);

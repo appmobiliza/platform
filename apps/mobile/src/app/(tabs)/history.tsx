@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { FeaturedHistoryCard } from "@/components/featured-history-card";
 import { SimpleHistoryItem } from "@/components/simple-history-item";
+import { StatusMessage } from "@/components/status-message";
 import { Text } from "@/components/ui/text";
 
 import { cn } from "@/lib/utils";
@@ -72,6 +73,12 @@ export default function History() {
 							/>
 						</View>
 					</View>
+				}
+				ListEmptyComponent={
+					<StatusMessage
+						title={"Por enquanto está vazio..."}
+						description="Faça sua primeira solicitação para que ela apareça aqui!"
+					/>
 				}
 				renderItem={({ item, index }) => (
 					<SimpleHistoryItem

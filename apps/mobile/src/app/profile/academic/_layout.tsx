@@ -20,12 +20,12 @@ export default function AcademicProfileLayout() {
 				name="index"
 				options={{ headerTitle: "Acadêmico", ...HEADER_CONFIG }}
 			/>
-			<Stack.Screen
+			{/* <Stack.Screen
 				name="course"
 				options={{
 					headerShown: false,
 				}}
-			/>
+			/> */}
 		</Stack>
 	);
 }

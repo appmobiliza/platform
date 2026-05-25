@@ -4,6 +4,7 @@ import { TouchableOpacity, View } from "react-native";
 
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
 export default function Unregistered() {
@@ -11,14 +12,12 @@ export default function Unregistered() {
 
 	return (
 		<View className="flex-1">
-			<Header
-				title="Acesso Negado" /* onBack={() => router.replace("/login")} */
-			/>
+			<Header />
 
-			<View className="flex-1 px-6 pt-10 pb-8 justify-between">
+			<View className="flex-1 px-6 pt-24 pb-8 justify-between">
 				<View>
-					<View className="mb-6">
-						<CircleAlert size={36} color="#171717" />
+					<View className="mb-6 text-foreground">
+						<Icon icon={CircleAlert} size={36} color="foreground" />
 					</View>
 
 					<Text className="text-3xl font-bold leading-tight mb-4">
