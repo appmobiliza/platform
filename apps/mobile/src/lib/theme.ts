@@ -1,7 +1,12 @@
+import { useUnstableNativeVariable as _useUnstableNativeVariable } from "nativewind";
+import type { ColorSchemeName } from "react-native";
+
 export const THEME = {
 	primary: "#005E65",
 	light: {
 		background: "#F8F8F8",
+		card: "#FFFFFF",
+		muted: "#737373",
 		bar: {
 			background: "#ededed",
 			label: {
@@ -18,6 +23,8 @@ export const THEME = {
 	},
 	dark: {
 		background: "#0F1313",
+		card: "#1A1F1F",
+		muted: "#A3A3A3",
 		bar: {
 			background: "#1A2121",
 			label: {
@@ -34,7 +41,9 @@ export const THEME = {
 	},
 };
 
-import { useUnstableNativeVariable as _useUnstableNativeVariable } from "nativewind";
+export const getTheme = (colorScheme: ColorSchemeName) => {
+	return colorScheme === "dark" ? THEME.dark : THEME.light;
+};
 
 export const useUnstableNativeVariable = (name: string) =>
 	// @ts-expect-error - nativewind web stub returns never, but native works correctly

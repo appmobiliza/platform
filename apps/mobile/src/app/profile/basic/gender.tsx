@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { View } from "react-native";
 
@@ -6,6 +6,7 @@ import { SettingsHeader } from "@/components/settings-header";
 import { Button } from "@/components/ui/button";
 import {
 	Sheet,
+	SheetClose,
 	SheetContent,
 	SheetDescription,
 	SheetFooter,
@@ -16,57 +17,99 @@ import {
 } from "@/components/ui/select-sheet";
 import { Text } from "@/components/ui/text";
 
-const genderOptions = [
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const GENDER_OPTIONS = [
 	"Masculino",
 	"Feminino",
 	"Não binário",
 	"Prefiro não dizer",
 ] as const;
 
+type GenderOption = (typeof GENDER_OPTIONS)[number];
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
+
 export default function BasicProfileGender() {
-	const [selectedGender, setSelectedGender] = useState<
-		(typeof genderOptions)[number] | null
-	>(null);
+	// Valor confirmado — persiste entre aberturas do sheet.
+	const [selectedGender, setSelectedGender] = useState<GenderOption | null>(
+		null,
+	);
+
+	// Rascunho local — sincronizado com o valor confirmado ao abrir o sheet
+	// e descartado ao fechar sem salvar.
+	const [draftGender, setDraftGender] = useState<GenderOption | null>(null);
+
+	// Sincroniza o draft com o valor salvo ao abrir o sheet.
+	const handleOpen = useCallback(() => {
+		setDraftGender(selectedGender);
+	}, [selectedGender]);
+
+	// Descarta o draft ao fechar — cobre todos os gestos de fechamento:
+	// botão "Fechar", arrastar para baixo e toque no backdrop.
+	const handleDismiss = useCallback(() => {
+		setDraftGender(selectedGender);
+	}, [selectedGender]);
+
+	// Promove o draft para valor confirmado.
+	// O SheetClose chama dismiss() logo após, disparando handleDismiss —
+	// mas como setSelectedGender é assíncrono (batch), o snapshot de
+	// selectedGender em handleDismiss ainda seria o valor antigo.
+	// Por isso resetamos o draft explicitamente aqui antes do dismiss.
+	const handleSave = useCallback(() => {
+		setSelectedGender(draftGender);
+		setDraftGender(draftGender); // evita flash de reset no onDismiss
+	}, [draftGender]);
 
 	return (
-		<View className="flex-1 gap-5 px-4 text-foreground pt-6">
+		<View className="flex-1 gap-5 px-4 pt-6 text-foreground">
 			<SettingsHeader
 				title="Gênero"
 				description="Este é o gênero com o qual você se identifica."
 			/>
 
-			<Sheet>
-				<SheetTrigger asChild>
+			<Sheet closeOnSelect={false}>
+				<SheetTrigger asChild onPress={handleOpen}>
 					<Button>
 						<Text>{selectedGender ?? "Selecionar gênero"}</Text>
 					</Button>
 				</SheetTrigger>
-				<SheetContent>
+
+				<SheetContent onDismiss={handleDismiss} enableDynamicSizing>
 					<SheetHeader>
 						<SheetTitle>Selecione o gênero</SheetTitle>
 						<SheetDescription>
-							Escolha a opção que melhor representa você.
+							Escolha uma opção e toque em Salvar para aplicar a
+							seleção.
 						</SheetDescription>
 					</SheetHeader>
 
-					<View className="gap-3">
-						{genderOptions.map((gender) => (
+					<View className="gap-3 px-4 py-3">
+						{GENDER_OPTIONS.map((gender) => (
 							<SheetItem
 								key={gender}
 								label={gender}
-								selected={selectedGender === gender}
-								onPress={() => setSelectedGender(gender)}
+								selected={draftGender === gender}
+								onPress={() => setDraftGender(gender)}
 							/>
 						))}
 					</View>
 
 					<SheetFooter>
-						<Button onPress={() => {}}>
-							<Text>Selecionar</Text>
-						</Button>
-						<Button onPress={() => {}} variant={"outline"}>
-							<Text>Cancelar</Text>
-						</Button>
+						<SheetClose asChild>
+							<Button onPress={handleSave}>
+								<Text>Salvar</Text>
+							</Button>
+						</SheetClose>
+
+						<SheetClose asChild>
+							<Button
+								variant="outline"
+								className="bg-transparent dark:bg-transparent mb-2"
+							>
+								<Text>Cancelar</Text>
+							</Button>
+						</SheetClose>
 					</SheetFooter>
 				</SheetContent>
 			</Sheet>

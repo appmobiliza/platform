@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 
 import "../global.css";
 
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
@@ -24,21 +25,23 @@ export default function RootLayout() {
 
 	return (
 		<GestureHandlerRootView style={{ flex: 1, backgroundColor: bgColor }}>
-			<Stack
-				screenOptions={{
-					headerShown: false,
-					contentStyle: { backgroundColor: bgColor },
-				}}
-			>
-				<Stack.Protected guard={isLoggedIn}>
-					<Stack.Screen name="(tabs)" />
-				</Stack.Protected>
+			<BottomSheetModalProvider>
+				<Stack
+					screenOptions={{
+						headerShown: false,
+						contentStyle: { backgroundColor: bgColor },
+					}}
+				>
+					<Stack.Protected guard={isLoggedIn}>
+						<Stack.Screen name="(tabs)" />
+					</Stack.Protected>
 
-				<Stack.Protected guard={!isLoggedIn}>
-					<Stack.Screen name="auth" />
-					<Stack.Screen name="onboarding" />
-				</Stack.Protected>
-			</Stack>
+					<Stack.Protected guard={!isLoggedIn}>
+						<Stack.Screen name="auth" />
+						<Stack.Screen name="onboarding" />
+					</Stack.Protected>
+				</Stack>
+			</BottomSheetModalProvider>
 		</GestureHandlerRootView>
 	);
 }
