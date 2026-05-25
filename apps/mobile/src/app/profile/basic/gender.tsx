@@ -3,7 +3,7 @@ import { useCallback, useState } from "react";
 import { ChevronDown } from "lucide-react-native";
 import { View } from "react-native";
 
-import { SettingsHeader } from "@/components/settings-header";
+import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Icon } from "@/components/ui/icon";
@@ -66,7 +66,7 @@ export default function BasicProfileGender() {
 
 	return (
 		<View className="flex-1 gap-5 px-4 pt-6 text-foreground">
-			<SettingsHeader
+			<Header
 				title="Gênero"
 				description="Este é o gênero com o qual você se identifica."
 			/>

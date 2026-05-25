@@ -49,20 +49,14 @@ export const FeaturedHistoryCard = ({
 					</Text>
 
 					<View className="flex-row gap-3 mt-4">
-						<Button
-							variant={"inverted"}
-							className="rounded-full bg-white"
-						>
+						<Button variant={"inverted"} className="rounded-full">
 							<Star
 								size={16}
 								className="text-secondary-inverted-foreground"
 							/>
 							<Text className="font-medium">Avaliar</Text>
 						</Button>
-						<Button
-							variant={"inverted"}
-							className="rounded-full bg-white"
-						>
+						<Button variant={"inverted"} className="rounded-full">
 							<RotateCcw
 								size={16}
 								className="text-secondary-inverted-foreground"

@@ -1,17 +1,9 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
-import {
-	ArrowLeft,
-	Clock,
-	Cloud,
-	Footprints,
-	MapPin,
-	RotateCcw,
-	Star,
-} from "lucide-react-native";
-import { Platform, ScrollView, TouchableOpacity, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useLocalSearchParams } from "expo-router";
+import { Clock, Cloud, Footprints, RotateCcw, Star } from "lucide-react-native";
+import { ScrollView, View } from "react-native";
 
-import { Address, AddressRoute } from "@/components/address";
+import { Address } from "@/components/address";
+import { Header } from "@/components/header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,30 +14,10 @@ import { Text } from "@/components/ui/text";
 
 export default function HistoryDetails() {
 	const { id } = useLocalSearchParams();
-	const router = useRouter();
-	const insets = useSafeAreaInsets();
 
 	return (
 		<View className="flex-1">
-			{/* Header */}
-			<View
-				className="px-4 pb-4 flex-col w-full items-start gap-2 text-foreground"
-				style={{
-					paddingTop: Math.max(
-						insets.top + 10,
-						Platform.OS === "ios" ? 50 : 30,
-					),
-				}}
-			>
-				<TouchableOpacity
-					onPress={() => router.back()}
-					activeOpacity={0.7}
-					className="p-2 -ml-2"
-				>
-					<Icon icon={ArrowLeft} size={24} color="foreground" />
-				</TouchableOpacity>
-				<Text className="font-bold text-2xl">Informações</Text>
-			</View>
+			<Header title="Informações" />
 
 			<ScrollView
 				className="flex-1"

@@ -1,9 +1,31 @@
 import { useUnstableNativeVariable as _useUnstableNativeVariable } from "nativewind";
 import type { ColorSchemeName } from "react-native";
 
-export const THEME = {
-	primary: "#005E65",
+type ThemeColors = {
+	primary: string;
+	background: string;
+	card: string;
+	muted: string;
+	bar: {
+		background: string;
+		label: {
+			default: string;
+			selected: string;
+		};
+		icon: {
+			default: string;
+			selected: string;
+		};
+		indicator: string;
+		ripple: string;
+	};
+};
+
+type ThemeConfig = Record<ColorSchemeName, ThemeColors | Record<string, never>>;
+
+export const THEME: ThemeConfig = {
 	light: {
+		primary: "#005E65",
 		background: "#F8F8F8",
 		card: "#FFFFFF",
 		muted: "#737373",
@@ -22,6 +44,7 @@ export const THEME = {
 		},
 	},
 	dark: {
+		primary: "#005E65",
 		background: "#0F1313",
 		card: "#1A1F1F",
 		muted: "#A3A3A3",
@@ -39,10 +62,7 @@ export const THEME = {
 			ripple: "rgba(222, 228, 228, 0.10)",
 		},
 	},
-};
-
-export const getTheme = (colorScheme: ColorSchemeName) => {
-	return colorScheme === "dark" ? THEME.dark : THEME.light;
+	unspecified: {},
 };
 
 export const useUnstableNativeVariable = (name: string) =>

@@ -35,7 +35,7 @@ export default function AddressMap() {
 					<ArrowLeft size={24} color="white" />
 				</TouchableOpacity>
 
-				<View className="flex-1 flex-row items-center bg-white rounded-xl px-3 py-2">
+				<View className="flex-1 flex-row items-center rounded-xl px-3 py-2">
 					<TextInput
 						className="flex-1 text-gray-900 text-base"
 						defaultValue="Instituto de Física"
@@ -72,7 +72,7 @@ export default function AddressMap() {
 
 			{/* Bottom Action */}
 			<View
-				className="px-6 pt-4 bg-white border-t border-gray-100"
+				className="px-6 pt-4 border-t border-gray-100"
 				style={{ paddingBottom: Math.max(insets.bottom, 24) }}
 			>
 				<TouchableOpacity

@@ -20,8 +20,7 @@ export default function RootLayout() {
 	const isLoggedIn = useIsLoggedIn();
 
 	const colorScheme = useColorScheme();
-	const bgColor =
-		colorScheme === "dark" ? THEME.dark.background : THEME.light.background;
+	const bgColor = THEME[colorScheme].background;
 
 	return (
 		<GestureHandlerRootView style={{ flex: 1, backgroundColor: bgColor }}>

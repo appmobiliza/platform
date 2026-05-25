@@ -1,16 +1,17 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
 import { useRouter } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
+
+import { Header } from "@/components/header";
+import { StepIndicator } from "@/components/step-indicator";
+import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Text } from "@/components/ui/text";
 
 import { genderOptions } from "@/constants";
 import { type BasicInfoInput, BasicInfoSchema } from "@/schemas";
-
-import { Button } from "../../components/old/Button_test";
-import { Header } from "../../components/old/Header";
-import { Input } from "../../components/old/Input";
-import { Select } from "../../components/old/Select";
-import { StepIndicator } from "../../components/old/StepIndicator";
 
 export default function BasicInfo() {
 	const router = useRouter();
@@ -48,8 +49,8 @@ export default function BasicInfo() {
 	};
 
 	return (
-		<View className="flex-1 bg-white">
-			<Header />
+		<View className="flex-1">
+			<Header title="Dados Básicos" />
 
 			<ScrollView
 				className="flex-1"
@@ -58,10 +59,10 @@ export default function BasicInfo() {
 					paddingBottom: 32,
 				}}
 			>
-				<Text className="text-2xl font-bold text-neutral-900 mt-2 mb-2">
+				<Text className="text-2xl font-bold mt-2 mb-2">
 					Cadastrar-se no Mobiliza
 				</Text>
-				<Text className="text-sm text-neutral-500 leading-relaxed mb-6">
+				<Text className="text-sm text-muted-foreground leading-relaxed mb-6">
 					Antes, precisamos de algumas informações suas para facilitar
 					os atendimentos do MobiUFAL
 				</Text>
@@ -69,35 +70,37 @@ export default function BasicInfo() {
 				<StepIndicator steps={steps} currentStepId="basic" />
 
 				<View className="mt-8 space-y-4 gap-4">
-					<Input
-						label="Nome Completo"
-						placeholder="Fulano da Silva Júnior"
-						value={name}
-						onChangeText={setName}
-						error={errors.name}
-					/>
+					<Field label="Nome Completo">
+						<Input
+							placeholder="Fulano da Silva Júnior"
+							value={name}
+							onChangeText={setName}
+							// error={errors.name}
+						/>
+					</Field>
 
-					<Input
-						label="Telefone"
-						placeholder="(DDD) XXXXX-XXXX"
-						keyboardType="phone-pad"
-						value={phone}
-						onChangeText={setPhone}
-						error={errors.phone}
-					/>
+					<Field label="Telefone">
+						<Input
+							placeholder="(DDD) XXXXX-XXXX"
+							keyboardType="phone-pad"
+							value={phone}
+							onChangeText={setPhone}
+							// error={errors.phone}
+						/>
+					</Field>
 
-					<Select
+					{/* <Select
 						label="Gênero"
 						value={gender}
 						onSelect={setGender}
 						options={genderOptions}
 						placeholder="Selecione seu gênero"
 						error={errors.gender}
-					/>
+					/> */}
 				</View>
 
 				<Button className="mt-8" onPress={handleContinue}>
-					Continuar
+					<Text>Continuar</Text>
 				</Button>
 			</ScrollView>
 		</View>

@@ -7,13 +7,13 @@ import { HEADER_CONFIG } from "../_layout";
 
 export default function AcademicProfileLayout() {
 	const colorScheme = useColorScheme();
-	const bgColor =
-		colorScheme === "dark" ? THEME.dark.background : THEME.light.background;
 
 	return (
 		<Stack
 			screenOptions={{
-				contentStyle: { backgroundColor: bgColor },
+				contentStyle: {
+					backgroundColor: THEME[colorScheme].background,
+				},
 			}}
 		>
 			<Stack.Screen

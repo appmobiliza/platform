@@ -5,17 +5,20 @@ import { TouchableOpacity, View } from "react-native";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
-interface SettingsHeaderProps {
+interface HeaderProps {
 	title: string;
 	description?: string;
 }
 
-export function SettingsHeader({ title, description }: SettingsHeaderProps) {
+export function Header({ title, description }: HeaderProps) {
 	const router = useRouter();
 
 	return (
 		<View className="gap-4 pt-12">
-			<TouchableOpacity onPress={() => router.back()}>
+			<TouchableOpacity
+				className="text-foreground"
+				onPress={() => router.back()}
+			>
 				<Icon icon={ArrowLeftToLine} size={32} color="foreground" />
 			</TouchableOpacity>
 			<View className="gap-1">

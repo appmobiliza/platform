@@ -1,13 +1,13 @@
 import { View } from "react-native";
 
-import { SettingsHeader } from "@/components/settings-header";
+import { Header } from "@/components/header";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
 export default function BasicProfileName() {
 	return (
 		<View className="flex-1 gap-5 px-4 text-foreground pt-6">
-			<SettingsHeader
+			<Header
 				title="Nome"
 				description="Este é o nome que você quer que outras pessoas usem quando se referirem a você"
 			/>

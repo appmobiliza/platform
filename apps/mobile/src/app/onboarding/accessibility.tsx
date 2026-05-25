@@ -2,13 +2,16 @@ import { useState } from "react";
 
 import { useRouter } from "expo-router";
 import { Accessibility, Ear, Ellipsis, Eye } from "lucide-react-native";
-import { ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, TouchableOpacity, View } from "react-native";
+
+import { Header } from "@/components/header";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Text } from "@/components/ui/text";
 
 import { type AccessibilityInput, AccessibilitySchema } from "@/schemas";
 
-import { Button } from "../../components/old/Button_test";
-import { Header } from "../../components/old/Header";
-import { StepIndicator } from "../../components/old/StepIndicator";
+import { StepIndicator } from "../../components/step-indicator";
 
 const INITIAL_OPTIONS = [
 	{
@@ -68,8 +71,8 @@ export default function AccessibilityInfo() {
 	};
 
 	return (
-		<View className="flex-1 bg-white">
-			<Header />
+		<View className="flex-1 px-4">
+			<Header title="Cadastrar-se no Mobiliza" />
 
 			<ScrollView
 				className="flex-1"
@@ -78,10 +81,10 @@ export default function AccessibilityInfo() {
 					paddingBottom: 32,
 				}}
 			>
-				<Text className="text-2xl font-bold text-neutral-900 mt-2 mb-2">
+				<Text className="text-2xl font-bold mt-2 mb-2">
 					Cadastrar-se no Mobiliza
 				</Text>
-				<Text className="text-sm text-neutral-500 leading-relaxed mb-6">
+				<Text className="text-sm text-muted-foreground leading-relaxed mb-6">
 					Selecione uma ou mais opções com base em suas necessidades
 					de acessibilidade
 				</Text>
@@ -135,19 +138,19 @@ export default function AccessibilityInfo() {
 					})}
 				</View>
 
-				<View className="flex-row items-center justify-between mt-4 mb-8 bg-neutral-50 p-4 rounded-xl border border-neutral-100">
-					<Text className="text-base font-medium text-neutral-900 flex-1 mr-4">
-						Ativar pedidos por áudio automaticamente
+				<View className="flex-row items-center justify-between mt-4 mb-8 bg-card p-4 rounded-xl border border-border">
+					<Text className="text-base font-medium flex-1 mr-4">
+						Ativar interface adaptada para leitores de tela
 					</Text>
 					<Switch
-						value={audioEnabled}
-						onValueChange={setAudioEnabled}
-						trackColor={{ false: "#d4d4d4", true: "#00635D" }}
-						thumbColor={"#ffffff"}
+						checked={audioEnabled}
+						onCheckedChange={setAudioEnabled}
 					/>
 				</View>
 
-				<Button onPress={handleFinish}>Concluir</Button>
+				<Button onPress={handleFinish}>
+					<Text>Concluir</Text>
+				</Button>
 			</ScrollView>
 		</View>
 	);

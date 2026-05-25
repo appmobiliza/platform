@@ -1,16 +1,19 @@
 import { useRouter } from "expo-router";
 import { CircleAlert } from "lucide-react-native";
-import { Text, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 
-import { Button } from "../../components/old/Button_test";
-import { Header } from "../../components/old/Header";
+import { Header } from "@/components/header";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 
 export default function Unregistered() {
 	const router = useRouter();
 
 	return (
-		<View className="flex-1 bg-white">
-			<Header onBack={() => router.replace("/login")} />
+		<View className="flex-1">
+			<Header
+				title="Acesso Negado" /* onBack={() => router.replace("/login")} */
+			/>
 
 			<View className="flex-1 px-6 pt-10 pb-8 justify-between">
 				<View>
@@ -18,11 +21,11 @@ export default function Unregistered() {
 						<CircleAlert size={36} color="#171717" />
 					</View>
 
-					<Text className="text-3xl font-bold text-neutral-900 leading-tight mb-4">
+					<Text className="text-3xl font-bold leading-tight mb-4">
 						Parece que você ainda não está cadastrado no Mobiliza
 					</Text>
 
-					<Text className="text-base text-neutral-800 leading-relaxed">
+					<Text className="text-base leading-relaxed">
 						Para solicitar atendimentos, você precisa estar
 						cadastrado no programa.
 					</Text>
@@ -31,7 +34,7 @@ export default function Unregistered() {
 						className="mt-8"
 						onPress={() => router.push("/onboarding/basic")}
 					>
-						Realizar cadastro
+						<Text>Realizar cadastro</Text>
 					</Button>
 				</View>
 
@@ -40,7 +43,7 @@ export default function Unregistered() {
 						Precisando de ajuda?
 					</Text>
 					<TouchableOpacity className="mt-1">
-						<Text className="text-sm text-neutral-500 underline font-medium">
+						<Text className="text-sm text-muted-foreground underline font-medium">
 							Entre em contato com o NAC
 						</Text>
 					</TouchableOpacity>

@@ -56,6 +56,15 @@ export default function Auth() {
 						<Text>Continuar com o Google</Text>
 					</Button>
 
+					<Button
+						className="mt-4 relative"
+						onPress={() => router.push("/onboarding")}
+						variant={"outline"}
+						size={"sm"}
+					>
+						<Text>Testar onboarding</Text>
+					</Button>
+
 					<Text className="text-center text-sm text-muted-foreground mt-6">
 						Ao continuar, você concorda com nossos{"\n"}
 						<Text

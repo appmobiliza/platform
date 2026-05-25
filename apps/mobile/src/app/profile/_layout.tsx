@@ -5,7 +5,7 @@ import { THEME } from "@/lib/theme";
 
 export const HEADER_CONFIG = {
 	headerStyle: {
-		backgroundColor: THEME.primary,
+		backgroundColor: THEME.dark.primary,
 	},
 	headerTintColor: "#fff",
 	headerTitleStyle: {

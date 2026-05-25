@@ -1,16 +1,18 @@
 import { useState } from "react";
 
 import { useRouter } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
+
+import { Header } from "@/components/header";
+import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Text } from "@/components/ui/text";
 
 import { campusOptions, courseOptions, shiftOptions } from "@/constants";
 import { type CourseInfoInput, CourseInfoSchema } from "@/schemas";
 
-import { Button } from "../../components/old/Button_test";
-import { Header } from "../../components/old/Header";
-import { Input } from "../../components/old/Input";
-import { Select } from "../../components/old/Select";
-import { StepIndicator } from "../../components/old/StepIndicator";
+import { StepIndicator } from "../../components/step-indicator";
 
 export default function CourseInfo() {
 	const router = useRouter();
@@ -49,8 +51,8 @@ export default function CourseInfo() {
 	};
 
 	return (
-		<View className="flex-1 bg-white">
-			<Header />
+		<View className="flex-1">
+			<Header title="Cadastrar-se no Mobiliza" />
 
 			<ScrollView
 				className="flex-1"
@@ -59,17 +61,17 @@ export default function CourseInfo() {
 					paddingBottom: 32,
 				}}
 			>
-				<Text className="text-2xl font-bold text-neutral-900 mt-2 mb-2">
+				<Text className="text-2xl font-bold mt-2 mb-2">
 					Cadastrar-se no Mobiliza
 				</Text>
-				<Text className="text-sm text-neutral-500 leading-relaxed mb-6">
+				<Text className="text-sm text-muted-foreground leading-relaxed mb-6">
 					Vamos fazer algumas poucas perguntas rápidas
 				</Text>
 
 				<StepIndicator steps={steps} currentStepId="course" />
 
 				<View className="mt-8 space-y-4 gap-4">
-					<Select
+					{/* <Select
 						label="Curso"
 						value={course}
 						onSelect={setCourse}
@@ -94,20 +96,21 @@ export default function CourseInfo() {
 						options={campusOptions}
 						placeholder="Selecione o campus"
 						error={errors.campus}
-					/>
+					/> */}
 
-					<Input
-						label="Matrícula"
-						placeholder="23415364"
-						keyboardType="numeric"
-						value={matricula}
-						onChangeText={setMatricula}
-						error={errors.matricula}
-					/>
+					<Field label="Matrícula">
+						<Input
+							placeholder="23415364"
+							keyboardType="numeric"
+							value={matricula}
+							onChangeText={setMatricula}
+							// error={errors.matricula}
+						/>
+					</Field>
 				</View>
 
 				<Button className="mt-8" onPress={handleContinue}>
-					Continuar
+					<Text>Continuar</Text>
 				</Button>
 			</ScrollView>
 		</View>

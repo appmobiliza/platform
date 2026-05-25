@@ -12,7 +12,7 @@ import { Pressable, useColorScheme, View } from "react-native";
 
 import { Text } from "@/components/ui/text";
 
-import { getTheme } from "@/lib/theme";
+import { THEME } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -201,9 +201,9 @@ function SheetContent({
 			enableDynamicSizing={enableDynamicSizing}
 			backdropComponent={SheetBackdrop}
 			onDismiss={onDismiss}
-			backgroundStyle={{ backgroundColor: getTheme(colorScheme).card }}
+			backgroundStyle={{ backgroundColor: THEME[colorScheme].card }}
 			handleIndicatorStyle={{
-				backgroundColor: getTheme(colorScheme).muted,
+				backgroundColor: THEME[colorScheme].muted,
 			}}
 		>
 			{/*
