@@ -79,10 +79,10 @@ export default function Profile() {
 							contentFit="cover"
 							contentPosition="center"
 						/>
-						<Text className="font-bold text-2xl">
+						<Text className="font-bold text-2xl text-primary-foreground">
 							Fulano da Silva
 						</Text>
-						<Text className="font-normal text-lg">
+						<Text className="font-normal text-lg text-primary-foreground">
 							als@ic.ufal.br
 						</Text>
 					</View>

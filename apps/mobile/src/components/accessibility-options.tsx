@@ -8,6 +8,8 @@ import { Text } from "@/components/ui/text";
 
 import { cn } from "@/lib/utils";
 
+import { Icon } from "./ui/icon";
+
 type Option = {
 	id: string;
 	label: string;
@@ -44,7 +46,6 @@ export function AccessibilityOptions({
 		<Field error={error}>
 			<View className="flex-row flex-wrap justify-between">
 				{options.map((option) => {
-					const Icon = option.icon;
 					const isSelected = selectedIds.includes(option.id);
 
 					return (
@@ -63,23 +64,28 @@ export function AccessibilityOptions({
 							accessibilityRole="checkbox"
 							accessibilityState={{ checked: isSelected }}
 							className={cn(
-								"mb-4 min-h-[120px] w-[48%] items-center justify-center rounded-xl border-2 p-4 border-border bg-background",
+								"mb-4 min-h-[120px] w-[48%] items-center justify-center rounded-xl border-2 p-4 border-border bg-background text-foreground",
 								{
-									"border-primary bg-primary": isSelected,
+									"border-primary bg-primary text-primary-foreground":
+										isSelected,
 								},
 							)}
 						>
 							<Icon
+								icon={option.icon}
 								size={32}
-								color={isSelected ? "#ffffff" : "#171717"}
-								strokeWidth={2}
+								color={
+									isSelected
+										? "primary-foreground"
+										: "foreground"
+								}
 							/>
 							<Text
 								className={cn(
-									"mt-3 text-center text-sm font-medium",
-									isSelected
-										? "text-white"
-										: "text-neutral-900",
+									"mt-3 text-center text-sm font-medium text-foreground",
+									{
+										"text-primary-foreground": isSelected,
+									},
 								)}
 							>
 								{option.label}

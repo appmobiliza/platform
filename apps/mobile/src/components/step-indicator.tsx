@@ -25,7 +25,8 @@ export function StepIndicator({ steps, currentStepId }: StepIndicatorProps) {
 							accessibilityLabel={`${step.title}, passo ${index + 1} de ${steps.length}`}
 							className={cn(
 								"text-sm font-semibold mb-2 text-muted-foreground",
-								isActive && "text-primary",
+								isActive &&
+									"text-primary web:dark:brightness-150 native:text-primary-foreground",
 							)}
 						>
 							{step.title}
@@ -34,7 +35,8 @@ export function StepIndicator({ steps, currentStepId }: StepIndicatorProps) {
 							className={cn(
 								"h-1 w-full rounded-full bg-muted-foreground",
 								{
-									"bg-primary": isActive,
+									"bg-primary web:dark:brightness-150 native:bg-primary-foreground":
+										isActive,
 								},
 							)}
 						/>

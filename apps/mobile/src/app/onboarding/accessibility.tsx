@@ -1,29 +1,20 @@
-import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
-import { ScrollView, TouchableOpacity, View } from "react-native";
+import { ScrollView, View } from "react-native";
 
 import AccessibilityOptions from "@/components/accessibility-options";
 import { Header } from "@/components/header";
 import { StepIndicator } from "@/components/step-indicator";
 import { Button } from "@/components/ui/button";
-import {
-	Field,
-	FieldDescription,
-	FieldError,
-	FieldGroup,
-	FieldLegend,
-	FieldSet,
-} from "@/components/ui/field";
+import { Field, FieldGroup, FieldSet } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { Text } from "@/components/ui/text";
 
+import { setIsLoggedIn } from "@/lib/auth-store";
 import { zodResolver } from "@/lib/zod-resolver";
 
 import { type AccessibilityInput, AccessibilitySchema } from "@/schemas";
 
 export default function AccessibilityInfo() {
-	const router = useRouter();
-
 	const {
 		control,
 		handleSubmit,
@@ -45,7 +36,7 @@ export default function AccessibilityInfo() {
 
 	const handleFinish = handleSubmit(() => {
 		// TODO: Integrar com API quando backend estiver pronto
-		router.push("/");
+		setIsLoggedIn(true);
 	});
 
 	return (
@@ -94,13 +85,6 @@ export default function AccessibilityInfo() {
 								)}
 							/>
 						</Field>
-
-						{errors.disabilityType ? (
-							<FieldError
-								className="mt-1"
-								errors={[errors.disabilityType]}
-							/>
-						) : null}
 					</FieldGroup>
 				</FieldSet>
 
