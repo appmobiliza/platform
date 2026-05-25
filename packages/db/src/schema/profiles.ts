@@ -72,6 +72,11 @@ export const studentProfile = pgTable("student_profile", {
   gender: genderEnum("gender").notNull(),
 
   /*
+   * Apelido (opcional) do estudante.
+   */
+  nickname: text("nickname"),
+
+  /*
    * Campo livre para o estudante informar preferências de atendimento,
    * como "prefere áudio descrição contínua" ou "usa cadeira de rodas elétrica".
    * Exibido ao bolsista antes e durante o atendimento.
