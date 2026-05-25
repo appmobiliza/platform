@@ -82,11 +82,13 @@ function StageSheet({
 	stage,
 	modalRef,
 	onDismiss,
+	enablePanDownToClose = false,
 	children,
 }: {
 	stage: Stage;
 	modalRef: React.RefObject<BottomSheetModal | null>;
 	onDismiss: (stage: Stage) => void;
+	enablePanDownToClose?: boolean;
 	children: React.ReactNode;
 }) {
 	const colorScheme = useColorScheme();
@@ -98,7 +100,7 @@ function StageSheet({
 			// snapPoints={["94%"]}
 			backdropComponent={SheetBackdrop}
 			enableDynamicSizing={true}
-			enablePanDownToClose={false}
+			enablePanDownToClose={enablePanDownToClose}
 			onDismiss={() => onDismiss(stage)}
 			backgroundStyle={{ backgroundColor: THEME[colorScheme].card }}
 			handleIndicatorStyle={{

@@ -27,9 +27,11 @@ function useRequestFlow() {
 		React.RefObject<BottomSheetModal | null>
 	>;
 
-	const activeStageRef = React.useRef<Stage>("destination");
+	const activeStageRef = React.useRef<Stage>("destination-selection");
 	const queuedStageRef = React.useRef<Stage | null>(null);
-	const [activeStage, setActiveStage] = React.useState<Stage>("destination");
+	const [activeStage, setActiveStage] = React.useState<Stage>(
+		"destination-selection",
+	);
 
 	const [destinationValue, setDestinationValue] =
 		React.useState("Biblioteca Central");
@@ -84,14 +86,24 @@ function useRequestFlow() {
 			}
 
 			if (stage === activeStageRef.current) {
+				if (stage === "destination") {
+					openStage("destination-selection");
+					return;
+				}
+
+				if (stage === "destination-selection") {
+					openStage("destination");
+					return;
+				}
+
 				exitFlow();
 			}
 		},
-		[exitFlow, refs],
+		[exitFlow, openStage, refs],
 	);
 
 	React.useEffect(() => {
-		openStage("destination");
+		openStage("destination-selection");
 	}, [openStage]);
 
 	React.useEffect(() => {

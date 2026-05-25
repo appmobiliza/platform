@@ -6,18 +6,24 @@ import {
 	Search,
 	UsersRound,
 } from "lucide-react-native";
-import { ActivityIndicator, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
 
 import { Address, AddressRoute } from "@/components/address";
 import { PlaceCard } from "@/components/place-card";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
+import { cn } from "@/lib/utils";
+
 import { SheetFrame, StageSheet } from "./request-flow-sheet/components";
 import { DESTINATION_OPTIONS } from "./request-flow-sheet/types";
 import { useRequestFlow } from "./request-flow-sheet/use-request-flow";
 import { Icon } from "./ui/icon";
-import { Input, InputWrapper } from "./ui/input";
+import {
+	inputClassName,
+	inputNativeClassName,
+	inputWebClassName,
+} from "./ui/input";
 
 function RequestFlowSheet() {
 	const {
@@ -46,6 +52,7 @@ function RequestFlowSheet() {
 				stage="destination"
 				modalRef={destinationRef}
 				onDismiss={handleDismiss}
+				enablePanDownToClose={true}
 			>
 				<SheetFrame
 					title="Insira seu destino"
@@ -66,23 +73,32 @@ function RequestFlowSheet() {
 						</>
 					}
 				>
-					<InputWrapper>
-						<Icon
-							icon={MapPin}
-							size={12}
-							color={"muted-foreground"}
-						/>
-						<Input
-							placeholder="Digite o destino"
-							value={destinationValue}
-							onChangeText={setDestinationValue}
-						/>
+					<Pressable
+						className={cn(
+							"justify-between px-3",
+							inputClassName,
+							inputNativeClassName,
+							inputWebClassName,
+						)}
+						onPress={() => transitionTo("destination-selection")}
+					>
+						<View className="gap-4 flex-row items-center justify-start">
+							<Icon
+								icon={MapPin}
+								size={20}
+								color={"muted-foreground"}
+							/>
+							<Text className="pb-0.5">
+								{destinationValue ||
+									"Digite um destino para começar a procurar por contribuintes próximos a você."}
+							</Text>
+						</View>
 						<Icon
 							icon={Search}
-							size={18}
+							size={20}
 							color={"muted-foreground"}
 						/>
-					</InputWrapper>
+					</Pressable>
 				</SheetFrame>
 			</StageSheet>
 
@@ -90,6 +106,7 @@ function RequestFlowSheet() {
 				stage="destination-selection"
 				modalRef={destinationSelectionRef}
 				onDismiss={handleDismiss}
+				enablePanDownToClose={true}
 			>
 				<SheetFrame
 					title="Selecione seu destino"
