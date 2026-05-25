@@ -7,7 +7,7 @@ import { Header } from "@/components/header";
 import { StepIndicator } from "@/components/step-indicator";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { MaskedInput } from "@/components/ui/masked-input";
 import { Text } from "@/components/ui/text";
 
 import { genderOptions } from "@/constants";
@@ -80,9 +80,9 @@ export default function BasicInfo() {
 					</Field>
 
 					<Field label="Telefone">
-						<Input
+						<MaskedInput
+							mask="phone"
 							placeholder="(DDD) XXXXX-XXXX"
-							keyboardType="phone-pad"
 							value={phone}
 							onChangeText={setPhone}
 							// error={errors.phone}

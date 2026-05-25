@@ -32,6 +32,24 @@ export default function BasicProfileLayout() {
 					headerShown: false,
 				}}
 			/>
+			<Stack.Screen
+				name="phone"
+				options={{
+					headerShown: false,
+				}}
+			/>
+			<Stack.Screen
+				name="email"
+				options={{
+					headerShown: false,
+				}}
+			/>
+			<Stack.Screen
+				name="cpf"
+				options={{
+					headerShown: false,
+				}}
+			/>
 		</Stack>
 	);
 }

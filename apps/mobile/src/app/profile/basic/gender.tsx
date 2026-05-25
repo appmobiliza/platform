@@ -76,7 +76,7 @@ export default function BasicProfileGender() {
 					<SheetTrigger asChild onPress={handleOpen}>
 						<Button
 							variant={"outline"}
-							className="bg-transparent dark:bg-transparent w-full justify-between"
+							className="w-full justify-between px-3 py-1"
 						>
 							<Text>{selectedGender ?? "Selecionar gênero"}</Text>
 
@@ -96,7 +96,7 @@ export default function BasicProfileGender() {
 							</SheetDescription>
 						</SheetHeader>
 
-						<View className="pt-3">
+						<View className="pt-4 pb-2">
 							{GENDER_OPTIONS.map((gender) => (
 								<SheetItem
 									key={gender}

@@ -25,6 +25,11 @@ export default function BasicProfile() {
 				title="E-mail"
 				label="fulano@example.com"
 				href="/profile/basic/email"
+			/>
+			<SettingsButton
+				title="Número do CPF"
+				label="000.000.000-00"
+				href="/profile/basic/cpf"
 				className="border-none"
 			/>
 		</View>
