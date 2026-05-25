@@ -3,18 +3,9 @@ import { useColorScheme } from "react-native";
 
 import { THEME } from "@/lib/theme";
 
-export const HEADER_CONFIG = {
-	headerStyle: {
-		backgroundColor: THEME.primary,
-	},
-	headerTintColor: "#fff",
-	headerTitleStyle: {
-		color: "#fff",
-	},
-	headerShadowVisible: false,
-};
+import { HEADER_CONFIG } from "../_layout";
 
-export default function ProfileLayout() {
+export default function AcademicProfileLayout() {
 	const colorScheme = useColorScheme();
 	const bgColor =
 		colorScheme === "dark" ? THEME.dark.background : THEME.light.background;
@@ -22,9 +13,19 @@ export default function ProfileLayout() {
 	return (
 		<Stack
 			screenOptions={{
-				headerShown: false,
 				contentStyle: { backgroundColor: bgColor },
 			}}
-		/>
+		>
+			<Stack.Screen
+				name="index"
+				options={{ headerTitle: "Acadêmico", ...HEADER_CONFIG }}
+			/>
+			<Stack.Screen
+				name="course"
+				options={{
+					headerShown: false,
+				}}
+			/>
+		</Stack>
 	);
 }

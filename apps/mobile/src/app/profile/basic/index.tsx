@@ -11,11 +11,20 @@ export default function BasicProfile() {
 				label="Fulano da Silva"
 				href="/profile/basic/name"
 			/>
-			<SettingsButton title="Gênero" label="Masculino" />
-			<SettingsButton title="Número de telefone" label="+5582988233221" />
+			<SettingsButton
+				title="Gênero"
+				label="Masculino"
+				href="/profile/basic/gender"
+			/>
+			<SettingsButton
+				title="Número de telefone"
+				label="+5582988233221"
+				href="/profile/basic/phone"
+			/>
 			<SettingsButton
 				title="E-mail"
 				label="fulano@example.com"
+				href="/profile/basic/email"
 				className="border-none"
 			/>
 		</View>
