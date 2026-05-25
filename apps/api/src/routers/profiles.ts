@@ -46,15 +46,11 @@ export const profilesRouter = router({
       z.object({
         enrollment: z.string().min(4).max(20),
         course: z.string().min(2).max(100),
-        disabilityType: z.enum([
-          "motor",
-          "visual",
-          "auditory",
-          "deafblind",
-          "autism",
-          "multiple",
-          "other",
-        ]),
+        disabilityTypes: z
+          .array(
+            z.enum(["motor", "visual", "auditory", "deafblind", "autism", "other"]),
+          )
+          .min(1),
         attendanceNotes: z.string().max(1000).optional(),
         audioResponseEnabled: z.boolean().default(false),
       }),
@@ -72,16 +68,26 @@ export const profilesRouter = router({
         .set({ role: "student", updatedAt: new Date() })
         .where(eq(schema.user.id, ctx.session.user.id));
 
+      const { disabilityTypes, ...profileData } = input;
+
       const [profile] = await db
         .insert(schema.studentProfile)
         .values({
           id: generateProfileId("sp"),
           userId: ctx.session.user.id,
-          ...input,
+          ...profileData,
         })
         .returning();
 
-      return profile!;
+      await db.insert(schema.studentDisability).values(
+        disabilityTypes.map((dt) => ({
+          id: generateProfileId("sd"),
+          studentProfileId: profile.id,
+          disabilityType: dt,
+        })),
+      );
+
+      return profile;
     }),
 
   /**

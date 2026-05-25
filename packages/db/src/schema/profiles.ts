@@ -4,6 +4,7 @@ import {
   timestamp,
   boolean,
   pgEnum,
+  unique,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 
@@ -18,7 +19,6 @@ export const disabilityTypeEnum = pgEnum("disability_type", [
   "auditory",
   "deafblind",
   "autism",
-  "multiple",
   "other",
 ]);
 
@@ -44,8 +44,6 @@ export const studentProfile = pgTable("student_profile", {
 
   enrollment: text("enrollment").notNull().unique(),
   course: text("course").notNull(),
-
-  disabilityType: disabilityTypeEnum("disability_type").notNull(),
 
   /*
    * Campo livre para o estudante informar preferências de atendimento,
@@ -105,7 +103,26 @@ export const scholarProfile = pgTable("scholar_profile", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+/**
+ * Tabela para cadastrar os tipos de deficiência que um estudante pode ter.
+ */
+export const studentDisability = pgTable(
+  "student_disability",
+  {
+    id: text("id").primaryKey(),
+
+    studentProfileId: text("student_profile_id")
+      .notNull()
+      .references(() => studentProfile.id, { onDelete: "cascade" }),
+
+    disabilityType: disabilityTypeEnum("disability_type").notNull(),
+  },
+  (table) => [unique().on(table.studentProfileId, table.disabilityType)],
+);
+
 export type StudentProfile = typeof studentProfile.$inferSelect;
 export type NewStudentProfile = typeof studentProfile.$inferInsert;
 export type ScholarProfile = typeof scholarProfile.$inferSelect;
 export type NewScholarProfile = typeof scholarProfile.$inferInsert;
+export type StudentDisability = typeof studentDisability.$inferSelect;
+export type NewStudentDisability = typeof studentDisability.$inferInsert;
