@@ -1,19 +1,22 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
 	ArrowLeft,
+	Clock,
+	Cloud,
+	Footprints,
 	MapPin,
 	RotateCcw,
 	Star,
-	User as UserIcon,
 } from "lucide-react-native";
-import {
-	Platform,
-	ScrollView,
-	Text,
-	TouchableOpacity,
-	View,
-} from "react-native";
+import { Platform, ScrollView, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { Address, AddressRoute } from "@/components/address";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
+import { Text } from "@/components/ui/text";
 
 // import MapView from "../../components/ui/Map";
 
@@ -23,10 +26,10 @@ export default function HistoryDetails() {
 	const insets = useSafeAreaInsets();
 
 	return (
-		<View className="flex-1 bg-brand-background">
+		<View className="flex-1">
 			{/* Header */}
 			<View
-				className="px-6 pb-4 bg-brand-background flex-row items-center gap-4"
+				className="px-4 pb-4 flex-col w-full items-start gap-2 text-foreground"
 				style={{
 					paddingTop: Math.max(
 						insets.top + 10,
@@ -39,19 +42,18 @@ export default function HistoryDetails() {
 					activeOpacity={0.7}
 					className="p-2 -ml-2"
 				>
-					<ArrowLeft size={24} color="#111827" />
+					<Icon icon={ArrowLeft} size={24} color="foreground" />
 				</TouchableOpacity>
-				<Text className="text-gray-900 font-bold text-2xl">
-					Informações
-				</Text>
+				<Text className="font-bold text-2xl">Informações</Text>
 			</View>
 
-			<ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-				{/* Map Header inside Card */}
-				<View className="px-6 pt-2 pb-6">
-					<View className="bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-sm mb-6">
-						<View className="h-48 w-full bg-gray-200">
-							{/* <MapView
+			<ScrollView
+				className="flex-1"
+				contentContainerClassName="px-4 gap-4"
+				showsVerticalScrollIndicator={false}
+			>
+				<View className="h-48 w-full bg-card rounded-md items-end justify-end">
+					{/* <MapView
 								style={{ flex: 1 }}
 								initialRegion={{
 									latitude: -9.5539,
@@ -64,98 +66,117 @@ export default function HistoryDetails() {
 								pitchEnabled={false}
 								rotateEnabled={false}
 							/> */}
-						</View>
-						<View className="p-5">
-							<Text className="text-gray-900 font-bold text-xl mb-1">
-								CAC - Pista da UFAL
-							</Text>
-							<Text className="text-gray-500 text-sm">
-								6 de agosto • 19h
-							</Text>
-
-							{/* Bolsista Profile */}
-							<View className="flex-row items-center mt-4 pt-4 border-t border-gray-100 gap-3">
-								<View className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden items-center justify-center">
-									<UserIcon size={20} color="#9CA3AF" />
-								</View>
-								<View className="flex-1">
-									<Text className="text-gray-900 font-medium text-sm">
-										Atendido por João Carlos
-									</Text>
-								</View>
-								<View className="bg-sky-50 px-3 py-1 rounded-full flex-row items-center gap-1">
-									<Text className="text-sky-600 font-medium text-xs">
-										Manhã
-									</Text>
-								</View>
-							</View>
-						</View>
+					<View className="flex flex-row items-center justify-end gap-2 p-4">
+						<Badge className="text-primary-foreground">
+							<Icon
+								icon={Footprints}
+								size={14}
+								color="primary-foreground"
+							/>
+							<Text>2,1km</Text>
+						</Badge>
+						<Badge className="text-primary-foreground">
+							<Icon
+								icon={Clock}
+								size={14}
+								color="primary-foreground"
+							/>
+							<Text>29m</Text>
+						</Badge>
 					</View>
+				</View>
 
-					{/* Timeline */}
-					<View className="px-2 mb-8">
-						<View className="flex-row items-start mb-6 relative">
-							<View className="items-center mr-4">
-								<View className="bg-brand-primary/10 w-10 h-10 rounded-full items-center justify-center">
-									<MapPin size={18} color="#00635D" />
-								</View>
-								{/* Vertical Line */}
-								<View className="w-0.5 h-10 bg-gray-200 absolute top-10" />
-							</View>
-							<View className="flex-1 justify-center h-10">
-								<Text className="text-gray-900 font-bold text-base">
-									CAC - Centro de Artes e Cultura
-								</Text>
-							</View>
-							<View className="justify-center h-10">
-								<Text className="text-gray-400 text-xs">
-									8:04 PM
-								</Text>
-							</View>
-						</View>
+				<View className="gap-1">
+					<Text className="font-bold text-2xl">
+						CAC - Pista da UFAL
+					</Text>
+					<Text className="text-muted-foreground text-base">
+						6 de agosto • 19h
+					</Text>
+				</View>
 
-						<View className="flex-row items-start">
-							<View className="items-center mr-4">
-								<View className="bg-[#00635D] w-10 h-10 rounded-full items-center justify-center">
-									<MapPin size={18} color="white" />
-								</View>
-							</View>
-							<View className="flex-1 justify-center h-10">
-								<Text className="text-gray-900 font-bold text-base">
-									Pista da UFAL
-								</Text>
-							</View>
-							<View className="justify-center h-10">
-								<Text className="text-gray-400 text-xs">
-									8:33 PM
-								</Text>
-							</View>
-						</View>
-					</View>
-
-					{/* Action Buttons */}
-					<View className="gap-3">
-						<TouchableOpacity
-							activeOpacity={0.8}
-							className="bg-[#00635D] w-full py-4 rounded-full flex-row items-center justify-center gap-2 shadow-sm"
-						>
-							<Star size={18} color="white" />
-							<Text className="text-white font-bold text-base">
-								Avaliar
+				{/* Bolsista Profile */}
+				<View className="flex-row items-center gap-3">
+					<Avatar alt="Zach Nugent's Avatar">
+						<AvatarImage
+							source={{
+								uri: "https://github.com/meninocoiso.png",
+							}}
+						/>
+						<AvatarFallback>
+							<Text>ZN</Text>
+						</AvatarFallback>
+					</Avatar>
+					<View className="flex-1">
+						<Text className="font-medium text-sm">
+							Atendido por{" "}
+							<Text className="font-semibold text-sm">
+								João Carlos
 							</Text>
-						</TouchableOpacity>
-
-						<TouchableOpacity
-							activeOpacity={0.8}
-							className="bg-brand-primary w-full py-4 rounded-full flex-row items-center justify-center gap-2 shadow-sm"
-							style={{ backgroundColor: "#0f766e" }}
-						>
-							<RotateCcw size={18} color="white" />
-							<Text className="text-white font-bold text-base">
-								Reagendar
-							</Text>
-						</TouchableOpacity>
+						</Text>
 					</View>
+					<Badge
+						variant="secondary"
+						className="px-2 py-0.5 text-foreground"
+					>
+						<Icon icon={Cloud} size={14} color="foreground" />
+						<Text>Manhã</Text>
+					</Badge>
+				</View>
+
+				{/* <AddressRoute
+					from={{
+						label: "CAC - Centro de Artes e Cultura",
+						children: (
+							<Text className="text-xs font-medium text-muted-foreground">
+								8:04 PM
+							</Text>
+						),
+					}}
+					to={{
+						label: "Pista da UFAL",
+						children: (
+							<Text className="text-xs font-medium text-muted-foreground">
+								8:33 PM
+							</Text>
+						),
+					}}
+				/> */}
+
+				<View className={"w-full flex-col items-start"}>
+					<Address
+						marker="from"
+						label="CAC - Centro de Artes e Cultura"
+						className="border-b border-border px-3 py-4"
+						size="lg"
+					>
+						<Text className="text-xs font-medium text-muted-foreground">
+							8:04 PM
+						</Text>
+					</Address>
+					<Address
+						marker="to"
+						label="Pista da UFAL"
+						className="px-3 py-4"
+						size="lg"
+					>
+						<Text className="text-xs font-medium text-muted-foreground">
+							8:33 PM
+						</Text>
+					</Address>
+				</View>
+
+				{/* Action Buttons */}
+				<View className="gap-3 w-full">
+					<Button className="rounded-full w-full text-white">
+						<Icon icon={Star} size={18} color="white" />
+						<Text>Avaliar</Text>
+					</Button>
+
+					<Button className="rounded-full w-full text-white">
+						<Icon icon={RotateCcw} size={18} color="white" />
+						<Text>Reagendar</Text>
+					</Button>
 				</View>
 			</ScrollView>
 		</View>

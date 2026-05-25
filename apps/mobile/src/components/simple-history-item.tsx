@@ -1,28 +1,38 @@
-import { Clock, RotateCcw } from "lucide-react-native";
+import { Link } from "expo-router";
+import { Clock } from "lucide-react-native";
 import { Pressable, View } from "react-native";
 
-import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
+import { cn } from "@/lib/utils";
+
 interface SimpleHistoryItemProps {
+	className?: string;
 	title: string;
 	subtitle: string;
-	onPress: () => void;
+	href: string;
 }
 
 export const SimpleHistoryItem = ({
+	className,
 	title,
 	subtitle,
-	onPress,
+	href,
 }: SimpleHistoryItemProps) => {
 	return (
-		<View className="flex-row items-center py-4 gap-4 border-b border-border">
+		<Link
+			asChild
+			href={href}
+			accessibilityRole="button"
+			accessibilityLabel={title}
+			accessibilityHint="Duplo toque para ver detalhes"
+		>
 			<Pressable
-				onPress={onPress}
-				accessibilityRole="button"
-				accessibilityLabel={title}
-				accessibilityHint="Duplo toque para ver detalhes"
-				className="flex-row items-center flex-1 gap-4"
+				android_ripple={{ color: "rgba(0, 0, 0, 0.25)" }}
+				className={cn(
+					"flex-row items-center py-4 px-6 gap-4 border-border flex-1 active:bg-accent/50 android:active:bg-transparent transition-colors",
+					className,
+				)}
 			>
 				<View className="bg-primary w-14 h-14 rounded-sm items-center justify-center shadow-sm">
 					<Clock size={20} color="white" />
@@ -38,11 +48,11 @@ export const SimpleHistoryItem = ({
 						{subtitle}
 					</Text>
 				</View>
-			</Pressable>
-			{/* <Button variant={"secondary"} className="rounded-full">
+				{/* <Button variant={"secondary"} className="rounded-full">
 				<RotateCcw size={16} className="text-secondary-foreground" />
 				<Text className="font-medium">Reagendar</Text>
 			</Button> */}
-		</View>
+			</Pressable>
+		</Link>
 	);
 };
