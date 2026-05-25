@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
 import { Pressable, View } from "react-native";
 
@@ -10,6 +11,7 @@ interface Props {
 	title: string;
 	label: string;
 	variant?: "default" | "destructive";
+	href?: string;
 	className?: string;
 	children?: React.ReactNode;
 }
@@ -19,11 +21,14 @@ export function SettingsButton({
 	label,
 	variant,
 	className,
+	href,
 	children,
 }: Props) {
+	const router = useRouter();
+
 	return (
 		<Pressable
-			android_ripple={children ? null : { color: "rgba(0, 0, 0, 0.1)" }}
+			android_ripple={href ? { color: "rgba(0, 0, 0, 0.1)" } : undefined}
 			className={cn(
 				"flex flex-row items-center justify-between p-6 border-b border-border active:bg-primary/50 transition-colors android:active:bg-transparent w-full gap-3",
 				{
@@ -31,6 +36,11 @@ export function SettingsButton({
 				},
 				className,
 			)}
+			onPress={() => {
+				if (href) {
+					router.push(href);
+				}
+			}}
 		>
 			<View className="flex flex-col items-start justify-center flex-1">
 				<Text

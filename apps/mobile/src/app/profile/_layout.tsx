@@ -31,10 +31,10 @@ export default function ProfileLayout() {
 				name="academic"
 				options={{ headerTitle: "Dados acadêmicos" }}
 			/>
-			<Stack.Screen
+			{/* <Stack.Screen
 				name="saved-locations"
 				options={{ headerTitle: "Locais salvos" }}
-			/>
+			/> */}
 			<Stack.Screen
 				name="accessibility"
 				options={{ headerTitle: "Acessibilidade" }}
