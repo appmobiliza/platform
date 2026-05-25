@@ -84,10 +84,10 @@ export const studentProfile = pgTable("student_profile", {
   attendanceNotes: text("attendance_notes"),
 
   /*
-   * Quando ativo, o app lê automaticamente as atualizações de status em voz
-   * alta via Text-to-Speech — pensado para usuários com deficiência visual.
+   * Quando ativo, a interface do app é simplificada para usuários com
+   * baixa visão.
    */
-  audioResponseEnabled: boolean("audio_response_enabled")
+  simplifiedInterface: boolean("simplified_interface")
     .notNull()
     .default(false),
 

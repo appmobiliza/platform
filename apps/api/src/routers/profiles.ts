@@ -57,7 +57,7 @@ export const profilesRouter = router({
           )
           .min(1),
         attendanceNotes: z.string().max(1000).optional(),
-        audioResponseEnabled: z.boolean().default(false),
+        simplifiedInterface: z.boolean().default(false),
       }),
     )
     .mutation(async ({ ctx, input }) => {
