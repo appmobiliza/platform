@@ -44,6 +44,7 @@ export const studentProfile = pgTable("student_profile", {
 
   enrollment: text("enrollment").notNull().unique(),
   course: text("course").notNull(),
+  phone: text("phone").notNull(),
 
   /*
    * Campo livre para o estudante informar preferências de atendimento,
@@ -80,6 +81,7 @@ export const scholarProfile = pgTable("scholar_profile", {
 
   enrollment: text("enrollment").notNull().unique(),
   course: text("course").notNull(),
+  phone: text("phone").notNull(),
   shift: shiftEnum("shift").notNull(),
 
   /*

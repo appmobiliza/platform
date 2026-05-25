@@ -46,6 +46,7 @@ export const profilesRouter = router({
       z.object({
         enrollment: z.string().min(4).max(20),
         course: z.string().min(2).max(100),
+        phone: z.string().regex(/^\d{10,11}$/),
         disabilityTypes: z
           .array(
             z.enum(["motor", "visual", "auditory", "deafblind", "autism", "other"]),
@@ -100,6 +101,7 @@ export const profilesRouter = router({
         enrollment: z.string().min(4).max(20),
         course: z.string().min(2).max(100),
         shift: z.enum(["morning", "afternoon", "night"]),
+        phone: z.string().regex(/^\d{10,11}$/),
       }),
     )
     .mutation(async ({ ctx, input }) => {
