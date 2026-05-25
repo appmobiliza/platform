@@ -14,9 +14,9 @@ export function SettingsHeader({ title, description }: SettingsHeaderProps) {
 	const router = useRouter();
 
 	return (
-		<View className="gap-4">
+		<View className="gap-4 pt-12">
 			<TouchableOpacity onPress={() => router.back()}>
-				<Icon icon={ArrowLeftToLine} size={24} color="foreground" />
+				<Icon icon={ArrowLeftToLine} size={32} color="foreground" />
 			</TouchableOpacity>
 			<View className="gap-1">
 				<Text className="text-4xl font-semibold">{title}</Text>

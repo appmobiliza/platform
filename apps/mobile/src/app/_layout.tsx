@@ -4,6 +4,7 @@ import { Stack } from "expo-router";
 import "../global.css";
 
 import { useColorScheme } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { useIsLoggedIn } from "@/lib/auth-store";
 import { THEME } from "@/lib/theme";
@@ -22,20 +23,22 @@ export default function RootLayout() {
 		colorScheme === "dark" ? THEME.dark.background : THEME.light.background;
 
 	return (
-		<Stack
-			screenOptions={{
-				headerShown: false,
-				contentStyle: { backgroundColor: bgColor },
-			}}
-		>
-			<Stack.Protected guard={isLoggedIn}>
-				<Stack.Screen name="(tabs)" />
-			</Stack.Protected>
+		<GestureHandlerRootView style={{ flex: 1, backgroundColor: bgColor }}>
+			<Stack
+				screenOptions={{
+					headerShown: false,
+					contentStyle: { backgroundColor: bgColor },
+				}}
+			>
+				<Stack.Protected guard={isLoggedIn}>
+					<Stack.Screen name="(tabs)" />
+				</Stack.Protected>
 
-			<Stack.Protected guard={!isLoggedIn}>
-				<Stack.Screen name="auth" />
-				<Stack.Screen name="onboarding" />
-			</Stack.Protected>
-		</Stack>
+				<Stack.Protected guard={!isLoggedIn}>
+					<Stack.Screen name="auth" />
+					<Stack.Screen name="onboarding" />
+				</Stack.Protected>
+			</Stack>
+		</GestureHandlerRootView>
 	);
 }

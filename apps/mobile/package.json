@@ -4,6 +4,7 @@
 	"version": "1.0.0",
 	"dependencies": {
 		"@expo/ui": "~56.0.7",
+		"@gorhom/bottom-sheet": "^5",
 		"@rn-primitives/avatar": "^1.4.0",
 		"@rn-primitives/label": "^1.4.0",
 		"@rn-primitives/slot": "^1.4.0",
