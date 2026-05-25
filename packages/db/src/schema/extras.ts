@@ -2,7 +2,6 @@ import {
   pgTable,
   text,
   timestamp,
-  boolean,
   integer,
   pgEnum,
   serial,
@@ -122,7 +121,6 @@ export const notification = pgTable("notification", {
    */
   resourceId: text("resource_id"),
 
-  isRead: boolean("is_read").notNull().default(false),
   readAt: timestamp("read_at"),
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
