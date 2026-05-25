@@ -59,7 +59,7 @@ export default function Home() {
 							"Faculdade de Letras",
 							"Instituto de Ciências Biológicas",
 						]}
-						onPress={() => router.push("/saved/address")}
+						onPress={() => router.push("/request")}
 					/>
 				</View>
 
@@ -101,7 +101,7 @@ export default function Home() {
 					<Text className="font-bold text-lg mb-3">
 						Rotas Frequentes
 					</Text>
-					<View className="flex-col gap-2">
+					<View className="flex-col gap-3">
 						<PlaceCard
 							title="Restaurante Universitário"
 							subtitle="Último deslocamento há 2 dias"
