@@ -1,17 +1,25 @@
-import { useState } from "react";
-
 import { useRouter } from "expo-router";
 import { Accessibility, Ear, Ellipsis, Eye } from "lucide-react-native";
+import { Controller, useForm } from "react-hook-form";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 
 import { Header } from "@/components/header";
+import { StepIndicator } from "@/components/step-indicator";
 import { Button } from "@/components/ui/button";
+import {
+	Field,
+	FieldDescription,
+	FieldError,
+	FieldGroup,
+	FieldLegend,
+	FieldSet,
+} from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { Text } from "@/components/ui/text";
 
-import { type AccessibilityInput, AccessibilitySchema } from "@/schemas";
+import { zodResolver } from "@/lib/zod-resolver";
 
-import { StepIndicator } from "../../components/step-indicator";
+import { type AccessibilityInput, AccessibilitySchema } from "@/schemas";
 
 const INITIAL_OPTIONS = [
 	{
@@ -26,19 +34,19 @@ const INITIAL_OPTIONS = [
 
 export default function AccessibilityInfo() {
 	const router = useRouter();
-	const [audioEnabled, setAudioEnabled] = useState(false);
-	const [selectedIds, setSelectedIds] = useState<string[]>([]);
-	const [errors, setErrors] = useState<
-		Partial<Record<keyof AccessibilityInput, string>>
-	>({});
 
-	const toggleSelection = (id: string) => {
-		setSelectedIds((prev) =>
-			prev.includes(id)
-				? prev.filter((item) => item !== id)
-				: [...prev, id],
-		);
-	};
+	const {
+		control,
+		handleSubmit,
+		formState: { errors },
+	} = useForm<AccessibilityInput>({
+		resolver: zodResolver(AccessibilitySchema),
+		defaultValues: {
+			disabilityType: [],
+			needsAudioDescription: false,
+		},
+		mode: "onTouched",
+	});
 
 	const steps = [
 		{ id: "basic", title: "Dados Básicos" },
@@ -46,29 +54,10 @@ export default function AccessibilityInfo() {
 		{ id: "accessibility", title: "Acessibilidade" },
 	];
 
-	const handleFinish = () => {
-		const data: AccessibilityInput = {
-			disabilityType: selectedIds,
-			needsAudioDescription: audioEnabled,
-		};
-		const result = AccessibilitySchema.safeParse(data);
-
-		if (!result.success) {
-			const fieldErrors: Partial<
-				Record<keyof AccessibilityInput, string>
-			> = {};
-			result.error.issues.forEach((issue) => {
-				const field = issue.path[0] as keyof AccessibilityInput;
-				fieldErrors[field] = issue.message;
-			});
-			setErrors(fieldErrors);
-			return;
-		}
-
-		setErrors({});
+	const handleFinish = handleSubmit(() => {
 		// TODO: Integrar com API quando backend estiver pronto
 		router.push("/");
-	};
+	});
 
 	return (
 		<View className="flex-1 px-4">
@@ -76,79 +65,138 @@ export default function AccessibilityInfo() {
 
 			<ScrollView
 				className="flex-1"
+				keyboardShouldPersistTaps="handled"
 				contentContainerStyle={{
 					paddingHorizontal: 24,
 					paddingBottom: 32,
 				}}
 			>
-				<Text className="text-2xl font-bold mt-2 mb-2">
+				<Text className="mb-2 mt-2 text-2xl font-bold">
 					Cadastrar-se no Mobiliza
 				</Text>
-				<Text className="text-sm text-muted-foreground leading-relaxed mb-6">
+				<Text className="mb-6 text-sm leading-relaxed text-muted-foreground">
 					Selecione uma ou mais opções com base em suas necessidades
 					de acessibilidade
 				</Text>
 
 				<StepIndicator steps={steps} currentStepId="accessibility" />
 
-				{errors.disabilityType && (
-					<Text className="text-sm text-red-500 mt-4">
-						{errors.disabilityType}
-					</Text>
-				)}
+				<FieldSet className="mt-8">
+					<FieldLegend>Acessibilidade</FieldLegend>
+					<FieldDescription>
+						Selecione as necessidades que descrevem sua experiência.
+					</FieldDescription>
 
-				<View className="mt-8 flex-row flex-wrap justify-between">
-					{INITIAL_OPTIONS.map((option) => {
-						const Icon = option.icon;
-						const isSelected = selectedIds.includes(option.id);
+					<FieldGroup className="mt-4">
+						<Controller
+							control={control}
+							name="disabilityType"
+							render={({ field, fieldState }) => {
+								const selectedIds = field.value ?? [];
 
-						return (
-							<TouchableOpacity
-								key={option.id}
-								activeOpacity={0.8}
-								onPress={() => toggleSelection(option.id)}
-								className={[
-									"w-[48%] mb-4 p-4 rounded-xl items-center justify-center min-h-[120px] border-2",
-									isSelected
-										? "bg-brand-primary border-brand-primary"
-										: "bg-white border-neutral-200",
-								]
-									.filter(Boolean)
-									.join(" ")}
-							>
-								<Icon
-									size={32}
-									color={isSelected ? "#ffffff" : "#171717"}
-									strokeWidth={2}
-								/>
-								<Text
-									className={[
-										"text-center mt-3 text-sm font-medium",
-										isSelected
-											? "text-white"
-											: "text-neutral-900",
-									]
-										.filter(Boolean)
-										.join(" ")}
-								>
-									{option.label}
-								</Text>
-							</TouchableOpacity>
-						);
-					})}
-				</View>
+								return (
+									<Field
+										label="Tipos de acessibilidade"
+										description="Selecione uma ou mais opções."
+										error={fieldState.error?.message}
+									>
+										<View className="mt-4 flex-row flex-wrap justify-between">
+											{INITIAL_OPTIONS.map((option) => {
+												const Icon = option.icon;
+												const isSelected =
+													selectedIds.includes(
+														option.id,
+													);
 
-				<View className="flex-row items-center justify-between mt-4 mb-8 bg-card p-4 rounded-xl border border-border">
-					<Text className="text-base font-medium flex-1 mr-4">
-						Ativar interface adaptada para leitores de tela
-					</Text>
-					<Switch
-						checked={audioEnabled}
-						onCheckedChange={setAudioEnabled}
-					/>
-				</View>
+												return (
+													<TouchableOpacity
+														key={option.id}
+														activeOpacity={0.8}
+														onPress={() => {
+															const nextValue =
+																isSelected
+																	? selectedIds.filter(
+																			(
+																				item,
+																			) =>
+																				item !==
+																				option.id,
+																		)
+																	: [
+																			...selectedIds,
+																			option.id,
+																		];
 
-				<Button onPress={handleFinish}>
+															field.onChange(
+																nextValue,
+															);
+														}}
+														accessibilityRole="checkbox"
+														accessibilityState={{
+															checked: isSelected,
+														}}
+														className={[
+															"mb-4 min-h-[120px] w-[48%] items-center justify-center rounded-xl border-2 p-4",
+															isSelected
+																? "border-brand-primary bg-brand-primary"
+																: "border-neutral-200 bg-white",
+														].join(" ")}
+													>
+														<Icon
+															size={32}
+															color={
+																isSelected
+																	? "#ffffff"
+																	: "#171717"
+															}
+															strokeWidth={2}
+														/>
+														<Text
+															className={[
+																"mt-3 text-center text-sm font-medium",
+																isSelected
+																	? "text-white"
+																	: "text-neutral-900",
+															].join(" ")}
+														>
+															{option.label}
+														</Text>
+													</TouchableOpacity>
+												);
+											})}
+										</View>
+									</Field>
+								);
+							}}
+						/>
+
+						<Field
+							orientation="horizontal"
+							label="Ativar interface adaptada para leitores de tela"
+						>
+							<Controller
+								control={control}
+								name="needsAudioDescription"
+								render={({ field }) => (
+									<Switch
+										checked={field.value}
+										onCheckedChange={field.onChange}
+										accessibilityLabel="Ativar interface adaptada para leitores de tela"
+									/>
+								)}
+							/>
+						</Field>
+
+						{errors.disabilityType ? (
+							<FieldError
+								className="mt-1"
+								errors={[errors.disabilityType]}
+							/>
+						) : null}
+					</FieldGroup>
+				</FieldSet>
+
+				<Button className="mt-8" onPress={handleFinish}>
 					<Text>Concluir</Text>
 				</Button>
 			</ScrollView>
