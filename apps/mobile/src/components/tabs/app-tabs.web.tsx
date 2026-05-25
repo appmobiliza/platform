@@ -15,7 +15,7 @@ export default function AppTabs() {
 	const isProfileActive = pathname.startsWith("/profile");
 
 	return (
-		<Tabs className="flex h-screen min-h-0 flex-col bg-background overflow-y-scroll">
+		<Tabs className="flex h-screen min-h-0 flex-col bg-background overflow-y-scroll pb-24">
 			<TabSlot className="flex-1 min-h-0 pb-28" />
 			<TabList className="fixed bottom-4 left-1/2 z-50 max-w-md -translate-x-1/2 flex-row items-center rounded-full border border-border/60 bg-background/95 px-2 py-2 shadow-lg backdrop-blur supports-backdrop-filter:bg-background/80">
 				<TabTrigger

@@ -92,9 +92,9 @@ export default function Profile() {
 						<Pressable
 							android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
 							className={cn(
-								"w-full flex-row items-center justify-center px-8 py-6 border-b active:bg-accent/50 transition-colors",
+								"w-full flex-row items-center justify-center px-8 py-6 border-border active:bg-accent/50 transition-colors",
 								{
-									"border-border": index < options.length - 1,
+									"border-b": index < options.length - 1,
 								},
 							)}
 						>
