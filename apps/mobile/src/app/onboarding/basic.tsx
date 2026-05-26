@@ -1,22 +1,38 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
-import { Button } from "../../components/ui/Button";
-import { Header } from "../../components/ui/Header";
-import { Input } from "../../components/ui/Input";
-import { Select } from "../../components/ui/Select";
-import { StepIndicator } from "../../components/ui/StepIndicator";
+import { Controller, useForm } from "react-hook-form";
+import { ScrollView, View } from "react-native";
+// import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+
+import { Header } from "@/components/header";
+import { StepIndicator } from "@/components/step-indicator";
+import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { MaskedInput } from "@/components/ui/masked-input";
+import { SelectField } from "@/components/ui/select-field";
+import { Text } from "@/components/ui/text";
+
+import { zodResolver } from "@/lib/zod-resolver";
 
 import { genderOptions } from "@/constants";
-import { BasicInfoSchema, type BasicInfoInput } from "@/schemas";
+import { type BasicInfoInput, BasicInfoSchema } from "@/schemas";
 
 export default function BasicInfo() {
 	const router = useRouter();
 
-	const [name, setName] = useState("");
-	const [phone, setPhone] = useState("");
-	const [gender, setGender] = useState("");
-	const [errors, setErrors] = useState<Partial<Record<keyof BasicInfoInput, string>>>({});
+	const {
+		control,
+		handleSubmit,
+		formState: { errors },
+	} = useForm<BasicInfoInput>({
+		resolver: zodResolver(BasicInfoSchema),
+		defaultValues: {
+			name: "",
+			phone: "",
+			gender: "",
+		},
+		mode: "onTouched",
+	});
 
 	const steps = [
 		{ id: "basic", title: "Dados Básicos" },
@@ -24,75 +40,95 @@ export default function BasicInfo() {
 		{ id: "accessibility", title: "Acessibilidade" },
 	];
 
-	const handleContinue = () => {
-		const data: BasicInfoInput = { name, phone, gender };
-		const result = BasicInfoSchema.safeParse(data);
-
-		if (!result.success) {
-			const fieldErrors: Partial<Record<keyof BasicInfoInput, string>> = {};
-			result.error.issues.forEach((issue) => {
-				const field = issue.path[0] as keyof BasicInfoInput;
-				fieldErrors[field] = issue.message;
-			});
-			setErrors(fieldErrors);
-			return;
-		}
-
-		setErrors({});
+	const handleContinue = handleSubmit(() => {
 		router.push("/onboarding/course");
-	};
+	});
 
 	return (
-		<View className="flex-1 bg-white">
-			<Header />
+		<View className="flex-1">
+			<Header title="Cadastrar-se no Mobiliza" size="small" />
 
 			<ScrollView
 				className="flex-1"
-				contentContainerStyle={{
-					paddingHorizontal: 24,
-					paddingBottom: 32,
-				}}
+				keyboardShouldPersistTaps="handled"
+				contentContainerClassName="px-4"
 			>
-				<Text className="text-2xl font-bold text-neutral-900 mt-2 mb-2">
+				{/* <Text className="mb-2 mt-2 text-2xl font-bold">
 					Cadastrar-se no Mobiliza
-				</Text>
-				<Text className="text-sm text-neutral-500 leading-relaxed mb-6">
+				</Text> */}
+				<Text className="mb-6 text-base leading-relaxed text-muted-foreground">
 					Antes, precisamos de algumas informações suas para facilitar
 					os atendimentos do MobiUFAL
 				</Text>
 
 				<StepIndicator steps={steps} currentStepId="basic" />
 
-				<View className="mt-8 space-y-4 gap-4">
-					<Input
-						label="Nome Completo"
-						placeholder="Fulano da Silva Júnior"
-						value={name}
-						onChangeText={setName}
-						error={errors.name}
+				<View className="mt-8 gap-4">
+					<Controller
+						control={control}
+						name="name"
+						render={({ field }) => (
+							<Field
+								label="Nome Completo"
+								description="Use o nome que deve aparecer nos seus atendimentos."
+								error={errors.name?.message}
+							>
+								<Input
+									placeholder="Fulano da Silva Júnior"
+									value={field.value}
+									onBlur={field.onBlur}
+									onChangeText={field.onChange}
+									autoCapitalize="words"
+									autoComplete="name"
+									accessibilityLabel="Nome Completo"
+									aria-invalid={Boolean(errors.name)}
+								/>
+							</Field>
+						)}
 					/>
 
-					<Input
-						label="Telefone"
-						placeholder="(DDD) XXXXX-XXXX"
-						keyboardType="phone-pad"
-						value={phone}
-						onChangeText={setPhone}
-						error={errors.phone}
+					<Controller
+						control={control}
+						name="phone"
+						render={({ field }) => (
+							<Field
+								label="Telefone"
+								description="Use o número principal para contato e recuperação da conta."
+								error={errors.phone?.message}
+							>
+								<MaskedInput
+									mask="phone"
+									placeholder="(DDD) XXXXX-XXXX"
+									value={field.value}
+									onBlur={field.onBlur}
+									onChangeText={field.onChange}
+									autoComplete="tel"
+									accessibilityLabel="Telefone"
+									aria-invalid={Boolean(errors.phone)}
+								/>
+							</Field>
+						)}
 					/>
 
-					<Select
-						label="Gênero"
-						value={gender}
-						onSelect={setGender}
-						options={genderOptions}
-						placeholder="Selecione seu gênero"
-						error={errors.gender}
+					<Controller
+						control={control}
+						name="gender"
+						render={({ field }) => (
+							<SelectField
+								label="Gênero"
+								description="Selecione a opção que melhor representa você."
+								value={field.value}
+								placeholder="Selecionar gênero"
+								options={genderOptions}
+								onValueChange={field.onChange}
+								error={errors.gender?.message}
+							/>
+						)}
 					/>
 				</View>
 
 				<Button className="mt-8" onPress={handleContinue}>
-					Continuar
+					<Text>Continuar</Text>
 				</Button>
 			</ScrollView>
 		</View>

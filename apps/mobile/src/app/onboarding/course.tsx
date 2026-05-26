@@ -1,23 +1,37 @@
-import { useState } from "react";
 import { useRouter } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
-import { Button } from "../../components/ui/Button";
-import { Header } from "../../components/ui/Header";
-import { Input } from "../../components/ui/Input";
-import { Select } from "../../components/ui/Select";
-import { StepIndicator } from "../../components/ui/StepIndicator";
+import { Controller, useForm } from "react-hook-form";
+import { ScrollView, View } from "react-native";
 
-import { courseOptions, shiftOptions, campusOptions } from "@/constants";
-import { CourseInfoSchema, type CourseInfoInput } from "@/schemas";
+import { Header } from "@/components/header";
+import { StepIndicator } from "@/components/step-indicator";
+import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { SelectField } from "@/components/ui/select-field";
+import { Text } from "@/components/ui/text";
+
+import { zodResolver } from "@/lib/zod-resolver";
+
+import { campusOptions, courseOptions, shiftOptions } from "@/constants";
+import { type CourseInfoInput, CourseInfoSchema } from "@/schemas";
 
 export default function CourseInfo() {
 	const router = useRouter();
 
-	const [course, setCourse] = useState("");
-	const [shift, setShift] = useState("");
-	const [campus, setCampus] = useState("");
-	const [matricula, setMatricula] = useState("");
-	const [errors, setErrors] = useState<Partial<Record<keyof CourseInfoInput, string>>>({});
+	const {
+		control,
+		handleSubmit,
+		formState: { errors },
+	} = useForm<CourseInfoInput>({
+		resolver: zodResolver(CourseInfoSchema),
+		defaultValues: {
+			course: "",
+			shift: "",
+			campus: "",
+			matricula: "",
+		},
+		mode: "onTouched",
+	});
 
 	const steps = [
 		{ id: "basic", title: "Dados Básicos" },
@@ -25,84 +39,107 @@ export default function CourseInfo() {
 		{ id: "accessibility", title: "Acessibilidade" },
 	];
 
-	const handleContinue = () => {
-		const data: CourseInfoInput = { course, shift, campus, matricula };
-		const result = CourseInfoSchema.safeParse(data);
-
-		if (!result.success) {
-			const fieldErrors: Partial<Record<keyof CourseInfoInput, string>> = {};
-			result.error.issues.forEach((issue) => {
-				const field = issue.path[0] as keyof CourseInfoInput;
-				fieldErrors[field] = issue.message;
-			});
-			setErrors(fieldErrors);
-			return;
-		}
-
-		setErrors({});
+	const handleContinue = handleSubmit(() => {
 		router.push("/onboarding/accessibility");
-	};
+	});
 
 	return (
-		<View className="flex-1 bg-white">
-			<Header />
+		<View className="flex-1">
+			<Header title="Cadastrar-se no Mobiliza" size="small" />
 
 			<ScrollView
 				className="flex-1"
-				contentContainerStyle={{
-					paddingHorizontal: 24,
-					paddingBottom: 32,
-				}}
+				contentContainerClassName="px-4"
+				keyboardShouldPersistTaps="handled"
 			>
-				<Text className="text-2xl font-bold text-neutral-900 mt-2 mb-2">
+				{/* <Text className="mb-2 mt-2 text-2xl font-bold">
 					Cadastrar-se no Mobiliza
-				</Text>
-				<Text className="text-sm text-neutral-500 leading-relaxed mb-6">
-					Vamos fazer algumas poucas perguntas rápidas
+				</Text> */}
+				<Text className="mb-6 text-base leading-relaxed text-muted-foreground">
+					Agora, vamos fazer algumas perguntas rápidas sobre sua
+					relação com a universidade
 				</Text>
 
 				<StepIndicator steps={steps} currentStepId="course" />
 
-				<View className="mt-8 space-y-4 gap-4">
-					<Select
-						label="Curso"
-						value={course}
-						onSelect={setCourse}
-						options={courseOptions}
-						placeholder="Selecione o curso"
-						error={errors.course}
+				<View className="mt-8 gap-4">
+					<Controller
+						control={control}
+						name="course"
+						render={({ field }) => (
+							<SelectField
+								label="Curso"
+								description="Selecione o curso em que você está matriculado."
+								value={field.value}
+								placeholder="Selecione o curso"
+								options={courseOptions}
+								onValueChange={field.onChange}
+								error={errors.course?.message}
+							/>
+						)}
 					/>
 
-					<Select
-						label="Turno"
-						value={shift}
-						onSelect={setShift}
-						options={shiftOptions}
-						placeholder="Selecione o turno"
-						error={errors.shift}
+					<Controller
+						control={control}
+						name="shift"
+						render={({ field }) => (
+							<SelectField
+								label="Turno"
+								description="Escolha o turno principal das suas aulas."
+								value={field.value}
+								placeholder="Selecione o turno"
+								options={shiftOptions}
+								onValueChange={field.onChange}
+								error={errors.shift?.message}
+							/>
+						)}
 					/>
 
-					<Select
-						label="Campus"
-						value={campus}
-						onSelect={setCampus}
-						options={campusOptions}
-						placeholder="Selecione o campus"
-						error={errors.campus}
+					<Controller
+						control={control}
+						name="campus"
+						render={({ field }) => (
+							<SelectField
+								label="Campus"
+								description="Selecione o campus onde você estuda."
+								value={field.value}
+								placeholder="Selecione o campus"
+								options={campusOptions}
+								onValueChange={field.onChange}
+								error={errors.campus?.message}
+							/>
+						)}
 					/>
 
-					<Input
-						label="Matrícula"
-						placeholder="23415364"
-						keyboardType="numeric"
-						value={matricula}
-						onChangeText={setMatricula}
-						error={errors.matricula}
+					<Controller
+						control={control}
+						name="matricula"
+						render={({ field }) => (
+							<Field
+								label="Matrícula"
+								description="Digite a matrícula usada pela universidade."
+								error={errors.matricula?.message}
+							>
+								<Input
+									placeholder="23415364"
+									keyboardType="number-pad"
+									value={field.value}
+									onBlur={field.onBlur}
+									onChangeText={field.onChange}
+									autoComplete="off"
+									autoCapitalize="none"
+									maxLength={20}
+									autoCorrect={false}
+									accessibilityLabel="Matrícula"
+									aria-invalid={Boolean(errors.matricula)}
+								/>
+							</Field>
+						)}
 					/>
 				</View>
 
 				<Button className="mt-8" onPress={handleContinue}>
-					Continuar
+					<Text>Continuar</Text>
 				</Button>
 			</ScrollView>
 		</View>

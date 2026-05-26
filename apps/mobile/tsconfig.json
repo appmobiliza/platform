@@ -1,21 +1,18 @@
 {
-  "extends": ["expo/tsconfig.base", "@mobiliza/typescript-config/expo.json"],
-  "compilerOptions": {
-    "jsx": "react-native",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@/assets/*": [
-        "./assets/*"
-      ]
-    }
-  },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts",
-    "nativewind-env.d.ts"
-  ]
+	"extends": ["expo/tsconfig.base", "@mobiliza/typescript-config/expo.json"],
+	"compilerOptions": {
+		"jsx": "react-native",
+		"paths": {
+			"@/*": ["./src/*"],
+			"@/assets/*": ["./assets/*"]
+		}
+	},
+	"include": [
+		"src/**/*.ts",
+		"src/**/*.tsx",
+		".expo/types/**/*.ts",
+		"expo-env.d.ts",
+		"nativewind-env.d.ts"
+	],
+	"exclude": ["node_modules", "dist", ".expo", "babel.config.js"]
 }
