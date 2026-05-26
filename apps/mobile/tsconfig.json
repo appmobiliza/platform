@@ -1,9 +1,14 @@
 {
-  "extends": "@mobiliza/typescript-config/expo.json",
+  "extends": ["expo/tsconfig.base", "@mobiliza/typescript-config/expo.json"],
   "compilerOptions": {
+    "jsx": "react-native",
     "paths": {
-      "@/*": ["./src/*"],
-      "@/assets/*": ["./assets/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@/assets/*": [
+        "./assets/*"
+      ]
     }
   },
   "include": [

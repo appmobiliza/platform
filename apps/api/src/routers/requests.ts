@@ -112,13 +112,13 @@ export const requestsRouter = router({
 
       // Notifica bolsistas disponíveis via realtime
       await ctx.realtime.publish("requests:available", "request:new", {
-        requestId: request!.id,
+        requestId: request.id,
         studentId: ctx.session.user.id,
         originLocationId: input.originLocationId,
         destinationLocationId: input.destinationLocationId,
       });
 
-      return request!;
+      return request;
     }),
 
   /**
@@ -172,7 +172,7 @@ export const requestsRouter = router({
         { requestId: input.requestId },
       );
 
-      return updated!;
+      return updated;
     }),
 
   /**
@@ -252,7 +252,7 @@ export const requestsRouter = router({
           },
         );
 
-        return { request: { ...request, status: "accepted" }, attendance: attendance! };
+        return { request: { ...request, status: "accepted" }, attendance };
       });
     }),
 
