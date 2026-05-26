@@ -19,6 +19,14 @@
 			"recommended": true
 		}
 	},
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		},
+		"formatter": {
+			"enabled": true
+		}
+	},
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"
@@ -28,7 +36,49 @@
 		"enabled": true,
 		"actions": {
 			"source": {
-				"organizeImports": "on"
+				"organizeImports": {
+					"level": "on",
+					"options": {
+						"groups": [
+							["next", "next/**", "react"],
+
+							":BLANK_LINE:",
+
+							["type:next", "type:react", "type::PACKAGE:"],
+
+							":BLANK_LINE:",
+
+							[":PACKAGE:", "!@/**"],
+
+							":BLANK_LINE:",
+
+							"@/components/**",
+
+							":BLANK_LINE:",
+
+							[
+								"@/public/**",
+								"**/*.svg",
+								"**/*.png",
+								"**/*.jpg",
+								"**/*.jpeg",
+								"**/*.webp"
+							],
+
+							":BLANK_LINE:",
+
+							["@/lib/**", "@/api/**"],
+
+							":BLANK_LINE:",
+
+							":ALIAS:",
+
+							":BLANK_LINE:",
+
+							":PATH:"
+						]
+					}
+				}
 			}
 		}
 	}
