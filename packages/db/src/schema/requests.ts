@@ -3,25 +3,10 @@ import {
   text,
   timestamp,
   integer,
-  pgEnum,
 } from "drizzle-orm/pg-core";
 import { studentProfile, scholarProfile } from "./profiles";
 import { campusLocation } from "./locations";
-import { requestStatusValues } from "./enums";
-
-/**
- * Ciclo de vida de uma solicitação de deslocamento.
- *
- * pending   → solicitação enviada, aguardando aceite de um bolsista
- * accepted  → bolsista aceitou, a caminho do ponto de origem
- * ongoing   → bolsista chegou e o deslocamento está em andamento
- * completed → deslocamento concluído com sucesso
- * cancelled → cancelada pelo estudante antes do início
- * unattended → expirou sem que nenhum bolsista aceitasse
- */
-export const requestStatusEnum = pgEnum("request_status", [
-  ...requestStatusValues,
-]);
+import { requestStatusEnum } from "./enums";
 
 /**
  * Solicitação de deslocamento criada pelo estudante com deficiência.

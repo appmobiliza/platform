@@ -3,14 +3,13 @@ import {
   text,
   timestamp,
   integer,
-  pgEnum,
   serial,
 } from "drizzle-orm/pg-core";
 import { studentProfile } from "./profiles";
 import { serviceRequest } from "./requests";
 import { campusLocation } from "./locations";
 import { user } from "./auth";
-import { notificationTypeValues } from "./enums";
+import { notificationTypeEnum } from "./enums";
 
 /**
  * Mensagens de áudio enviadas durante uma solicitação.
@@ -79,13 +78,6 @@ export const favoriteRoute = pgTable("favorite_route", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
-
-/**
- * Tipos de notificação enviadas pelo sistema.
- */
-export const notificationTypeEnum = pgEnum("notification_type", [
-  ...notificationTypeValues,
-]);
 
 /**
  * Notificações enviadas a usuários pelo sistema.

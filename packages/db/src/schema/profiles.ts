@@ -3,56 +3,17 @@ import {
   text,
   timestamp,
   boolean,
-  pgEnum,
   unique,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 import {
-  disabilityTypeValues,
-  studentShiftValues,
-  scholarShiftValues,
-  genderValues,
-  campusValues,
-  courseValues,
+  campusEnum,
+  courseEnum,
+  disabilityTypeEnum,
+  genderEnum,
+  studentShiftEnum,
+  scholarShiftEnum,
 } from "./enums";
-
-/**
- * Tipos de deficiência reconhecidos pelo NAC, alinhados com a
- * Lei Brasileira de Inclusão (Lei nº 13.146/2015) e com o edital
- * de seleção de bolsistas do NAC/UFAL.
- */
-export const disabilityTypeEnum = pgEnum("disability_type", [
-  ...disabilityTypeValues,
-]);
-
-/**
- * Turnos preferenciais do estudante. Estudantes podem selecionar
- * qualquer turno, incluindo integral (manhã + tarde).
- */
-export const studentShiftEnum = pgEnum("student_shift", [
-  ...studentShiftValues,
-]);
-
-/**
- * Turnos de atuação dos bolsistas, conforme definidos no edital NAC.
- * Bolsistas NÃO podem ter turno integral — atuam em um turno específico.
- */
-export const scholarShiftEnum = pgEnum("scholar_shift", [
-  ...scholarShiftValues,
-]);
-
-/*
- * Gênero do estudante.
- */
-export const genderEnum = pgEnum("gender", [
-  ...genderValues,
-]);
-
-/**
- * Campus e curso como enums para manter fonte única de verdade.
- */
-export const campusEnum = pgEnum("campus", [...campusValues]);
-export const courseEnum = pgEnum("course", [...courseValues]);
 
 /**
  * Perfil do estudante com deficiência.
