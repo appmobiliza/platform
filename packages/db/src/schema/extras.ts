@@ -10,6 +10,7 @@ import { studentProfile } from "./profiles";
 import { serviceRequest } from "./requests";
 import { campusLocation } from "./locations";
 import { user } from "./auth";
+import { notificationTypeValues } from "./enums";
 
 /**
  * Mensagens de áudio enviadas durante uma solicitação.
@@ -83,13 +84,7 @@ export const favoriteRoute = pgTable("favorite_route", {
  * Tipos de notificação enviadas pelo sistema.
  */
 export const notificationTypeEnum = pgEnum("notification_type", [
-  "request_accepted",
-  "request_unattended",
-  "attendance_started",
-  "attendance_completed",
-  "scholar_approved",
-  "scholar_rejected",
-  "new_request_available",
+  ...notificationTypeValues,
 ]);
 
 /**

@@ -7,6 +7,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { studentProfile, scholarProfile } from "./profiles";
 import { campusLocation } from "./locations";
+import { requestStatusValues } from "./enums";
 
 /**
  * Ciclo de vida de uma solicitação de deslocamento.
@@ -19,12 +20,7 @@ import { campusLocation } from "./locations";
  * unattended → expirou sem que nenhum bolsista aceitasse
  */
 export const requestStatusEnum = pgEnum("request_status", [
-  "pending",
-  "accepted",
-  "ongoing",
-  "completed",
-  "cancelled",
-  "unattended",
+  ...requestStatusValues,
 ]);
 
 /**

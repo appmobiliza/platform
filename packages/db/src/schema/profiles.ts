@@ -7,6 +7,12 @@ import {
   unique,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
+import {
+  disabilityTypeValues,
+  studentShiftValues,
+  scholarShiftValues,
+  genderValues,
+} from "./enums";
 
 /**
  * Tipos de deficiência reconhecidos pelo NAC, alinhados com a
@@ -14,12 +20,7 @@ import { user } from "./auth";
  * de seleção de bolsistas do NAC/UFAL.
  */
 export const disabilityTypeEnum = pgEnum("disability_type", [
-  "motor",
-  "visual",
-  "auditory",
-  "deafblind",
-  "autism",
-  "other",
+  ...disabilityTypeValues,
 ]);
 
 /**
@@ -27,10 +28,7 @@ export const disabilityTypeEnum = pgEnum("disability_type", [
  * qualquer turno, incluindo integral (manhã + tarde).
  */
 export const studentShiftEnum = pgEnum("student_shift", [
-  "morning",
-  "afternoon",
-  "night",
-  "full_day",
+  ...studentShiftValues,
 ]);
 
 /**
@@ -38,19 +36,14 @@ export const studentShiftEnum = pgEnum("student_shift", [
  * Bolsistas NÃO podem ter turno integral — atuam em um turno específico.
  */
 export const scholarShiftEnum = pgEnum("scholar_shift", [
-  "morning",
-  "afternoon",
-  "night",
+  ...scholarShiftValues,
 ]);
 
 /*
  * Gênero do estudante.
  */
 export const genderEnum = pgEnum("gender", [
-  "male",
-  "female",
-  "non_binary",
-  "prefer_not_to_say",
+  ...genderValues,
 ]);
 
 /**
@@ -113,6 +106,7 @@ export const scholarProfile = pgTable("scholar_profile", {
   course: text("course").notNull(),
   campus: text("campus").notNull(),
   phone: text("phone").notNull(),
+  cpf: text("cpf").notNull().unique(),
   shift: scholarShiftEnum("shift").notNull(),
 
   /*
