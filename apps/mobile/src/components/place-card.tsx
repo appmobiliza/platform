@@ -9,6 +9,7 @@ interface PlaceCardProps {
 	title: string;
 	subtitle: string;
 	iconType: "clock" | "star" | "map";
+	iconClassName?: string;
 	className?: string;
 	onPress?: () => void;
 }
@@ -17,6 +18,7 @@ export const PlaceCard = ({
 	title,
 	subtitle,
 	iconType,
+	iconClassName,
 	className,
 	onPress,
 }: PlaceCardProps) => {
@@ -35,7 +37,7 @@ export const PlaceCard = ({
 				className,
 			)}
 		>
-			<View className="p-2 rounded-md bg-primary">
+			<View className={cn("p-2 rounded-md bg-primary", iconClassName)}>
 				<Icon size={18} color="white" />
 			</View>
 			<View className="flex-1">

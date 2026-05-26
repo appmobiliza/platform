@@ -38,14 +38,19 @@ function composePressHandlers(
 // ─── Backdrop ────────────────────────────────────────────────────────────────
 
 const SheetBackdrop = React.memo(function SheetBackdrop(
-	props: React.ComponentProps<typeof BottomSheetBackdrop>,
+	props: React.ComponentProps<typeof BottomSheetBackdrop> & {
+		panDownToClose?: boolean;
+	},
 ) {
+	const { panDownToClose, ...backdropProps } = props;
+	const pressBehavior = panDownToClose ? "close" : "none";
+
 	return (
 		<BottomSheetBackdrop
-			{...props}
+			{...backdropProps}
 			appearsOnIndex={0}
 			disappearsOnIndex={-1}
-			pressBehavior="close"
+			pressBehavior={pressBehavior}
 		/>
 	);
 });
@@ -168,7 +173,7 @@ function SheetTrigger({
 type SheetContentProps = React.PropsWithChildren<{
 	snapPoints?: Array<string | number>;
 	index?: number;
-	enablePanDownToClose?: boolean;
+	panDownToClose?: boolean;
 	enableDynamicSizing?: boolean;
 	onDismiss?: () => void;
 }> &
@@ -178,7 +183,7 @@ function SheetContent({
 	children,
 	snapPoints,
 	index = 0,
-	enablePanDownToClose = true,
+	panDownToClose = false,
 	enableDynamicSizing = false,
 	onDismiss,
 	className,
@@ -197,9 +202,14 @@ function SheetContent({
 			ref={contextValue.modalRef}
 			index={index}
 			snapPoints={enableDynamicSizing ? undefined : DEFAULT_SNAP_POINTS}
-			enablePanDownToClose={enablePanDownToClose}
+			enablePanDownToClose={panDownToClose}
 			enableDynamicSizing={enableDynamicSizing}
-			backdropComponent={SheetBackdrop}
+			backdropComponent={(backdropProps) => (
+				<SheetBackdrop
+					{...backdropProps}
+					panDownToClose={panDownToClose}
+				/>
+			)}
 			onDismiss={onDismiss}
 			backgroundStyle={{ backgroundColor: THEME[colorScheme].card }}
 			handleIndicatorStyle={{

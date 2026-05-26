@@ -33,44 +33,37 @@ function RequestFlowSheet() {
 		dismissAndExit,
 		handleDismiss,
 		message,
-		originLabel,
 		originSummary,
 		searchingRef,
 		setDestinationValue,
 		setMessage,
-		setOriginLabel,
-		setOriginSummary,
 		startConfirmRef,
-		startEditRef,
 		transitionTo,
 		tripRef,
 	} = useRequestFlow();
 
 	return (
-		<View className="flex-1 bg-background">
+		<View className="absolute inset-0" pointerEvents="box-none">
 			<StageSheet
 				stage="destination"
 				modalRef={destinationRef}
 				onDismiss={handleDismiss}
-				enablePanDownToClose={true}
 			>
 				<SheetFrame
 					title="Insira seu destino"
 					subtitle="Arraste o mapa para mover o marcador"
 					headerPosition="center"
 					footer={
-						<>
-							<Button
-								onPress={() =>
-									transitionTo("destination-selection")
-								}
-							>
-								<Text>Confirmar destino</Text>
-							</Button>
-							<Button variant="outline" onPress={dismissAndExit}>
-								<Text>Cancelar</Text>
-							</Button>
-						</>
+						<Button
+							onPress={() =>
+								transitionTo("destination-selection")
+							}
+						>
+							<Text>
+								{destinationValue ? "Confirmar" : "Selecionar"}{" "}
+								destino
+							</Text>
+						</Button>
 					}
 				>
 					<Pressable
@@ -106,7 +99,7 @@ function RequestFlowSheet() {
 				stage="destination-selection"
 				modalRef={destinationSelectionRef}
 				onDismiss={handleDismiss}
-				enablePanDownToClose={true}
+				panDownToClose
 			>
 				<SheetFrame
 					title="Selecione seu destino"
@@ -124,36 +117,48 @@ function RequestFlowSheet() {
 					}
 				>
 					<AddressRoute
+						className="bg-input p-4 rounded-lg"
 						from={{
-							label: originLabel,
+							label: "Instituto de Computação",
+							children: (
+								<Pressable className="text-secondary-foreground">
+									<Icon
+										icon={CircleX}
+										size={20}
+										color={"secondary-foreground"}
+									/>
+								</Pressable>
+							),
 						}}
 						to={{
 							label: destinationValue,
 							children: (
-								<Button
-									variant="ghost"
-									size="icon"
-									className="rounded-full border border-border"
-								>
-									<CircleX size={16} />
-								</Button>
+								<Pressable className="text-secondary-foreground">
+									<Icon
+										icon={CircleX}
+										size={20}
+										color={"secondary-foreground"}
+									/>
+								</Pressable>
 							),
 						}}
 					/>
 
-					<View className="gap-3">
+					<View>
 						{DESTINATION_OPTIONS.map((option) => (
 							<PlaceCard
 								key={option.label}
 								title={option.label}
+								iconClassName="bg-transparent"
 								subtitle={`${option.description} • ${option.distance}`}
 								iconType="map"
 								onPress={() =>
 									setDestinationValue(option.label)
 								}
-								className={
-									option.highlighted ? "bg-accent" : undefined
-								}
+								className={cn("border-none", {
+									"bg-input":
+										option.label === destinationValue,
+								})}
 							/>
 						))}
 					</View>
@@ -162,6 +167,8 @@ function RequestFlowSheet() {
 						title="Locais salvos"
 						subtitle="Acesse suas rotas favoritas"
 						iconType="star"
+						className="rounded-none border-l-0 border-r-0 border-b-0 border-t border-border"
+						iconClassName="rounded-full"
 					/>
 				</SheetFrame>
 			</StageSheet>
@@ -188,70 +195,13 @@ function RequestFlowSheet() {
 						<Button
 							variant="inverted"
 							size="sm"
-							onPress={() => transitionTo("start-edit")}
+							onPress={() =>
+								transitionTo("destination-selection")
+							}
 						>
 							<Text>Alterar</Text>
 						</Button>
 					</Address>
-				</SheetFrame>
-			</StageSheet>
-
-			<StageSheet
-				stage="start-edit"
-				modalRef={startEditRef}
-				onDismiss={handleDismiss}
-			>
-				<SheetFrame
-					title="Alterar ponto de partida"
-					footer={
-						<>
-							<Button onPress={() => transitionTo("searching")}>
-								<Text>Selecionar</Text>
-							</Button>
-							<Button variant="outline" onPress={dismissAndExit}>
-								<Text>Cancelar</Text>
-							</Button>
-						</>
-					}
-				>
-					<AddressRoute
-						from={{
-							label: `Localização atual (${originLabel})`,
-						}}
-						to={{
-							label: destinationValue,
-							children: (
-								<Button variant="ghost" size="icon">
-									<PencilLine size={16} />
-								</Button>
-							),
-						}}
-					/>
-
-					<View className="gap-3">
-						{DESTINATION_OPTIONS.map((option) => (
-							<PlaceCard
-								key={option.label}
-								title={option.label}
-								subtitle={`${option.description} • ${option.distance}`}
-								iconType="map"
-								onPress={() => {
-									setOriginLabel(option.label);
-									setOriginSummary(`${option.label}, UFAL`);
-									transitionTo("start-confirm");
-								}}
-								className={
-									option.highlighted ? "bg-accent" : undefined
-								}
-							/>
-						))}
-					</View>
-
-					<PlaceCard
-						title="Locais salvos"
-						subtitle="Acesse suas rotas favoritas"
-						iconType="star"
-					/>
 				</SheetFrame>
 			</StageSheet>
 

@@ -11,7 +11,6 @@ function useRequestFlow() {
 	const destinationRef = React.useRef<BottomSheetModal>(null);
 	const destinationSelectionRef = React.useRef<BottomSheetModal>(null);
 	const startConfirmRef = React.useRef<BottomSheetModal>(null);
-	const startEditRef = React.useRef<BottomSheetModal>(null);
 	const searchingRef = React.useRef<BottomSheetModal>(null);
 	const tripRef = React.useRef<BottomSheetModal>(null);
 
@@ -19,7 +18,6 @@ function useRequestFlow() {
 		destination: destinationRef,
 		"destination-selection": destinationSelectionRef,
 		"start-confirm": startConfirmRef,
-		"start-edit": startEditRef,
 		searching: searchingRef,
 		trip: tripRef,
 	} as const satisfies Record<
@@ -135,7 +133,6 @@ function useRequestFlow() {
 		setOriginLabel,
 		setOriginSummary,
 		startConfirmRef,
-		startEditRef,
 		transitionTo,
 		tripRef,
 	};

@@ -15,14 +15,19 @@ import { SheetDescription, SheetHeader, SheetTitle } from "../ui/sheet";
 import type { Stage } from "./types";
 
 function SheetBackdrop(
-	props: React.ComponentProps<typeof BottomSheetBackdrop>,
+	props: React.ComponentProps<typeof BottomSheetBackdrop> & {
+		panDownToClose?: boolean;
+	},
 ) {
+	const { panDownToClose, ...backdropProps } = props;
+	const pressBehavior = panDownToClose ? "close" : "none";
+
 	return (
 		<BottomSheetBackdrop
-			{...props}
+			{...backdropProps}
 			appearsOnIndex={0}
 			disappearsOnIndex={-1}
-			pressBehavior="close"
+			pressBehavior={pressBehavior}
 		/>
 	);
 }
@@ -82,13 +87,13 @@ function StageSheet({
 	stage,
 	modalRef,
 	onDismiss,
-	enablePanDownToClose = false,
+	panDownToClose = false,
 	children,
 }: {
 	stage: Stage;
 	modalRef: React.RefObject<BottomSheetModal | null>;
 	onDismiss: (stage: Stage) => void;
-	enablePanDownToClose?: boolean;
+	panDownToClose?: boolean;
 	children: React.ReactNode;
 }) {
 	const colorScheme = useColorScheme();
@@ -98,9 +103,16 @@ function StageSheet({
 			ref={modalRef}
 			index={0}
 			// snapPoints={["94%"]}
-			backdropComponent={SheetBackdrop}
+			/* backdropComponent={(backdropProps) => (
+				<SheetBackdrop
+					{...backdropProps}
+					opacity={0}
+					panDownToClose={panDownToClose}
+					enableTouchThrough
+				/>
+			)} */
 			enableDynamicSizing={true}
-			enablePanDownToClose={enablePanDownToClose}
+			enablePanDownToClose={panDownToClose}
 			onDismiss={() => onDismiss(stage)}
 			backgroundStyle={{ backgroundColor: THEME[colorScheme].card }}
 			handleIndicatorStyle={{
