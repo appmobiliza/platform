@@ -23,7 +23,7 @@ import Animated, {
 
 import { Text } from "@/components/ui/text";
 
-import { useAccessibilityPreferences } from "@/hooks/useAccessibilityPreferences";
+import { useAccessibilityPreferences } from "@/hooks/use-accessibility-preferences";
 
 export type NewsItem = {
 	image: string;

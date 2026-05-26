@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Search } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
 
-import { useAccessibilityPreferences } from "@/hooks/useAccessibilityPreferences";
+import { useAccessibilityPreferences } from "@/hooks/use-accessibility-preferences";
 
 import { Icon } from "./ui/icon";
 
