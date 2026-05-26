@@ -43,3 +43,18 @@ export const notificationTypeValues = [
     "scholar_rejected",
     "new_request_available",
 ] as const;
+
+export const campusValues = [
+    "Campus A.C. Simões",
+    "Campus CECA",
+    "Campus Arapiraca",
+    "Campus Sertão",
+] as const;
+
+export const courseValues = [
+    "Pedagogia",
+    "Ciência da Computação",
+    "Engenharia Civil",
+    "Direito",
+    "Medicina",
+] as const;

@@ -45,8 +45,8 @@ export const profilesRouter = router({
     .input(
       z.object({
         enrollment: z.string().min(4).max(20),
-        course: z.string().min(2).max(100),
-        campus: z.string().min(1).max(40),
+        course: z.enum(schema.courseValues),
+        campus: z.enum(schema.campusValues),
         phone: z.string().regex(/^\d{10,11}$/),
         shift: z.enum(schema.studentShiftValues),
         gender: z.enum(schema.genderValues),
@@ -101,8 +101,8 @@ export const profilesRouter = router({
     .input(
       z.object({
         enrollment: z.string().min(4).max(20),
-        course: z.string().min(2).max(100),
-        campus: z.string().min(1).max(40),
+        course: z.enum(schema.courseValues),
+        campus: z.enum(schema.campusValues),
         shift: z.enum(schema.scholarShiftValues),
         phone: z.string().regex(/^\d{10,11}$/),
         cpf: z.string().regex(/^\d{11}$/),

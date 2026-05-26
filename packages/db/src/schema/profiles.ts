@@ -12,6 +12,8 @@ import {
   studentShiftValues,
   scholarShiftValues,
   genderValues,
+  campusValues,
+  courseValues,
 } from "./enums";
 
 /**
@@ -47,6 +49,12 @@ export const genderEnum = pgEnum("gender", [
 ]);
 
 /**
+ * Campus e curso como enums para manter fonte única de verdade.
+ */
+export const campusEnum = pgEnum("campus", [...campusValues]);
+export const courseEnum = pgEnum("course", [...courseValues]);
+
+/**
  * Perfil do estudante com deficiência.
  * Estende `user` com informações específicas necessárias para o atendimento.
  */
@@ -58,8 +66,8 @@ export const studentProfile = pgTable("student_profile", {
     .references(() => user.id, { onDelete: "cascade" }),
 
   enrollment: text("enrollment").notNull().unique(),
-  course: text("course").notNull(),
-  campus: text("campus").notNull(),
+  course: courseEnum("course").notNull(),
+  campus: campusEnum("campus").notNull(),
   phone: text("phone").notNull(),
   shift: studentShiftEnum("shift").notNull(),
   gender: genderEnum("gender").notNull(),
