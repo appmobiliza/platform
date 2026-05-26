@@ -3,8 +3,12 @@
   "compilerOptions": {
     "jsx": "react-native",
     "paths": {
-      "@/*": ["./src/*"],
-      "@/assets/*": ["./assets/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@/assets/*": [
+        "./assets/*"
+      ]
     }
   },
   "include": [

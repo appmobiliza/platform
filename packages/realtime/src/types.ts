@@ -105,6 +105,38 @@ export interface AblyAdapterOptions {
   environment?: string
 }
 
+/**
+ * Opções do adaptador Ably **client-side**.
+ *
+ * O client-side NUNCA deve receber a API key completa (que contém o secret).
+ * Use uma das duas estratégias:
+ *
+ * 1. **Token estático** — gere um `clientToken` no servidor via
+ *    `ably.auth.requestToken()` e passe-o aqui. Expira, mas é simples.
+ *
+ * 2. **Token provider** (recomendado) — passe `authUrl` apontando para um
+ *    endpoint da sua API que retorna um token Ably fresco. O SDK renova
+ *    automaticamente antes da expiração.
+ *
+ * @see https://ably.com/docs/auth/token
+ */
+export type AblyClientAdapterOptions =
+  | {
+      /** Token JWT ou Ably Token gerado pelo servidor. Expira — prefira `authUrl`. */
+      clientToken: string
+      authUrl?: never
+      clientId?: string
+      environment?: string
+    }
+  | {
+      clientToken?: never
+      /** URL do endpoint da API que retorna um Ably Token Request ou JWT. */
+      authUrl: string
+      /** ID único do cliente — útil para presença e rastreamento. */
+      clientId?: string
+      environment?: string
+    }
+
 export interface WebSocketAdapterOptions {
   /** URL completa do servidor WS, ex.: `"ws://localhost:4001"` */
   url: string
