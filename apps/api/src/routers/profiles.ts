@@ -45,18 +45,17 @@ export const profilesRouter = router({
     .input(
       z.object({
         enrollment: z.string().min(4).max(20),
-        course: z.string().min(2).max(100),
-        disabilityType: z.enum([
-          "motor",
-          "visual",
-          "auditory",
-          "deafblind",
-          "autism",
-          "multiple",
-          "other",
-        ]),
+        course: z.enum(schema.courseValues),
+        campus: z.enum(schema.campusValues),
+        phone: z.string().regex(/^\d{10,11}$/),
+        shift: z.enum(schema.studentShiftValues),
+        gender: z.enum(schema.genderValues),
+        nickname: z.string().max(30).optional(),
+        disabilityTypes: z
+          .array(z.enum(schema.disabilityTypeValues))
+          .min(1),
         attendanceNotes: z.string().max(1000).optional(),
-        audioResponseEnabled: z.boolean().default(false),
+        simplifiedInterface: z.boolean().default(false),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -72,16 +71,26 @@ export const profilesRouter = router({
         .set({ role: "student", updatedAt: new Date() })
         .where(eq(schema.user.id, ctx.session.user.id));
 
+      const { disabilityTypes, ...profileData } = input;
+
       const [profile] = await db
         .insert(schema.studentProfile)
         .values({
           id: generateProfileId("sp"),
           userId: ctx.session.user.id,
-          ...input,
+          ...profileData,
         })
         .returning();
 
-      return profile!;
+      await db.insert(schema.studentDisability).values(
+        disabilityTypes.map((dt) => ({
+          id: generateProfileId("sd"),
+          studentProfileId: profile.id,
+          disabilityType: dt,
+        })),
+      );
+
+      return profile;
     }),
 
   /**
@@ -92,8 +101,11 @@ export const profilesRouter = router({
     .input(
       z.object({
         enrollment: z.string().min(4).max(20),
-        course: z.string().min(2).max(100),
-        shift: z.enum(["morning", "afternoon", "night"]),
+        course: z.enum(schema.courseValues),
+        campus: z.enum(schema.campusValues),
+        shift: z.enum(schema.scholarShiftValues),
+        phone: z.string().regex(/^\d{10,11}$/),
+        cpf: z.string().regex(/^\d{11}$/),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -119,7 +131,7 @@ export const profilesRouter = router({
         })
         .returning();
 
-      return profile!;
+      return profile;
     }),
 
   /**
@@ -150,7 +162,7 @@ export const profilesRouter = router({
       .where(eq(schema.scholarProfile.id, profile.id))
       .returning();
 
-    return updated!;
+    return updated;
   }),
 
   // ─── Rotas do gestor ──────────────────────────────────────────────────────
@@ -206,6 +218,6 @@ export const profilesRouter = router({
         { scholarProfileId: input.scholarProfileId },
       );
 
-      return updated!;
+      return updated;
     }),
 });
