@@ -2,8 +2,12 @@
   "extends": "@mobiliza/typescript-config/expo.json",
   "compilerOptions": {
     "paths": {
-      "@/*": ["./src/*"],
-      "@/assets/*": ["./assets/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@/assets/*": [
+        "./assets/*"
+      ]
     }
   },
   "include": [

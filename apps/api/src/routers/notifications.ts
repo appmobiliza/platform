@@ -7,7 +7,7 @@
  */
 
 import { z } from "zod";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, isNull } from "drizzle-orm";
 import { db } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
 import { router, protectedProcedure } from "../trpc/context";
@@ -27,7 +27,7 @@ export const notificationsRouter = router({
       const conditions = [
         eq(schema.notification.userId, ctx.session.user.id),
         ...(input.onlyUnread
-          ? [eq(schema.notification.isRead, false)]
+          ? [isNull(schema.notification.readAt)]
           : []),
       ];
 
@@ -54,7 +54,7 @@ export const notificationsRouter = router({
       if (input.notificationId) {
         await db
           .update(schema.notification)
-          .set({ isRead: true, readAt: now })
+          .set({ readAt: now })
           .where(
             and(
               eq(schema.notification.id, input.notificationId),
@@ -65,11 +65,11 @@ export const notificationsRouter = router({
         // Marca todas as não lidas do usuário
         await db
           .update(schema.notification)
-          .set({ isRead: true, readAt: now })
+          .set({ readAt: now })
           .where(
             and(
               eq(schema.notification.userId, ctx.session.user.id),
-              eq(schema.notification.isRead, false),
+              isNull(schema.notification.readAt),
             ),
           );
       }
@@ -84,7 +84,7 @@ export const notificationsRouter = router({
     const items = await db.query.notification.findMany({
       where: and(
         eq(schema.notification.userId, ctx.session.user.id),
-        eq(schema.notification.isRead, false),
+        isNull(schema.notification.readAt),
       ),
       columns: { id: true },
     });

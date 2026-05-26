@@ -4,6 +4,7 @@ import {
   timestamp,
   boolean,
   serial,
+  doublePrecision,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -11,9 +12,10 @@ import {
  * nas solicitações de deslocamento.
  *
  * A lista é gerenciada pela coordenação do NAC via dashboard.
- * Não usamos geolocalização em tempo real — o sistema trabalha com
- * pontos nomeados pré-cadastrados, o que simplifica a experiência
- * para usuários com deficiência visual (seleção por nome/áudio).
+ * O sistema trabalha com pontos nomeados pré-cadastrados, o que simplifica
+ * a experiência para usuários com deficiência visual (seleção por nome/áudio).
+ * Cada ponto possui coordenadas geográficas (latitude/longitude) para
+ * referência espacial — sem geolocalização em tempo real.
  */
 export const campusLocation = pgTable("campus_location", {
   id: serial("id").primaryKey(),
@@ -36,6 +38,12 @@ export const campusLocation = pgTable("campus_location", {
    * for mapeando os pontos.
    */
   description: text("description"),
+
+  /*
+   * Coordenadas geográficas do local no campus.
+   */
+  latitude: doublePrecision("latitude").notNull(),
+  longitude: doublePrecision("longitude").notNull(),
 
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),

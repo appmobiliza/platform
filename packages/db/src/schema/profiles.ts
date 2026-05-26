@@ -3,33 +3,17 @@ import {
   text,
   timestamp,
   boolean,
-  pgEnum,
+  unique,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
-
-/**
- * Tipos de deficiência reconhecidos pelo NAC, alinhados com a
- * Lei Brasileira de Inclusão (Lei nº 13.146/2015) e com o edital
- * de seleção de bolsistas do NAC/UFAL.
- */
-export const disabilityTypeEnum = pgEnum("disability_type", [
-  "motor",
-  "visual",
-  "auditory",
-  "deafblind",
-  "autism",
-  "multiple",
-  "other",
-]);
-
-/**
- * Turnos de atuação dos bolsistas, conforme definidos no edital NAC.
- */
-export const shiftEnum = pgEnum("shift", [
-  "morning",
-  "afternoon",
-  "night",
-]);
+import {
+  campusEnum,
+  courseEnum,
+  disabilityTypeEnum,
+  genderEnum,
+  studentShiftEnum,
+  scholarShiftEnum,
+} from "./enums";
 
 /**
  * Perfil do estudante com deficiência.
@@ -43,9 +27,16 @@ export const studentProfile = pgTable("student_profile", {
     .references(() => user.id, { onDelete: "cascade" }),
 
   enrollment: text("enrollment").notNull().unique(),
-  course: text("course").notNull(),
+  course: courseEnum("course").notNull(),
+  campus: campusEnum("campus").notNull(),
+  phone: text("phone").notNull(),
+  shift: studentShiftEnum("shift").notNull(),
+  gender: genderEnum("gender").notNull(),
 
-  disabilityType: disabilityTypeEnum("disability_type").notNull(),
+  /*
+   * Apelido (opcional) do estudante.
+   */
+  nickname: text("nickname"),
 
   /*
    * Campo livre para o estudante informar preferências de atendimento,
@@ -55,10 +46,10 @@ export const studentProfile = pgTable("student_profile", {
   attendanceNotes: text("attendance_notes"),
 
   /*
-   * Quando ativo, o app lê automaticamente as atualizações de status em voz
-   * alta via Text-to-Speech — pensado para usuários com deficiência visual.
+   * Quando ativo, a interface do app é simplificada para usuários com
+   * baixa visão.
    */
-  audioResponseEnabled: boolean("audio_response_enabled")
+  simplifiedInterface: boolean("simplified_interface")
     .notNull()
     .default(false),
 
@@ -82,7 +73,10 @@ export const scholarProfile = pgTable("scholar_profile", {
 
   enrollment: text("enrollment").notNull().unique(),
   course: text("course").notNull(),
-  shift: shiftEnum("shift").notNull(),
+  campus: text("campus").notNull(),
+  phone: text("phone").notNull(),
+  cpf: text("cpf").notNull().unique(),
+  shift: scholarShiftEnum("shift").notNull(),
 
   /*
    * Bolsistas precisam ser aprovados pela coordenação do NAC antes de
@@ -105,7 +99,29 @@ export const scholarProfile = pgTable("scholar_profile", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+/**
+ * Tabela para cadastrar os tipos de deficiência que um estudante pode ter.
+ */
+export const studentDisability = pgTable(
+  "student_disability",
+  {
+    id: text("id").primaryKey(),
+
+    studentProfileId: text("student_profile_id")
+      .notNull()
+      .references(() => studentProfile.id, { onDelete: "cascade" }),
+
+    disabilityType: disabilityTypeEnum("disability_type").notNull(),
+
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => [unique().on(table.studentProfileId, table.disabilityType)],
+);
+
 export type StudentProfile = typeof studentProfile.$inferSelect;
 export type NewStudentProfile = typeof studentProfile.$inferInsert;
 export type ScholarProfile = typeof scholarProfile.$inferSelect;
 export type NewScholarProfile = typeof scholarProfile.$inferInsert;
+export type StudentDisability = typeof studentDisability.$inferSelect;
+export type NewStudentDisability = typeof studentDisability.$inferInsert;

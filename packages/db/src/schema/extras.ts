@@ -2,15 +2,14 @@ import {
   pgTable,
   text,
   timestamp,
-  boolean,
   integer,
-  pgEnum,
   serial,
 } from "drizzle-orm/pg-core";
 import { studentProfile } from "./profiles";
 import { serviceRequest } from "./requests";
 import { campusLocation } from "./locations";
 import { user } from "./auth";
+import { notificationTypeEnum } from "./enums";
 
 /**
  * Mensagens de áudio enviadas durante uma solicitação.
@@ -48,6 +47,7 @@ export const audioMessage = pgTable("audio_message", {
   transcription: text("transcription"),
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 /**
@@ -76,20 +76,8 @@ export const favoriteRoute = pgTable("favorite_route", {
     .references(() => campusLocation.id, { onDelete: "cascade" }),
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
-
-/**
- * Tipos de notificação enviadas pelo sistema.
- */
-export const notificationTypeEnum = pgEnum("notification_type", [
-  "request_accepted",
-  "request_unattended",
-  "attendance_started",
-  "attendance_completed",
-  "scholar_approved",
-  "scholar_rejected",
-  "new_request_available",
-]);
 
 /**
  * Notificações enviadas a usuários pelo sistema.
@@ -120,10 +108,10 @@ export const notification = pgTable("notification", {
    */
   resourceId: text("resource_id"),
 
-  isRead: boolean("is_read").notNull().default(false),
   readAt: timestamp("read_at"),
 
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export type AudioMessage = typeof audioMessage.$inferSelect;
