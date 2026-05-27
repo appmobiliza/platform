@@ -2,8 +2,11 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "types": ["node"],
-    "strictNullChecks": true
+    "types": ["node", "jest"],
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "module": "ESNext"
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
