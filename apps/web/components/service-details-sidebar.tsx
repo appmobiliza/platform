@@ -149,24 +149,26 @@ export function ServiceDetailsSidebar() {
 	const selectedEntry = useServiceDetailsEntry();
 	const entry = selectedEntry.item;
 
-	if (!entry) {
-		return null;
-	}
+	// NOTE: Não podemos adicionar um safeguard aqui porque o componente é renderizado mesmo quando não há um atendimento selecionado, e isso é necessário para a animação de entrada/saída da sidebar funcionar corretamente. O componente de detalhes apenas não renderiza nada dentro da sidebar quando não há um atendimento selecionado, mas a sidebar em si precisa ser montada para que a animação funcione.
 
 	return (
 		<DetailsSidebar
 			open={selectedEntry.isOpen}
 			header={
-				<div className="flex items-center md:flex-col md:items-start gap-2 w-full justify-between">
-					<h2 className="font-semibold">Detalhes do atendimento</h2>
-					<Badge variant={getStatusBadgeVariant(entry.status)}>
-						{getStatusLabel(entry.status)}
-					</Badge>
-				</div>
+				entry && (
+					<div className="flex items-center md:flex-col md:items-start gap-2 w-full justify-between">
+						<h2 className="font-semibold">
+							Detalhes do atendimento
+						</h2>
+						<Badge variant={getStatusBadgeVariant(entry.status)}>
+							{getStatusLabel(entry.status)}
+						</Badge>
+					</div>
+				)
 			}
 			onClose={closeServiceDetails}
 		>
-			<ServiceDetailsContent entry={entry} />
+			{entry && <ServiceDetailsContent entry={entry} />}
 		</DetailsSidebar>
 	);
 }
