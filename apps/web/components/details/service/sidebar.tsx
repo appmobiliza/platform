@@ -2,21 +2,18 @@
 
 import { scholarShiftLabels } from "@mobiliza/db/schema";
 
-import { DetailsSidebar } from "@/components/details-sidebar";
-import {
-	closeServiceDetails,
-	useServiceDetailsEntry,
-} from "@/components/service-details-store";
-import type { ServiceEntry } from "@/components/services-data";
+import { DetailsSection } from "@/components/details/details-section";
+import { DetailsSidebar } from "@/components/details/details-sidebar";
+import { RoutePreview } from "@/components/route-preview";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 import { getInitials } from "@/lib/utils";
 
-import { DetailsSection } from "./details-section";
-import { RoutePreview } from "./route-preview";
-import { Separator } from "./ui/separator";
+import type { ServiceEntry } from "@/data/services-data";
+
+import { closeServiceDetails, useServiceDetailsEntry } from "./store";
 
 function getStatusBadgeVariant(status: ServiceEntry["status"]) {
 	if (status === "concluded") {
@@ -130,7 +127,7 @@ function ServiceDetailsContent({ entry }: { entry: ServiceEntry }) {
 						},
 					].map((item) => (
 						<li
-							className="flex items-center justify-between w-full text-sm"
+							className="flex w-full items-center justify-between text-sm"
 							key={item.id}
 						>
 							<p>
@@ -156,7 +153,7 @@ export function ServiceDetailsSidebar() {
 			open={selectedEntry.isOpen}
 			header={
 				entry && (
-					<div className="flex items-center md:flex-col md:items-start gap-2 w-full justify-between">
+					<div className="flex w-full items-center justify-between gap-2 md:flex-col md:items-start">
 						<h2 className="font-semibold">
 							Detalhes do atendimento
 						</h2>

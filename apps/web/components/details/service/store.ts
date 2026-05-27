@@ -1,7 +1,8 @@
 "use client";
 
-import { createDetailsStore } from "@/components/details-store";
-import type { ServiceEntry } from "@/components/services-data";
+import { createDetailsStore } from "@/components/details/details-store";
+
+import type { ServiceEntry } from "@/data/services-data";
 
 const serviceDetailsStore = createDetailsStore<ServiceEntry>();
 

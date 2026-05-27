@@ -1,6 +1,6 @@
 import type { ScholarProfile, StudentProfile, User } from "@mobiliza/db/schema";
 
-import { scholars, students, users } from "@/lib/mock";
+import { scholars, students, users } from "@/data/mock";
 
 export type ServiceStatus = "concluded" | "in_progress" | "not_attended";
 

@@ -1,3 +1,5 @@
+import type * as React from "react";
+
 interface Props {
 	label: string;
 	children: React.ReactNode;

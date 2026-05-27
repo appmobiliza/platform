@@ -2,16 +2,17 @@ import type { Metadata } from "next";
 
 import { Frown } from "lucide-react";
 
+import { ComboboxMultiple } from "@/components/combobox-multiple";
 import { DatePickerWithRange } from "@/components/date-range-picker";
-import { ServiceDetailsSidebar } from "@/components/service-details-sidebar";
-import { ServiceDetailsTrigger } from "@/components/service-details-trigger";
-import { dashboardCards, serviceEntries } from "@/components/services-data";
+import {
+	ServiceDetailsSidebar,
+	ServiceDetailsTrigger,
+} from "@/components/details";
 import { StatusMessage } from "@/components/status-message";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ComboboxMultiple } from "@/components/ui/combobox-multiple";
 import {
 	Table,
 	TableBody,
@@ -22,8 +23,10 @@ import {
 } from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
-import { users } from "@/lib/mock";
 import { cn, getInitials } from "@/lib/utils";
+
+import { users } from "@/data/mock";
+import { dashboardCards, serviceEntries } from "@/data/services-data";
 
 export const metadata: Metadata = {
 	title: "Atendimentos",

@@ -1,6 +1,6 @@
 import type { ScholarProfile, User } from "@mobiliza/db/schema";
 
-import { scholars, users } from "@/lib/mock";
+import { scholars, users } from "@/data/mock";
 
 export const dashboardCards: Array<{
 	title: string;

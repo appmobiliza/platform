@@ -2,9 +2,11 @@
 
 import type * as React from "react";
 
-import { openScholarDetails } from "@/components/scholar-details-store";
-import type { ScholarData } from "@/components/scholars-data";
 import { Button } from "@/components/ui/button";
+
+import type { ScholarData } from "@/data/scholars-data";
+
+import { openScholarDetails } from "./store";
 
 export function ScholarDetailsTrigger({
 	scholar,

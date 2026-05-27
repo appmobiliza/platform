@@ -1,13 +1,14 @@
 import { getCurrentShift, type ScholarShiftValues } from "@mobiliza/db/schema";
 
+import { ScholarDetailsTrigger } from "@/components/details";
+import { ProgressWithLabel } from "@/components/progress-with-label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+
 import { getInitials } from "@/lib/utils";
 
-import { ProgressWithLabel } from "./progress-with-label";
-import { ScholarDetailsTrigger } from "./scholar-details-trigger";
-import type { ScholarData } from "./scholars-data";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
+import type { ScholarData } from "@/data/scholars-data";
 
 const SCHOLARS_SERVICES_AVERAGE = 150;
 const MONTHLY_HOURS_GOAL = 40;

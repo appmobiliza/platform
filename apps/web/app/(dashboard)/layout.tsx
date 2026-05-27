@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 
-import { AppSidebar } from "@/components/app-sidebar";
-import Logo from "@/components/temp-icons/logo";
+import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
+import Logo from "@/assets/icons/logo";
 
 export const metadata: Metadata = {
 	title: "Dashboard do Mobiliza",

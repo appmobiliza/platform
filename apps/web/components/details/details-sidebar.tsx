@@ -1,15 +1,11 @@
 "use client";
 
+import type * as React from "react";
+
 import { XIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-	Drawer,
-	DrawerContent,
-	DrawerDescription,
-	DrawerHeader,
-	DrawerTitle,
-} from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerHeader } from "@/components/ui/drawer";
 
 import { cn } from "@/lib/utils";
 

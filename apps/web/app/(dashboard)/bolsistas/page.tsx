@@ -3,17 +3,18 @@ import type { Metadata } from "next";
 import { scholarShiftLabels } from "@mobiliza/db/schema";
 import { Frown, Plus } from "lucide-react";
 
+import { ComboboxMultiple } from "@/components/combobox-multiple";
+import { ScholarDetailsSidebar } from "@/components/details";
 import { ScholarCard } from "@/components/scholar-card";
-import { ScholarDetailsSidebar } from "@/components/scholar-details-sidebar";
-import { dashboardCards, scholarsData } from "@/components/scholars-data";
 import { StatusMessage } from "@/components/status-message";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ComboboxMultiple } from "@/components/ui/combobox-multiple";
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 import { cn } from "@/lib/utils";
+
+import { dashboardCards, scholarsData } from "@/data/scholars-data";
 
 export const metadata: Metadata = {
 	title: "Bolsistas",

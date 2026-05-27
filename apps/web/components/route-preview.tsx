@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
-import EndPoint from "./temp-icons/end-point";
-import StartPoint from "./temp-icons/start-point";
+import EndPoint from "@/assets/icons/end-point";
+import StartPoint from "@/assets/icons/start-point";
 
 export function RoutePreview({ className }: { className?: string }) {
 	return (

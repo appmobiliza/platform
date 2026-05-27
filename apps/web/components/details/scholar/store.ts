@@ -1,7 +1,8 @@
 "use client";
 
-import { createDetailsStore } from "@/components/details-store";
-import type { ScholarData } from "@/components/scholars-data";
+import { createDetailsStore } from "@/components/details/details-store";
+
+import type { ScholarData } from "@/data/scholars-data";
 
 const scholarDetailsStore = createDetailsStore<ScholarData>();
 

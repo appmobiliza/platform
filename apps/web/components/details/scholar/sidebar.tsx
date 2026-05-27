@@ -2,17 +2,16 @@
 
 import { getCurrentShift } from "@mobiliza/db/schema";
 
-import { DetailsSidebar } from "@/components/details-sidebar";
-import {
-	closeScholarDetails,
-	useScholarDetailsEntry,
-} from "@/components/scholar-details-store";
-import type { ScholarData } from "@/components/scholars-data";
+import { DetailsSidebar } from "@/components/details/details-sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { getInitials } from "@/lib/utils";
+
+import type { ScholarData } from "@/data/scholars-data";
+
+import { closeScholarDetails, useScholarDetailsEntry } from "./store";
 
 function getShiftLabel(shift: ScholarData["profile"]["shift"]) {
 	switch (shift) {
@@ -198,11 +197,25 @@ export function ScholarDetailsSidebar() {
 		return null;
 	}
 
+	const status = getScholarStatus(scholar);
+
 	return (
 		<DetailsSidebar
 			open={selectedScholar.isOpen}
-			title="Detalhes do bolsista"
-			description={`${getShiftLabel(scholar.profile.shift)} • ${scholar.profile.course}`}
+			header={
+				<div className="flex w-full items-center justify-between gap-2 md:flex-col md:items-start md:gap-1">
+					<div className="flex min-w-0 flex-col gap-1">
+						<h2 className="font-semibold">Detalhes do bolsista</h2>
+						<p className="text-sm text-muted-foreground">
+							{getShiftLabel(scholar.profile.shift)} •{" "}
+							{scholar.profile.course}
+						</p>
+					</div>
+					<Badge variant={getScholarStatusVariant(status)}>
+						{getScholarStatusLabel(status)}
+					</Badge>
+				</div>
+			}
 			onClose={closeScholarDetails}
 		>
 			<ScholarDetailsContent scholar={scholar} />

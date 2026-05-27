@@ -11,9 +11,8 @@ import {
 	Users,
 } from "lucide-react";
 
-import { NavMain } from "@/components/nav-main";
-import { NavUser } from "@/components/nav-user";
-import Logo from "@/components/temp-icons/logo";
+import { NavMain } from "@/components/sidebar/nav-main";
+import { NavUser } from "@/components/sidebar/nav-user";
 import {
 	Sidebar,
 	SidebarContent,
@@ -23,6 +22,8 @@ import {
 	SidebarMenuItem,
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
+
+import Logo from "@/assets/icons/logo";
 
 const data = {
 	user: {

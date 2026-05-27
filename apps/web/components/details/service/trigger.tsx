@@ -4,9 +4,11 @@ import type * as React from "react";
 
 import { ExternalLink } from "lucide-react";
 
-import { openServiceDetails } from "@/components/service-details-store";
-import type { ServiceEntry } from "@/components/services-data";
 import { Button } from "@/components/ui/button";
+
+import type { ServiceEntry } from "@/data/services-data";
+
+import { openServiceDetails } from "./store";
 
 export function ServiceDetailsTrigger({
 	entry,
