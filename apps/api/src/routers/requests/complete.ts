@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { RequestIdSchema } from "@mobiliza/contracts";
 import { eq, and } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { db } from "@mobiliza/db/client";
@@ -7,7 +7,7 @@ import { scholarProcedure } from "../../trpc/context";
 import { execTx } from "./shared";
 
 export const complete = scholarProcedure
-  .input(z.object({ requestId: z.string() }))
+  .input(RequestIdSchema)
   .mutation(async ({ ctx, input }) => {
     const scholarProfile = await db.query.scholarProfile.findFirst({
       where: eq(schema.scholarProfile.userId, ctx.session.user.id),

@@ -27,9 +27,15 @@ importers:
       '@hono/trpc-server':
         specifier: ^0.4.2
         version: 0.4.2(@trpc/server@11.17.0(typescript@6.0.3))(hono@4.12.23)
+      '@mobiliza/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@mobiliza/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@mobiliza/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       '@mobiliza/realtime':
         specifier: workspace:*
         version: link:../../packages/realtime
@@ -233,6 +239,9 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
+      '@mobiliza/api':
+        specifier: workspace:*
+        version: link:../api
       '@mobiliza/typescript-config':
         specifier: workspace:*
         version: link:../../config/typescript
@@ -242,6 +251,9 @@ importers:
       '@testing-library/react-native':
         specifier: ^13.3.3
         version: 13.3.3(jest@29.7.0)(react-native@0.85.3(@babel/core@7.29.0)(@react-native/jest-preset@0.85.3(@babel/core@7.29.0)(react@19.2.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.3))(react-test-renderer@19.2.3(react@19.2.3))(react@19.2.3)
+      '@trpc/server':
+        specifier: ^11.17.0
+        version: 11.17.0(typescript@6.0.3)
       '@types/react':
         specifier: ~19.2.14
         version: 19.2.14
@@ -318,6 +330,19 @@ importers:
 
   config/typescript: {}
 
+  packages/contracts:
+    dependencies:
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
+    devDependencies:
+      '@mobiliza/typescript-config':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+
   packages/db:
     dependencies:
       '@neondatabase/serverless':
@@ -339,6 +364,31 @@ importers:
       drizzle-kit:
         specifier: ^0.31.10
         version: 0.31.10
+
+  packages/domain:
+    dependencies:
+      '@mobiliza/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@mobiliza/db':
+        specifier: workspace:*
+        version: link:../db
+      drizzle-orm:
+        specifier: ^0.45.2
+        version: 0.45.2(@neondatabase/serverless@1.1.0)(kysely@0.28.17)
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
+    devDependencies:
+      '@mobiliza/typescript-config':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@types/node':
+        specifier: ^25.9.1
+        version: 25.9.1
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
 
   packages/realtime:
     dependencies:
@@ -7370,6 +7420,11 @@ packages:
   type-is@2.1.0:
     resolution: {integrity: sha512-faYHw0anBbc/kWF3zFTEnxSFOAGUX9GFbOBthvDdLsIlEoWOFOtS0zgCiQYwIskL9iGXZL3kAXD8OoZ4GmMATA==}
     engines: {node: '>= 18'}
+
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
 
   typescript@6.0.3:
     resolution: {integrity: sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==}
@@ -15915,6 +15970,8 @@ snapshots:
       content-type: 2.0.0
       media-typer: 1.1.0
       mime-types: 3.0.2
+
+  typescript@5.9.3: {}
 
   typescript@6.0.3: {}
 

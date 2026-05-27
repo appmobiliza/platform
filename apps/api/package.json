@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@hono/trpc-server": "^0.4.2",
+    "@mobiliza/contracts": "workspace:*",
+    "@mobiliza/domain": "workspace:*",
     "@mobiliza/db": "workspace:*",
     "@mobiliza/realtime": "workspace:*",
     "@neondatabase/serverless": "^1.1.0",

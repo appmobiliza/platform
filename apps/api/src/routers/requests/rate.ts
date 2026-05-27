@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { RateRequestSchema } from "@mobiliza/contracts";
 import { eq, and } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { db } from "@mobiliza/db/client";
@@ -6,13 +6,7 @@ import * as schema from "@mobiliza/db/schema";
 import { protectedProcedure } from "../../trpc/context";
 
 export const rate = protectedProcedure
-  .input(
-    z.object({
-      requestId: z.string(),
-      rating: z.number().int().min(1).max(5),
-      comment: z.string().max(500).optional(),
-    }),
-  )
+  .input(RateRequestSchema)
   .mutation(async ({ ctx, input }) => {
     const studentProfile = await db.query.studentProfile.findFirst({
       where: eq(schema.studentProfile.userId, ctx.session.user.id),
