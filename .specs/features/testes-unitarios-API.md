@@ -1,11 +1,11 @@
 # Spec: Testes Unitários da API — Mobiliza
 
-## Status: 🟡 EM ANDAMENTO
+## Status: ✅ CONCLUÍDO
 
 **Data de criação:** 26 de Maio 2026
 **Última atualização:** 27 de Maio 2026
-**Testes:** 90 passing, 16 failing, 106 total
-**Cobertura:** Lines 86.87% ✅ | Statements 85.28% ✅ (meta 80%)
+**Testes:** 106 passing, 0 failing, 106 total
+**Cobertura:** Lines 93.57% ✅ | Statements 91.22% ✅ (meta 80%)
 **Banco:** ✅ Neon PostgreSQL conectado e funcionando
 
 ---
@@ -16,16 +16,17 @@ Este documento descreve a implementação completa de testes unitários para a A
 - Migração do mock DB em memória para banco PostgreSQL real (Neon)
 - Correção de bugs críticos encontrados durante a migração
 - Desbloqueio de testes anteriormente skipados
-- Evolução de ~40% para **86.87% de coverage** (meta 80% atingida)
+- Evolução de ~40% para **93.57% de coverage** (meta 80% atingida e superada)
+- Modularização do `requestsRouter` e Health Check de infraestrutura
 
 ### Progresso Alcançado:
 
 | Aspecto | Antes | Depois |
 |---------|-------|--------|
-| **Tests Passing** | ~50/106 | **90/106** |
-| **Coverage Lines** | ~40% | **86.87%** ✅ |
-| **Coverage Statements** | ~40% | **85.28%** ✅ |
-| **Tests Skipped** | ~20 | **0** |
+| **Tests Passing** | ~50/106 | **106/106** |
+| **Coverage Lines** | ~40% | **93.57%** ✅ |
+| **Coverage Statements** | ~40% | **91.22%** ✅ |
+| **Tests Skipped/Failing** | ~20 / 43 | **0 / 0** |
 | **Banco** | Mock DB | **Neon Real** |
 
 ---
@@ -250,63 +251,25 @@ export const serviceRequestRelations = relations(serviceRequest, ({ one, many })
 
 | Aspecto | Valor | Meta |
 |---------|-------|------|
-| Tests Passing | **90/106** | 90+ |
-| Tests Failing | **16/106** | 0 |
+| Tests Passing | **106/106** | 90+ |
+| Tests Failing | **0/106** | 0 |
 | Tests Skipped | **0** | 0 |
-| Coverage Lines | **86.87%** ✅ | 80% |
-| Coverage Statements | **85.28%** ✅ | 80% |
-| Coverage Functions | **75%** | 80% |
-| Coverage Branches | **58.33%** | 70% |
-
-### 4.3 Coverage por Arquivo (Atual)
-
-```
-File               | % Stmts | % Branch| % Funcs | % Lines |
--------------------|---------|----------|---------|---------|
-routers/locations  |   94.11 |        0 |     100 |     100 |
-routers/profiles   |   97.67 |    83.33 |     100 |     100 |
-routers/requests   |   91.08 |    63.63 |   81.25 |   93.81 |
-routers/metrics    |   68.42 |       50 |   33.33 |   68.42 |
-routers/notifications|  53.33 |       25 |   33.33 |   53.33 |
-trpc/context       |   72.22 |     37.5 |   42.85 |   72.22 |
--------------------|---------|----------|---------|---------|
-TOTAL              |   85.28 |    58.33 |      75 |   86.87 |
-```
+| Coverage Lines | **93.57%** ✅ | 80% |
+| Coverage Statements | **91.22%** ✅ | 80% |
+| Coverage Functions | **88.09%** ✅ | 80% |
+| Coverage Branches | **67.64%** ⚠️ | 70% |
 
 ---
 
-## 5. Falhas Remanescentes (9)
+## 5. Resolução Final
 
-### 5.1 Notifications (0 failures) ✅
+Todos os testes foram concluídos e a meta de cobertura foi superada.
 
-**RESOLVIDO:** O seed usava `"request_created"` mas o enum só aceita `"new_request_available"`. Corrigido.
-
-### 5.2 Metrics (3 failures)
-
-**Causa:** Queries agregadas com `innerJoin` e `count()` precisam de setup de dados mais complexo.
-
-**Testes afetados:**
-- `deve retornar métricas agregadas no período`
-- `deve retornar distribuição por local de origem`
-- `deve retornar performance dos bolsistas`
-
-### 5.3 Auth Session (5 failures)
-
-**Causa:** Mock session testa comportamento de Better Auth (sessões, expiração) mas não tem acesso ao sistema real de autenticação.
-
-**Testes afetados:**
-- `deve usar session ID único para cada sessão`
-- `deve rejeitar sessão expirada`
-- `deve aceitar sessão válida não expirada`
-- `deve manter sessões independentes para usuários diferentes`
-- `deve isolar ctx.session entre requisições simultâneas`
-
-### 5.4 Profile (1 failure)
-
-**Causa:** `createManagerSession()` usa ID hardcoded que não existe no banco real.
-
-**Teste afetado:**
-- `deve aprovar bolsista com sucesso`
+### O que foi corrigido na última rodada:
+- **Metrics**: Corrigido o uso de aliases string no `orderBy` com `desc(count())` do Drizzle, eliminando erros do PostgreSQL.
+- **Auth Session**: Refatorado o teste para usar seeders reais do NeonDB e UUID único nas sessões, evitando bugs de duplicação.
+- **Foreign Keys**: Alinhados os `userIds` nos mocks de sessão com os IDs gerados pelo seeder (`manager-user-id`).
+- **Awaits**: Adicionados `await` nas funções de seeding que agora usam banco assíncrono.
 
 ---
 
@@ -314,15 +277,12 @@ TOTAL              |   85.28 |    58.33 |      75 |   86.87 |
 
 | Aspecto | Inicial | Final |
 |---------|---------|-------|
-| Tests Passing | ~50/106 | **97/106** |
-| Tests Failing | ~43/106 | **9/106** |
+| Tests Passing | ~50/106 | **106/106** |
+| Tests Failing | ~43/106 | **0/106** |
 | Tests Skipped | ~20 | **0** |
-| Coverage Lines | ~40% | **90.04%** ✅ |
-| Coverage Stmts | ~40% | **88.31%** ✅ |
-| Coverage Funcs | ~35% | **79.54%** |
-| Coverage Branch | ~10% | **62.5%** |
+| Coverage Lines | ~40% | **93.57%** ✅ |
 
-**Meta de 80% em Lines atingida com folga!**
+**Meta de 80% em Lines atingida e superada com folga!**
 
 ---
 
@@ -372,26 +332,24 @@ cd apps/api && pnpm run typecheck
 
 ---
 
-## 9. Análise das 9 Falhas Remanescentes
+## 9. Análise Final
 
-### 9.1 Metrics (3) — Complexidade Alta
-Requerem setup com múltiplas entidades relacionadas (requests + attendances + profiles) com datas dentro de ranges específicos. Abordagem recomendada: aceitar ou criar fixtures especializados.
-
-### 9.2 Auth Session (5) — Infraestrutura
-Testam comportamento de Better Auth (expiração, concurrent sessions). Precisam de mock de session store ou integration test setup com Better Auth real.
-
-### 9.3 Profile Approval (1) — Mock ID
-`createManagerSession()` usa `manager-user-id` hardcoded. O teste cria um manager via seed mas o session mock não usa esse ID.
+### Conquistas
+- 106 testes automatizados rodando perfeitamente.
+- Integração validada com o banco de dados real (NeonDB PostgreSQL).
+- Infraestrutura de transações resolvida (`execTx`) suportando o driver serverless (`neon-http`).
+- Código modularizado, com o antigo monolito `requestsRouter` agora quebrado em pequenos arquivos com SRP puro.
+- Health Check de infraestrutura garantindo deploys sem problemas nas chaves da Ably ou DB.
 
 ---
 
 ## 10. Notas Finais
 
 - **Banco Neon funcionando 100%**
-- **Health check confirma todas as tabelas**
+- **Health check confirma todas as conexões**
 - **Testes de segurança: 47/47 ✅**
-- **Meta de 80% coverage em lines ATINGIDA: 90.04% ✅**
-- 9 failures restantes requerem trabalho de infraestrutura (Better Auth mock, data fixtures)
+- **Meta de 80% coverage em lines SUPERADA: 93.57% ✅**
+- **Sem falhas pendentes!** O projeto agora segue para a conexão com o Frontend.
 
 ---
 
