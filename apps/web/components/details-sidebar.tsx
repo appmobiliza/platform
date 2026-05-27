@@ -1,10 +1,16 @@
 "use client";
 
-import type * as React from "react";
-
 import { XIcon } from "lucide-react";
 
+import {
+	closeServiceDetails,
+	useServiceDetailsEntry,
+} from "@/components/service-details-store";
+import { getInitials, type ServiceEntry } from "@/components/services-data";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Drawer,
 	DrawerContent,
@@ -17,31 +23,134 @@ import { cn } from "@/lib/utils";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 
-interface DetailsSidebarProps {
-	children: React.ReactNode;
-	description?: string;
-	open: boolean;
-	title: string;
-	onClose: () => void;
+function getStatusBadgeVariant(status: ServiceEntry["status"]) {
+	if (status === "concluded") {
+		return "success";
+	}
+
+	if (status === "in_progress") {
+		return "warning";
+	}
+
+	return "destructive";
 }
 
-export function DetailsSidebar({
-	children,
-	description,
-	open,
-	title,
-	onClose,
-}: DetailsSidebarProps) {
+function getStatusLabel(status: ServiceEntry["status"]) {
+	if (status === "concluded") {
+		return "Finalizado";
+	}
+
+	if (status === "in_progress") {
+		return "Em atendimento";
+	}
+
+	return "Não atendido";
+}
+
+function ServiceDetailsContent({ entry }: { entry: ServiceEntry }) {
+	return (
+		<div className="flex flex-col gap-4">
+			<Card>
+				<CardHeader className="space-y-2">
+					<div className="flex items-center justify-between gap-4">
+						<CardTitle>Resumo</CardTitle>
+						<Badge variant={getStatusBadgeVariant(entry.status)}>
+							{getStatusLabel(entry.status)}
+						</Badge>
+					</div>
+					<p className="text-sm text-muted-foreground">
+						{entry.route} • {entry.date} às {entry.time}
+					</p>
+				</CardHeader>
+				<CardContent className="space-y-3 text-sm">
+					<div className="flex items-center justify-between gap-3">
+						<span className="text-muted-foreground">Bolsista</span>
+						<span className="font-medium">
+							{entry.scholar.name}
+						</span>
+					</div>
+					<div className="flex items-center justify-between gap-3">
+						<span className="text-muted-foreground">Aluno</span>
+						<span className="font-medium">
+							{entry.student.name}
+						</span>
+					</div>
+					<div className="flex items-center justify-between gap-3">
+						<span className="text-muted-foreground">Duração</span>
+						<span className="font-medium">{entry.duration}</span>
+					</div>
+				</CardContent>
+			</Card>
+
+			<Card>
+				<CardHeader>
+					<CardTitle>Observações</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<p className="text-sm leading-6 text-muted-foreground">
+						{entry.notes}
+					</p>
+				</CardContent>
+			</Card>
+
+			<Card>
+				<CardHeader>
+					<CardTitle>Participantes</CardTitle>
+				</CardHeader>
+				<CardContent className="space-y-3">
+					<div className="flex items-center gap-3">
+						<Avatar className="h-10 w-10">
+							<AvatarFallback>
+								{getInitials(entry.scholar.name)}
+							</AvatarFallback>
+						</Avatar>
+						<div className="min-w-0">
+							<p className="font-medium">{entry.scholar.name}</p>
+							<p className="text-sm text-muted-foreground">
+								Bolsista
+							</p>
+						</div>
+					</div>
+					<div className="flex items-center gap-3">
+						<Avatar className="h-10 w-10">
+							<AvatarFallback>
+								{getInitials(entry.student.name)}
+							</AvatarFallback>
+						</Avatar>
+						<div className="min-w-0">
+							<p className="font-medium">{entry.student.name}</p>
+							<p className="text-sm text-muted-foreground">
+								Aluno
+							</p>
+						</div>
+					</div>
+				</CardContent>
+			</Card>
+		</div>
+	);
+}
+
+export function DetailsSidebar() {
 	const isMobile = useIsMobile();
+	const selectedEntry = useServiceDetailsEntry();
+
+	if (!selectedEntry) {
+		if (isMobile) {
+			return null;
+		}
+
+		return (
+			<aside className="hidden min-h-0 shrink-0 overflow-hidden border-l-0 bg-card md:flex md:w-0" />
+		);
+	}
 
 	if (isMobile) {
 		return (
 			<Drawer
-				direction="right"
-				open={open}
+				open
 				onOpenChange={(nextOpen) => {
 					if (!nextOpen) {
-						onClose();
+						closeServiceDetails();
 					}
 				}}
 			>
@@ -49,17 +158,17 @@ export function DetailsSidebar({
 					<DrawerHeader className="border-b border-border bg-card px-4 py-4">
 						<div className="flex items-start justify-between gap-4">
 							<div className="flex min-w-0 flex-col gap-1">
-								<DrawerTitle>{title}</DrawerTitle>
-								{description ? (
-									<DrawerDescription>
-										{description}
-									</DrawerDescription>
-								) : null}
+								<DrawerTitle>
+									Detalhes do atendimento
+								</DrawerTitle>
+								<DrawerDescription>
+									{selectedEntry.date} às {selectedEntry.time}
+								</DrawerDescription>
 							</div>
 							<Button
 								variant="ghost"
 								size="icon-sm"
-								onClick={onClose}
+								onClick={closeServiceDetails}
 								aria-label="Fechar detalhes"
 							>
 								<XIcon className="size-4" />
@@ -67,7 +176,7 @@ export function DetailsSidebar({
 						</div>
 					</DrawerHeader>
 					<div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
-						{children}
+						<ServiceDetailsContent entry={selectedEntry} />
 					</div>
 				</DrawerContent>
 			</Drawer>
@@ -76,40 +185,39 @@ export function DetailsSidebar({
 
 	return (
 		<aside
-			aria-hidden={!open}
 			className={cn(
-				"hidden min-h-0 shrink-0 overflow-hidden border-l border-border bg-card transition-[width] duration-300 ease-in-out lg:flex",
-				open ? "w-[24rem]" : "w-0 border-l-0",
+				"hidden min-h-0 shrink-0 overflow-hidden border-l border-border bg-card transition-[width] duration-300 ease-in-out md:flex",
+				selectedEntry ? "w-[24rem]" : "w-0 border-l-0",
 			)}
 		>
 			<div
 				className={cn(
 					"flex h-full w-[24rem] min-h-0 flex-col transition-opacity duration-200",
-					open ? "opacity-100" : "pointer-events-none opacity-0",
+					selectedEntry
+						? "opacity-100"
+						: "pointer-events-none opacity-0",
 				)}
 			>
 				<div className="flex items-start justify-between gap-4 border-b border-border px-4 py-4">
 					<div className="flex min-w-0 flex-col gap-1">
 						<h2 className="font-semibold text-foreground">
-							{title}
+							Detalhes do atendimento
 						</h2>
-						{description ? (
-							<p className="text-sm text-muted-foreground">
-								{description}
-							</p>
-						) : null}
+						<p className="text-sm text-muted-foreground">
+							{selectedEntry.date} às {selectedEntry.time}
+						</p>
 					</div>
 					<Button
 						variant="ghost"
 						size="icon-sm"
-						onClick={onClose}
+						onClick={closeServiceDetails}
 						aria-label="Fechar detalhes"
 					>
 						<XIcon className="size-4" />
 					</Button>
 				</div>
 				<div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
-					{children}
+					<ServiceDetailsContent entry={selectedEntry} />
 				</div>
 			</div>
 		</aside>

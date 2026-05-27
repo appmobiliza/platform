@@ -19,7 +19,7 @@ export default function DashboardLayout({
 	return (
 		<SidebarProvider>
 			<AppSidebar />
-			<main className="flex min-w-0 flex-1 flex-col">
+			<main className="flex min-w-0 flex-1 flex-col md:flex-row">
 				{/* Header mobile */}
 				<header className="border-b border-border p-4 flex flex-row items-center justify-between md:hidden w-full bg-card">
 					<Logo className="h-5 w-32 max-w-none" />
