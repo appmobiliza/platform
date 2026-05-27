@@ -1,6 +1,7 @@
 import { MockRealtimeAdapter } from '../adapters/server/mock'
 import { MockClientAdapter } from '../adapters/client/mock'
 
+
 // ─── MockRealtimeAdapter (server-side) ───────────────────────────────────────
 
 describe('MockRealtimeAdapter', () => {
@@ -31,7 +32,7 @@ describe('MockRealtimeAdapter', () => {
 
     await adapter.publish('sala:1', 'user:joined', { userId: 'abc' })
 
-    expect(handler).toHaveBeenCalledOnce()
+    expect(handler).toHaveBeenCalledTimes(1)
     expect(handler).toHaveBeenCalledWith({ userId: 'abc' })
   })
 
@@ -62,8 +63,8 @@ describe('MockRealtimeAdapter', () => {
 
     await adapter.publish('sala:1', 'voto', { valor: 5 })
 
-    expect(h1).toHaveBeenCalledOnce()
-    expect(h2).toHaveBeenCalledOnce()
+    expect(h1).toHaveBeenCalledTimes(1)
+    expect(h2).toHaveBeenCalledTimes(1)
   })
 
   it('deve remover todos os handlers ao chamar unsubscribe(channel)', async () => {

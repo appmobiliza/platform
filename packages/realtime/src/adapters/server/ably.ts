@@ -6,8 +6,7 @@ import type {
 } from '../../types'
 
 // `ably` é instalado apenas quando REALTIME_PROVIDER=ably
-type AblyRealtime = import('ably').Realtime
-type AblyChannel = import('ably').RealtimeChannel
+import type { Realtime as AblyRealtime, RealtimeChannel as AblyChannel, messageCallback, InboundMessage } from 'ably'
 
 /**
  * Adaptador server-side para **Ably Realtime**.
@@ -39,19 +38,16 @@ export class AblyRealtimeAdapter implements RealtimeAdapter {
   async publish(channel: string, event: string, data: RealtimePayload): Promise<void> {
     const ch = this.getOrCreateChannel(channel)
 
-    await new Promise<void>((resolve, reject) => {
-      ch.publish(event, data, (err) => {
-        if (err) reject(err)
-        else resolve()
-      })
-    })
+    await ch.publish(event, data)
   }
 
   subscribe(channel: string, event: string, handler: (data: RealtimePayload) => void): Unsubscribe {
     const ch = this.getOrCreateChannel(channel)
 
-    const ablyHandler = (message: { data: RealtimePayload }) => {
-      handler(message.data)
+    const ablyHandler: messageCallback<InboundMessage> = (message) => {
+      if (message.data !== undefined) {
+        handler(message.data as RealtimePayload)
+      }
     }
 
     ch.subscribe(event, ablyHandler)
@@ -79,7 +75,9 @@ export class AblyRealtimeAdapter implements RealtimeAdapter {
 
   private getOrCreateChannel(channel: string): AblyChannel {
     if (!this.channels.has(channel)) {
-      this.channels.set(channel, this.client.channels.get(channel))
+      const ch = this.client.channels.get(channel)
+      this.channels.set(channel, ch)
+      return ch
     }
     return this.channels.get(channel)!
   }
