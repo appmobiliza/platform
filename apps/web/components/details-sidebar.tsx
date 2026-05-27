@@ -2,15 +2,116 @@
 
 import type * as React from "react";
 
-interface Props {
+import { XIcon } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+	Drawer,
+	DrawerContent,
+	DrawerDescription,
+	DrawerHeader,
+	DrawerTitle,
+} from "@/components/ui/drawer";
+
+import { cn } from "@/lib/utils";
+
+import { useIsMobile } from "@/hooks/use-mobile";
+
+interface DetailsSidebarProps {
 	children: React.ReactNode;
+	description?: string;
+	open: boolean;
+	title: string;
+	onClose: () => void;
 }
 
-export function DetailsSidebar({ children }: Props) {
+export function DetailsSidebar({
+	children,
+	description,
+	open,
+	title,
+	onClose,
+}: DetailsSidebarProps) {
+	const isMobile = useIsMobile();
+
+	if (isMobile) {
+		return (
+			<Drawer
+				direction="right"
+				open={open}
+				onOpenChange={(nextOpen) => {
+					if (!nextOpen) {
+						onClose();
+					}
+				}}
+			>
+				<DrawerContent className="gap-0 p-0 sm:max-w-none">
+					<DrawerHeader className="border-b border-border bg-card px-4 py-4">
+						<div className="flex items-start justify-between gap-4">
+							<div className="flex min-w-0 flex-col gap-1">
+								<DrawerTitle>{title}</DrawerTitle>
+								{description ? (
+									<DrawerDescription>
+										{description}
+									</DrawerDescription>
+								) : null}
+							</div>
+							<Button
+								variant="ghost"
+								size="icon-sm"
+								onClick={onClose}
+								aria-label="Fechar detalhes"
+							>
+								<XIcon className="size-4" />
+							</Button>
+						</div>
+					</DrawerHeader>
+					<div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
+						{children}
+					</div>
+				</DrawerContent>
+			</Drawer>
+		);
+	}
+
 	return (
-		<div className="w-75 border-l border-border">
-			<p>testando</p>
-			{children}
-		</div>
+		<aside
+			aria-hidden={!open}
+			className={cn(
+				"hidden min-h-0 shrink-0 overflow-hidden border-l border-border bg-card transition-[width] duration-300 ease-in-out lg:flex",
+				open ? "w-[24rem]" : "w-0 border-l-0",
+			)}
+		>
+			<div
+				className={cn(
+					"flex h-full w-[24rem] min-h-0 flex-col transition-opacity duration-200",
+					open ? "opacity-100" : "pointer-events-none opacity-0",
+				)}
+			>
+				<div className="flex items-start justify-between gap-4 border-b border-border px-4 py-4">
+					<div className="flex min-w-0 flex-col gap-1">
+						<h2 className="font-semibold text-foreground">
+							{title}
+						</h2>
+						{description ? (
+							<p className="text-sm text-muted-foreground">
+								{description}
+							</p>
+						) : null}
+					</div>
+					<Button
+						variant="ghost"
+						size="icon-sm"
+						onClick={onClose}
+						aria-label="Fechar detalhes"
+					>
+						<XIcon className="size-4" />
+					</Button>
+				</div>
+				<div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
+					{children}
+				</div>
+			</div>
+		</aside>
 	);
 }

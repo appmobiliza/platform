@@ -320,7 +320,7 @@ export default function DashboardPage() {
 						<ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 lg:gap-x-24 gap-y-2">
 							{mostRequestedRoutes.map((route, index) => (
 								<li
-									key={index}
+									key={index.toString()}
 									className="flex justify-between"
 								>
 									<span>{route.route}</span>
@@ -347,7 +347,6 @@ export default function DashboardPage() {
 							{lastRequests.map(
 								(
 									{
-										route,
 										startTime,
 										endTime,
 										scholar,
@@ -372,7 +371,7 @@ export default function DashboardPage() {
 
 									return (
 										<li
-											key={index}
+											key={index.toString()}
 											className="flex flex-col items-start justify-start w-full p-6 border-b gap-4 border-border hover:bg-muted/25 transition-colors cursor-pointer bg-card md:rounded-lg md:border-none"
 										>
 											<div className="font-semibold flex flex-row items-start justify-between gap-4 w-full">
