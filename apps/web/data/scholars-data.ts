@@ -26,7 +26,7 @@ export const dashboardCards: Array<{
 interface SummaryData {
 	servicesAmounted: number;
 	monthHours: number;
-	averageDuration: string;
+	averageDuration: number;
 	servicesPerWeek: Array<{
 		week: string;
 		amount: number;
@@ -51,7 +51,7 @@ const summaries: SummaryData[] = [
 	{
 		servicesAmounted: 94,
 		monthHours: 22,
-		averageDuration: "~14 min",
+		averageDuration: 14,
 		servicesPerWeek: [
 			{ week: "17/06 - 23/06", amount: 20 },
 			{ week: "24/06 - 30/06", amount: 30 },
@@ -72,7 +72,7 @@ const summaries: SummaryData[] = [
 	{
 		servicesAmounted: 48,
 		monthHours: 12,
-		averageDuration: "~15 min",
+		averageDuration: 15,
 		servicesPerWeek: [
 			{ week: "17/06 - 23/06", amount: 10 },
 			{ week: "24/06 - 30/06", amount: 12 },
@@ -93,7 +93,7 @@ const summaries: SummaryData[] = [
 	{
 		servicesAmounted: 120,
 		monthHours: 40,
-		averageDuration: "~20 min",
+		averageDuration: 20,
 		servicesPerWeek: [
 			{ week: "17/06 - 23/06", amount: 30 },
 			{ week: "24/06 - 30/06", amount: 32 },
@@ -114,7 +114,7 @@ const summaries: SummaryData[] = [
 	{
 		servicesAmounted: 36,
 		monthHours: 8,
-		averageDuration: "~10 min",
+		averageDuration: 10,
 		servicesPerWeek: [
 			{ week: "17/06 - 23/06", amount: 8 },
 			{ week: "24/06 - 30/06", amount: 10 },

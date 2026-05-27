@@ -5,7 +5,12 @@ import type * as React from "react";
 import { XIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Drawer, DrawerContent, DrawerHeader } from "@/components/ui/drawer";
+import {
+	Drawer,
+	DrawerContent,
+	DrawerHeader,
+	DrawerTitle,
+} from "@/components/ui/drawer";
 
 import { cn } from "@/lib/utils";
 
@@ -38,6 +43,7 @@ export function DetailsSidebar({
 			>
 				<DrawerContent className="gap-0 p-0 sm:max-w-none">
 					<DrawerHeader className="border-b border-border bg-card px-4 py-4">
+						<DrawerTitle className="sr-only">Detalhes</DrawerTitle>
 						<div className="flex min-w-0 flex-col gap-1">
 							{header}
 						</div>

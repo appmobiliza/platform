@@ -196,11 +196,7 @@ export default function DashboardPage() {
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 					{dashboardCards.map(
 						({ icon: Icon, title, value, valueSuffix, footer }) => (
-							<Card
-								key={title}
-								className="group gap-2"
-								data-size="sm"
-							>
+							<Card key={title} className="group gap-2">
 								<CardHeader>
 									<CardAction>
 										<Icon className="mt-1 h-4 w-4 text-muted-foreground" />

@@ -46,11 +46,7 @@ export default function ScholarsPage() {
 
 				<div className="grid grid-cols-1 gap-4 border-b border-border p-4 md:grid-cols-3 md:p-6">
 					{dashboardCards.map(({ title, value, variant }) => (
-						<Card
-							key={title}
-							className="group w-full gap-2"
-							data-size="sm"
-						>
+						<Card key={title} className="group w-full gap-2">
 							<CardHeader>
 								<CardTitle>{title}</CardTitle>
 							</CardHeader>

@@ -3,14 +3,26 @@
 import { getCurrentShift } from "@mobiliza/db/schema";
 
 import { DetailsSidebar } from "@/components/details/details-sidebar";
+import { HorizontalBarsChart } from "@/components/horizontal-bars-chart";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import type { ChartConfig } from "@/components/ui/chart";
+import { Separator } from "@/components/ui/separator";
+import { VerticalBarsChart } from "@/components/vertical-bars-chart";
 
 import { getInitials } from "@/lib/utils";
 
 import type { ScholarData } from "@/data/scholars-data";
 
+import { DetailsSection } from "../details-section";
 import { closeScholarDetails, useScholarDetailsEntry } from "./store";
 
 function getShiftLabel(shift: ScholarData["profile"]["shift"]) {
@@ -60,131 +72,128 @@ function getScholarStatusVariant(status: ReturnType<typeof getScholarStatus>) {
 	}
 }
 
+const chartConfig = {
+	value: {
+		label: "Atendimentos",
+		color: "var(--chart-1)",
+	},
+} satisfies ChartConfig;
+
 function ScholarDetailsContent({ scholar }: { scholar: ScholarData }) {
 	const status = getScholarStatus(scholar);
 
 	return (
 		<div className="flex flex-col gap-4">
-			<Card>
-				<CardHeader className="space-y-2">
-					<div className="flex items-center justify-between gap-4">
-						<CardTitle>Resumo</CardTitle>
-						<Badge variant={getScholarStatusVariant(status)}>
-							{getScholarStatusLabel(status)}
-						</Badge>
-					</div>
-					<p className="text-sm text-muted-foreground">
-						{getShiftLabel(scholar.profile.shift)} •{" "}
-						{scholar.profile.course}
-					</p>
-				</CardHeader>
-				<CardContent className="grid gap-3 text-sm">
-					<div className="flex items-center justify-between gap-3">
-						<span className="text-muted-foreground">
+			<div className="flex items-center gap-3 flex-row w-full">
+				<Card size="sm" className="flex-1 bg-muted">
+					<CardHeader className="space-y-2">
+						<CardTitle className="font-normal">
 							Atendimentos
-						</span>
-						<span className="font-medium">
-							{scholar.summary.servicesAmounted}
-						</span>
-					</div>
-					<div className="flex items-center justify-between gap-3">
-						<span className="text-muted-foreground">
+						</CardTitle>
+					</CardHeader>
+					<CardContent className="text-2xl font-semibold">
+						{scholar.summary.servicesAmounted}
+					</CardContent>
+				</Card>
+
+				<Card size="sm" className="flex-1 bg-muted">
+					<CardHeader className="space-y-2">
+						<CardTitle className="font-normal">
 							Horas no mês
-						</span>
-						<span className="font-medium">
-							{scholar.summary.monthHours}
+						</CardTitle>
+					</CardHeader>
+					<CardContent className="text-2xl font-semibold">
+						{scholar.summary.monthHours}
+					</CardContent>
+				</Card>
+			</div>
+
+			<DetailsSection label="Atendimentos por semana">
+				<VerticalBarsChart
+					data={scholar.summary.servicesPerWeek.map(
+						(week, index) => ({
+							label: `S${index + 1}`,
+							value: week.amount,
+						}),
+					)}
+					config={chartConfig}
+					className="h-32"
+				/>
+			</DetailsSection>
+
+			<DetailsSection label="Alunos atendidos">
+				{scholar.summary.frequentStudents.map((student) => (
+					<div
+						key={student.name}
+						className="flex items-center justify-between gap-3"
+					>
+						<div className="flex flex-row items-center gap-3">
+							<Avatar className="h-6 w-6">
+								<AvatarFallback className="text-[8px]">
+									{getInitials(student.name)}
+								</AvatarFallback>
+							</Avatar>
+							<span className="text-sm">{student.name}</span>
+						</div>
+						<span className="text-sm text-muted-foreground">
+							{student.amount}x
 						</span>
 					</div>
-					<div className="flex items-center justify-between gap-3">
+				))}
+			</DetailsSection>
+
+			<DetailsSection label="Rotas mais frequentes">
+				{scholar.summary.frequentRoutes.map((route) => (
+					<div
+						key={route.route}
+						className="flex items-center justify-between gap-3 text-sm"
+					>
+						<span>{route.route}</span>
 						<span className="text-muted-foreground">
-							Tempo médio
-						</span>
-						<span className="font-medium">
-							{scholar.summary.averageDuration}
+							{route.amount}x
 						</span>
 					</div>
-				</CardContent>
-			</Card>
+				))}
+			</DetailsSection>
 
-			<Card>
-				<CardHeader>
-					<CardTitle>Volume semanal</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-3 text-sm">
-					{scholar.summary.servicesPerWeek.map((week) => (
-						<div
-							key={week.week}
-							className="flex items-center justify-between gap-3"
-						>
-							<span className="text-muted-foreground">
-								{week.week}
-							</span>
-							<span className="font-medium">{week.amount}</span>
-						</div>
-					))}
-				</CardContent>
-			</Card>
-
-			<Card>
-				<CardHeader>
-					<CardTitle>Rotas frequentes</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-3 text-sm">
-					{scholar.summary.frequentRoutes.map((route) => (
-						<div
-							key={route.route}
-							className="flex items-center justify-between gap-3"
-						>
-							<span className="text-muted-foreground">
-								{route.route}
-							</span>
-							<span className="font-medium">{route.amount}</span>
-						</div>
-					))}
-				</CardContent>
-			</Card>
-
-			<Card>
-				<CardHeader>
-					<CardTitle>Alunos recorrentes</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-3 text-sm">
-					{scholar.summary.frequentStudents.map((student) => (
-						<div
-							key={student.name}
-							className="flex items-center justify-between gap-3"
-						>
-							<span className="text-muted-foreground">
-								{student.name}
-							</span>
-							<span className="font-medium">
-								{student.amount}
-							</span>
-						</div>
-					))}
-				</CardContent>
-			</Card>
-
-			<Card>
-				<CardHeader>
-					<CardTitle>Perfil</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<div className="flex items-center gap-3">
-						<Avatar className="h-10 w-10">
-							<AvatarFallback>
-								{getInitials(scholar.user.name)}
-							</AvatarFallback>
-						</Avatar>
-						<div className="min-w-0">
-							<p className="font-medium">{scholar.user.name}</p>
-							<p className="text-sm text-muted-foreground">
-								{scholar.profile.course}
-							</p>
-						</div>
+			<DetailsSection label="Informações">
+				{[
+					{
+						title: "Matrícula",
+						description: scholar.profile.enrollment,
+					},
+					{
+						title: "Ativo desde",
+						description: new Date(
+							scholar.user.createdAt,
+						).toLocaleDateString(),
+					},
+					{
+						title: "Tempo médio",
+						description: `${scholar.summary.averageDuration} min / atend.`,
+					},
+				].map(({ title, description }) => (
+					<div
+						key={title}
+						className="flex items-center justify-between gap-3 text-sm"
+					>
+						<span className="text-muted-foreground">{title}</span>
+						<span>{description}</span>
 					</div>
-				</CardContent>
-			</Card>
+				))}
+			</DetailsSection>
+
+			<Separator />
+
+			<Button variant="outline" className="w-full">
+				Ver histórico completo
+			</Button>
+			<div className="flex flex-row gap-2">
+				<Button className="flex-1">Editar bolsista</Button>
+				<Button variant="destructive" className="flex-1">
+					Desativar
+				</Button>
+			</div>
 		</div>
 	);
 }
@@ -203,17 +212,29 @@ export function ScholarDetailsSidebar() {
 		<DetailsSidebar
 			open={selectedScholar.isOpen}
 			header={
-				<div className="flex w-full items-center justify-between gap-2 md:flex-col md:items-start md:gap-1">
-					<div className="flex min-w-0 flex-col gap-1">
-						<h2 className="font-semibold">Detalhes do bolsista</h2>
-						<p className="text-sm text-muted-foreground">
-							{getShiftLabel(scholar.profile.shift)} •{" "}
-							{scholar.profile.course}
-						</p>
+				<div className="flex w-full justify-between gap-3 flex-col items-start">
+					<div className="flex items-center gap-3 text-left">
+						<Avatar className="h-10 w-10">
+							<AvatarFallback>
+								{getInitials(scholar.user.name)}
+							</AvatarFallback>
+						</Avatar>
+						<div className="min-w-0">
+							<p className="font-medium">{scholar.user.name}</p>
+							<p className="text-sm text-muted-foreground">
+								{scholar.profile.course}
+							</p>
+						</div>
 					</div>
-					<Badge variant={getScholarStatusVariant(status)}>
-						{getScholarStatusLabel(status)}
-					</Badge>
+
+					<div className="flex items-center gap-2 flex-row">
+						<Badge variant={getScholarStatusVariant(status)}>
+							{getScholarStatusLabel(status)}
+						</Badge>
+						<Badge variant={"secondary"}>
+							{getShiftLabel(scholar.profile.shift)}
+						</Badge>
+					</div>
 				</div>
 			}
 			onClose={closeScholarDetails}
