@@ -6,7 +6,7 @@ import {
 	closeServiceDetails,
 	useServiceDetailsEntry,
 } from "@/components/service-details-store";
-import { getInitials, type ServiceEntry } from "@/components/services-data";
+import type { ServiceEntry } from "@/components/services-data";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import {
 	DrawerTitle,
 } from "@/components/ui/drawer";
 
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 

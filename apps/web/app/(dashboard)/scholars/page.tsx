@@ -4,21 +4,14 @@ import { Frown } from "lucide-react";
 
 import { DatePickerWithRange } from "@/components/date-range-picker";
 import { DetailsSidebar } from "@/components/details-sidebar";
+import { ScholarCard } from "@/components/scholar-card";
+import { dashboardCards, scholarsData } from "@/components/scholars-data";
 import { ServiceDetailsTrigger } from "@/components/service-details-trigger";
-import { dashboardCards, serviceEntries } from "@/components/services-data";
 import { StatusMessage } from "@/components/status-message";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { UserPicker } from "@/components/user-picker";
 
@@ -26,10 +19,10 @@ import { users } from "@/lib/mock";
 import { cn, getInitials } from "@/lib/utils";
 
 export const metadata: Metadata = {
-	title: "Atendimentos",
+	title: "Bolsistas",
 };
 
-export default function ServicesPage() {
+export default function ScholarsPage() {
 	const currentDate = new Date();
 
 	return (
@@ -75,8 +68,11 @@ export default function ServicesPage() {
 								<p
 									className={cn(
 										"text-4xl font-bold",
-										variant === "destructive" &&
-											"text-destructive",
+										variant === "green"
+											? "text-success"
+											: variant === "yellow"
+												? "text-yellow-500"
+												: "text-foreground",
 									)}
 								>
 									{value}
@@ -125,86 +121,29 @@ export default function ServicesPage() {
 								Todos
 							</ToggleGroupItem>
 							<ToggleGroupItem
-								value="concluded"
-								aria-label="Exibir concluídos"
+								value="active"
+								aria-label="Exibir ativos"
 							>
-								Concluídos
+								Ativos
 							</ToggleGroupItem>
 							<ToggleGroupItem
-								value="in_progress"
-								aria-label="Exibir em andamento"
+								value="inactive"
+								aria-label="Exibir inativos"
 							>
-								Em andamento
-							</ToggleGroupItem>
-							<ToggleGroupItem
-								className="mr-4"
-								value="not_attended"
-								aria-label="Exibir não atendidos"
-							>
-								Não atendidos
+								Inativos
 							</ToggleGroupItem>
 						</ToggleGroup>
 					</div>
 
-					{serviceEntries.length > 0 ? (
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead className="pl-6">Data</TableHead>
-									<TableHead>Horário</TableHead>
-									<TableHead>Bolsista</TableHead>
-									<TableHead>Aluno</TableHead>
-									<TableHead className="pr-6 text-right">
-										Ações
-									</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{serviceEntries.map((entry) => (
-									<TableRow key={entry.id}>
-										<TableCell className="pl-6 font-medium">
-											{entry.date}
-										</TableCell>
-										<TableCell>{entry.time}</TableCell>
-										<TableCell>
-											<div className="flex items-center gap-3">
-												<Avatar className="h-8 w-8">
-													<AvatarFallback>
-														{getInitials(
-															entry.scholar.name,
-														)}
-													</AvatarFallback>
-												</Avatar>
-												<span className="font-medium">
-													{entry.scholar.name}
-												</span>
-											</div>
-										</TableCell>
-										<TableCell>
-											<div className="flex items-center gap-3">
-												<Avatar className="h-8 w-8">
-													<AvatarFallback>
-														{getInitials(
-															entry.student.name,
-														)}
-													</AvatarFallback>
-												</Avatar>
-												<span className="font-medium">
-													{entry.student.name}
-												</span>
-											</div>
-										</TableCell>
-										<TableCell className="pr-6 text-right">
-											<ServiceDetailsTrigger
-												entry={entry}
-											>
-												Ver
-											</ServiceDetailsTrigger>
-										</TableCell>
-									</TableRow>
-								))}
-							</TableBody>
-						</Table>
+					{scholarsData.length > 0 ? (
+						<div className="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 lg:grid-cols-3">
+							{scholarsData.map((scholar) => (
+								<ScholarCard
+									key={scholar.user.id}
+									scholar={scholar}
+								/>
+							))}
+						</div>
 					) : (
 						<StatusMessage
 							className="my-48"

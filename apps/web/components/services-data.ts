@@ -79,12 +79,3 @@ export const serviceEntries: ServiceEntry[] = [
 		time: "11h15",
 	},
 ] as const;
-
-export function getInitials(name: string) {
-	return name
-		.split(" ")
-		.map((part) => part[0])
-		.join("")
-		.slice(0, 2)
-		.toUpperCase();
-}
