@@ -2,6 +2,8 @@
 
 import type * as React from "react";
 
+import { ChevronRight } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 
 import type { StudentData } from "@/data/students-data";
@@ -19,10 +21,12 @@ export function StudentDetailsTrigger({
 }) {
 	return (
 		<Button
+			variant={"outline"}
 			className={className}
 			onClick={() => openStudentDetails(student)}
 		>
-			{children ?? "Ver detalhe"}
+			{children ?? "Ver detalhes"}
+			<ChevronRight className="ml-2" size={16} />
 		</Button>
 	);
 }

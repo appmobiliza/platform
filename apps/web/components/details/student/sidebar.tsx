@@ -14,6 +14,28 @@ import type { StudentData } from "@/data/students-data";
 import { DetailsSection } from "../details-section";
 import { closeStudentDetails, useStudentDetailsEntry } from "./store";
 
+function getRouteStatusVariant(status: "completed" | "pending" | "canceled") {
+	switch (status) {
+		case "completed":
+			return "success";
+		case "pending":
+			return "outline";
+		case "canceled":
+			return "destructive";
+	}
+}
+
+function getRouteStatusLabel(status: "completed" | "pending" | "canceled") {
+	switch (status) {
+		case "completed":
+			return "Concluído";
+		case "pending":
+			return "Pendente";
+		case "canceled":
+			return "Cancelado";
+	}
+}
+
 function StudentDetailsContent({ student }: { student: StudentData }) {
 	return (
 		<div className="flex flex-col gap-4">
@@ -51,6 +73,57 @@ function StudentDetailsContent({ student }: { student: StudentData }) {
 				</p>
 			</DetailsSection>
 
+			<DetailsSection label="Rotas frequentes">
+				{student.summary.frequentRoutes.map((route) => (
+					<div
+						key={route.route}
+						className="flex items-center justify-between gap-3 text-sm"
+					>
+						<span>{route.route}</span>
+						<span className="text-muted-foreground">
+							{route.amount}x
+						</span>
+					</div>
+				))}
+			</DetailsSection>
+
+			<DetailsSection label="Bolsistas que mais atenderam">
+				{student.summary.frequentScholars.map((scholar) => (
+					<div
+						key={scholar.name}
+						className="flex items-center justify-between gap-3"
+					>
+						<div className="flex flex-row items-center gap-3">
+							<Avatar className="h-6 w-6">
+								<AvatarFallback className="text-[8px]">
+									{getInitials(scholar.name)}
+								</AvatarFallback>
+							</Avatar>
+							<span className="text-sm">{scholar.name}</span>
+						</div>
+						<span className="text-sm text-muted-foreground">
+							{scholar.amount}x
+						</span>
+					</div>
+				))}
+			</DetailsSection>
+
+			<DetailsSection label="Últimos atendimentos">
+				{student.summary.recentRoutes.map((route) => (
+					<div
+						key={route.route}
+						className="flex items-center justify-between gap-3 text-sm px-3 py-1.5 rounded-md bg-muted"
+					>
+						<span>
+							{route.date} → {route.route}
+						</span>
+						<Badge variant={getRouteStatusVariant(route.status)}>
+							{getRouteStatusLabel(route.status)}
+						</Badge>
+					</div>
+				))}
+			</DetailsSection>
+
 			<Separator />
 
 			<Button variant="outline">Ver histórico completo</Button>
@@ -85,11 +158,11 @@ export function StudentDetailsSidebar() {
 						</div>
 
 						<div className="flex items-center gap-2 flex-row">
-							<Badge variant={"secondary"}>
-								{student.profile.disabilities
-									.map((disability) => disability)
-									.join(", ")}
-							</Badge>
+							{student.profile.disabilities.map((disability) => (
+								<Badge key={disability} variant={"secondary"}>
+									Def. {disability}
+								</Badge>
+							))}
 							<Badge variant={"success"}>Ativo</Badge>
 						</div>
 					</div>

@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 
+import {
+	disabilityTypeLabels,
+	disabilityTypeValues,
+} from "@mobiliza/db/schema";
 import { Frown } from "lucide-react";
 
 import { ComboboxMultiple } from "@/components/combobox-multiple";
-import { DatePickerWithRange } from "@/components/date-range-picker";
 import {
 	StudentDetailsSidebar,
 	StudentDetailsTrigger,
@@ -12,6 +15,14 @@ import { StatusMessage } from "@/components/status-message";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import {
 	Table,
 	TableBody,
@@ -20,16 +31,21 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 import { cn, getInitials } from "@/lib/utils";
 
-import { users } from "@/data/mock";
 import { dashboardCards, studentsData } from "@/data/students-data";
 
 export const metadata: Metadata = {
 	title: "Estudantes",
 };
+
+const sortOptions = [
+	{ value: "recent", label: "Mais recentes" },
+	{ value: "oldest", label: "Mais antigos" },
+	{ value: "name-asc", label: "Nome (A-Z)" },
+	{ value: "name-desc", label: "Nome (Z-A)" },
+];
 
 export default function StudentsPage() {
 	return (
@@ -47,7 +63,7 @@ export default function StudentsPage() {
 					</div>
 				</header>
 
-				<div className="grid grid-cols-1 gap-4 border-b border-border p-4 md:grid-cols-3 md:p-6">
+				<div className="grid grid-cols-1 gap-4 border-b border-border p-4 md:grid-cols-4 md:p-6">
 					{dashboardCards.map(({ title, value, variant }) => (
 						<Card key={title} className="group w-full gap-2">
 							<CardHeader>
@@ -69,62 +85,32 @@ export default function StudentsPage() {
 
 				<div className="flex min-w-0 flex-col gap-4 overflow-hidden py-4 md:py-6">
 					<div className="flex min-w-0 w-full flex-col items-center justify-start gap-4 px-4 md:px-6 md:flex-row">
-						<DatePickerWithRange className="w-full md:w-fit md:flex-1" />
-						<ComboboxMultiple
-							className="w-full flex-1 md:w-fit md:flex-1"
-							items={users
-								.filter((user) => user.role === "scholar")
-								.map((scholar) => ({
-									id: scholar.id,
-									label: scholar.name,
-								}))}
-							allLabel="Todos os bolsistas"
+						<Input
+							placeholder="Buscar por nome, matrícula ou curso"
+							className=""
 						/>
 						<ComboboxMultiple
-							className="w-full flex-1 md:w-fit md:flex-1"
-							items={users
-								.filter((user) => user.role === "student")
-								.map((student) => ({
-									id: student.id,
-									label: student.name,
-								}))}
-							allLabel="Todos os alunos"
+							items={disabilityTypeValues.map((disability) => ({
+								id: disability,
+								label: disabilityTypeLabels[disability],
+							}))}
+							allLabel="Todos os tipos de deficiência"
 						/>
-					</div>
-					<div className="w-full min-w-0 overflow-x-auto pl-4 md:pl-6 no-scrollbar">
-						<ToggleGroup
-							type="single"
-							size="sm"
-							className="w-full min-w-max"
-							defaultValue="all"
-							variant="default"
-						>
-							<ToggleGroupItem
-								value="all"
-								aria-label="Exibir todos"
-							>
-								Todos
-							</ToggleGroupItem>
-							<ToggleGroupItem
-								value="concluded"
-								aria-label="Exibir concluídos"
-							>
-								Concluídos
-							</ToggleGroupItem>
-							<ToggleGroupItem
-								value="in_progress"
-								aria-label="Exibir em andamento"
-							>
-								Em andamento
-							</ToggleGroupItem>
-							<ToggleGroupItem
-								className="mr-4 md:mr-6"
-								value="not_attended"
-								aria-label="Exibir não atendidos"
-							>
-								Não atendidos
-							</ToggleGroupItem>
-						</ToggleGroup>
+						<Select defaultValue="recent">
+							<SelectTrigger className="w-full md:w-auto">
+								<SelectValue placeholder="Ordenar por" />
+							</SelectTrigger>
+							<SelectContent>
+								{sortOptions.map((option) => (
+									<SelectItem
+										key={option.value}
+										value={option.value}
+									>
+										Ordenar por: {option.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
 					</div>
 
 					{studentsData.length > 0 ? (
