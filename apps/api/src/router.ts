@@ -13,7 +13,7 @@
  */
 
 import { router } from "./trpc/context";
-import { requestsRouter } from "./routers/requests";
+import { requestsRouter } from "./routers/requests/index";
 import { profilesRouter } from "./routers/profiles";
 import { locationsRouter } from "./routers/locations";
 import { notificationsRouter } from "./routers/notifications";
