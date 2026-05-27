@@ -36,6 +36,10 @@ const paginationInput = z.object({
 
 // ─── Helpers internos ─────────────────────────────────────────────────────────
 
+const execTx = (globalThis as Record<string, unknown>).mockTransaction
+  ? (globalThis as Record<string, (cb: (tx: typeof db) => Promise<any>) => Promise<any>>).mockTransaction
+  : ((cb: (tx: typeof db) => Promise<any>) => db.transaction(cb));
+
 /** Gera um ID de request no formato `req_<timestamp>_<random>` */
 function generateRequestId(): string {
   return `req_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -206,7 +210,7 @@ export const requestsRouter = router({
       }
 
       // Transação atômica para evitar race condition entre bolsistas
-      return await db.transaction(async (tx) => {
+      const result = await execTx(async (tx) => {
         const request = await tx.query.serviceRequest.findFirst({
           where: and(
             eq(schema.serviceRequest.id, input.requestId),
@@ -254,6 +258,8 @@ export const requestsRouter = router({
 
         return { request: { ...request, status: "accepted" }, attendance };
       });
+
+      return result;
     }),
 
   /**
@@ -285,7 +291,7 @@ export const requestsRouter = router({
 
       const now = new Date();
 
-      await db.transaction(async (tx) => {
+      await execTx(async (tx) => {
         await tx
           .update(schema.serviceRequest)
           .set({ status: "ongoing", updatedAt: now })
@@ -338,7 +344,7 @@ export const requestsRouter = router({
         (now.getTime() - attendance.startedAt.getTime()) / 1000,
       );
 
-      await db.transaction(async (tx) => {
+      await execTx(async (tx) => {
         await tx
           .update(schema.serviceRequest)
           .set({ status: "completed", updatedAt: now })
