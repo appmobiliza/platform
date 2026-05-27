@@ -17,17 +17,15 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DetailsSidebarProps {
 	children: React.ReactNode;
-	description?: string;
+	header: React.ReactNode;
 	open: boolean;
-	title: string;
 	onClose: () => void;
 }
 
 export function DetailsSidebar({
 	children,
-	description,
+	header,
 	open,
-	title,
 	onClose,
 }: DetailsSidebarProps) {
 	const isMobile = useIsMobile();
@@ -35,7 +33,6 @@ export function DetailsSidebar({
 	if (isMobile) {
 		return (
 			<Drawer
-				direction="right"
 				open={open}
 				onOpenChange={(nextOpen) => {
 					if (!nextOpen) {
@@ -45,23 +42,8 @@ export function DetailsSidebar({
 			>
 				<DrawerContent className="gap-0 p-0 sm:max-w-none">
 					<DrawerHeader className="border-b border-border bg-card px-4 py-4">
-						<div className="flex items-start justify-between gap-4">
-							<div className="flex min-w-0 flex-col gap-1">
-								<DrawerTitle>{title}</DrawerTitle>
-								{description ? (
-									<DrawerDescription>
-										{description}
-									</DrawerDescription>
-								) : null}
-							</div>
-							<Button
-								variant="ghost"
-								size="icon-sm"
-								onClick={onClose}
-								aria-label="Fechar detalhes"
-							>
-								<XIcon className="size-4" />
-							</Button>
+						<div className="flex min-w-0 flex-col gap-1">
+							{header}
 						</div>
 					</DrawerHeader>
 					<div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
@@ -85,17 +67,8 @@ export function DetailsSidebar({
 					open ? "opacity-100" : "pointer-events-none opacity-0",
 				)}
 			>
-				<div className="flex items-start justify-between gap-4 border-b border-border px-4 py-4">
-					<div className="flex min-w-0 flex-col gap-1">
-						<h2 className="font-semibold text-foreground">
-							{title}
-						</h2>
-						{description ? (
-							<p className="text-sm text-muted-foreground">
-								{description}
-							</p>
-						) : null}
-					</div>
+				<div className="flex items-center justify-between gap-4 border-b border-border px-6 py-6">
+					<div className="flex min-w-0 flex-col gap-1">{header}</div>
 					<Button
 						variant="ghost"
 						size="icon-sm"
@@ -105,7 +78,7 @@ export function DetailsSidebar({
 						<XIcon className="size-4" />
 					</Button>
 				</div>
-				<div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
+				<div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-6">
 					{children}
 				</div>
 			</div>

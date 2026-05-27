@@ -1,5 +1,7 @@
 "use client";
 
+import { scholarShiftLabels } from "@mobiliza/db/schema";
+
 import { DetailsSidebar } from "@/components/details-sidebar";
 import {
 	closeServiceDetails,
@@ -11,6 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { getInitials } from "@/lib/utils";
+
+import { DetailsSection } from "./details-section";
+import { RoutePreview } from "./route-preview";
 
 function getStatusBadgeVariant(status: ServiceEntry["status"]) {
 	if (status === "concluded") {
@@ -39,82 +44,40 @@ function getStatusLabel(status: ServiceEntry["status"]) {
 function ServiceDetailsContent({ entry }: { entry: ServiceEntry }) {
 	return (
 		<div className="flex flex-col gap-4">
-			<Card>
-				<CardHeader className="space-y-2">
-					<div className="flex items-center justify-between gap-4">
-						<CardTitle>Resumo</CardTitle>
-						<Badge variant={getStatusBadgeVariant(entry.status)}>
-							{getStatusLabel(entry.status)}
-						</Badge>
+			<DetailsSection label="Aluno">
+				<div className="flex items-center gap-3">
+					<Avatar className="h-10 w-10">
+						<AvatarFallback>
+							{getInitials(entry.student.user.name)}
+						</AvatarFallback>
+					</Avatar>
+					<div className="min-w-0">
+						<p className="font-medium">{entry.student.user.name}</p>
+						<p className="text-sm text-muted-foreground">Aluno</p>
 					</div>
-					<p className="text-sm text-muted-foreground">
-						{entry.route} • {entry.date} às {entry.time}
-					</p>
-				</CardHeader>
-				<CardContent className="space-y-3 text-sm">
-					<div className="flex items-center justify-between gap-3">
-						<span className="text-muted-foreground">Bolsista</span>
-						<span className="font-medium">
-							{entry.scholar.name}
-						</span>
-					</div>
-					<div className="flex items-center justify-between gap-3">
-						<span className="text-muted-foreground">Aluno</span>
-						<span className="font-medium">
-							{entry.student.name}
-						</span>
-					</div>
-					<div className="flex items-center justify-between gap-3">
-						<span className="text-muted-foreground">Duração</span>
-						<span className="font-medium">{entry.duration}</span>
-					</div>
-				</CardContent>
-			</Card>
+				</div>
+			</DetailsSection>
 
-			<Card>
-				<CardHeader>
-					<CardTitle>Observações</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<p className="text-sm leading-6 text-muted-foreground">
-						{entry.notes}
-					</p>
-				</CardContent>
-			</Card>
+			<DetailsSection label="Bolsista">
+				<div className="flex items-center gap-3">
+					<Avatar className="h-10 w-10">
+						<AvatarFallback>
+							{getInitials(entry.scholar.user.name)}
+						</AvatarFallback>
+					</Avatar>
+					<div className="min-w-0">
+						<p className="font-medium">{entry.scholar.user.name}</p>
+						<p className="text-sm text-muted-foreground">
+							Turno{" "}
+							{scholarShiftLabels[entry.scholar.profile.shift]}
+						</p>
+					</div>
+				</div>
+			</DetailsSection>
 
-			<Card>
-				<CardHeader>
-					<CardTitle>Participantes</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-3">
-					<div className="flex items-center gap-3">
-						<Avatar className="h-10 w-10">
-							<AvatarFallback>
-								{getInitials(entry.scholar.name)}
-							</AvatarFallback>
-						</Avatar>
-						<div className="min-w-0">
-							<p className="font-medium">{entry.scholar.name}</p>
-							<p className="text-sm text-muted-foreground">
-								Bolsista
-							</p>
-						</div>
-					</div>
-					<div className="flex items-center gap-3">
-						<Avatar className="h-10 w-10">
-							<AvatarFallback>
-								{getInitials(entry.student.name)}
-							</AvatarFallback>
-						</Avatar>
-						<div className="min-w-0">
-							<p className="font-medium">{entry.student.name}</p>
-							<p className="text-sm text-muted-foreground">
-								Aluno
-							</p>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
+			<DetailsSection label="Percurso">
+				<RoutePreview />
+			</DetailsSection>
 		</div>
 	);
 }
@@ -130,8 +93,14 @@ export function ServiceDetailsSidebar() {
 	return (
 		<DetailsSidebar
 			open={selectedEntry.isOpen}
-			title="Detalhes do atendimento"
-			description={`${entry.date} às ${entry.time}`}
+			header={
+				<div className="flex items-center md:flex-col md:items-start gap-2 w-full justify-between">
+					<h2 className="font-semibold">Detalhes do atendimento</h2>
+					<Badge variant={getStatusBadgeVariant(entry.status)}>
+						{getStatusLabel(entry.status)}
+					</Badge>
+				</div>
+			}
 			onClose={closeServiceDetails}
 		>
 			<ServiceDetailsContent entry={entry} />

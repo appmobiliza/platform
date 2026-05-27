@@ -413,7 +413,7 @@ export default function DashboardPage() {
 														: "Finalizado"}
 												</Badge>
 											</div>
-											<RoutePreview />
+											<RoutePreview className="rounded-lg border border-border p-4" />
 										</li>
 									);
 								},

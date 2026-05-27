@@ -86,8 +86,8 @@ export default function ServicesPage() {
 					))}
 				</div>
 
-				<div className="flex min-w-0 flex-col gap-4 overflow-hidden py-4">
-					<div className="flex min-w-0 w-full flex-col items-center justify-start gap-4 px-4 md:flex-row">
+				<div className="flex min-w-0 flex-col gap-4 overflow-hidden py-4 md:py-6">
+					<div className="flex min-w-0 w-full flex-col items-center justify-start gap-4 px-4 md:px-6 md:flex-row">
 						<DatePickerWithRange className="w-full md:w-fit md:flex-1" />
 						<ComboboxMultiple
 							className="w-full flex-1 md:w-fit md:flex-1"
@@ -110,7 +110,7 @@ export default function ServicesPage() {
 							allLabel="Todos os alunos"
 						/>
 					</div>
-					<div className="w-full min-w-0 overflow-x-auto pl-4 no-scrollbar">
+					<div className="w-full min-w-0 overflow-x-auto pl-4 md:pl-6 no-scrollbar">
 						<ToggleGroup
 							type="single"
 							size="sm"
@@ -137,7 +137,7 @@ export default function ServicesPage() {
 								Em andamento
 							</ToggleGroupItem>
 							<ToggleGroupItem
-								className="mr-4"
+								className="mr-4 md:pr-6"
 								value="not_attended"
 								aria-label="Exibir não atendidos"
 							>
@@ -150,11 +150,13 @@ export default function ServicesPage() {
 						<Table>
 							<TableHeader>
 								<TableRow>
-									<TableHead className="pl-6">Data</TableHead>
+									<TableHead className="pl-6 md:pl-8">
+										Data
+									</TableHead>
 									<TableHead>Horário</TableHead>
 									<TableHead>Bolsista</TableHead>
 									<TableHead>Aluno</TableHead>
-									<TableHead className="pr-6 text-right">
+									<TableHead className="pr-6 md:pr-8 text-right">
 										Ações
 									</TableHead>
 								</TableRow>
@@ -162,7 +164,7 @@ export default function ServicesPage() {
 							<TableBody>
 								{serviceEntries.map((entry) => (
 									<TableRow key={entry.id}>
-										<TableCell className="pl-6 font-medium">
+										<TableCell className="pl-6 md:pl-8 font-medium">
 											{entry.date}
 										</TableCell>
 										<TableCell>{entry.time}</TableCell>
@@ -171,12 +173,13 @@ export default function ServicesPage() {
 												<Avatar className="h-8 w-8">
 													<AvatarFallback>
 														{getInitials(
-															entry.scholar.name,
+															entry.scholar.user
+																.name,
 														)}
 													</AvatarFallback>
 												</Avatar>
 												<span className="font-medium">
-													{entry.scholar.name}
+													{entry.scholar.user.name}
 												</span>
 											</div>
 										</TableCell>
@@ -185,16 +188,17 @@ export default function ServicesPage() {
 												<Avatar className="h-8 w-8">
 													<AvatarFallback>
 														{getInitials(
-															entry.student.name,
+															entry.student.user
+																.name,
 														)}
 													</AvatarFallback>
 												</Avatar>
 												<span className="font-medium">
-													{entry.student.name}
+													{entry.student.user.name}
 												</span>
 											</div>
 										</TableCell>
-										<TableCell className="pr-6 text-right">
+										<TableCell className="pr-6 md:pr-8 text-right">
 											<ServiceDetailsTrigger
 												entry={entry}
 											>

@@ -1,3 +1,7 @@
+import type { ScholarProfile, StudentProfile, User } from "@mobiliza/db/schema";
+
+import { scholars, students, users } from "@/lib/mock";
+
 export type ServiceStatus = "concluded" | "in_progress" | "not_attended";
 
 export type ServiceEntry = {
@@ -7,8 +11,14 @@ export type ServiceEntry = {
 	notes: string;
 	route: string;
 	status: ServiceStatus;
-	student: { name: string };
-	scholar: { name: string };
+	student: {
+		user: User;
+		profile: StudentProfile;
+	};
+	scholar: {
+		user: User;
+		profile: ScholarProfile;
+	};
 	time: string;
 };
 
@@ -41,10 +51,12 @@ export const serviceEntries: ServiceEntry[] = [
 		route: "IC → Biblioteca",
 		status: "concluded",
 		student: {
-			name: "Maria Silva",
+			user: users[4]!,
+			profile: students[0]!,
 		},
 		scholar: {
-			name: "João Carlos",
+			user: users[0]!,
+			profile: scholars[0]!,
 		},
 		time: "09h00",
 	},
@@ -56,10 +68,12 @@ export const serviceEntries: ServiceEntry[] = [
 		route: "RU → IC",
 		status: "in_progress",
 		student: {
-			name: "Lucas Almeida",
+			user: users[3]!,
+			profile: students[1]!,
 		},
 		scholar: {
-			name: "Ana Paula",
+			user: users[1]!,
+			profile: scholars[1]!,
 		},
 		time: "10h30",
 	},
@@ -71,10 +85,12 @@ export const serviceEntries: ServiceEntry[] = [
 		route: "Biblioteca → RU",
 		status: "not_attended",
 		student: {
-			name: "Fernanda Lima",
+			user: users[1]!,
+			profile: students[2]!,
 		},
 		scholar: {
-			name: "Bruno Costa",
+			user: users[2]!,
+			profile: scholars[2]!,
 		},
 		time: "11h15",
 	},
