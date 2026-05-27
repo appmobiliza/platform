@@ -133,21 +133,16 @@ function ServiceDetailsContent({ entry }: { entry: ServiceEntry }) {
 export function DetailsSidebar() {
 	const isMobile = useIsMobile();
 	const selectedEntry = useServiceDetailsEntry();
+	const entry = selectedEntry?.entry;
 
-	if (!selectedEntry) {
-		if (isMobile) {
-			return null;
-		}
-
-		return (
-			<aside className="hidden min-h-0 shrink-0 overflow-hidden border-l-0 bg-card md:flex md:w-0" />
-		);
+	if (!entry) {
+		return null;
 	}
 
 	if (isMobile) {
 		return (
 			<Drawer
-				open
+				open={selectedEntry.isOpen}
 				onOpenChange={(nextOpen) => {
 					if (!nextOpen) {
 						closeServiceDetails();
@@ -156,27 +151,27 @@ export function DetailsSidebar() {
 			>
 				<DrawerContent className="gap-0 p-0 sm:max-w-none">
 					<DrawerHeader className="border-b border-border bg-card px-4 py-4">
-						<div className="flex items-start justify-between gap-4">
+						<div className="flex items-start justify-center gap-4">
 							<div className="flex min-w-0 flex-col gap-1">
 								<DrawerTitle>
 									Detalhes do atendimento
 								</DrawerTitle>
 								<DrawerDescription>
-									{selectedEntry.date} às {selectedEntry.time}
+									{entry.date} às {entry.time}
 								</DrawerDescription>
 							</div>
-							<Button
+							{/* <Button
 								variant="ghost"
 								size="icon-sm"
 								onClick={closeServiceDetails}
 								aria-label="Fechar detalhes"
 							>
 								<XIcon className="size-4" />
-							</Button>
+							</Button> */}
 						</div>
 					</DrawerHeader>
 					<div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
-						<ServiceDetailsContent entry={selectedEntry} />
+						<ServiceDetailsContent entry={entry} />
 					</div>
 				</DrawerContent>
 			</Drawer>
@@ -187,13 +182,13 @@ export function DetailsSidebar() {
 		<aside
 			className={cn(
 				"hidden min-h-0 shrink-0 overflow-hidden border-l border-border bg-card transition-[width] duration-300 ease-in-out md:flex",
-				selectedEntry ? "w-[24rem]" : "w-0 border-l-0",
+				selectedEntry.isOpen ? "w-[24rem]" : "w-0 border-l-0",
 			)}
 		>
 			<div
 				className={cn(
 					"flex h-full w-[24rem] min-h-0 flex-col transition-opacity duration-200",
-					selectedEntry
+					selectedEntry.isOpen
 						? "opacity-100"
 						: "pointer-events-none opacity-0",
 				)}
@@ -204,7 +199,7 @@ export function DetailsSidebar() {
 							Detalhes do atendimento
 						</h2>
 						<p className="text-sm text-muted-foreground">
-							{selectedEntry.date} às {selectedEntry.time}
+							{entry.date} às {entry.time}
 						</p>
 					</div>
 					<Button
@@ -217,7 +212,7 @@ export function DetailsSidebar() {
 					</Button>
 				</div>
 				<div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
-					<ServiceDetailsContent entry={selectedEntry} />
+					<ServiceDetailsContent entry={entry} />
 				</div>
 			</div>
 		</aside>

@@ -6,7 +6,7 @@ import type { ServiceEntry } from "@/components/services-data";
 
 type Listener = () => void;
 
-let selectedEntry: ServiceEntry | null = null;
+let selectedEntry: { isOpen: boolean; entry: ServiceEntry } | null = null;
 const listeners = new Set<Listener>();
 
 function emitChange() {
@@ -16,12 +16,15 @@ function emitChange() {
 }
 
 export function openServiceDetails(entry: ServiceEntry) {
-	selectedEntry = entry;
+	selectedEntry = { isOpen: true, entry };
 	emitChange();
 }
 
 export function closeServiceDetails() {
-	selectedEntry = null;
+	selectedEntry = {
+		isOpen: false,
+		entry: selectedEntry?.entry as ServiceEntry,
+	};
 	emitChange();
 }
 
