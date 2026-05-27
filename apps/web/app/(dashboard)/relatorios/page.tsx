@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
-import { FileDown, FileSpreadsheet } from "lucide-react";
+import { FileDown, FileSpreadsheet, InfoIcon } from "lucide-react";
 
+import { ComboboxMultiple } from "@/components/combobox-multiple";
+import { DatePickerWithRange } from "@/components/date-range-picker";
+import { Alert } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,23 +18,16 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import type { ChartConfig } from "@/components/ui/chart";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { VerticalBarsChart } from "@/components/vertical-bars-chart";
 
 import { getInitials } from "@/lib/utils";
 
-const reportMonth = "Abril 2026";
-
-const monthOptions = ["Abril 2026", "Março 2026", "Fevereiro 2026"];
+const reportMonth = new Date().toLocaleDateString("pt-BR", {
+	month: "long",
+	year: "numeric",
+});
 
 const studentOptions = [
-	"Todos os alunos",
 	"João Pedro",
 	"Ana Beatriz",
 	"Carlos Eduardo",
@@ -39,14 +35,13 @@ const studentOptions = [
 ];
 
 const scholarOptions = [
-	"Todos os bolsistas",
 	"Lucas Carvalho",
 	"Maria Costa",
 	"Rafael Souza",
 	"Juliana Oliveira",
 ];
 
-const shiftOptions = ["Todos os turnos", "Matutino", "Vespertino", "Noturno"];
+const shiftOptions = ["Matutino", "Vespertino", "Noturno"];
 
 const stats = [
 	{
@@ -83,10 +78,10 @@ const stats = [
 
 const weekdayProgress = [
 	{ label: "Seg", value: 24, percent: 44 },
-	{ label: "Ter", value: 18, percent: 34 },
-	{ label: "Qua", value: 11, percent: 18 },
-	{ label: "Qui", value: 54, percent: 100 },
-	{ label: "Sex", value: 31, percent: 58 },
+	{ label: "Ter", value: 18, percent: 12 },
+	{ label: "Qua", value: 11, percent: 16 },
+	{ label: "Qui", value: 54, percent: 24 },
+	{ label: "Sex", value: 31, percent: 4 },
 ] as const;
 
 const shiftProgress = [
@@ -255,11 +250,13 @@ function ProgressSection({
 function RankingCard({
 	title,
 	items,
-	showRoute = false,
+	prefix = "x",
+	showUser = false,
 }: {
 	title: string;
 	items: ReadonlyArray<{ name: string; count: number }>;
-	showRoute?: boolean;
+	prefix?: "x" | "atend.";
+	showUser?: boolean;
 }) {
 	return (
 		<SectionCard title={title}>
@@ -270,12 +267,12 @@ function RankingCard({
 						className="flex items-center justify-between gap-3 border-b border-border/60 py-3 last:border-b-0 last:pb-0 first:pt-0"
 					>
 						<div className="flex min-w-0 items-center gap-3">
-							{showRoute ? null : (
+							{prefix === "x" ? null : (
 								<p className="w-3 shrink-0 text-xs text-foreground/80">
 									{index + 1}
 								</p>
 							)}
-							{showRoute ? null : (
+							{showUser && (
 								<Avatar className="h-8 w-8 shrink-0">
 									<AvatarFallback className="text-[10px]">
 										{getInitials(item.name)}
@@ -289,7 +286,7 @@ function RankingCard({
 							</div>
 						</div>
 						<Badge variant="secondary" className="shrink-0">
-							{item.count} {showRoute ? "x" : "atend."}
+							{item.count} {prefix}
 						</Badge>
 					</div>
 				))}
@@ -306,7 +303,7 @@ function ExportCard({
 	description: string;
 }) {
 	return (
-		<Card className="gap-4 p-4 md:p-6">
+		<Card className="gap-4 p-4">
 			<CardHeader className="space-y-1 p-0">
 				<CardTitle className="text-sm font-medium">{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
@@ -360,58 +357,32 @@ export default function ReportsPage() {
 			<div className="flex flex-col gap-4 p-4 md:p-6">
 				<div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
 					<div className="md:col-span-2 xl:col-span-1">
-						<Select defaultValue={reportMonth}>
-							<SelectTrigger className="h-10 w-full bg-card">
-								<SelectValue placeholder="Selecione o mês" />
-							</SelectTrigger>
-							<SelectContent>
-								{monthOptions.map((option) => (
-									<SelectItem key={option} value={option}>
-										{option}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+						<DatePickerWithRange className="w-full bg-card" />
 					</div>
 
-					<Select defaultValue={studentOptions[0]}>
-						<SelectTrigger className="h-10 w-full bg-card">
-							<SelectValue placeholder="Todos os alunos" />
-						</SelectTrigger>
-						<SelectContent>
-							{studentOptions.map((option) => (
-								<SelectItem key={option} value={option}>
-									{option}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+					<ComboboxMultiple
+						items={studentOptions.map((option) => ({
+							id: option,
+							label: option,
+						}))}
+						allLabel="Todos os alunos"
+					/>
 
-					<Select defaultValue={scholarOptions[0]}>
-						<SelectTrigger className="h-10 w-full bg-card">
-							<SelectValue placeholder="Todos os bolsistas" />
-						</SelectTrigger>
-						<SelectContent>
-							{scholarOptions.map((option) => (
-								<SelectItem key={option} value={option}>
-									{option}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+					<ComboboxMultiple
+						items={scholarOptions.map((option) => ({
+							id: option,
+							label: option,
+						}))}
+						allLabel="Todos os bolsistas"
+					/>
 
-					<Select defaultValue={shiftOptions[0]}>
-						<SelectTrigger className="h-10 w-full bg-card">
-							<SelectValue placeholder="Todos os turnos" />
-						</SelectTrigger>
-						<SelectContent>
-							{shiftOptions.map((option) => (
-								<SelectItem key={option} value={option}>
-									{option}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+					<ComboboxMultiple
+						items={shiftOptions.map((option) => ({
+							id: option,
+							label: option,
+						}))}
+						allLabel="Todos os turnos"
+					/>
 				</div>
 
 				<div className="grid grid-cols-2 gap-4 xl:grid-cols-5">
@@ -455,35 +426,38 @@ export default function ReportsPage() {
 							config={hourlyChartConfig}
 							className="h-44 md:h-52"
 						/>
-						<p className="text-xs leading-5 text-muted-foreground">
+						<Alert variant={"info"}>
+							<InfoIcon className="size-4" />
 							Pico entre 10h e 16h, com queda consistente no fim
 							da tarde.
-						</p>
+						</Alert>
 					</div>
 				</SectionCard>
 
-				<div className="grid gap-4 xl:grid-cols-2">
+				<div className="grid gap-4 xl:grid-cols-3">
 					<RankingCard
 						title="Ranking de bolsistas"
 						items={scholarRanking}
+						showUser
+						prefix="atend."
 					/>
 					<RankingCard
 						title="Rotas mais solicitadas"
 						items={routeRanking}
-						showRoute
+					/>
+					<RankingCard
+						title="Alunos por frequência"
+						items={studentRanking}
+						showUser
+						prefix="x"
 					/>
 				</div>
-
-				<RankingCard
-					title="Alunos por frequência"
-					items={studentRanking}
-				/>
 
 				<div className="space-y-3">
 					<p className="text-sm font-medium text-foreground">
 						Exportar relatório
 					</p>
-					<div className="space-y-2">
+					<div className="space-y-4">
 						{exportCards.map((card) => (
 							<ExportCard
 								key={card.title}
