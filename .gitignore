@@ -9,6 +9,9 @@ node_modules
 # Local env files
 **/.env*
 !.env.example
+.env.template
+.venv/
+
 
 # Testing
 coverage
@@ -46,6 +49,7 @@ gpt.md
 
 # Devcontainer local setup (git config pessoal, etc)
 .devcontainer/setup.local.sh
+mcp-atlassian-start.sh
 
 # Expo
 .expo/
