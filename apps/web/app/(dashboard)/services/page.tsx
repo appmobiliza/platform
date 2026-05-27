@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Frown } from "lucide-react";
 
 import { DatePickerWithRange } from "@/components/date-range-picker";
-import { DetailsSidebar } from "@/components/details-sidebar";
+import { ServiceDetailsSidebar } from "@/components/service-details-sidebar";
 import { ServiceDetailsTrigger } from "@/components/service-details-trigger";
 import { dashboardCards, serviceEntries } from "@/components/services-data";
 import { StatusMessage } from "@/components/status-message";
@@ -215,7 +215,7 @@ export default function ServicesPage() {
 					)}
 				</div>
 			</section>
-			<DetailsSidebar />
+			<ServiceDetailsSidebar />
 		</>
 	);
 }

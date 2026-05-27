@@ -1,45 +1,10 @@
 "use client";
 
-import * as React from "react";
-
+import { createDetailsStore } from "@/components/details-store";
 import type { ServiceEntry } from "@/components/services-data";
 
-type Listener = () => void;
+const serviceDetailsStore = createDetailsStore<ServiceEntry>();
 
-let selectedEntry: { isOpen: boolean; entry: ServiceEntry | null } = {
-	isOpen: false,
-	entry: null,
-};
-const listeners = new Set<Listener>();
-
-function emitChange() {
-	for (const listener of listeners) {
-		listener();
-	}
-}
-
-export function openServiceDetails(entry: ServiceEntry) {
-	selectedEntry = { isOpen: true, entry };
-	emitChange();
-}
-
-export function closeServiceDetails() {
-	selectedEntry = {
-		isOpen: false,
-		entry: selectedEntry?.entry as ServiceEntry,
-	};
-	emitChange();
-}
-
-function subscribe(listener: Listener) {
-	listeners.add(listener);
-	return () => listeners.delete(listener);
-}
-
-export function useServiceDetailsEntry() {
-	return React.useSyncExternalStore(
-		subscribe,
-		() => selectedEntry,
-		() => null,
-	);
-}
+export const openServiceDetails = serviceDetailsStore.openDetails;
+export const closeServiceDetails = serviceDetailsStore.closeDetails;
+export const useServiceDetailsEntry = serviceDetailsStore.useDetailsState;

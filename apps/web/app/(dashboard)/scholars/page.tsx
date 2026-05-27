@@ -1,24 +1,16 @@
 import type { Metadata } from "next";
 
-import { scholarShiftLabels, scholarShiftValues } from "@mobiliza/db/schema";
+import { scholarShiftLabels } from "@mobiliza/db/schema";
 import { Frown, Plus } from "lucide-react";
 
-import { DetailsSidebar } from "@/components/details-sidebar";
 import { ScholarCard } from "@/components/scholar-card";
+import { ScholarDetailsSidebar } from "@/components/scholar-details-sidebar";
 import { dashboardCards, scholarsData } from "@/components/scholars-data";
 import { StatusMessage } from "@/components/status-message";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ComboboxMultiple } from "@/components/ui/combobox-multiple";
 import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 import { cn } from "@/lib/utils";
@@ -143,7 +135,7 @@ export default function ScholarsPage() {
 					)}
 				</div>
 			</section>
-			<DetailsSidebar />
+			<ScholarDetailsSidebar />
 		</>
 	);
 }

@@ -3,6 +3,7 @@ import { getCurrentShift, type ScholarShiftValues } from "@mobiliza/db/schema";
 import { getInitials } from "@/lib/utils";
 
 import { ProgressWithLabel } from "./progress-with-label";
+import { ScholarDetailsTrigger } from "./scholar-details-trigger";
 import type { ScholarData } from "./scholars-data";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
@@ -118,7 +119,7 @@ export function ScholarCard({ scholar }: { scholar: ScholarData }) {
 				/>
 			</div>
 			<div className="flex flex-col md:flex-row items-start w-full gap-2">
-				<Button className="flex-1">Ver detalhe</Button>
+				<ScholarDetailsTrigger scholar={scholar} className="flex-1" />
 				<Button className="flex-1" variant="outline">
 					Editar turno
 				</Button>
