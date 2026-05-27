@@ -1,4 +1,117 @@
-import type { ScholarProfile, StudentProfile } from "@mobiliza/db/schema";
+import type { ScholarProfile, StudentProfile, User } from "@mobiliza/db/schema";
+
+const users: User[] = [
+	{
+		id: "1",
+		name: "Eduardo Silva",
+		email: "teste@email.com",
+		emailVerified: true,
+		image: null,
+		createdAt: new Date(),
+		updatedAt: new Date(),
+		role: "scholar",
+	},
+	{
+		id: "2",
+		name: "Ana Souza",
+		email: "ana.souza@email.com",
+		emailVerified: true,
+		image: null,
+		createdAt: new Date(),
+		updatedAt: new Date(),
+		role: "scholar",
+	},
+	{
+		id: "3",
+		name: "Lucas Pereira",
+		email: "lucas.pereira@email.com",
+		emailVerified: false,
+		image: null,
+		createdAt: new Date(),
+		updatedAt: new Date(),
+		role: "scholar",
+	},
+	{
+		id: "4",
+		name: "Beatriz Lima",
+		email: "beatriz.lima@email.com",
+		emailVerified: true,
+		image: null,
+		createdAt: new Date(),
+		updatedAt: new Date(),
+		role: "scholar",
+	},
+	{
+		id: "5",
+		name: "Pedro Henrique",
+		email: "pedro.henrique@email.com",
+		emailVerified: true,
+		image: null,
+		createdAt: new Date(),
+		updatedAt: new Date(),
+		role: "student",
+	},
+	{
+		id: "6",
+		name: "Mariana Alves",
+		email: "mariana.alves@email.com",
+		emailVerified: false,
+		image: null,
+		createdAt: new Date(),
+		updatedAt: new Date(),
+		role: "student",
+	},
+	{
+		id: "7",
+		name: "Carlos Eduardo",
+		email: "carlos.eduardo@email.com",
+		emailVerified: true,
+		image: null,
+		createdAt: new Date(),
+		updatedAt: new Date(),
+		role: "student",
+	},
+	{
+		id: "8",
+		name: "Juliana Rocha",
+		email: "juliana.rocha@email.com",
+		emailVerified: true,
+		image: null,
+		createdAt: new Date(),
+		updatedAt: new Date(),
+		role: "student",
+	},
+	{
+		id: "9",
+		name: "Rafael Gomes",
+		email: "rafael.gomes@email.com",
+		emailVerified: false,
+		image: null,
+		createdAt: new Date(),
+		updatedAt: new Date(),
+		role: "student",
+	},
+	{
+		id: "10",
+		name: "Fernanda Costa",
+		email: "fernanda.costa@email.com",
+		emailVerified: true,
+		image: null,
+		createdAt: new Date(),
+		updatedAt: new Date(),
+		role: "student",
+	},
+	{
+		id: "11",
+		name: "Thiago Nunes",
+		email: "thiago.nunes@email.com",
+		emailVerified: true,
+		image: null,
+		createdAt: new Date(),
+		updatedAt: new Date(),
+		role: "student",
+	},
+];
 
 const scholars: ScholarProfile[] = [
 	{
@@ -170,4 +283,4 @@ const students: StudentProfile[] = [
 	},
 ];
 
-export { scholars, students };
+export { scholars, students, users };

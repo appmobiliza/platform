@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import {
 	Activity,
 	Clock,
@@ -164,6 +166,10 @@ const chartConfig = {
 		color: "var(--chart-1)",
 	},
 } satisfies ChartConfig;
+
+export const metadata: Metadata = {
+	title: "Visão Geral",
+};
 
 export default function DashboardPage() {
 	return (
