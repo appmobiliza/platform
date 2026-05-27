@@ -15,3 +15,14 @@ export function DetailsSection({ label, children }: Props) {
 		</div>
 	);
 }
+
+export function SettingsSection({ label, children }: Props) {
+	return (
+		<div className="space-y-3">
+			<h3 className="font-semibold text-base text-muted-foreground uppercase">
+				{label}
+			</h3>
+			{children}
+		</div>
+	);
+}

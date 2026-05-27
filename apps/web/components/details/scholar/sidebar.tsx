@@ -22,7 +22,7 @@ import { getInitials } from "@/lib/utils";
 
 import type { ScholarData } from "@/data/scholars-data";
 
-import { DetailsSection } from "../details-section";
+import { DetailsSection } from "../../section";
 import { closeScholarDetails, useScholarDetailsEntry } from "./store";
 
 function getShiftLabel(shift: ScholarData["profile"]["shift"]) {

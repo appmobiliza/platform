@@ -23,6 +23,14 @@ export function NavMain({
 }) {
 	const pathname = usePathname();
 
+	// Precisamos incluir subrotas para marcar o item como ativo, por exemplo, "/configuracoes" deve ser ativo para "/configuracoes/locais"
+	const isActive = (url: string) => {
+		if (url === "/") {
+			return pathname === url;
+		}
+		return pathname === url || pathname.startsWith(`${url}/`);
+	};
+
 	return (
 		<SidebarGroup>
 			<SidebarGroupContent className="flex flex-col gap-2">
@@ -32,7 +40,7 @@ export function NavMain({
 							<SidebarMenuButton
 								asChild
 								size={"lg"}
-								isActive={pathname === item.url}
+								isActive={isActive(item.url)}
 								tooltip={item.title}
 							>
 								<Link href={item.url}>

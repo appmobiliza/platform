@@ -2,9 +2,9 @@
 
 import { scholarShiftLabels } from "@mobiliza/db/schema";
 
-import { DetailsSection } from "@/components/details/details-section";
 import { DetailsSidebar } from "@/components/details/details-sidebar";
 import { RoutePreview } from "@/components/route-preview";
+import { DetailsSection } from "@/components/section";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";

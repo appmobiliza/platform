@@ -11,7 +11,7 @@ import { getInitials } from "@/lib/utils";
 
 import type { StudentData } from "@/data/students-data";
 
-import { DetailsSection } from "../details-section";
+import { DetailsSection } from "../../section";
 import { closeStudentDetails, useStudentDetailsEntry } from "./store";
 
 function getRouteStatusVariant(status: "completed" | "pending" | "canceled") {
