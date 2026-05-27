@@ -22,6 +22,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { SettingItem } from "@/components/ui/setting-item";
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
@@ -43,28 +44,46 @@ function SectionCard({ children }: { children: React.ReactNode }) {
 	);
 }
 
-function StaticField({
-	label,
-	description,
-	value,
-}: {
-	label: string;
-	description: string;
-	value: string;
-}) {
+function TimeRangeField({ value }: { value: string }) {
 	return (
-		<div className="flex flex-col gap-4 border-b border-border/80 p-5 last:border-b-0">
-			<div className="flex flex-col gap-1.5">
-				<p className="text-sm font-medium text-foreground">{label}</p>
-				<p className="text-sm leading-5 text-muted-foreground">
-					{description}
-				</p>
-			</div>
+		<div className="w-full sm:max-w-36">
 			<Input
 				readOnly
 				value={value}
-				className="h-9 bg-background px-3 text-foreground shadow-none"
+				className="h-10 bg-background px-3 text-base text-foreground shadow-none"
 			/>
+		</div>
+	);
+}
+
+function ShiftScheduleBlock({
+	start,
+	end,
+	days,
+}: {
+	start: string;
+	end: string;
+	days: string[];
+}) {
+	return (
+		<div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:items-start">
+			<div className="space-y-3">
+				<p className="text-sm font-medium text-foreground">
+					Intervalo de horário
+				</p>
+				<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+					<span className="text-sm text-foreground">Início</span>
+					<TimeRangeField value={start} />
+					<span className="text-sm text-foreground">até</span>
+					<TimeRangeField value={end} />
+				</div>
+			</div>
+			<div className="space-y-3">
+				<p className="text-sm font-medium text-foreground">
+					Dias ativos
+				</p>
+				<DayToggleGroup defaultValue={days} />
+			</div>
 		</div>
 	);
 }
@@ -240,44 +259,35 @@ export default function SettingsPage() {
 				<div className="space-y-3">
 					<SectionTitle>Operação</SectionTitle>
 					<SectionCard>
-						<div className="flex flex-col gap-4 border-b border-border/80 p-5">
-							<div className="flex flex-col gap-1.5">
-								<p className="text-sm font-medium text-foreground">
-									Tempo limite de solicitação
-								</p>
-								<p className="text-sm leading-5 text-muted-foreground">
-									Solicitações sem aceite após este tempo
-									passam para "não atendida"
-								</p>
-							</div>
-							<div className="w-full sm:w-44">
-								<SettingsSelect
-									value="20 minutos"
-									items={[
-										"10 minutos",
-										"20 minutos",
-										"30 minutos",
-									]}
-								/>
-							</div>
-						</div>
-						<div className="flex flex-col gap-4 p-5">
-							<div className="flex flex-col gap-1.5">
-								<p className="text-sm font-medium text-foreground">
-									Aceite simultâneo por bolsista
-								</p>
-								<p className="text-sm leading-5 text-muted-foreground">
-									Número máximo de solicitações que um
-									bolsista pode aceitar ao mesmo tempo
-								</p>
-							</div>
-							<div className="w-full sm:w-24">
-								<SettingsSelect
-									value="1"
-									items={["1", "2", "3"]}
-								/>
-							</div>
-						</div>
+						<SettingItem
+							title="Tempo limite de solicitação"
+							description='Solicitações sem aceite após este tempo passam para "não atendida"'
+							content={
+								<div className="w-full sm:w-44">
+									<SettingsSelect
+										value="20 minutos"
+										items={[
+											"10 minutos",
+											"20 minutos",
+											"30 minutos",
+										]}
+									/>
+								</div>
+							}
+							className="border-b border-border/80"
+						/>
+						<SettingItem
+							title="Aceite simultâneo por bolsista"
+							description="Número máximo de solicitações que um bolsista pode aceitar ao mesmo tempo"
+							content={
+								<div className="w-full sm:w-24">
+									<SettingsSelect
+										value="1"
+										items={["1", "2", "3"]}
+									/>
+								</div>
+							}
+						/>
 					</SectionCard>
 				</div>
 
@@ -291,49 +301,11 @@ export default function SettingsPage() {
 						active
 						defaultExpanded
 					>
-						<div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:items-start">
-							<div className="space-y-3">
-								<p className="text-sm font-medium text-foreground">
-									Intervalo de horário
-								</p>
-								<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-									<span className="text-sm text-foreground">
-										Início
-									</span>
-									<div className="w-full sm:max-w-36">
-										<Input
-											readOnly
-											value="07:00"
-											className="h-10 bg-background px-3 text-base text-foreground shadow-none"
-										/>
-									</div>
-									<span className="text-sm text-foreground">
-										até
-									</span>
-									<div className="w-full sm:max-w-36">
-										<Input
-											readOnly
-											value="12:00"
-											className="h-10 bg-background px-3 text-base text-foreground shadow-none"
-										/>
-									</div>
-								</div>
-							</div>
-							<div className="space-y-3">
-								<p className="text-sm font-medium text-foreground">
-									Dias ativos
-								</p>
-								<DayToggleGroup
-									defaultValue={[
-										"seg",
-										"ter",
-										"qua",
-										"qui",
-										"sex",
-									]}
-								/>
-							</div>
-						</div>
+						<ShiftScheduleBlock
+							start="07:00"
+							end="12:00"
+							days={["seg", "ter", "qua", "qui", "sex"]}
+						/>
 					</ShiftCard>
 
 					<ShiftCard
@@ -344,49 +316,11 @@ export default function SettingsPage() {
 						active
 						defaultExpanded
 					>
-						<div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:items-start">
-							<div className="space-y-3">
-								<p className="text-sm font-medium text-foreground">
-									Intervalo de horário
-								</p>
-								<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-									<span className="text-sm text-foreground">
-										Início
-									</span>
-									<div className="w-full sm:max-w-36">
-										<Input
-											readOnly
-											value="12:00"
-											className="h-10 bg-background px-3 text-base text-foreground shadow-none"
-										/>
-									</div>
-									<span className="text-sm text-foreground">
-										até
-									</span>
-									<div className="w-full sm:max-w-36">
-										<Input
-											readOnly
-											value="18:00"
-											className="h-10 bg-background px-3 text-base text-foreground shadow-none"
-										/>
-									</div>
-								</div>
-							</div>
-							<div className="space-y-3">
-								<p className="text-sm font-medium text-foreground">
-									Dias ativos
-								</p>
-								<DayToggleGroup
-									defaultValue={[
-										"seg",
-										"ter",
-										"qua",
-										"qui",
-										"sex",
-									]}
-								/>
-							</div>
-						</div>
+						<ShiftScheduleBlock
+							start="12:00"
+							end="18:00"
+							days={["seg", "ter", "qua", "qui", "sex"]}
+						/>
 					</ShiftCard>
 
 					<ShiftCard
@@ -415,15 +349,28 @@ export default function SettingsPage() {
 				<div className="space-y-3">
 					<SectionTitle>Dados do campus</SectionTitle>
 					<SectionCard>
-						<StaticField
-							label="Nome da instituição"
+						<SettingItem
+							title="Nome da instituição"
 							description="Exibido nos relatórios e no cabeçalho do painel"
-							value="UFAL — Campus A.C. Simões"
+							content={
+								<Input
+									readOnly
+									value="UFAL — Campus A.C. Simões"
+									className="h-9 bg-background px-3 text-foreground shadow-none"
+								/>
+							}
+							className="border-b border-border/80"
 						/>
-						<StaticField
-							label="E-mail de contato"
+						<SettingItem
+							title="E-mail de contato"
 							description="Usado como remetente de notificações institucionais"
-							value="nac@ufal.br"
+							content={
+								<Input
+									readOnly
+									value="nac@ufal.br"
+									className="h-9 bg-background px-3 text-foreground shadow-none"
+								/>
+							}
 						/>
 					</SectionCard>
 				</div>
@@ -442,74 +389,59 @@ export default function SettingsPage() {
 						</div>
 					</Alert>
 					<SectionCard>
-						<div className="flex flex-col gap-4 border-b border-border/80 p-5">
-							<div className="flex flex-col gap-1.5">
-								<p className="text-sm font-medium text-foreground">
-									Restringir login por domínio de e-mail
-								</p>
-								<p className="text-sm leading-5 text-muted-foreground">
-									Somente e-mails dos domínios abaixo poderão
-									criar conta
-								</p>
-							</div>
-							<Switch
-								defaultChecked
-								size="default"
-								className="h-6 w-11 bg-muted data-checked:bg-primary"
-							/>
-						</div>
-						<div className="flex flex-col gap-4 p-5">
-							<div className="flex flex-col gap-1.5">
-								<p className="text-sm font-medium text-foreground">
-									Domínios permitidos
-								</p>
-								<p className="text-sm leading-5 text-muted-foreground">
-									Separados por vírgula
-								</p>
-							</div>
-							<Input
-								readOnly
-								value="@ufal.br, @ic.ufal.br"
-								className="h-9 bg-background px-3 text-foreground shadow-none"
-							/>
-						</div>
+						<SettingItem
+							title="Restringir login por domínio de e-mail"
+							description="Somente e-mails dos domínios abaixo poderão criar conta"
+							content={
+								<Switch
+									defaultChecked
+									size="default"
+									className="h-6 w-11 bg-muted data-checked:bg-primary"
+								/>
+							}
+							className="border-b border-border/80"
+						/>
+						<SettingItem
+							title="Domínios permitidos"
+							description="Separados por vírgula"
+							content={
+								<Input
+									value="@ufal.br, @ic.ufal.br"
+									className="h-9 bg-background px-3 text-foreground shadow-none"
+								/>
+							}
+						/>
 					</SectionCard>
 				</div>
 
 				<div className="space-y-3">
 					<SectionTitle>Zona de perigo</SectionTitle>
 					<SectionCard>
-						<div className="flex flex-col gap-4 p-5">
-							<div className="flex flex-col gap-1.5">
-								<p className="text-sm font-medium text-foreground">
-									Encerrar todas as sessões ativas
-								</p>
-								<p className="text-sm leading-5 text-muted-foreground">
-									Desconecta bolsistas e alunos imediatamente
-									— útil em incidentes
-								</p>
-							</div>
-							<Button
-								variant="destructive"
-								className="h-10 w-fit px-4"
-							>
-								Encerrar sessões
-							</Button>
-						</div>
-						<div className="flex items-center justify-between gap-4 border-t border-border/80 p-5">
-							<div className="flex flex-col gap-1.5">
-								<p className="text-sm font-medium text-foreground">
-									Suspender recebimento de solicitações
-								</p>
-								<p className="text-sm leading-5 text-muted-foreground">
-									Desativa o sistema temporariamente para
-									manutenção ou recesso
-								</p>
-							</div>
-							<Button variant="secondary" className="h-9 px-4">
-								Suspender
-							</Button>
-						</div>
+						<SettingItem
+							title="Encerrar todas as sessões ativas"
+							description="Desconecta bolsistas e alunos imediatamente — útil em incidentes"
+							content={
+								<Button
+									variant="destructive"
+									className="h-10 w-fit px-4"
+								>
+									Encerrar sessões
+								</Button>
+							}
+							className="border-b border-border/80"
+						/>
+						<SettingItem
+							title="Suspender recebimento de solicitações"
+							description="Desativa o sistema temporariamente para manutenção ou recesso"
+							content={
+								<Button
+									variant="secondary"
+									className="h-9 px-4"
+								>
+									Suspender
+								</Button>
+							}
+						/>
 					</SectionCard>
 				</div>
 			</div>
