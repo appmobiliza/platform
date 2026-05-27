@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ComboboxMultiple } from "@/components/ui/combobox-multiple";
 import {
 	Table,
 	TableBody,
@@ -20,7 +21,6 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { UserPicker } from "@/components/user-picker";
 
 import { users } from "@/lib/mock";
 import { cn, getInitials } from "@/lib/utils";
@@ -89,23 +89,23 @@ export default function ServicesPage() {
 				<div className="flex min-w-0 flex-col gap-4 overflow-hidden py-4">
 					<div className="flex min-w-0 w-full flex-col items-center justify-start gap-4 px-4 md:flex-row">
 						<DatePickerWithRange className="w-full md:w-fit md:flex-1" />
-						<UserPicker
+						<ComboboxMultiple
 							className="w-full flex-1 md:w-fit md:flex-1"
-							users={users
+							items={users
 								.filter((user) => user.role === "scholar")
 								.map((scholar) => ({
 									id: scholar.id,
-									name: scholar.name,
+									label: scholar.name,
 								}))}
 							allLabel="Todos os bolsistas"
 						/>
-						<UserPicker
+						<ComboboxMultiple
 							className="w-full flex-1 md:w-fit md:flex-1"
-							users={users
+							items={users
 								.filter((user) => user.role === "student")
 								.map((student) => ({
 									id: student.id,
-									name: student.name,
+									label: student.name,
 								}))}
 							allLabel="Todos os alunos"
 						/>

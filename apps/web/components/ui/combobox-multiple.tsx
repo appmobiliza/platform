@@ -24,17 +24,17 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Props {
 	className?: string;
-	users: Array<{ id: string; name: string }>;
+	items: Array<{ id: string; label: string }>;
 	allLabel: string;
 }
 
-export function UserPicker({ className, users, allLabel }: Props) {
+export function ComboboxMultiple({ className, items, allLabel }: Props) {
 	const anchor = useComboboxAnchor();
 	const chipsRef = React.useRef<HTMLDivElement | null>(null);
 	const isMobile = useIsMobile();
-	const userNames = React.useMemo(
-		() => users.map((user) => user.name),
-		[users],
+	const itemLabels = React.useMemo(
+		() => items.map((item) => item.label),
+		[items],
 	);
 	const [value, setValue] = React.useState<string[]>([allLabel]);
 	const [isOverflowing, setIsOverflowing] = React.useState(false);
@@ -51,14 +51,14 @@ export function UserPicker({ className, users, allLabel }: Props) {
 						nextValue !== removedValue && nextValue !== allLabel,
 				);
 
-				if (nextValues.length === userNames.length) {
+				if (nextValues.length === itemLabels.length) {
 					return [allLabel];
 				}
 
 				return nextValues;
 			});
 		},
-		[allLabel, userNames.length],
+		[allLabel, itemLabels.length],
 	);
 
 	const handleValueChange = React.useCallback(
@@ -81,14 +81,14 @@ export function UserPicker({ className, users, allLabel }: Props) {
 					(nextValue) => nextValue !== allLabel,
 				);
 
-				if (nextSelectedValues.length === userNames.length) {
+				if (nextSelectedValues.length === itemLabels.length) {
 					return [allLabel];
 				}
 
 				return nextSelectedValues;
 			});
 		},
-		[allLabel, userNames.length],
+		[allLabel, itemLabels.length],
 	);
 
 	React.useLayoutEffect(() => {
@@ -128,7 +128,7 @@ export function UserPicker({ className, users, allLabel }: Props) {
 		<Combobox
 			multiple
 			autoHighlight
-			items={[allLabel, ...userNames]}
+			items={[allLabel, ...itemLabels]}
 			value={value}
 			onValueChange={handleValueChange}
 		>

@@ -1,3 +1,5 @@
+import { getCurrentShift, type ScholarShiftValues } from "@mobiliza/db/schema";
+
 import { getInitials } from "@/lib/utils";
 
 import { ProgressWithLabel } from "./progress-with-label";
@@ -8,7 +10,65 @@ import { Badge } from "./ui/badge";
 const SCHOLARS_SERVICES_AVERAGE = 150;
 const MONTHLY_HOURS_GOAL = 40;
 
+enum ScholarStatus {
+	AVAILABLE = "Disponível",
+	UNAVAILABLE = "Em atendimento",
+	OFF_SHIFT = "Fora do turno",
+}
+
+function getScholarStatus(isAvailable: boolean, shift: string) {
+	if (shift !== getCurrentShift()) {
+		return ScholarStatus.OFF_SHIFT;
+	}
+
+	if (isAvailable) {
+		return ScholarStatus.AVAILABLE;
+	}
+
+	return ScholarStatus.UNAVAILABLE;
+}
+
+function getBadgeLabel(status: ScholarStatus) {
+	switch (status) {
+		case ScholarStatus.AVAILABLE:
+			return "Disponível";
+		case ScholarStatus.UNAVAILABLE:
+			return "Em atendimento";
+		case ScholarStatus.OFF_SHIFT:
+			return "Fora do turno";
+	}
+}
+
+function getLabelVariant(status: ScholarStatus) {
+	switch (status) {
+		case ScholarStatus.AVAILABLE:
+			return "success";
+		case ScholarStatus.UNAVAILABLE:
+			return "warning";
+		case ScholarStatus.OFF_SHIFT:
+			return "destructive";
+	}
+}
+
+function getShiftLabel(shift: ScholarShiftValues) {
+	switch (shift) {
+		case "morning":
+			return "Manhã";
+		case "afternoon":
+			return "Tarde";
+		case "night":
+			return "Noite";
+		default:
+			return shift;
+	}
+}
+
 export function ScholarCard({ scholar }: { scholar: ScholarData }) {
+	const status = getScholarStatus(
+		scholar.profile.isAvailable,
+		scholar.profile.shift,
+	);
+
 	return (
 		<div className="flex flex-col items-center gap-4 rounded-md border p-4">
 			<div className="flex flex-row items-center justify-between w-full">
@@ -27,18 +87,13 @@ export function ScholarCard({ scholar }: { scholar: ScholarData }) {
 							{scholar.user.name}
 						</p>
 						<p className="text-sm text-muted-foreground">
-							{scholar.profile.shift} • {scholar.profile.course}
+							{getShiftLabel(scholar.profile.shift)} •{" "}
+							{scholar.profile.course}
 						</p>
 					</div>
 				</div>
-				<Badge
-					variant={
-						scholar.profile.isAvailable ? "success" : "destructive"
-					}
-				>
-					{scholar.profile.isAvailable
-						? "Disponível"
-						: "Indisponível"}
+				<Badge variant={getLabelVariant(status)}>
+					{getBadgeLabel(status)}
 				</Badge>
 			</div>
 			<div className="flex flex-col items-start w-full">

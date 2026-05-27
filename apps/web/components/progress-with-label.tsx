@@ -27,12 +27,14 @@ export function ProgressWithLabel({
 		>
 			<FieldLabel htmlFor="progress-upload">
 				<span>{label}</span>
-				<span className="ml-auto">
+			</FieldLabel>
+			<div className="flex flex-row items-center gap-2">
+				<Progress className="w-full flex-1" value={percentage} />
+				<span className="text-sm font-medium w-6 text-right">
 					{value ?? `${percentage}%`}
 					{showPercentage !== undefined && `⋅ ${percentage}%`}
 				</span>
-			</FieldLabel>
-			<Progress value={percentage} id="progress-upload" />
+			</div>
 		</Field>
 	);
 }

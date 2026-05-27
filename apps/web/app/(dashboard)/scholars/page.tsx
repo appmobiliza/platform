@@ -1,22 +1,26 @@
 import type { Metadata } from "next";
 
-import { Frown } from "lucide-react";
+import { scholarShiftLabels, scholarShiftValues } from "@mobiliza/db/schema";
+import { Frown, Plus } from "lucide-react";
 
-import { DatePickerWithRange } from "@/components/date-range-picker";
 import { DetailsSidebar } from "@/components/details-sidebar";
 import { ScholarCard } from "@/components/scholar-card";
 import { dashboardCards, scholarsData } from "@/components/scholars-data";
-import { ServiceDetailsTrigger } from "@/components/service-details-trigger";
 import { StatusMessage } from "@/components/status-message";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ComboboxMultiple } from "@/components/ui/combobox-multiple";
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { UserPicker } from "@/components/user-picker";
 
-import { users } from "@/lib/mock";
-import { cn, getInitials } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
 	title: "Bolsistas",
@@ -41,15 +45,9 @@ export default function ScholarsPage() {
 						</h2>
 					</div>
 					<div className="flex flex-wrap items-center gap-4">
-						<Badge
-							variant="success"
-							className="hidden py-3 md:flex"
-						>
-							<span className="mr-1 h-2 w-2 rounded-full bg-success" />
-							Sistema ativo
-						</Badge>
-						<Button variant="outline" className="gap-2">
-							Exportar CSV
+						<Button size={"lg"} className="gap-2 px-3">
+							<Plus className="size-4" />
+							Adicionar bolsista
 						</Button>
 					</div>
 				</header>
@@ -82,61 +80,47 @@ export default function ScholarsPage() {
 					))}
 				</div>
 
-				<div className="flex min-w-0 flex-col gap-4 overflow-hidden py-4">
-					<div className="flex min-w-0 w-full flex-col items-center justify-start gap-4 px-4 md:flex-row">
-						<DatePickerWithRange className="w-full md:w-fit md:flex-1" />
-						<UserPicker
-							className="w-full flex-1 md:w-fit md:flex-1"
-							users={users
-								.filter((user) => user.role === "scholar")
-								.map((scholar) => ({
-									id: scholar.id,
-									name: scholar.name,
-								}))}
-							allLabel="Todos os bolsistas"
+				<div className="flex min-w-0 flex-col gap-4 overflow-hidden p-4">
+					<div className="flex flex-row items-center justify-between gap-4">
+						<ComboboxMultiple
+							className="w-full"
+							items={Object.entries(scholarShiftLabels).map(
+								([value, label]) => ({ id: value, label }),
+							)}
+							allLabel="Todos os turnos"
 						/>
-						<UserPicker
-							className="w-full flex-1 md:w-fit md:flex-1"
-							users={users
-								.filter((user) => user.role === "student")
-								.map((student) => ({
-									id: student.id,
-									name: student.name,
-								}))}
-							allLabel="Todos os alunos"
-						/>
-					</div>
-					<div className="w-full min-w-0 overflow-x-auto pl-4 no-scrollbar">
-						<ToggleGroup
-							type="single"
-							size="sm"
-							className="w-full min-w-max"
-							defaultValue="all"
-							variant="default"
-						>
-							<ToggleGroupItem
-								value="all"
-								aria-label="Exibir todos"
+						<div className="">
+							<ToggleGroup
+								type="single"
+								size="sm"
+								className="w-full min-w-max"
+								defaultValue="all"
+								variant="default"
 							>
-								Todos
-							</ToggleGroupItem>
-							<ToggleGroupItem
-								value="active"
-								aria-label="Exibir ativos"
-							>
-								Ativos
-							</ToggleGroupItem>
-							<ToggleGroupItem
-								value="inactive"
-								aria-label="Exibir inativos"
-							>
-								Inativos
-							</ToggleGroupItem>
-						</ToggleGroup>
+								<ToggleGroupItem
+									value="all"
+									aria-label="Exibir todos"
+								>
+									Todos
+								</ToggleGroupItem>
+								<ToggleGroupItem
+									value="active"
+									aria-label="Exibir ativos"
+								>
+									Ativos
+								</ToggleGroupItem>
+								<ToggleGroupItem
+									value="inactive"
+									aria-label="Exibir inativos"
+								>
+									Inativos
+								</ToggleGroupItem>
+							</ToggleGroup>
+						</div>
 					</div>
 
 					{scholarsData.length > 0 ? (
-						<div className="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 lg:grid-cols-3">
+						<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 							{scholarsData.map((scholar) => (
 								<ScholarCard
 									key={scholar.user.id}
