@@ -133,20 +133,17 @@ function ServiceDetailsContent({ entry }: { entry: ServiceEntry }) {
 export function DetailsSidebar() {
 	const isMobile = useIsMobile();
 	const selectedEntry = useServiceDetailsEntry();
-	const entry = selectedEntry?.entry;
 
-	if (!entry) {
-		return null;
-	}
+	// Não retorna null mais — deixa o aside sempre montado
+	const entry = selectedEntry?.entry;
+	const isOpen = selectedEntry?.isOpen ?? false;
 
 	if (isMobile) {
 		return (
 			<Drawer
-				open={selectedEntry.isOpen}
-				onOpenChange={(nextOpen) => {
-					if (!nextOpen) {
-						closeServiceDetails();
-					}
+				open={isOpen}
+				onOpenChange={(next) => {
+					if (!next) closeServiceDetails();
 				}}
 			>
 				<DrawerContent className="gap-0 p-0 sm:max-w-none">
@@ -156,9 +153,11 @@ export function DetailsSidebar() {
 								<DrawerTitle>
 									Detalhes do atendimento
 								</DrawerTitle>
-								<DrawerDescription>
-									{entry.date} às {entry.time}
-								</DrawerDescription>
+								{entry && (
+									<DrawerDescription>
+										{entry.date} às {entry.time}
+									</DrawerDescription>
+								)}
 							</div>
 							{/* <Button
 								variant="ghost"
@@ -171,7 +170,7 @@ export function DetailsSidebar() {
 						</div>
 					</DrawerHeader>
 					<div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
-						<ServiceDetailsContent entry={entry} />
+						{entry && <ServiceDetailsContent entry={entry} />}
 					</div>
 				</DrawerContent>
 			</Drawer>
@@ -182,15 +181,13 @@ export function DetailsSidebar() {
 		<aside
 			className={cn(
 				"hidden min-h-0 shrink-0 overflow-hidden border-l border-border bg-card transition-[width] duration-300 ease-in-out md:flex",
-				selectedEntry.isOpen ? "w-[24rem]" : "w-0 border-l-0",
+				isOpen ? "w-[24rem]" : "w-0 border-l-0",
 			)}
 		>
 			<div
 				className={cn(
 					"flex h-full w-[24rem] min-h-0 flex-col transition-opacity duration-200",
-					selectedEntry.isOpen
-						? "opacity-100"
-						: "pointer-events-none opacity-0",
+					isOpen ? "opacity-100" : "pointer-events-none opacity-0",
 				)}
 			>
 				<div className="flex items-start justify-between gap-4 border-b border-border px-4 py-4">
@@ -198,9 +195,11 @@ export function DetailsSidebar() {
 						<h2 className="font-semibold text-foreground">
 							Detalhes do atendimento
 						</h2>
-						<p className="text-sm text-muted-foreground">
-							{entry.date} às {entry.time}
-						</p>
+						{entry && (
+							<p className="text-sm text-muted-foreground">
+								{entry.date} às {entry.time}
+							</p>
+						)}
 					</div>
 					<Button
 						variant="ghost"
@@ -212,7 +211,7 @@ export function DetailsSidebar() {
 					</Button>
 				</div>
 				<div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
-					<ServiceDetailsContent entry={entry} />
+					{entry && <ServiceDetailsContent entry={entry} />}
 				</div>
 			</div>
 		</aside>

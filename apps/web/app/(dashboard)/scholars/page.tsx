@@ -10,6 +10,7 @@ import { StatusMessage } from "@/components/status-message";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ComboboxMultiple } from "@/components/ui/combobox-multiple";
+import { Input } from "@/components/ui/input";
 import {
 	Select,
 	SelectContent,
@@ -81,9 +82,13 @@ export default function ScholarsPage() {
 				</div>
 
 				<div className="flex min-w-0 flex-col gap-4 overflow-hidden p-4">
-					<div className="flex flex-row items-center justify-between gap-4">
+					<div className="flex flex-col md:flex-row items-start md:items-center justify-start gap-4">
+						<Input
+							placeholder="Buscar por nome, matrícula ou curso"
+							className=""
+						/>
 						<ComboboxMultiple
-							className="w-full"
+							className="w-full md:max-w-sm"
 							items={Object.entries(scholarShiftLabels).map(
 								([value, label]) => ({ id: value, label }),
 							)}

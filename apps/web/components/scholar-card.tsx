@@ -6,6 +6,7 @@ import { ProgressWithLabel } from "./progress-with-label";
 import type { ScholarData } from "./scholars-data";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 
 const SCHOLARS_SERVICES_AVERAGE = 150;
 const MONTHLY_HOURS_GOAL = 40;
@@ -115,6 +116,12 @@ export function ScholarCard({ scholar }: { scholar: ScholarData }) {
 					)}
 					variant="horizontal"
 				/>
+			</div>
+			<div className="flex flex-col md:flex-row items-start w-full gap-2">
+				<Button className="flex-1">Ver detalhe</Button>
+				<Button className="flex-1" variant="outline">
+					Editar turno
+				</Button>
 			</div>
 		</div>
 	);
