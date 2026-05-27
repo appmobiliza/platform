@@ -33,32 +33,32 @@ const data = {
 	navMain: [
 		{
 			title: "Visão Geral",
-			url: "#",
+			url: "/",
 			icon: LayoutDashboard,
 		},
 		{
 			title: "Atendimentos",
-			url: "#",
+			url: "/services",
 			icon: File,
 		},
 		{
 			title: "Bolsistas",
-			url: "#",
+			url: "/scholars",
 			icon: Users,
 		},
 		{
 			title: "Alunos",
-			url: "#",
+			url: "/students",
 			icon: User,
 		},
 		{
 			title: "Relatórios",
-			url: "#",
+			url: "/reports",
 			icon: ChartNoAxesColumn,
 		},
 		{
 			title: "Configurações",
-			url: "#",
+			url: "/settings",
 			icon: Settings2,
 		},
 	],

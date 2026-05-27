@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { ComponentType, SVGProps } from "react";
 
 import {
@@ -19,15 +21,24 @@ export function NavMain({
 		icon?: ComponentType<SVGProps<SVGSVGElement>>;
 	}[];
 }) {
+	const pathname = usePathname();
+
 	return (
 		<SidebarGroup>
 			<SidebarGroupContent className="flex flex-col gap-2">
 				<SidebarMenu>
 					{items.map((item) => (
 						<SidebarMenuItem key={item.title}>
-							<SidebarMenuButton size={"lg"} tooltip={item.title}>
-								{item.icon && <item.icon />}
-								<span>{item.title}</span>
+							<SidebarMenuButton
+								asChild
+								size={"lg"}
+								isActive={pathname === item.url}
+								tooltip={item.title}
+							>
+								<Link href={item.url}>
+									{item.icon && <item.icon />}
+									{item.title}
+								</Link>
 							</SidebarMenuButton>
 						</SidebarMenuItem>
 					))}
