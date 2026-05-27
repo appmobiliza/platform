@@ -1,4 +1,5 @@
 import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
 /**
  * Tabelas gerenciadas pelo Better Auth.
@@ -70,3 +71,22 @@ export const verification = pgTable("verification", {
 export type User = typeof user.$inferSelect;
 export type NewUser = typeof user.$inferInsert;
 export type Session = typeof session.$inferSelect;
+
+// ─── Relations ───────────────────────────────────────────────────────────────
+
+export const userRelations = relations(user, ({ one, many }) => ({
+  sessions: many(session),
+  accounts: many(account),
+  studentProfile: one(studentProfile, {
+    fields: [user.id],
+    references: [studentProfile.userId],
+  }),
+  scholarProfile: one(scholarProfile, {
+    fields: [user.id],
+    references: [scholarProfile.userId],
+  }),
+}));
+
+// ─── Import other schemas for cross-schema relations ─────────────────────────
+import { studentProfile } from "./profiles";
+import { scholarProfile } from "./profiles";
