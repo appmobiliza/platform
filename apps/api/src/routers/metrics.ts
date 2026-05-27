@@ -6,7 +6,7 @@
  */
 
 import { z } from "zod";
-import { eq, and, gte, lte, sql, count, avg } from "drizzle-orm";
+import { eq, and, gte, lte, sql, count, avg, desc } from "drizzle-orm";
 import { db } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
 import { router, managerProcedure } from "../trpc/context";
@@ -105,7 +105,7 @@ export const metricsRouter = router({
           schema.campusLocation.name,
           schema.campusLocation.abbreviation,
         )
-        .orderBy(sql`request_count DESC`);
+        .orderBy(desc(count()));
     }),
 
   /**
@@ -148,6 +148,6 @@ export const metricsRouter = router({
           ),
         )
         .groupBy(schema.scholarProfile.id, schema.user.name, schema.user.email)
-        .orderBy(sql`total_attendances DESC`);
+        .orderBy(desc(count()));
     }),
 });
