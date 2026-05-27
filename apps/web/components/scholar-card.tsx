@@ -102,9 +102,9 @@ export function ScholarCard({ scholar }: { scholar: ScholarData }) {
 			<div className="flex flex-col items-start w-full">
 				<ProgressWithLabel
 					label="Atendimentos"
-					value={scholar.summary.servicesAmounted}
+					value={scholar.summary.servicesAmount}
 					percentage={Math.round(
-						(scholar.summary.servicesAmounted /
+						(scholar.summary.servicesAmount /
 							SCHOLARS_SERVICES_AVERAGE) *
 							100,
 					)}

@@ -24,7 +24,7 @@ export const dashboardCards: Array<{
 ] as const;
 
 interface SummaryData {
-	servicesAmounted: number;
+	servicesAmount: number;
 	monthHours: number;
 	averageDuration: number;
 	servicesPerWeek: Array<{
@@ -49,7 +49,7 @@ export type ScholarData = {
 
 const summaries: SummaryData[] = [
 	{
-		servicesAmounted: 94,
+		servicesAmount: 94,
 		monthHours: 22,
 		averageDuration: 14,
 		servicesPerWeek: [
@@ -70,7 +70,7 @@ const summaries: SummaryData[] = [
 		],
 	},
 	{
-		servicesAmounted: 48,
+		servicesAmount: 48,
 		monthHours: 12,
 		averageDuration: 15,
 		servicesPerWeek: [
@@ -91,7 +91,7 @@ const summaries: SummaryData[] = [
 		],
 	},
 	{
-		servicesAmounted: 120,
+		servicesAmount: 120,
 		monthHours: 40,
 		averageDuration: 20,
 		servicesPerWeek: [
@@ -112,7 +112,7 @@ const summaries: SummaryData[] = [
 		],
 	},
 	{
-		servicesAmounted: 36,
+		servicesAmount: 36,
 		monthHours: 8,
 		averageDuration: 10,
 		servicesPerWeek: [
