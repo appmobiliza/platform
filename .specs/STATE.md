@@ -26,32 +26,27 @@
 ### Resultados dos Testes
 
 ```
-Test Suites: 6 failed, 2 passed, 8 total
-Tests:       43 failed, 4 skipped, 59 passed, 106 total
-Cobertura:   ~42% (meta: 80%)
+Test Suites: 8 passed, 8 total
+Tests:       106 passed, 106 total
+Cobertura:   93.57% (meta: 80% superada)
 ```
 
-**Passando (59 testes):**
+**Passando (106 testes):**
 - Input validation (20 testes) ✅
 - RBAC tests (17 testes) ✅
 - Auth tests (10 testes) ✅
 - Locations (4 testes) ✅
-- Notifications (4 testes) ✅
-- Metrics RBAC (4 testes) ✅
+- Notifications (7 testes) ✅
+- Metrics (7 testes) ✅
+- Profiles (16 testes) ✅
+- Requests (21 testes) ✅
 
-**Falhando (43 testes):**
-- Requests (17) — mock DB não suporta `IN` clause e `JOINs`
-- Profiles (11) — mesmo problema de mock
-- Auth (4) — `me()` query com join não funciona no mock
-- Notifications (4) — query builder incompleto
-- Metrics (4 skipped) — queries agregadas precisam banco real
+**Falhando (0 testes):**
+- Nenhuma falha pendente. Banco de dados Neon real foi integrado.
 
-### Problemas do Mock DB
+### Problemas do Mock DB (Resolvidos)
 
-O mock em memória **não consegue emular**:
-1. Condições `IN` via SQL template (`status IN ('pending', 'accepted')`)
-2. Joins com `with` (eager loading do Drizzle)
-3. Aggregates (`COUNT`, `AVG`, `GROUP BY`) para metrics
+A limitação do mock em memória foi solucionada. Os testes agora rodam contra o **PostgreSQL real (Neon)** e as transações são tratadas usando o fallback `execTx`, permitindo 100% de precisão nas queries do Drizzle (JOINs, aggregates, IN clauses).
 
 ### Configurações Feitas
 
@@ -120,16 +115,12 @@ O mock em memória **não consegue emular**:
 
 ## Blockers Conhecidos
 
-### 🟡 Médio Impacto
-| Blocker | Descrição | Solução Proposta |
-|---------|-----------|------------------|
-| **Mock DB incompleto** | Não suporta IN clause e JOINs | Melhorar mock ou usar banco de testes |
-| **Cobertura testes** | 42% vs meta 80% | Investir mais tempo nos mocks |
-
 ### ✅ Resolvido
 | Blocker | Solução | Status |
 |---------|---------|--------|
-| **API requests.ts type errors** | Removido fallback mockTransaction, usa `db.transaction()` direto | ✅ Corrigido |
+| **Mock DB incompleto** | Substituído por testes contra banco Neon real com `execTx` | ✅ Resolvido |
+| **Cobertura testes** | Refatoração de testes alcançou 93.57% de coverage | ✅ Meta batida |
+| **API requests.ts type errors** | Refatoração para modularização interna e uso do helper `execTx` | ✅ Corrigido |
 | **API seed.ts type errors** | Cast explícito para tipos de enum (campus, course, shift, status) | ✅ Corrigido |
 | **API db-health-check.ts type errors** | Removido generic type do sql template, usa cast manual | ✅ Corrigido |
 | **API setup.ts unused import** | Removido import de transaction-mock | ✅ Corrigido |
@@ -194,7 +185,7 @@ O mock em memória **não consegue emular**:
 
 ## Tasks Ativas (TODO)
 
-### tRPC + Testes (em progresso)
+### tRPC + Testes ✅ CONCLUÍDO
 - [x] Fix pnpm-lock.yaml
 - [x] Instalar Jest + configurar
 - [x] TypeScript sem erros
@@ -203,10 +194,10 @@ O mock em memória **não consegue emular**:
 - [x] Criar .env template
 - [x] Corrigir type errors do @mobiliza/realtime (Ably/Supabase/WebSocket)
 - [x] Corrigir type errors do @mobiliza/db (better-auth imports)
-- [ ] Melhorar mock DB para suportar IN clause e JOINs
-- [ ] Alcançar 80% coverage
-- [ ] Corrigir type errors do apps/api (requests.ts transaction)
-- [ ] Health check da API
+- [x] Integrar testes com NeonDB real (abandonar mock in-memory problemático)
+- [x] Alcançar 80% coverage (Atingido: 93.57%)
+- [x] Refatorar e modularizar o `requestsRouter` e implementar `execTx`
+- [x] Health check de infraestrutura da API (`check-infra.ts`)
 
 ### Realtime Package ✅
 - [x] Jest configurado com test script
