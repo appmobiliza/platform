@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Frown } from "lucide-react";
 
 import { DatePickerWithRange } from "@/components/date-range-picker";
+import { StatusMessage } from "@/components/status-message";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -105,8 +106,8 @@ export default function ServicesPage() {
 						})}
 					</h2>
 				</div>
-				<div className="flex items-center gap-4">
-					<Badge variant={"success"} className="py-3">
+				<div className="flex flex-wrap items-center gap-4">
+					<Badge variant={"success"} className="py-3 hidden md:flex">
 						<span className="w-2 h-2 rounded-full bg-success mr-1" />
 						Sistema ativo
 					</Badge>
@@ -198,61 +199,76 @@ export default function ServicesPage() {
 					</ToggleGroup>
 				</div>
 			</div>
-			<Table>
-				<TableHeader>
-					<TableRow>
-						<TableHead className="pl-6">Data</TableHead>
-						<TableHead>Horário</TableHead>
-						<TableHead>Bolsista</TableHead>
-						<TableHead>Aluno</TableHead>
-						<TableHead className="text-right pr-6">Ações</TableHead>
-					</TableRow>
-				</TableHeader>
-				<TableBody>
-					{serviceEntries.map((entry) => (
-						<TableRow key={entry.id}>
-							<TableCell className="font-medium pl-6">
-								{entry.date}
-							</TableCell>
-							<TableCell>{entry.time}</TableCell>
-							<TableCell>
-								<div className="flex items-center gap-3">
-									<Avatar className="h-8 w-8">
-										<AvatarFallback>
-											{getInitials(entry.scholar.name)}
-										</AvatarFallback>
-									</Avatar>
-									<span className="font-medium">
-										{entry.scholar.name}
-									</span>
-								</div>
-							</TableCell>
-							<TableCell>
-								<div className="flex items-center gap-3">
-									<Avatar className="h-8 w-8">
-										<AvatarFallback>
-											{getInitials(entry.student.name)}
-										</AvatarFallback>
-									</Avatar>
-									<span className="font-medium">
-										{entry.student.name}
-									</span>
-								</div>
-							</TableCell>
-							<TableCell className="text-right pr-6">
-								<Button
-									variant="outline"
-									size="sm"
-									className="gap-2"
-								>
-									Ver
-									<ExternalLink className="size-3" />
-								</Button>
-							</TableCell>
+			{[].length > 0 ? (
+				<Table>
+					<TableHeader>
+						<TableRow>
+							<TableHead className="pl-6">Data</TableHead>
+							<TableHead>Horário</TableHead>
+							<TableHead>Bolsista</TableHead>
+							<TableHead>Aluno</TableHead>
+							<TableHead className="text-right pr-6">
+								Ações
+							</TableHead>
 						</TableRow>
-					))}
-				</TableBody>
-			</Table>
+					</TableHeader>
+					<TableBody>
+						{serviceEntries.map((entry) => (
+							<TableRow key={entry.id}>
+								<TableCell className="font-medium pl-6">
+									{entry.date}
+								</TableCell>
+								<TableCell>{entry.time}</TableCell>
+								<TableCell>
+									<div className="flex items-center gap-3">
+										<Avatar className="h-8 w-8">
+											<AvatarFallback>
+												{getInitials(
+													entry.scholar.name,
+												)}
+											</AvatarFallback>
+										</Avatar>
+										<span className="font-medium">
+											{entry.scholar.name}
+										</span>
+									</div>
+								</TableCell>
+								<TableCell>
+									<div className="flex items-center gap-3">
+										<Avatar className="h-8 w-8">
+											<AvatarFallback>
+												{getInitials(
+													entry.student.name,
+												)}
+											</AvatarFallback>
+										</Avatar>
+										<span className="font-medium">
+											{entry.student.name}
+										</span>
+									</div>
+								</TableCell>
+								<TableCell className="text-right pr-6">
+									<Button
+										variant="outline"
+										size="sm"
+										className="gap-2"
+									>
+										Ver
+										<ExternalLink className="size-3" />
+									</Button>
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+			) : (
+				<StatusMessage
+					className="mt-48 mb-48"
+					title="Nenhum atendimento encontrado"
+					description="Ajuste os filtros para encontrar atendimentos ou aguarde por novos registros."
+					icon={<Frown className="size-8" />}
+				/>
+			)}
 		</section>
 	);
 }
