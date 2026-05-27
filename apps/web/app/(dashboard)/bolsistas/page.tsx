@@ -25,7 +25,7 @@ export default function ScholarsPage() {
 	return (
 		<>
 			<section className="min-w-0 flex-1">
-				<header className="flex flex-row items-center justify-between border-b border-border bg-card p-4">
+				<header className="flex flex-row items-center justify-between border-b border-border bg-card p-4 md:p-6">
 					<div className="flex flex-col gap-1">
 						<h1 className="text-base font-semibold">Bolsistas</h1>
 						<h2 className="text-sm text-muted-foreground">

@@ -173,14 +173,14 @@ export const metadata: Metadata = {
 
 export default function DashboardPage() {
 	return (
-		<section>
-			<header className="border-b border-border p-4 flex flex-col items-start gap-1 justify-between bg-card">
+		<section className="min-w-0 flex-1">
+			<header className="border-b border-border p-4 md:p-6 flex flex-col items-start gap-1 justify-between bg-card">
 				<h1 className="text-base font-semibold">Visão Geral</h1>
 				<h2 className="text-sm text-muted-foreground">
 					Sexta-feira, 24 de abril de 2026
 				</h2>
 			</header>
-			<div className="p-4 flex flex-col gap-4">
+			<div className="p-4 flex flex-col gap-4 md:p-6">
 				{alertData.delay > 0 && (
 					<Alert variant={"warning"}>
 						<TriangleAlert className="h-4 w-4" />
@@ -413,7 +413,7 @@ export default function DashboardPage() {
 														: "Finalizado"}
 												</Badge>
 											</div>
-											<RoutePreview className="rounded-lg border border-border p-4" />
+											<RoutePreview />
 										</li>
 									);
 								},

@@ -38,27 +38,27 @@ const data = {
 		},
 		{
 			title: "Atendimentos",
-			url: "/services",
+			url: "/atendimentos",
 			icon: File,
 		},
 		{
 			title: "Bolsistas",
-			url: "/scholars",
+			url: "/bolsistas",
 			icon: Users,
 		},
 		{
 			title: "Alunos",
-			url: "/students",
+			url: "/estudantes",
 			icon: User,
 		},
 		{
 			title: "Relatórios",
-			url: "/reports",
+			url: "/relatorios",
 			icon: ChartNoAxesColumn,
 		},
 		{
 			title: "Configurações",
-			url: "/settings",
+			url: "/configuracoes",
 			icon: Settings2,
 		},
 	],

@@ -16,6 +16,7 @@ import { getInitials } from "@/lib/utils";
 
 import { DetailsSection } from "./details-section";
 import { RoutePreview } from "./route-preview";
+import { Separator } from "./ui/separator";
 
 function getStatusBadgeVariant(status: ServiceEntry["status"]) {
 	if (status === "concluded") {
@@ -43,7 +44,7 @@ function getStatusLabel(status: ServiceEntry["status"]) {
 
 function ServiceDetailsContent({ entry }: { entry: ServiceEntry }) {
 	return (
-		<div className="flex flex-col gap-4">
+		<div className="flex flex-col gap-6">
 			<DetailsSection label="Aluno">
 				<div className="flex items-center gap-3">
 					<Avatar className="h-10 w-10">
@@ -77,6 +78,68 @@ function ServiceDetailsContent({ entry }: { entry: ServiceEntry }) {
 
 			<DetailsSection label="Percurso">
 				<RoutePreview />
+			</DetailsSection>
+
+			<div className="grid grid-cols-2 gap-4">
+				<DetailsSection label="Início">
+					<p className="text-sm">10h17</p>
+				</DetailsSection>
+				<DetailsSection label="Duração">
+					<p className="text-sm">em andamento</p>
+				</DetailsSection>
+				<DetailsSection label="Espera">
+					<p className="text-sm">1 min 42 s</p>
+				</DetailsSection>
+				<DetailsSection label="Data">
+					<p className="text-sm">24/04/2026</p>
+				</DetailsSection>
+			</div>
+
+			<DetailsSection label="Observação">
+				<div className="rounded-md bg-muted p-3">
+					<p className="text-sm">
+						"Lorem ipsum dolor sit amet, consectetur adipiscing
+						elit. Sed do eiusmod tempor incididunt ut labore et
+						dolore magna aliqua."
+					</p>
+				</div>
+			</DetailsSection>
+
+			<Separator />
+
+			<DetailsSection label="Histórico com esse aluno">
+				<ul className="flex flex-col gap-3">
+					{[
+						{
+							id: 1,
+							date: "20/04",
+							route: "RU → IC",
+							duration: "9 min",
+						},
+						{
+							id: 2,
+							date: "18/04",
+							route: "Biblioteca → RU",
+							duration: "12 min",
+						},
+						{
+							id: 3,
+							date: "12/04",
+							route: "IC → LAB",
+							duration: "7 min",
+						},
+					].map((item) => (
+						<li
+							className="flex items-center justify-between w-full text-sm"
+							key={item.id}
+						>
+							<p>
+								{item.date} · {item.route}
+							</p>
+							<p>{item.duration}</p>
+						</li>
+					))}
+				</ul>
 			</DetailsSection>
 		</div>
 	);
