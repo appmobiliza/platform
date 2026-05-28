@@ -5,6 +5,7 @@ import * as React from "react";
 import {
 	campusValues,
 	courseValues,
+	scholarShiftLabels,
 	scholarShiftValues,
 } from "@mobiliza/db/schema";
 
@@ -42,22 +43,22 @@ import {
 } from "@/components/ui/select";
 
 interface Props {
+	className?: string;
 	children: React.ReactNode;
 }
 
-export function AddScholarDialog({ children }: Props) {
+export function MutateScholarDialog({ className, children }: Props) {
 	const comboboxPortalRef = React.useRef<HTMLDivElement | null>(null);
 
 	return (
 		<Dialog>
-			<form>
+			<form className={className}>
 				<DialogTrigger asChild>{children}</DialogTrigger>
 				<DialogContent className="sm:max-w-lg">
 					<DialogHeader>
 						<DialogTitle>Adicionar bolsista</DialogTitle>
 						<DialogDescription>
-							Adicione informações sobre o novo bolsista aqui.
-							Clique em salvar quando terminar.
+							Adicione informações sobre o novo bolsista aqui
 						</DialogDescription>
 					</DialogHeader>
 					<div ref={comboboxPortalRef}>
@@ -93,10 +94,10 @@ export function AddScholarDialog({ children }: Props) {
 										>
 											<ComboboxInput
 												showTrigger={false}
-												placeholder="Search"
+												placeholder="Pesquisar curso"
 											/>
 											<ComboboxEmpty>
-												No items found.
+												Nenhum curso encontrado.
 											</ComboboxEmpty>
 											<ComboboxList>
 												{(item) => (
@@ -114,7 +115,7 @@ export function AddScholarDialog({ children }: Props) {
 								<Field>
 									<Label htmlFor="campus">Campus</Label>
 									<Combobox items={campusValues} id="campus">
-										<ComboboxInput placeholder="Selecione um campus" />
+										<ComboboxInput placeholder="Pesquisar campus" />
 										<ComboboxContent
 											container={comboboxPortalRef}
 										>
@@ -158,7 +159,11 @@ export function AddScholarDialog({ children }: Props) {
 															key={shift}
 															value={shift}
 														>
-															{shift}
+															{
+																scholarShiftLabels[
+																	shift
+																]
+															}
 														</SelectItem>
 													),
 												)}

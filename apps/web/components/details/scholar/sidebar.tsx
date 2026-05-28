@@ -20,6 +20,7 @@ import { VerticalBarsChart } from "@/components/vertical-bars-chart";
 
 import { getInitials } from "@/lib/utils";
 
+import { MutateScholarDialog } from "@/app/(dashboard)/bolsistas/dialog/add-scholar";
 import type { ScholarData } from "@/data/scholars-data";
 
 import { DetailsSection } from "../../section";
@@ -80,8 +81,6 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 function ScholarDetailsContent({ scholar }: { scholar: ScholarData }) {
-	const status = getScholarStatus(scholar);
-
 	return (
 		<div className="flex flex-col gap-4">
 			<div className="flex items-center gap-3 flex-row w-full">
@@ -188,9 +187,11 @@ function ScholarDetailsContent({ scholar }: { scholar: ScholarData }) {
 			<Button variant="outline" className="w-full">
 				Ver histórico completo
 			</Button>
-			<div className="flex flex-row gap-2">
-				<Button className="flex-1">Editar bolsista</Button>
-				<Button variant="destructive" className="flex-1">
+			<div className="flex flex-row gap-2 justify-between">
+				<MutateScholarDialog className="w-[49%]">
+					<Button className="w-full">Editar bolsista</Button>
+				</MutateScholarDialog>
+				<Button variant="destructive" className="w-[49%]">
 					Desativar
 				</Button>
 			</div>

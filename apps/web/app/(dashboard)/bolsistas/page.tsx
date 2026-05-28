@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 
 import { dashboardCards, scholarsData } from "@/data/scholars-data";
 
-import { AddScholarDialog } from "./dialog/add-scholar";
+import { MutateScholarDialog } from "./dialog/add-scholar";
 
 export const metadata: Metadata = {
 	title: "Bolsistas",
@@ -39,12 +39,12 @@ export default function ScholarsPage() {
 						</h2>
 					</div>
 					<div className="flex flex-wrap items-center gap-4">
-						<AddScholarDialog>
+						<MutateScholarDialog>
 							<Button size={"lg"} className="gap-2 px-3">
 								<Plus className="size-4" />
 								Adicionar bolsista
 							</Button>
-						</AddScholarDialog>
+						</MutateScholarDialog>
 					</div>
 				</header>
 
