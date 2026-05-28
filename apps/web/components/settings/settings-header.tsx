@@ -87,7 +87,7 @@ export function SettingsSubHeader() {
 			className="border-b border-border flex-row flex bg-card overflow-x-auto no-scrollbar"
 			ref={scrollContainerRef}
 		>
-			<div className="flex flex-row items-center justify-start pl-4 md:pl-6">
+			<div className="flex flex-row items-center justify-start px-4 md:px-6 ">
 				{routes.map((route) => (
 					<Link
 						key={route.url}
