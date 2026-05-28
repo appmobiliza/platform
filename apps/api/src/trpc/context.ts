@@ -59,7 +59,7 @@ export interface TRPCContext extends Record<string, unknown> {
  */
 let _realtime: RealtimeAdapter | null = null;
 
-function getRealtimeAdapter(): RealtimeAdapter {
+export function getRealtimeAdapter(): RealtimeAdapter {
   if (!_realtime) {
     _realtime = createRealtimeAdapter();
   }

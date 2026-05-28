@@ -10,6 +10,9 @@ import { eq, and, gte, lte, sql, count, avg, desc } from "drizzle-orm";
 import { db } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
 import { router, managerProcedure } from "../trpc/context";
+import { ExportReportSchema } from "@mobiliza/contracts";
+import { generateAttendanceReportCSV, AppError } from "@mobiliza/domain";
+import { TRPCError } from "@trpc/server";
 
 const dateRangeInput = z.object({
   from: z.string().datetime(),
@@ -17,6 +20,23 @@ const dateRangeInput = z.object({
 });
 
 export const metricsRouter = router({
+  exportCSV: managerProcedure
+    .input(ExportReportSchema)
+    .query(async ({ input }) => {
+      try {
+        const csv = await generateAttendanceReportCSV(input, db);
+        return csv;
+      } catch (error) {
+        if (error instanceof AppError) {
+          throw new TRPCError({
+            code: error.code as any,
+            message: error.message,
+          });
+        }
+        throw error;
+      }
+    }),
+
   /**
    * Resumo geral do período — cards no topo do dashboard.
    */

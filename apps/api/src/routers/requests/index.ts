@@ -7,6 +7,7 @@ import { complete } from "./complete";
 import { rate } from "./rate";
 import { myHistory } from "./myHistory";
 import { available } from "./available";
+import { scholarHistory } from "./scholarHistory";
 
 /**
  * Router de solicitações de deslocamento modularizado.
@@ -21,4 +22,5 @@ export const requestsRouter = router({
   rate,
   myHistory,
   available,
+  scholarHistory,
 });

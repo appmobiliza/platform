@@ -18,6 +18,7 @@ import { profilesRouter } from "./routers/profiles";
 import { locationsRouter } from "./routers/locations";
 import { notificationsRouter } from "./routers/notifications";
 import { metricsRouter } from "./routers/metrics";
+import { favoritesRouter } from "./routers/favorites";
 
 export const appRouter = router({
   requests: requestsRouter,
@@ -25,6 +26,7 @@ export const appRouter = router({
   locations: locationsRouter,
   notifications: notificationsRouter,
   metrics: metricsRouter,
+  favorites: favoritesRouter,
 });
 
 export type AppRouter = typeof appRouter;
