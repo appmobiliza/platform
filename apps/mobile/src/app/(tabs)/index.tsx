@@ -8,6 +8,8 @@ import { SearchBar } from "@/components/search-bar";
 import { Text } from "@/components/ui/text";
 
 import { Logo } from "@/assets/logo";
+import { useUserRole } from "@/lib/auth-store";
+import { ScholarHome } from "@/components/scholar/ScholarHome";
 
 const newsItems = [
 	{
@@ -27,7 +29,7 @@ const newsItems = [
 	},
 ];
 
-export default function Home() {
+function StudentHome() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
 
@@ -88,7 +90,6 @@ export default function Home() {
 				</View>
 
 				{/* Notícias */}
-
 				<View>
 					<Text className="font-bold text-lg mb-3 pl-4">
 						Notícias
@@ -127,4 +128,9 @@ export default function Home() {
 			</View>
 		</ScrollView>
 	);
+}
+
+export default function Home() {
+	const role = useUserRole();
+	return role === "scholar" ? <ScholarHome /> : <StudentHome />;
 }

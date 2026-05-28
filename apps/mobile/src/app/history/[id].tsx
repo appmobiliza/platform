@@ -9,12 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
+import { useUserRole } from "@/lib/auth-store";
+import ScholarShiftDetails from "@/components/scholar/ScholarShiftDetails";
 
-// import MapView from "../../components/ui/Map";
-
-export default function HistoryDetails() {
-	const { id } = useLocalSearchParams();
-
+function StudentHistoryDetails() {
 	return (
 		<View className="flex-1">
 			<Header title="Informações" />
@@ -25,19 +23,7 @@ export default function HistoryDetails() {
 				showsVerticalScrollIndicator={false}
 			>
 				<View className="h-48 w-full bg-card rounded-md items-end justify-end">
-					{/* <MapView
-								style={{ flex: 1 }}
-								initialRegion={{
-									latitude: -9.5539,
-									longitude: -35.7722,
-									latitudeDelta: 0.005,
-									longitudeDelta: 0.005,
-								}}
-								scrollEnabled={false}
-								zoomEnabled={false}
-								pitchEnabled={false}
-								rotateEnabled={false}
-							/> */}
+					{/* Map placeholder */}
 					<View className="flex flex-row items-center justify-end gap-2 p-4">
 						<Badge className="text-primary-foreground">
 							<Icon
@@ -96,25 +82,6 @@ export default function HistoryDetails() {
 					</Badge>
 				</View>
 
-				{/* <AddressRoute
-					from={{
-						label: "CAC - Centro de Artes e Cultura",
-						children: (
-							<Text className="text-xs font-medium text-muted-foreground">
-								8:04 PM
-							</Text>
-						),
-					}}
-					to={{
-						label: "Pista da UFAL",
-						children: (
-							<Text className="text-xs font-medium text-muted-foreground">
-								8:33 PM
-							</Text>
-						),
-					}}
-				/> */}
-
 				<View className={"w-full flex-col items-start"}>
 					<Address
 						marker="from"
@@ -153,4 +120,9 @@ export default function HistoryDetails() {
 			</ScrollView>
 		</View>
 	);
+}
+
+export default function HistoryDetails() {
+	const role = useUserRole();
+	return role === "scholar" ? <ScholarShiftDetails /> : <StudentHistoryDetails />;
 }

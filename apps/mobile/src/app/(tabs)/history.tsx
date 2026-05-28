@@ -7,6 +7,8 @@ import { StatusMessage } from "@/components/status-message";
 import { Text } from "@/components/ui/text";
 
 import { cn } from "@/lib/utils";
+import { useUserRole } from "@/lib/auth-store";
+import { ScholarHistory } from "@/components/scholar/ScholarHistory";
 
 const historyItems = [
 	{
@@ -35,7 +37,7 @@ const historyItems = [
 	},
 ];
 
-export default function History() {
+function StudentHistory() {
 	const insets = useSafeAreaInsets();
 
 	return (
@@ -93,4 +95,9 @@ export default function History() {
 			/>
 		</View>
 	);
+}
+
+export default function History() {
+	const role = useUserRole();
+	return role === "scholar" ? <ScholarHistory /> : <StudentHistory />;
 }
