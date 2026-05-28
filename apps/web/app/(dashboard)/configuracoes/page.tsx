@@ -81,7 +81,7 @@ export default function SettingsPage() {
 						icon={SunMedium}
 						iconClassName="bg-emerald-500/10 text-emerald-600"
 						title="Vespertino"
-						description="12:00 – 18:00 · Seg a Sex"
+						description="12:00 – 17:00 · Seg a Sex"
 						active
 						defaultExpanded
 					>
@@ -96,9 +96,15 @@ export default function SettingsPage() {
 						icon={MoonStar}
 						iconClassName="bg-muted text-muted-foreground"
 						title="Noturno"
-						description="Desativado"
+						description="17:00 – 22:00"
 						active={false}
-					/>
+					>
+						<ShiftScheduleBlock
+							start="17:00"
+							end="22:00"
+							days={["seg", "ter", "qua", "qui", "sex"]}
+						/>
+					</ShiftCard>
 
 					<Alert
 						variant="info"

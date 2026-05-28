@@ -31,14 +31,6 @@ function ShiftCard({
 	const [isActive, setIsActive] = React.useState(active);
 	const [isExpanded, setIsExpanded] = React.useState(defaultExpanded);
 
-	React.useEffect(() => {
-		setIsActive(active);
-	}, [active]);
-
-	React.useEffect(() => {
-		setIsExpanded(defaultExpanded);
-	}, [defaultExpanded]);
-
 	const toggleExpanded = () => {
 		if (!isActive) {
 			return;
@@ -49,11 +41,16 @@ function ShiftCard({
 
 	return (
 		<Card className="gap-0 overflow-hidden rounded-xl border border-border/80 bg-card py-0 shadow-none ring-0">
-			<div className="flex items-center gap-4 border-b border-border/80 p-5">
+			<div
+				className={cn(
+					"flex items-center gap-4 border-border/80 p-5",
+					isActive && "border-b -mb-px",
+				)}
+			>
 				<button
 					type="button"
 					className={cn(
-						"flex min-w-0 flex-1 items-center gap-4 text-left",
+						"flex min-w-0 flex-1 items-center gap-4 text-left cursor-default",
 						isActive && "cursor-pointer",
 					)}
 					onClick={toggleExpanded}
@@ -81,7 +78,7 @@ function ShiftCard({
 							{title}
 						</p>
 						<p className="truncate text-sm text-muted-foreground">
-							{description}
+							{isActive ? description : "Desativado"}
 						</p>
 					</div>
 				</button>
@@ -89,9 +86,9 @@ function ShiftCard({
 				<div className="flex shrink-0 items-center gap-2">
 					<Switch
 						checked={isActive}
-						onCheckedChange={(checked) => {
+						onCheckedChange={(checked, eventDetails) => {
+							eventDetails.event.preventDefault();
 							setIsActive(Boolean(checked));
-							setIsExpanded(Boolean(checked));
 						}}
 						size="default"
 						className="h-6 w-11 bg-muted data-checked:bg-primary"
@@ -105,8 +102,15 @@ function ShiftCard({
 				</div>
 			</div>
 
-			{children && isActive && isExpanded ? (
-				<div className="space-y-6 p-5 md:p-6">{children}</div>
+			{children ? (
+				<div
+					data-state={isActive && isExpanded ? "open" : "closed"}
+					className="grid transition-[grid-template-rows,opacity] duration-300 ease-in-out data-[state=open]:grid-rows-[1fr] data-[state=open]:opacity-100 data-[state=closed]:grid-rows-[0fr] data-[state=closed]:opacity-0"
+				>
+					<div className="min-h-0 overflow-hidden">
+						<div className="space-y-6 p-5 md:p-6">{children}</div>
+					</div>
+				</div>
 			) : null}
 		</Card>
 	);

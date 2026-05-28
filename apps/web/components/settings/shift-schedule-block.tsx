@@ -24,6 +24,7 @@ function TimeRangeField({
 				{label}
 			</FieldLabel>
 			<Input
+				readOnly
 				defaultValue={defaultValue}
 				className="w-full text-center px-3 text-base text-foreground shadow-none"
 			/>
