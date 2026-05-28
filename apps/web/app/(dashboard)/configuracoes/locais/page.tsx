@@ -14,6 +14,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 export const metadata: Metadata = {
 	title: "Locais do campus",
@@ -21,16 +22,16 @@ export const metadata: Metadata = {
 
 const locationFilters = [
 	{
+		value: "all",
 		label: "Todos (11)",
-		active: true,
 	},
 	{
+		value: "active",
 		label: "Ativos (9)",
-		active: false,
 	},
 	{
+		value: "inactive",
 		label: "Inativos (2)",
-		active: false,
 	},
 ];
 
@@ -121,33 +122,32 @@ export default function SettingsPage() {
 								<Input
 									aria-label="Buscar local"
 									placeholder="Buscar local..."
-									className="h-12 rounded-xl border-border/80 bg-background/70 pl-10 text-sm shadow-none placeholder:text-muted-foreground/80"
+									className="pl-10 text-sm shadow-none placeholder:text-muted-foreground/80"
 								/>
 							</div>
 
-							<div className="flex flex-wrap gap-2">
+							<ToggleGroup
+								type="single"
+								defaultValue="all"
+								size="sm"
+								className="w-full flex-wrap justify-start"
+							>
 								{locationFilters.map((filter) => (
-									<Button
-										key={filter.label}
-										type="button"
-										size="sm"
-										variant="secondary"
-										className={
-											filter.active
-												? "h-8 rounded-lg bg-cyan-700 px-3 text-sm font-semibold text-white hover:bg-cyan-700/90"
-												: "h-8 rounded-lg bg-muted px-3 text-sm font-semibold text-foreground/80 hover:bg-muted/80"
-										}
+									<ToggleGroupItem
+										key={filter.value}
+										value={filter.value}
+										aria-label={filter.label}
 									>
 										{filter.label}
-									</Button>
+									</ToggleGroupItem>
 								))}
-							</div>
+							</ToggleGroup>
 						</div>
 
 						<Button
 							type="button"
 							size="lg"
-							className="h-11 w-full gap-2 rounded-xl bg-cyan-700 text-base font-semibold text-white hover:bg-cyan-700/90 md:w-auto md:self-start"
+							className="w-full px-3 gap-2 md:w-auto md:self-start"
 						>
 							<Plus className="size-4" />
 							Novo local
