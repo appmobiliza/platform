@@ -6,6 +6,7 @@ import { complete } from "./complete";
 import { create } from "./create";
 import { myHistory } from "./myHistory";
 import { rate } from "./rate";
+import { scholarHistory } from "./scholarHistory";
 import { start } from "./start";
 
 /**
@@ -18,7 +19,8 @@ export const requestsRouter = router({
 	accept,
 	start,
 	complete,
-	rate,
-	myHistory,
-	available,
+  rate,
+  myHistory,
+  available,
+  scholarHistory,
 });

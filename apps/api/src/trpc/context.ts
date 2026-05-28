@@ -60,11 +60,11 @@ export interface TRPCContext extends Record<string, unknown> {
  */
 let _realtime: RealtimeAdapter | null = null;
 
-function getRealtimeAdapter(): RealtimeAdapter {
-	if (!_realtime) {
-		_realtime = createRealtimeAdapter();
-	}
-	return _realtime;
+export function getRealtimeAdapter(): RealtimeAdapter {
+  if (!_realtime) {
+    _realtime = createRealtimeAdapter();
+  }
+  return _realtime;
 }
 
 // ─── Factory de contexto ──────────────────────────────────────────────────────

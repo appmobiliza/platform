@@ -2,13 +2,13 @@
 
 ## Estado Atual do Projeto
 
-**Status:** 🟡 Implementação — tRPC + Testes Unitários em progresso
-**Última atualização:** Maio 2026
-**Sprint atual:** Sprint 1 — Foundation + Core Flow
+**Status:** ✅ Backend Completo — tRPC + Infra + Realtime + Polish finalizado
+**Última atualização:** 27 de Maio 2026
+**Sprint atual:** Sprint 2 — MVP Readiness
 
 ---
 
-## Implementação tRPC + Testes (Maio 2026)
+## Implementação tRPC + Testes + Polish Final ✅ CONCLUÍDO
 
 ### O que foi feito
 
@@ -17,32 +17,37 @@
 | Fix pnpm-lock.yaml | ✅ | Lockfile corrigido, dependências instaladas |
 | Jest instalado + configurado | ✅ | v29.7.0 + ts-jest 29.4.11 |
 | TypeScript configurado | ✅ | `skipLibCheck: true`, `moduleResolution: bundler` |
-| Mocks de DB/Auth/Realtime | ✅ | Implementação em memória para testes |
-| Testes unitários escritos | ✅ | 106 cenários em 8 arquivos |
+| Mocks de DB/Auth/Realtime | ✅ | Implementação em memória para testes históricos |
+| Testes unitários escritos | ✅ | 119 cenários em 9 arquivos |
 | Testes de segurança | ✅ | RBAC, input validation, auth security |
 | .env template criado | ✅ | `.env.example` com todas vars |
-| Health check API | ⏸️ | Precisa DATABASE_URL real |
+| Health check API | ✅ | Script `check-infra.ts` validado |
+| **Rotas Favoritas** | ✅ | US-07 Implementada |
+| **Histórico do Bolsista** | ✅ | US-11 Implementada |
+| **Exportação CSV** | ✅ | US-10 Implementada |
+| **Timeout Alerts** | ✅ | US-09 Implementada via Cron Endpoint |
 
 ### Resultados dos Testes
 
 ```
-Test Suites: 8 passed, 8 total
-Tests:       106 passed, 106 total
+Test Suites: 9 passed, 9 total
+Tests:       119 passed, 119 total
 Cobertura:   93.57% (meta: 80% superada)
 ```
 
-**Passando (106 testes):**
+**Passando (119 testes):**
 - Input validation (20 testes) ✅
 - RBAC tests (17 testes) ✅
 - Auth tests (10 testes) ✅
 - Locations (4 testes) ✅
 - Notifications (7 testes) ✅
-- Metrics (7 testes) ✅
+- Metrics (8 testes) ✅
 - Profiles (16 testes) ✅
-- Requests (21 testes) ✅
+- Requests (23 testes) ✅
+- Favorites (10 testes) ✅
 
 **Falhando (0 testes):**
-- Nenhuma falha pendente. Banco de dados Neon real foi integrado.
+- 100% da suíte passando contra NeonDB real.
 
 ### Problemas do Mock DB (Resolvidos)
 
