@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
+import { AddLocationDialog } from "./dialog/add-location";
+
 export const metadata: Metadata = {
 	title: "Locais do campus",
 };
@@ -117,7 +119,7 @@ export default function SettingsPage() {
 				<div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm">
 					<div className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between md:p-5">
 						<div className="flex min-w-0 flex-1 flex-col gap-4 md:flex-row md:items-center">
-							<div className="relative w-full md:max-w-67">
+							<div className="relative w-full md:max-w-150">
 								<Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 								<Input
 									aria-label="Buscar local"
@@ -144,14 +146,16 @@ export default function SettingsPage() {
 							</ToggleGroup>
 						</div>
 
-						<Button
-							type="button"
-							size="lg"
-							className="w-full px-3 gap-2 md:w-auto md:self-start"
-						>
-							<Plus className="size-4" />
-							Novo local
-						</Button>
+						<AddLocationDialog>
+							<Button
+								type="button"
+								size="lg"
+								className="w-full px-3 gap-2 md:w-auto md:self-start"
+							>
+								<Plus className="size-4" />
+								Novo local
+							</Button>
+						</AddLocationDialog>
 					</div>
 
 					<div className="border-t border-border/70">
