@@ -19,7 +19,10 @@ export const locationsRouter = router({
 	 * Lista todos os locais ativos do campus.
 	 * Público — usado no formulário de nova solicitação.
 	 */
-	list: publicProcedure.query(async () => {
+	list: publicProcedure
+		.meta({ openapi: { method: "GET", path: "/locations" } })
+		.output(z.any())
+		.query(async () => {
 		return db.query.campusLocation.findMany({
 			where: eq(schema.campusLocation.isActive, true),
 			orderBy: (t, { asc }) => [asc(t.name)],
@@ -29,7 +32,10 @@ export const locationsRouter = router({
 	/**
 	 * Retorna todos os locais incluindo inativos — apenas para o painel do gestor.
 	 */
-	listAll: managerProcedure.query(async () => {
+	listAll: managerProcedure
+		.meta({ openapi: { method: "GET", path: "/locations/all" } })
+		.output(z.any())
+		.query(async () => {
 		return db.query.campusLocation.findMany({
 			orderBy: (t, { asc }) => [asc(t.name)],
 		});
@@ -39,6 +45,7 @@ export const locationsRouter = router({
 	 * Cria um novo local do campus.
 	 */
 	create: managerProcedure
+		.meta({ openapi: { method: "POST", path: "/locations" } })
 		.input(
 			z.object({
 				name: z.string().min(2).max(100),
@@ -48,6 +55,7 @@ export const locationsRouter = router({
 				longitude: z.number(),
 			}),
 		)
+		.output(z.any())
 		.mutation(async ({ input }) => {
 			const [location] = await db
 				.insert(schema.campusLocation)
@@ -63,7 +71,9 @@ export const locationsRouter = router({
 	 * o histórico existente é preservado (onDelete: restrict).
 	 */
 	setActive: managerProcedure
+		.meta({ openapi: { method: "POST", path: "/locations/active" } })
 		.input(z.object({ id: z.number(), isActive: z.boolean() }))
+		.output(z.any())
 		.mutation(async ({ input }) => {
 			const [updated] = await db
 				.update(schema.campusLocation)

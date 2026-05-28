@@ -15,12 +15,14 @@
 		"check-infra": "tsx scripts/check-infra.ts"
 	},
 	"dependencies": {
+		"@hono/node-server": "^1.19.14",
 		"@hono/trpc-server": "^0.4.2",
 		"@mobiliza/contracts": "workspace:*",
 		"@mobiliza/db": "workspace:*",
 		"@mobiliza/domain": "workspace:*",
 		"@mobiliza/realtime": "workspace:*",
 		"hono": "^4.12.19",
+		"trpc-to-openapi": "^3.3.0",
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {

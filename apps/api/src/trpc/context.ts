@@ -18,6 +18,7 @@ import type { RealtimeAdapter } from "@mobiliza/realtime";
 import { createRealtimeAdapter } from "@mobiliza/realtime";
 import { initTRPC, TRPCError } from "@trpc/server";
 import type { Context } from "hono";
+import type { OpenApiMeta } from 'trpc-to-openapi';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -87,7 +88,7 @@ export async function createTRPCContext(c: Context): Promise<TRPCContext> {
 
 // ─── Instância do tRPC ────────────────────────────────────────────────────────
 
-const t = initTRPC.context<TRPCContext>().create({
+const t = initTRPC.meta<OpenApiMeta>().context<TRPCContext>().create({
 	/**
 	 * Transforma erros antes de enviá-los ao cliente.
 	 * Remove stack traces em produção e padroniza o formato.

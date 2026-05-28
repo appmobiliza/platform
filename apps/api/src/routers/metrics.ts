@@ -21,7 +21,11 @@ export const metricsRouter = router({
 	/**
 	 * Resumo geral do período — cards no topo do dashboard.
 	 */
-	summary: managerProcedure.input(dateRangeInput).query(async ({ input }) => {
+	summary: managerProcedure
+		.meta({ openapi: { method: "GET", path: "/metrics/summary" } })
+		.input(dateRangeInput)
+		.output(z.any())
+		.query(async ({ input }) => {
 		const from = new Date(input.from);
 		const to = new Date(input.to);
 
@@ -80,7 +84,9 @@ export const metricsRouter = router({
 	 * Identifica pontos do campus com maior demanda.
 	 */
 	byOriginLocation: managerProcedure
+		.meta({ openapi: { method: "GET", path: "/metrics/by-origin-location" } })
 		.input(dateRangeInput)
+		.output(z.any())
 		.query(async ({ input }) => {
 			const from = new Date(input.from);
 			const to = new Date(input.to);
@@ -119,7 +125,9 @@ export const metricsRouter = router({
 	 * Mostra atendimentos, avaliação média e duração média por bolsista.
 	 */
 	scholarPerformance: managerProcedure
+		.meta({ openapi: { method: "GET", path: "/metrics/scholar-performance" } })
 		.input(dateRangeInput)
+		.output(z.any())
 		.query(async ({ input }) => {
 			const from = new Date(input.from);
 			const to = new Date(input.to);

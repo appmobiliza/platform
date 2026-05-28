@@ -25,7 +25,10 @@ export const profilesRouter = router({
 	 * Retorna o perfil completo do usuário autenticado.
 	 * Inclui studentProfile ou scholarProfile conforme o role.
 	 */
-	me: protectedProcedure.query(async ({ ctx }) => {
+	me: protectedProcedure
+		.meta({ openapi: { method: "GET", path: "/profiles/me" } })
+		.output(z.any())
+		.query(async ({ ctx }) => {
 		const user = await db.query.user.findFirst({
 			where: eq(schema.user.id, ctx.session.user.id),
 			with: {
@@ -43,6 +46,7 @@ export const profilesRouter = router({
 	 * Idempotente — retorna o perfil existente se já cadastrado.
 	 */
 	createStudent: protectedProcedure
+		.meta({ openapi: { method: "POST", path: "/profiles/student" } })
 		.input(
 			z.object({
 				enrollment: z.string().min(4).max(20),
@@ -59,6 +63,7 @@ export const profilesRouter = router({
 				simplifiedInterface: z.boolean().default(false),
 			}),
 		)
+		.output(z.any())
 		.mutation(async ({ ctx, input }) => {
 			const existing = await db.query.studentProfile.findFirst({
 				where: eq(schema.studentProfile.userId, ctx.session.user.id),
@@ -99,6 +104,7 @@ export const profilesRouter = router({
 	 * O bolsista começa como `isApproved: false` — aguarda aprovação do gestor.
 	 */
 	createScholar: protectedProcedure
+		.meta({ openapi: { method: "POST", path: "/profiles/scholar" } })
 		.input(
 			z.object({
 				enrollment: z.string().min(4).max(20),
@@ -109,6 +115,7 @@ export const profilesRouter = router({
 				cpf: z.string().regex(/^\d{11}$/),
 			}),
 		)
+		.output(z.any())
 		.mutation(async ({ ctx, input }) => {
 			const existing = await db.query.scholarProfile.findFirst({
 				where: eq(schema.scholarProfile.userId, ctx.session.user.id),
@@ -139,7 +146,10 @@ export const profilesRouter = router({
 	 * Bolsista alterna sua disponibilidade.
 	 * Apenas bolsistas aprovados podem ficar disponíveis.
 	 */
-	toggleAvailability: scholarProcedure.mutation(async ({ ctx }) => {
+	toggleAvailability: scholarProcedure
+		.meta({ openapi: { method: "POST", path: "/profiles/availability" } })
+		.output(z.any())
+		.mutation(async ({ ctx }) => {
 		const profile = await db.query.scholarProfile.findFirst({
 			where: eq(schema.scholarProfile.userId, ctx.session.user.id),
 		});
@@ -171,7 +181,10 @@ export const profilesRouter = router({
 	/**
 	 * Lista todos os bolsistas pendentes de aprovação.
 	 */
-	pendingScholars: managerProcedure.query(async () => {
+	pendingScholars: managerProcedure
+		.meta({ openapi: { method: "GET", path: "/profiles/pending-scholars" } })
+		.output(z.any())
+		.query(async () => {
 		return db.query.scholarProfile.findMany({
 			where: eq(schema.scholarProfile.isApproved, false),
 			with: { user: true },
@@ -184,12 +197,14 @@ export const profilesRouter = router({
 	 * Rejeitar = desativar o perfil (isActive: false).
 	 */
 	reviewScholar: managerProcedure
+		.meta({ openapi: { method: "POST", path: "/profiles/review-scholar" } })
 		.input(
 			z.object({
 				scholarProfileId: z.string(),
 				approved: z.boolean(),
 			}),
 		)
+		.output(z.any())
 		.mutation(async ({ ctx, input }) => {
 			const profile = await db.query.scholarProfile.findFirst({
 				where: eq(schema.scholarProfile.id, input.scholarProfileId),

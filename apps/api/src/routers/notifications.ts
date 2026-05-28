@@ -18,12 +18,14 @@ export const notificationsRouter = router({
 	 * Notificações do usuário autenticado, mais recentes primeiro.
 	 */
 	list: protectedProcedure
+		.meta({ openapi: { method: "GET", path: "/notifications" } })
 		.input(
 			z.object({
 				onlyUnread: z.boolean().default(false),
 				limit: z.number().int().min(1).max(50).default(30),
 			}),
 		)
+		.output(z.any())
 		.query(async ({ ctx, input }) => {
 			const conditions = [
 				eq(schema.notification.userId, ctx.session.user.id),
@@ -43,12 +45,14 @@ export const notificationsRouter = router({
 	 * Marca uma ou todas as notificações como lidas.
 	 */
 	markRead: protectedProcedure
+		.meta({ openapi: { method: "POST", path: "/notifications/read" } })
 		.input(
 			z.object({
 				/** Omitir `id` para marcar todas como lidas */
 				notificationId: z.string().optional(),
 			}),
 		)
+		.output(z.any())
 		.mutation(async ({ ctx, input }) => {
 			const now = new Date();
 
@@ -81,7 +85,10 @@ export const notificationsRouter = router({
 	/**
 	 * Contagem de não lidas — útil para o badge no app.
 	 */
-	unreadCount: protectedProcedure.query(async ({ ctx }) => {
+	unreadCount: protectedProcedure
+		.meta({ openapi: { method: "GET", path: "/notifications/unread-count" } })
+		.output(z.any())
+		.query(async ({ ctx }) => {
 		const items = await db.query.notification.findMany({
 			where: and(
 				eq(schema.notification.userId, ctx.session.user.id),

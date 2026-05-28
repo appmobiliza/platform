@@ -3,13 +3,16 @@ import { db } from "@mobiliza/db/client";
 import { and, eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 
 import { scholarProcedure } from "@/trpc/context";
 
 import { execTx } from "./shared";
 
 export const start = scholarProcedure
+	.meta({ openapi: { method: "POST", path: "/requests/start" } })
 	.input(RequestIdSchema)
+	.output(z.any())
 	.mutation(async ({ ctx, input }) => {
 		const scholarProfile = await db.query.scholarProfile.findFirst({
 			where: eq(schema.scholarProfile.userId, ctx.session.user.id),

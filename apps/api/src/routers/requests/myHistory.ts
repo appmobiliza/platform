@@ -1,13 +1,16 @@
 import { db } from "@mobiliza/db/client";
 import { and, desc, eq, sql } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+import { z } from "zod";
 
 import { protectedProcedure } from "@/trpc/context";
 
 import { paginationInput } from "./shared";
 
 export const myHistory = protectedProcedure
+	.meta({ openapi: { method: "GET", path: "/requests/history" } })
 	.input(paginationInput)
+	.output(z.any())
 	.query(async ({ ctx, input }) => {
 		const studentProfile = await db.query.studentProfile.findFirst({
 			where: eq(schema.studentProfile.userId, ctx.session.user.id),

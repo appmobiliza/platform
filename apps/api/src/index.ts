@@ -11,13 +11,18 @@
  *   ALL  /trpc/*            → tRPC router
  */
 
+import { serve } from "@hono/node-server";
+import { trpcServer } from "@hono/trpc-server";
+import { auth } from "@mobiliza/db/auth";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { trpcServer } from "@hono/trpc-server";
-import { auth } from "@mobiliza/db/auth";
+
+import { openApiDocument, openApiHandler } from "./openapi";
 import { appRouter } from "./router";
 import { createTRPCContext } from "./trpc/context";
+
+console.log("🚀 Iniciando Mobiliza API...");
 
 const app = new Hono();
 
@@ -44,6 +49,14 @@ app.get("/health", (c) =>
     provider: process.env.REALTIME_PROVIDER ?? "supabase",
   }),
 );
+
+// ─── OpenAPI ─────────────────────────────────────────────────────────────────
+
+app.get("/openapi", (c) => c.redirect("/openapi.json"));
+
+app.get("/openapi.json", (c) => c.json(openApiDocument));
+
+app.all("/openapi/*", async (c) => openApiHandler(c));
 
 // ─── Better Auth ──────────────────────────────────────────────────────────────
 
@@ -80,6 +93,11 @@ app.use(
 // ─── Servidor ─────────────────────────────────────────────────────────────────
 
 const port = Number(process.env.PORT ?? 3001);
+
+serve({
+  fetch: app.fetch,
+  port,
+});
 
 console.log(`🚀 Mobiliza API rodando em http://localhost:${port}`);
 console.log(`   Realtime provider: ${process.env.REALTIME_PROVIDER ?? "supabase"}`);
