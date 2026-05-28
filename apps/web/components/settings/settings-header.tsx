@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 import { Save } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 
 const routes = [
 	{
@@ -54,13 +55,39 @@ export function SettingsHeader() {
 
 export function SettingsSubHeader() {
 	const pathname = usePathname();
+	const scrollContainerRef = useRef<HTMLDivElement>(null);
+	const activeButtonRef = useRef<HTMLAnchorElement>(null);
+
+	useEffect(() => {
+		if (!pathname) {
+			return;
+		}
+
+		if (scrollContainerRef.current && activeButtonRef.current) {
+			const container = scrollContainerRef.current;
+			const activeButton = activeButtonRef.current;
+
+			// Calcula a posição para centralizar o botão ativo
+			const scrollTo =
+				activeButton.offsetLeft -
+				(container.clientWidth - activeButton.clientWidth) / 2;
+
+			container.scrollTo({
+				left: scrollTo,
+				behavior: "smooth",
+			});
+		}
+	}, [pathname]);
 
 	// Mark the active route
 	const activeRoute = routes.find((route) => route.url === pathname);
 
 	return (
-		<header className="border-b border-border bg-card overflow-x-auto no-scrollbar">
-			<div className="flex flex-row items-center justify-start w-full pl-4 md:pl-6 last:mr-4 md:last:mr-6">
+		<header
+			className="border-b border-border flex-row flex bg-card overflow-x-auto no-scrollbar"
+			ref={scrollContainerRef}
+		>
+			<div className="flex flex-row items-center justify-start pl-4 md:pl-6">
 				{routes.map((route) => (
 					<Link
 						key={route.url}
@@ -73,6 +100,11 @@ export function SettingsSubHeader() {
 							activeRoute?.url === route.url &&
 								"text-foreground border-b-2",
 						)}
+						ref={
+							activeRoute?.url === route.url
+								? activeButtonRef
+								: null
+						}
 					>
 						{route.title}
 					</Link>

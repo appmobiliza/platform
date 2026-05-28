@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import {
 	SettingsHeader,
 	SettingsSubHeader,
-} from "@/components/settings-header";
+} from "@/components/settings/settings-header";
 
 export const metadata: Metadata = {
 	title: "Configurações",
