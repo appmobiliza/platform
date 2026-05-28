@@ -12,19 +12,19 @@
  * ```
  */
 
-import { router } from "./trpc/context";
-import { requestsRouter } from "./routers/requests/index";
-import { profilesRouter } from "./routers/profiles";
 import { locationsRouter } from "./routers/locations";
-import { notificationsRouter } from "./routers/notifications";
 import { metricsRouter } from "./routers/metrics";
+import { notificationsRouter } from "./routers/notifications";
+import { profilesRouter } from "./routers/profiles";
+import { requestsRouter } from "./routers/requests/index";
+import { router } from "./trpc/context";
 
 export const appRouter = router({
-  requests: requestsRouter,
-  profiles: profilesRouter,
-  locations: locationsRouter,
-  notifications: notificationsRouter,
-  metrics: metricsRouter,
+	requests: requestsRouter,
+	profiles: profilesRouter,
+	locations: locationsRouter,
+	notifications: notificationsRouter,
+	metrics: metricsRouter,
 });
 
 export type AppRouter = typeof appRouter;

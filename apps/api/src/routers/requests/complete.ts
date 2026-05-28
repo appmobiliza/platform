@@ -1,56 +1,60 @@
 import { RequestIdSchema } from "@mobiliza/contracts";
-import { eq, and } from "drizzle-orm";
-import { TRPCError } from "@trpc/server";
 import { db } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
+import { TRPCError } from "@trpc/server";
+import { and, eq } from "drizzle-orm";
+
 import { scholarProcedure } from "../../trpc/context";
 import { execTx } from "./shared";
 
 export const complete = scholarProcedure
-  .input(RequestIdSchema)
-  .mutation(async ({ ctx, input }) => {
-    const scholarProfile = await db.query.scholarProfile.findFirst({
-      where: eq(schema.scholarProfile.userId, ctx.session.user.id),
-    });
+	.input(RequestIdSchema)
+	.mutation(async ({ ctx, input }) => {
+		const scholarProfile = await db.query.scholarProfile.findFirst({
+			where: eq(schema.scholarProfile.userId, ctx.session.user.id),
+		});
 
-    if (!scholarProfile) throw new TRPCError({ code: "FORBIDDEN" });
+		if (!scholarProfile) throw new TRPCError({ code: "FORBIDDEN" });
 
-    const attendance = await db.query.serviceAttendance.findFirst({
-      where: and(
-        eq(schema.serviceAttendance.requestId, input.requestId),
-        eq(schema.serviceAttendance.scholarProfileId, scholarProfile.id),
-      ),
-    });
+		const attendance = await db.query.serviceAttendance.findFirst({
+			where: and(
+				eq(schema.serviceAttendance.requestId, input.requestId),
+				eq(
+					schema.serviceAttendance.scholarProfileId,
+					scholarProfile.id,
+				),
+			),
+		});
 
-    if (!attendance || !attendance.startedAt) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "O deslocamento ainda não foi iniciado.",
-      });
-    }
+		if (!attendance || !attendance.startedAt) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: "O deslocamento ainda não foi iniciado.",
+			});
+		}
 
-    const now = new Date();
-    const durationSeconds = Math.floor(
-      (now.getTime() - attendance.startedAt.getTime()) / 1000,
-    );
+		const now = new Date();
+		const durationSeconds = Math.floor(
+			(now.getTime() - attendance.startedAt.getTime()) / 1000,
+		);
 
-    await execTx(async (tx) => {
-      await tx
-        .update(schema.serviceRequest)
-        .set({ status: "completed", updatedAt: now })
-        .where(eq(schema.serviceRequest.id, input.requestId));
+		await execTx(async (tx) => {
+			await tx
+				.update(schema.serviceRequest)
+				.set({ status: "completed", updatedAt: now })
+				.where(eq(schema.serviceRequest.id, input.requestId));
 
-      await tx
-        .update(schema.serviceAttendance)
-        .set({ completedAt: now, durationSeconds, updatedAt: now })
-        .where(eq(schema.serviceAttendance.id, attendance.id));
-    });
+			await tx
+				.update(schema.serviceAttendance)
+				.set({ completedAt: now, durationSeconds, updatedAt: now })
+				.where(eq(schema.serviceAttendance.id, attendance.id));
+		});
 
-    await ctx.realtime.publish(
-      `request:${input.requestId}`,
-      "request:completed",
-      { requestId: input.requestId, durationSeconds },
-    );
+		await ctx.realtime.publish(
+			`request:${input.requestId}`,
+			"request:completed",
+			{ requestId: input.requestId, durationSeconds },
+		);
 
-    return { durationSeconds };
-  });
+		return { durationSeconds };
+	});

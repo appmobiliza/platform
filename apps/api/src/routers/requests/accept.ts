@@ -1,86 +1,87 @@
 import { RequestIdSchema } from "@mobiliza/contracts";
-import { eq, and } from "drizzle-orm";
-import { TRPCError } from "@trpc/server";
 import { db } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
+import { TRPCError } from "@trpc/server";
+import { and, eq } from "drizzle-orm";
+
 import { scholarProcedure } from "../../trpc/context";
 import { execTx, generateAttendanceId } from "./shared";
 
 export const accept = scholarProcedure
-  .input(RequestIdSchema)
-  .mutation(async ({ ctx, input }) => {
-    const scholarProfile = await db.query.scholarProfile.findFirst({
-      where: eq(schema.scholarProfile.userId, ctx.session.user.id),
-    });
+	.input(RequestIdSchema)
+	.mutation(async ({ ctx, input }) => {
+		const scholarProfile = await db.query.scholarProfile.findFirst({
+			where: eq(schema.scholarProfile.userId, ctx.session.user.id),
+		});
 
-    if (!scholarProfile) {
-      throw new TRPCError({ code: "FORBIDDEN" });
-    }
+		if (!scholarProfile) {
+			throw new TRPCError({ code: "FORBIDDEN" });
+		}
 
-    if (!scholarProfile.isApproved) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Seu cadastro ainda não foi aprovado pelo NAC.",
-      });
-    }
+		if (!scholarProfile.isApproved) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message: "Seu cadastro ainda não foi aprovado pelo NAC.",
+			});
+		}
 
-    if (!scholarProfile.isAvailable) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message:
-          "Você está marcado como indisponível. Ative sua disponibilidade antes de aceitar solicitações.",
-      });
-    }
+		if (!scholarProfile.isAvailable) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message:
+					"Você está marcado como indisponível. Ative sua disponibilidade antes de aceitar solicitações.",
+			});
+		}
 
-    // Transação atômica para evitar race condition entre bolsistas
-    const result = await execTx(async (tx) => {
-      const request = await tx.query.serviceRequest.findFirst({
-        where: and(
-          eq(schema.serviceRequest.id, input.requestId),
-          eq(schema.serviceRequest.status, "pending"),
-        ),
-      });
+		// Transação atômica para evitar race condition entre bolsistas
+		const result = await execTx(async (tx) => {
+			const request = await tx.query.serviceRequest.findFirst({
+				where: and(
+					eq(schema.serviceRequest.id, input.requestId),
+					eq(schema.serviceRequest.status, "pending"),
+				),
+			});
 
-      if (!request) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message:
-            "Solicitação não encontrada ou já foi aceita por outro bolsista.",
-        });
-      }
+			if (!request) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message:
+						"Solicitação não encontrada ou já foi aceita por outro bolsista.",
+				});
+			}
 
-      const now = new Date();
+			const now = new Date();
 
-      // Atualiza o status da solicitação
-      await tx
-        .update(schema.serviceRequest)
-        .set({ status: "accepted", respondedAt: now, updatedAt: now })
-        .where(eq(schema.serviceRequest.id, input.requestId));
+			// Atualiza o status da solicitação
+			await tx
+				.update(schema.serviceRequest)
+				.set({ status: "accepted", respondedAt: now, updatedAt: now })
+				.where(eq(schema.serviceRequest.id, input.requestId));
 
-      // Cria o registro de atendimento
-      const [attendance] = await tx
-        .insert(schema.serviceAttendance)
-        .values({
-          id: generateAttendanceId(),
-          requestId: input.requestId,
-          scholarProfileId: scholarProfile.id,
-          acceptedAt: now,
-        })
-        .returning();
+			// Cria o registro de atendimento
+			const [attendance] = await tx
+				.insert(schema.serviceAttendance)
+				.values({
+					id: generateAttendanceId(),
+					requestId: input.requestId,
+					scholarProfileId: scholarProfile.id,
+					acceptedAt: now,
+				})
+				.returning();
 
-      // Notifica o estudante via realtime
-      await ctx.realtime.publish(
-        `request:${input.requestId}`,
-        "request:accepted",
-        {
-          requestId: input.requestId,
-          scholarId: ctx.session.user.id,
-          scholarName: ctx.session.user.name,
-        },
-      );
+			// Notifica o estudante via realtime
+			await ctx.realtime.publish(
+				`request:${input.requestId}`,
+				"request:accepted",
+				{
+					requestId: input.requestId,
+					scholarId: ctx.session.user.id,
+					scholarName: ctx.session.user.name,
+				},
+			);
 
-      return { request: { ...request, status: "accepted" }, attendance };
-    });
+			return { request: { ...request, status: "accepted" }, attendance };
+		});
 
-    return result;
-  });
+		return result;
+	});

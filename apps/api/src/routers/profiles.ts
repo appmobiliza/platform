@@ -3,221 +3,222 @@
  * aprovação de bolsistas pelo gestor, e toggle de disponibilidade.
  */
 
-import { z } from "zod";
-import { eq } from "drizzle-orm";
-import { TRPCError } from "@trpc/server";
 import { db } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
+import { TRPCError } from "@trpc/server";
+import { eq } from "drizzle-orm";
+import { z } from "zod";
+
 import {
-  router,
-  protectedProcedure,
-  scholarProcedure,
-  managerProcedure,
+	managerProcedure,
+	protectedProcedure,
+	router,
+	scholarProcedure,
 } from "../trpc/context";
 
 function generateProfileId(prefix: string): string {
-  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+	return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
 export const profilesRouter = router({
-  /**
-   * Retorna o perfil completo do usuário autenticado.
-   * Inclui studentProfile ou scholarProfile conforme o role.
-   */
-  me: protectedProcedure.query(async ({ ctx }) => {
-    const user = await db.query.user.findFirst({
-      where: eq(schema.user.id, ctx.session.user.id),
-      with: {
-        studentProfile: true,
-        scholarProfile: true,
-      },
-    });
+	/**
+	 * Retorna o perfil completo do usuário autenticado.
+	 * Inclui studentProfile ou scholarProfile conforme o role.
+	 */
+	me: protectedProcedure.query(async ({ ctx }) => {
+		const user = await db.query.user.findFirst({
+			where: eq(schema.user.id, ctx.session.user.id),
+			with: {
+				studentProfile: true,
+				scholarProfile: true,
+			},
+		});
 
-    if (!user) throw new TRPCError({ code: "NOT_FOUND" });
-    return user;
-  }),
+		if (!user) throw new TRPCError({ code: "NOT_FOUND" });
+		return user;
+	}),
 
-  /**
-   * Onboarding: cria perfil de estudante para o usuário autenticado.
-   * Idempotente — retorna o perfil existente se já cadastrado.
-   */
-  createStudent: protectedProcedure
-    .input(
-      z.object({
-        enrollment: z.string().min(4).max(20),
-        course: z.enum(schema.courseValues),
-        campus: z.enum(schema.campusValues),
-        phone: z.string().regex(/^\d{10,11}$/),
-        shift: z.enum(schema.studentShiftValues),
-        gender: z.enum(schema.genderValues),
-        nickname: z.string().max(30).optional(),
-        disabilityTypes: z
-          .array(z.enum(schema.disabilityTypeValues))
-          .min(1),
-        attendanceNotes: z.string().max(1000).optional(),
-        simplifiedInterface: z.boolean().default(false),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const existing = await db.query.studentProfile.findFirst({
-        where: eq(schema.studentProfile.userId, ctx.session.user.id),
-      });
+	/**
+	 * Onboarding: cria perfil de estudante para o usuário autenticado.
+	 * Idempotente — retorna o perfil existente se já cadastrado.
+	 */
+	createStudent: protectedProcedure
+		.input(
+			z.object({
+				enrollment: z.string().min(4).max(20),
+				course: z.enum(schema.courseValues),
+				campus: z.enum(schema.campusValues),
+				phone: z.string().regex(/^\d{10,11}$/),
+				shift: z.enum(schema.studentShiftValues),
+				gender: z.enum(schema.genderValues),
+				nickname: z.string().max(30).optional(),
+				disabilityTypes: z
+					.array(z.enum(schema.disabilityTypeValues))
+					.min(1),
+				attendanceNotes: z.string().max(1000).optional(),
+				simplifiedInterface: z.boolean().default(false),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const existing = await db.query.studentProfile.findFirst({
+				where: eq(schema.studentProfile.userId, ctx.session.user.id),
+			});
 
-      if (existing) return existing;
+			if (existing) return existing;
 
-      // Garante que o role do usuário está correto
-      await db
-        .update(schema.user)
-        .set({ role: "student", updatedAt: new Date() })
-        .where(eq(schema.user.id, ctx.session.user.id));
+			// Garante que o role do usuário está correto
+			await db
+				.update(schema.user)
+				.set({ role: "student", updatedAt: new Date() })
+				.where(eq(schema.user.id, ctx.session.user.id));
 
-      const { disabilityTypes, ...profileData } = input;
+			const { disabilityTypes, ...profileData } = input;
 
-      const [profile] = await db
-        .insert(schema.studentProfile)
-        .values({
-          id: generateProfileId("sp"),
-          userId: ctx.session.user.id,
-          ...profileData,
-        })
-        .returning();
+			const [profile] = await db
+				.insert(schema.studentProfile)
+				.values({
+					id: generateProfileId("sp"),
+					userId: ctx.session.user.id,
+					...profileData,
+				})
+				.returning();
 
-      await db.insert(schema.studentDisability).values(
-        disabilityTypes.map((dt) => ({
-          id: generateProfileId("sd"),
-          studentProfileId: profile.id,
-          disabilityType: dt,
-        })),
-      );
+			await db.insert(schema.studentDisability).values(
+				disabilityTypes.map((dt) => ({
+					id: generateProfileId("sd"),
+					studentProfileId: profile.id,
+					disabilityType: dt,
+				})),
+			);
 
-      return profile;
-    }),
+			return profile;
+		}),
 
-  /**
-   * Onboarding: cria perfil de bolsista para o usuário autenticado.
-   * O bolsista começa como `isApproved: false` — aguarda aprovação do gestor.
-   */
-  createScholar: protectedProcedure
-    .input(
-      z.object({
-        enrollment: z.string().min(4).max(20),
-        course: z.enum(schema.courseValues),
-        campus: z.enum(schema.campusValues),
-        shift: z.enum(schema.scholarShiftValues),
-        phone: z.string().regex(/^\d{10,11}$/),
-        cpf: z.string().regex(/^\d{11}$/),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const existing = await db.query.scholarProfile.findFirst({
-        where: eq(schema.scholarProfile.userId, ctx.session.user.id),
-      });
+	/**
+	 * Onboarding: cria perfil de bolsista para o usuário autenticado.
+	 * O bolsista começa como `isApproved: false` — aguarda aprovação do gestor.
+	 */
+	createScholar: protectedProcedure
+		.input(
+			z.object({
+				enrollment: z.string().min(4).max(20),
+				course: z.enum(schema.courseValues),
+				campus: z.enum(schema.campusValues),
+				shift: z.enum(schema.scholarShiftValues),
+				phone: z.string().regex(/^\d{10,11}$/),
+				cpf: z.string().regex(/^\d{11}$/),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const existing = await db.query.scholarProfile.findFirst({
+				where: eq(schema.scholarProfile.userId, ctx.session.user.id),
+			});
 
-      if (existing) return existing;
+			if (existing) return existing;
 
-      await db
-        .update(schema.user)
-        .set({ role: "scholar", updatedAt: new Date() })
-        .where(eq(schema.user.id, ctx.session.user.id));
+			await db
+				.update(schema.user)
+				.set({ role: "scholar", updatedAt: new Date() })
+				.where(eq(schema.user.id, ctx.session.user.id));
 
-      const [profile] = await db
-        .insert(schema.scholarProfile)
-        .values({
-          id: generateProfileId("schol"),
-          userId: ctx.session.user.id,
-          ...input,
-          isApproved: false,
-          isAvailable: false,
-        })
-        .returning();
+			const [profile] = await db
+				.insert(schema.scholarProfile)
+				.values({
+					id: generateProfileId("schol"),
+					userId: ctx.session.user.id,
+					...input,
+					isApproved: false,
+					isAvailable: false,
+				})
+				.returning();
 
-      return profile;
-    }),
+			return profile;
+		}),
 
-  /**
-   * Bolsista alterna sua disponibilidade.
-   * Apenas bolsistas aprovados podem ficar disponíveis.
-   */
-  toggleAvailability: scholarProcedure.mutation(async ({ ctx }) => {
-    const profile = await db.query.scholarProfile.findFirst({
-      where: eq(schema.scholarProfile.userId, ctx.session.user.id),
-    });
+	/**
+	 * Bolsista alterna sua disponibilidade.
+	 * Apenas bolsistas aprovados podem ficar disponíveis.
+	 */
+	toggleAvailability: scholarProcedure.mutation(async ({ ctx }) => {
+		const profile = await db.query.scholarProfile.findFirst({
+			where: eq(schema.scholarProfile.userId, ctx.session.user.id),
+		});
 
-    if (!profile) throw new TRPCError({ code: "NOT_FOUND" });
+		if (!profile) throw new TRPCError({ code: "NOT_FOUND" });
 
-    if (!profile.isApproved) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message:
-          "Seu cadastro ainda não foi aprovado pelo NAC. Aguarde a aprovação para ativar a disponibilidade.",
-      });
-    }
+		if (!profile.isApproved) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message:
+					"Seu cadastro ainda não foi aprovado pelo NAC. Aguarde a aprovação para ativar a disponibilidade.",
+			});
+		}
 
-    const [updated] = await db
-      .update(schema.scholarProfile)
-      .set({
-        isAvailable: !profile.isAvailable,
-        updatedAt: new Date(),
-      })
-      .where(eq(schema.scholarProfile.id, profile.id))
-      .returning();
+		const [updated] = await db
+			.update(schema.scholarProfile)
+			.set({
+				isAvailable: !profile.isAvailable,
+				updatedAt: new Date(),
+			})
+			.where(eq(schema.scholarProfile.id, profile.id))
+			.returning();
 
-    return updated;
-  }),
+		return updated;
+	}),
 
-  // ─── Rotas do gestor ──────────────────────────────────────────────────────
+	// ─── Rotas do gestor ──────────────────────────────────────────────────────
 
-  /**
-   * Lista todos os bolsistas pendentes de aprovação.
-   */
-  pendingScholars: managerProcedure.query(async () => {
-    return db.query.scholarProfile.findMany({
-      where: eq(schema.scholarProfile.isApproved, false),
-      with: { user: true },
-      orderBy: (t, { asc }) => [asc(t.createdAt)],
-    });
-  }),
+	/**
+	 * Lista todos os bolsistas pendentes de aprovação.
+	 */
+	pendingScholars: managerProcedure.query(async () => {
+		return db.query.scholarProfile.findMany({
+			where: eq(schema.scholarProfile.isApproved, false),
+			with: { user: true },
+			orderBy: (t, { asc }) => [asc(t.createdAt)],
+		});
+	}),
 
-  /**
-   * Aprova ou rejeita um bolsista.
-   * Rejeitar = desativar o perfil (isActive: false).
-   */
-  reviewScholar: managerProcedure
-    .input(
-      z.object({
-        scholarProfileId: z.string(),
-        approved: z.boolean(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const profile = await db.query.scholarProfile.findFirst({
-        where: eq(schema.scholarProfile.id, input.scholarProfileId),
-        with: { user: true },
-      });
+	/**
+	 * Aprova ou rejeita um bolsista.
+	 * Rejeitar = desativar o perfil (isActive: false).
+	 */
+	reviewScholar: managerProcedure
+		.input(
+			z.object({
+				scholarProfileId: z.string(),
+				approved: z.boolean(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const profile = await db.query.scholarProfile.findFirst({
+				where: eq(schema.scholarProfile.id, input.scholarProfileId),
+				with: { user: true },
+			});
 
-      if (!profile) throw new TRPCError({ code: "NOT_FOUND" });
+			if (!profile) throw new TRPCError({ code: "NOT_FOUND" });
 
-      const now = new Date();
+			const now = new Date();
 
-      const [updated] = await db
-        .update(schema.scholarProfile)
-        .set({
-          isApproved: input.approved,
-          isActive: input.approved,
-          approvedAt: input.approved ? now : null,
-          approvedBy: input.approved ? ctx.session.user.id : null,
-          updatedAt: now,
-        })
-        .where(eq(schema.scholarProfile.id, input.scholarProfileId))
-        .returning();
+			const [updated] = await db
+				.update(schema.scholarProfile)
+				.set({
+					isApproved: input.approved,
+					isActive: input.approved,
+					approvedAt: input.approved ? now : null,
+					approvedBy: input.approved ? ctx.session.user.id : null,
+					updatedAt: now,
+				})
+				.where(eq(schema.scholarProfile.id, input.scholarProfileId))
+				.returning();
 
-      // Notificação via realtime para o bolsista
-      await ctx.realtime.publish(
-        `user:${profile.userId}`,
-        input.approved ? "scholar:approved" : "scholar:rejected",
-        { scholarProfileId: input.scholarProfileId },
-      );
+			// Notificação via realtime para o bolsista
+			await ctx.realtime.publish(
+				`user:${profile.userId}`,
+				input.approved ? "scholar:approved" : "scholar:rejected",
+				{ scholarProfileId: input.scholarProfileId },
+			);
 
-      return updated;
-    }),
+			return updated;
+		}),
 });

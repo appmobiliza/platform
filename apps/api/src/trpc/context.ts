@@ -13,28 +13,28 @@
  *   managerProcedure  → role === "manager"
  */
 
+import { auth } from "@mobiliza/db/auth";
+import type { RealtimeAdapter } from "@mobiliza/realtime";
+import { createRealtimeAdapter } from "@mobiliza/realtime";
 import { initTRPC, TRPCError } from "@trpc/server";
 import type { Context } from "hono";
-import { auth } from "@mobiliza/db/auth";
-import { createRealtimeAdapter } from "@mobiliza/realtime";
-import type { RealtimeAdapter } from "@mobiliza/realtime";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
 export type UserRole = "student" | "scholar" | "manager";
 
 export interface Session {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: UserRole;
-    image?: string | null;
-  };
-  session: {
-    id: string;
-    expiresAt: Date;
-  };
+	user: {
+		id: string;
+		name: string;
+		email: string;
+		role: UserRole;
+		image?: string | null;
+	};
+	session: {
+		id: string;
+		expiresAt: Date;
+	};
 }
 
 /**
@@ -44,10 +44,10 @@ export interface Session {
  * para garantir que o contexto sempre tenha sessão.
  */
 export interface TRPCContext extends Record<string, unknown> {
-  session: Session | null;
-  realtime: RealtimeAdapter;
-  /** Headers originais do request — necessários para o Better Auth */
-  headers: Headers;
+	session: Session | null;
+	realtime: RealtimeAdapter;
+	/** Headers originais do request — necessários para o Better Auth */
+	headers: Headers;
 }
 
 // ─── Singleton do adapter de realtime ────────────────────────────────────────
@@ -60,10 +60,10 @@ export interface TRPCContext extends Record<string, unknown> {
 let _realtime: RealtimeAdapter | null = null;
 
 function getRealtimeAdapter(): RealtimeAdapter {
-  if (!_realtime) {
-    _realtime = createRealtimeAdapter();
-  }
-  return _realtime;
+	if (!_realtime) {
+		_realtime = createRealtimeAdapter();
+	}
+	return _realtime;
 }
 
 // ─── Factory de contexto ──────────────────────────────────────────────────────
@@ -73,40 +73,38 @@ function getRealtimeAdapter(): RealtimeAdapter {
  * Chamado uma vez por requisição pelo adaptador Hono-tRPC.
  */
 export async function createTRPCContext(c: Context): Promise<TRPCContext> {
-  const headers = new Headers(c.req.raw.headers);
+	const headers = new Headers(c.req.raw.headers);
 
-  // O Better Auth valida o cookie/token de sessão nos headers
-  const session = await auth.api
-    .getSession({ headers })
-    .catch(() => null);
+	// O Better Auth valida o cookie/token de sessão nos headers
+	const session = await auth.api.getSession({ headers }).catch(() => null);
 
-  return {
-    session: session as Session | null,
-    realtime: getRealtimeAdapter(),
-    headers,
-  };
+	return {
+		session: session as Session | null,
+		realtime: getRealtimeAdapter(),
+		headers,
+	};
 }
 
 // ─── Instância do tRPC ────────────────────────────────────────────────────────
 
 const t = initTRPC.context<TRPCContext>().create({
-  /**
-   * Transforma erros antes de enviá-los ao cliente.
-   * Remove stack traces em produção e padroniza o formato.
-   */
-  errorFormatter({ shape, error }) {
-    return {
-      ...shape,
-      data: {
-        ...shape.data,
-        // Stack trace apenas em desenvolvimento
-        stack:
-          process.env.NODE_ENV === "development"
-            ? error.stack
-            : undefined,
-      },
-    };
-  },
+	/**
+	 * Transforma erros antes de enviá-los ao cliente.
+	 * Remove stack traces em produção e padroniza o formato.
+	 */
+	errorFormatter({ shape, error }) {
+		return {
+			...shape,
+			data: {
+				...shape.data,
+				// Stack trace apenas em desenvolvimento
+				stack:
+					process.env.NODE_ENV === "development"
+						? error.stack
+						: undefined,
+			},
+		};
+	},
 });
 
 export const router = t.router;
@@ -115,39 +113,40 @@ export const middleware = t.middleware;
 // ─── Middleware de autenticação ───────────────────────────────────────────────
 
 const isAuthenticated = t.middleware(({ ctx, next }) => {
-  if (!ctx.session) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Você precisa estar autenticado para acessar este recurso.",
-    });
-  }
-  return next({ ctx: { ...ctx, session: ctx.session } });
+	if (!ctx.session) {
+		throw new TRPCError({
+			code: "UNAUTHORIZED",
+			message:
+				"Você precisa estar autenticado para acessar este recurso.",
+		});
+	}
+	return next({ ctx: { ...ctx, session: ctx.session } });
 });
 
 const isScholar = t.middleware(({ ctx, next }) => {
-  if (!ctx.session) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
-  }
-  if (ctx.session.user.role !== "scholar") {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "Apenas bolsistas podem acessar este recurso.",
-    });
-  }
-  return next({ ctx: { ...ctx, session: ctx.session } });
+	if (!ctx.session) {
+		throw new TRPCError({ code: "UNAUTHORIZED" });
+	}
+	if (ctx.session.user.role !== "scholar") {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "Apenas bolsistas podem acessar este recurso.",
+		});
+	}
+	return next({ ctx: { ...ctx, session: ctx.session } });
 });
 
 const isManager = t.middleware(({ ctx, next }) => {
-  if (!ctx.session) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
-  }
-  if (ctx.session.user.role !== "manager") {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "Apenas gestores podem acessar este recurso.",
-    });
-  }
-  return next({ ctx: { ...ctx, session: ctx.session } });
+	if (!ctx.session) {
+		throw new TRPCError({ code: "UNAUTHORIZED" });
+	}
+	if (ctx.session.user.role !== "manager") {
+		throw new TRPCError({
+			code: "FORBIDDEN",
+			message: "Apenas gestores podem acessar este recurso.",
+		});
+	}
+	return next({ ctx: { ...ctx, session: ctx.session } });
 });
 
 // ─── Procedures exportadas ────────────────────────────────────────────────────
