@@ -1,5 +1,5 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 /**
  * Tabelas gerenciadas pelo Better Auth.
@@ -88,5 +88,4 @@ export const userRelations = relations(user, ({ one, many }) => ({
 }));
 
 // ─── Import other schemas for cross-schema relations ─────────────────────────
-import { studentProfile } from "./profiles";
-import { scholarProfile } from "./profiles";
+import { scholarProfile, studentProfile } from "./profiles";

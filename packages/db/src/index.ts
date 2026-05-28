@@ -9,10 +9,9 @@
  *   import { serviceRequest, studentProfile } from "@mobiliza/db/schema"
  */
 
-export { db } from "./client";
-export type { Database } from "./client";
-
-export { auth } from "./auth";
 export type { Auth } from "./auth";
-
+export { auth } from "./auth";
+export type { Database } from "./client";
+export { db } from "./client";
+export * from "./drizzle"
 export * from "./schema";

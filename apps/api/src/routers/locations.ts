@@ -7,12 +7,12 @@
  */
 
 import { db } from "@mobiliza/db/client";
+import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { managerProcedure, publicProcedure, router } from "../trpc/context";
+import { managerProcedure, publicProcedure, router } from "@/trpc/context";
 
 export const locationsRouter = router({
 	/**

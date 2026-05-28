@@ -6,6 +6,7 @@
 	"exports": {
 		".": "./src/index.ts",
 		"./schema": "./src/schema/index.ts",
+		"./drizzle": "./src/drizzle.ts",
 		"./auth": "./src/auth.ts",
 		"./client": "./src/client.ts"
 	},

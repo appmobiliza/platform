@@ -1,10 +1,11 @@
 import { RequestIdSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
+import { and, eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
 
-import { scholarProcedure } from "../../trpc/context";
+import { scholarProcedure } from "@/trpc/context";
+
 import { execTx } from "./shared";
 
 export const start = scholarProcedure

@@ -6,11 +6,11 @@
  */
 
 import { db } from "@mobiliza/db/client";
+import { and, avg, count, desc, eq, gte, lte, sql } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
-import { and, avg, count, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { z } from "zod";
 
-import { managerProcedure, router } from "../trpc/context";
+import { managerProcedure, router } from "@/trpc/context";
 
 const dateRangeInput = z.object({
 	from: z.iso.datetime(),

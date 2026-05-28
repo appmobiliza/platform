@@ -7,11 +7,11 @@
  */
 
 import { db } from "@mobiliza/db/client";
+import { and, desc, eq, isNull } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
-import { and, desc, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 
-import { protectedProcedure, router } from "../trpc/context";
+import { protectedProcedure, router } from "@/trpc/context";
 
 export const notificationsRouter = router({
 	/**

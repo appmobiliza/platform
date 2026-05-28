@@ -1,10 +1,10 @@
 import { RequestIdSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
+import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
 
-import { protectedProcedure } from "../../trpc/context";
+import { protectedProcedure } from "@/trpc/context";
 
 export const cancel = protectedProcedure
 	.input(RequestIdSchema)

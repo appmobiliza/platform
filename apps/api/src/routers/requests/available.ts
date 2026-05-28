@@ -1,8 +1,8 @@
 import { db } from "@mobiliza/db/client";
+import { desc, eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
-import { desc, eq } from "drizzle-orm";
 
-import { scholarProcedure } from "../../trpc/context";
+import { scholarProcedure } from "@/trpc/context";
 
 export const available = scholarProcedure.query(async () => {
 	return db.query.serviceRequest.findMany({

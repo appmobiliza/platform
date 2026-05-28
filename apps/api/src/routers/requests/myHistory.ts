@@ -1,8 +1,9 @@
 import { db } from "@mobiliza/db/client";
+import { and, desc, eq, sql } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
-import { and, desc, eq, sql } from "drizzle-orm";
 
-import { protectedProcedure } from "../../trpc/context";
+import { protectedProcedure } from "@/trpc/context";
+
 import { paginationInput } from "./shared";
 
 export const myHistory = protectedProcedure

@@ -1,10 +1,10 @@
 import { RateRequestSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
+import { and, eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
 
-import { protectedProcedure } from "../../trpc/context";
+import { protectedProcedure } from "@/trpc/context";
 
 export const rate = protectedProcedure
 	.input(RateRequestSchema)

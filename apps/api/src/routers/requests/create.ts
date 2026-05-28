@@ -2,7 +2,8 @@ import { db } from "@mobiliza/db/client";
 import { AppError, createRequest } from "@mobiliza/domain";
 import { TRPCError } from "@trpc/server";
 
-import { protectedProcedure } from "../../trpc/context";
+import { protectedProcedure } from "@/trpc/context";
+
 import { createRequestInput } from "./shared";
 
 export const create = protectedProcedure

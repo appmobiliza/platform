@@ -1,13 +1,16 @@
 {
-  "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src",
-    "types": ["node", "jest"],
-    "strictNullChecks": true,
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "module": "ESNext"
-  },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist"]
+	"compilerOptions": {
+		"outDir": "dist",
+		"rootDir": "src",
+		"paths": {
+			"@/*": ["./src/*"]
+		},
+		"types": ["node", "jest"],
+		"strictNullChecks": true,
+		"skipLibCheck": true,
+		"moduleResolution": "bundler",
+		"module": "ESNext"
+	},
+	"include": ["src"],
+	"exclude": ["node_modules", "dist"]
 }
