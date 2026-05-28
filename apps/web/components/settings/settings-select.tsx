@@ -25,7 +25,7 @@ function SettingsSelect({
 		<Select defaultValue={value}>
 			<SelectTrigger
 				className={cn(
-					"h-9 w-full bg-background shadow-none",
+					"w-full bg-background shadow-none",
 					triggerClassName,
 				)}
 			>

@@ -131,7 +131,7 @@ export default function SettingsPage() {
 								<Input
 									readOnly
 									value="UFAL — Campus A.C. Simões"
-									className="h-9 bg-background px-3 text-foreground shadow-none"
+									className="h-9 bg-background px-3 md:min-w-xs text-foreground shadow-none"
 								/>
 							}
 							className="border-b border-border/80"
@@ -143,7 +143,7 @@ export default function SettingsPage() {
 								<Input
 									readOnly
 									value="nac@ufal.br"
-									className="h-9 bg-background px-3 text-foreground shadow-none"
+									className="h-9 bg-background px-3 md:min-w-xs text-foreground shadow-none"
 								/>
 							}
 						/>
@@ -167,13 +167,7 @@ export default function SettingsPage() {
 						<SettingItem
 							title="Restringir login por domínio de e-mail"
 							description="Somente e-mails dos domínios abaixo poderão criar conta"
-							content={
-								<Switch
-									defaultChecked
-									size="default"
-									className="h-6 w-11 bg-muted data-checked:bg-primary"
-								/>
-							}
+							content={<Switch defaultChecked size="lg" />}
 							className="border-b border-border/80"
 						/>
 						<SettingItem
@@ -183,7 +177,7 @@ export default function SettingsPage() {
 								<Input
 									readOnly
 									value="@ufal.br, @ic.ufal.br"
-									className="h-9 bg-background px-3 text-foreground shadow-none"
+									className="h-9 bg-background px-3 md:min-w-xs text-foreground shadow-none"
 								/>
 							}
 						/>

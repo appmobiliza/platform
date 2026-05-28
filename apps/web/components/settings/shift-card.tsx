@@ -71,7 +71,7 @@ function ShiftCard({
 					<p className="text-sm font-medium text-foreground">
 						{title}
 					</p>
-					<p className="truncate text-sm text-muted-foreground">
+					<p className="truncate text-xs mt-1 md:mt-0 md:text-sm text-muted-foreground">
 						{isActive ? description : "Desativado"}
 					</p>
 				</div>
@@ -84,8 +84,8 @@ function ShiftCard({
 							setIsActive(Boolean(checked));
 							setIsExpanded(Boolean(checked));
 						}}
-						size="default"
-						className="h-6 w-11 cursor-default bg-muted data-checked:bg-primary"
+						size="lg"
+						className="cursor-default"
 					/>
 					<ChevronDown
 						className={cn(
