@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 
 import { getInitials } from "@/lib/utils";
 
+import { EditShiftDialog } from "@/app/(dashboard)/bolsistas/dialog/edit-shift";
 import type { ScholarData } from "@/data/scholars-data";
 
 const SCHOLARS_SERVICES_AVERAGE = 150;
@@ -74,7 +75,7 @@ export function ScholarCard({ scholar }: { scholar: ScholarData }) {
 
 	return (
 		<div className="flex flex-col items-center gap-4 rounded-md border p-4">
-			<div className="flex flex-row items-center justify-between w-full">
+			<div className="flex flex-row flex-wrap items-start gap-4 justify-between w-full">
 				<div className="flex flex-row items-start justify-start">
 					<Avatar>
 						<AvatarFallback>
@@ -119,11 +120,19 @@ export function ScholarCard({ scholar }: { scholar: ScholarData }) {
 					variant="horizontal"
 				/>
 			</div>
-			<div className="flex flex-col md:flex-row items-start w-full gap-2">
-				<ScholarDetailsTrigger scholar={scholar} className="flex-1" />
-				<Button className="flex-1" variant="outline">
-					Editar turno
-				</Button>
+			<div className="flex flex-col md:flex-row flex-wrap items-start w-full gap-2">
+				<ScholarDetailsTrigger
+					scholar={scholar}
+					className="flex-1 w-full md:w-auto py-2"
+				/>
+				<EditShiftDialog>
+					<Button
+						className="flex-1 w-full  md:w-auto py-2"
+						variant="outline"
+					>
+						Editar turno
+					</Button>
+				</EditShiftDialog>
 			</div>
 		</div>
 	);
