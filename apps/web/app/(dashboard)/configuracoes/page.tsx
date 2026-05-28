@@ -36,11 +36,11 @@ export default function SettingsPage() {
 								content={
 									<div className="w-full sm:w-44">
 										<SettingsSelect
-											value="20 minutos"
+											value="5 minutos"
 											items={[
+												"5 minutos",
 												"10 minutos",
-												"20 minutos",
-												"30 minutos",
+												"15 minutos",
 											]}
 										/>
 									</div>
@@ -87,7 +87,6 @@ export default function SettingsPage() {
 							title="Vespertino"
 							description="12:00 – 17:00 · Seg a Sex"
 							active
-							defaultExpanded
 						>
 							<ShiftScheduleBlock
 								start="12:00"

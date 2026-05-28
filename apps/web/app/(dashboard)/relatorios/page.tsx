@@ -303,8 +303,8 @@ function ExportCard({
 	description: string;
 }) {
 	return (
-		<Card className="gap-4 p-4">
-			<CardHeader className="space-y-1 p-0">
+		<Card className="gap-4 p-4 flex md:flex-row">
+			<CardHeader className="space-y-1 p-0 flex-1">
 				<CardTitle className="text-sm font-medium">{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
 			</CardHeader>
