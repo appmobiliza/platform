@@ -11,15 +11,45 @@
  *   ALL  /trpc/*            → tRPC router
  */
 
+import { serve } from "@hono/node-server";
+import { trpcServer } from "@hono/trpc-server";
+import { auth } from "@mobiliza/db/auth";
+import { db, db } from "@mobiliza/db/client";
+import { notifyUnansweredRequests } from "@mobiliza/domain";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { trpcServer } from "@hono/trpc-server";
-import { auth } from "@mobiliza/db/auth";
+
+import { openApiDocument, openApiHandler } from "./openapi";
 import { appRouter } from "./router";
-import { createTRPCContext } from "./trpc/context";
+import { createTRPCContext, getRealtimeAdapter } from "./trpc/context";
+
+console.log("🚀 Iniciando Mobiliza API...");
 
 const app = new Hono();
+
+// ─── Cron Jobs (REST) ─────────────────────────────────────────────────────────
+
+/**
+ * Endpoint de manutenção/cron. 
+ * Deve ser chamado periodicamente por um serviço externo (Vercel Cron, GitHub Actions, etc.)
+ */
+app.get("/api/cron/check-timeouts", async (c) => {
+  // Verificação simples de segredo para evitar chamadas maliciosas
+  const cronSecret = process.env.CRON_SECRET;
+  const authHeader = c.req.header("Authorization");
+
+  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
+  const result = await notifyUnansweredRequests(db, getRealtimeAdapter());
+  return c.json({ 
+    success: true, 
+    ...result,
+    timestamp: new Date().toISOString() 
+  });
+});
 
 // ─── Middlewares globais ──────────────────────────────────────────────────────
 
@@ -44,6 +74,14 @@ app.get("/health", (c) =>
     provider: process.env.REALTIME_PROVIDER ?? "supabase",
   }),
 );
+
+// ─── OpenAPI ─────────────────────────────────────────────────────────────────
+
+app.get("/openapi", (c) => c.redirect("/openapi.json"));
+
+app.get("/openapi.json", (c) => c.json(openApiDocument));
+
+app.all("/openapi/*", async (c) => openApiHandler(c));
 
 // ─── Better Auth ──────────────────────────────────────────────────────────────
 
@@ -80,6 +118,11 @@ app.use(
 // ─── Servidor ─────────────────────────────────────────────────────────────────
 
 const port = Number(process.env.PORT ?? 3001);
+
+serve({
+  fetch: app.fetch,
+  port,
+});
 
 console.log(`🚀 Mobiliza API rodando em http://localhost:${port}`);
 console.log(`   Realtime provider: ${process.env.REALTIME_PROVIDER ?? "supabase"}`);

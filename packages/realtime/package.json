@@ -1,20 +1,32 @@
 {
-  "name": "@mobiliza/realtime",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./dist/index.js"
-    }
-  },
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "check-types": "tsc -p tsconfig.json --noEmit"
-  },
-  "devDependencies": {
-    "@mobiliza/typescript-config": "workspace:*",
-    "@types/node": "^25.8.0"
-  }
+	"name": "@mobiliza/realtime",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"default": "./src/index.ts"
+		}
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"check-types": "tsc -p tsconfig.json --noEmit",
+		"test": "jest"
+	},
+	"devDependencies": {
+		"@jest/globals": "^29.7.0",
+		"@mobiliza/typescript-config": "workspace:*",
+		"@types/jest": "^29.5.0",
+		"@types/node": "^25.8.0",
+		"@types/ws": "^8.18.1",
+		"jest": "^29.7.0",
+		"ts-jest": "^29.4.11"
+	},
+	"dependencies": {
+		"@supabase/supabase-js": "^2.106.0",
+		"ably": "^2.21.0",
+		"pusher": "^5.3.3",
+		"ws": "^8.21.0"
+	}
 }

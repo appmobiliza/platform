@@ -203,6 +203,6 @@ export class AblyClientAdapter implements RealtimeClientAdapter {
     if (!this.channels.has(channel)) {
       this.channels.set(channel, this.client.channels.get(channel))
     }
-    return this.channels.get(channel)
+    return this.channels.get(channel)!
   }
 }

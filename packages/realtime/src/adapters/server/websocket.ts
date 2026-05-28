@@ -8,8 +8,8 @@ import type {
 
 // `ws` é a implementação de WebSocket para Node.js
 // O consumidor é responsável por instalar o pacote `ws`
-type WS = import('ws')
-type WSServer = import('ws').WebSocketServer
+import type WS from 'ws'
+import type { Server as WSServer } from 'ws'
 
 interface InternalMessage {
   channel: string

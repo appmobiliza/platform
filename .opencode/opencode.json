@@ -1,5 +1,15 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "jira": {
+      "type": "local",
+      "command": [
+        "bash",
+        "/home/antonio/Documentos/projetão/platform/mcp-atlassian-start.sh"
+      ],
+      "enabled": true
+    }
+  },
   "agent": {
     "plan": {
       "description": "Orquestrador principal do projeto Mobiliza. Coordena o fluxo SDD+TLC e delega para subagents.",
@@ -141,4 +151,6 @@
       "neon-postgres": "allow"
     }
   }
+
+  
 }

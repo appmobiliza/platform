@@ -6,6 +6,7 @@
 	"exports": {
 		".": "./src/index.ts",
 		"./schema": "./src/schema/index.ts",
+		"./drizzle": "./src/drizzle.ts",
 		"./auth": "./src/auth.ts",
 		"./client": "./src/client.ts"
 	},
@@ -18,6 +19,7 @@
 	"dependencies": {
 		"@neondatabase/serverless": "^1.1.0",
 		"better-auth": "^1.6.11",
+		"dotenv": "^17.4.2",
 		"drizzle-orm": "^0.45.2"
 	},
 	"devDependencies": {

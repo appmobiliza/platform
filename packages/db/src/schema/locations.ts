@@ -5,7 +5,10 @@ import {
   boolean,
   serial,
   doublePrecision,
+  integer,
 } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+import { studentProfile } from "./profiles";
 
 /**
  * Pontos de referência fixos do campus utilizados como origem e destino
@@ -50,5 +53,48 @@ export const campusLocation = pgTable("campus_location", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+/**
+ * Rotas frequentes salvas pelo estudante para agilizar solicitações.
+ */
+export const favoriteRoute = pgTable("favorite_route", {
+  id: text("id").primaryKey(),
+  
+  studentProfileId: text("student_profile_id")
+    .notNull()
+    .references(() => studentProfile.id, { onDelete: "cascade" }),
+    
+  originLocationId: integer("origin_location_id")
+    .notNull()
+    .references(() => campusLocation.id, { onDelete: "restrict" }),
+    
+  destinationLocationId: integer("destination_location_id")
+    .notNull()
+    .references(() => campusLocation.id, { onDelete: "restrict" }),
+    
+  name: text("name").notNull(),
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export type CampusLocation = typeof campusLocation.$inferSelect;
 export type NewCampusLocation = typeof campusLocation.$inferInsert;
+export type FavoriteRoute = typeof favoriteRoute.$inferSelect;
+export type NewFavoriteRoute = typeof favoriteRoute.$inferInsert;
+
+export const favoriteRouteRelations = relations(favoriteRoute, ({ one }) => ({
+  studentProfile: one(studentProfile, {
+    fields: [favoriteRoute.studentProfileId],
+    references: [studentProfile.id],
+  }),
+  originLocation: one(campusLocation, {
+    fields: [favoriteRoute.originLocationId],
+    references: [campusLocation.id],
+    relationName: "favoriteOrigin",
+  }),
+  destinationLocation: one(campusLocation, {
+    fields: [favoriteRoute.destinationLocationId],
+    references: [campusLocation.id],
+    relationName: "favoriteDestination",
+  }),
+}));

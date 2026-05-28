@@ -12,12 +12,13 @@
  * ```
  */
 
-import { router } from "./trpc/context";
-import { requestsRouter } from "./routers/requests";
-import { profilesRouter } from "./routers/profiles";
+import { favoritesRouter } from "./routers/favorites";
 import { locationsRouter } from "./routers/locations";
-import { notificationsRouter } from "./routers/notifications";
 import { metricsRouter } from "./routers/metrics";
+import { notificationsRouter } from "./routers/notifications";
+import { profilesRouter } from "./routers/profiles";
+import { requestsRouter } from "./routers/requests";
+import { router } from "./trpc/context";
 
 export const appRouter = router({
   requests: requestsRouter,
@@ -25,6 +26,7 @@ export const appRouter = router({
   locations: locationsRouter,
   notifications: notificationsRouter,
   metrics: metricsRouter,
+  favorites: favoritesRouter,
 });
 
 export type AppRouter = typeof appRouter;

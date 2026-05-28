@@ -29,7 +29,17 @@
 	},
 	"javascript": {
 		"formatter": {
+			"enabled": false,
+			"indentStyle": "tab",
+			"indentWidth": 4,
 			"quoteStyle": "double"
+		}
+	},
+	"json": {
+		"formatter": {
+			"enabled": true,
+			"indentStyle": "tab",
+			"indentWidth": 4
 		}
 	},
 	"assist": {

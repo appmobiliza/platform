@@ -93,6 +93,6 @@ export class SupabaseRealtimeAdapter implements RealtimeAdapter {
       })
       this.channels.set(channel, ch)
     }
-    return this.channels.get(channel)
+    return this.channels.get(channel)!
   }
 }

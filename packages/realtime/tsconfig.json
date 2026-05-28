@@ -4,8 +4,11 @@
     "outDir": "dist",
     "rootDir": "src",
     "strictNullChecks": true,
-    "types": ["node"]
+    "types": ["node", "jest"],
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "module": "ESNext"
   },
-  "include": ["src"],
+  "include": ["src", "src/__tests__/types"],
   "exclude": ["node_modules", "dist"]
 }
