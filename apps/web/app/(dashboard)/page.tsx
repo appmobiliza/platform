@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import {
 	Activity,
 	Clock,
@@ -165,16 +167,20 @@ const chartConfig = {
 	},
 } satisfies ChartConfig;
 
+export const metadata: Metadata = {
+	title: "Visão Geral",
+};
+
 export default function DashboardPage() {
 	return (
-		<section>
-			<header className="border-b border-border p-4 flex flex-col items-start gap-1 justify-between bg-card">
+		<section className="min-w-0 flex-1">
+			<header className="border-b border-border p-4 md:p-6 flex flex-col items-start gap-1 justify-between bg-card">
 				<h1 className="text-base font-semibold">Visão Geral</h1>
 				<h2 className="text-sm text-muted-foreground">
 					Sexta-feira, 24 de abril de 2026
 				</h2>
 			</header>
-			<div className="p-4 flex flex-col gap-4">
+			<div className="p-4 flex flex-col gap-4 md:p-6">
 				{alertData.delay > 0 && (
 					<Alert variant={"warning"}>
 						<TriangleAlert className="h-4 w-4" />
@@ -190,11 +196,7 @@ export default function DashboardPage() {
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 					{dashboardCards.map(
 						({ icon: Icon, title, value, valueSuffix, footer }) => (
-							<Card
-								key={title}
-								className="group gap-2"
-								data-size="sm"
-							>
+							<Card key={title} className="group gap-2">
 								<CardHeader>
 									<CardAction>
 										<Icon className="mt-1 h-4 w-4 text-muted-foreground" />
@@ -314,7 +316,7 @@ export default function DashboardPage() {
 						<ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 lg:gap-x-24 gap-y-2">
 							{mostRequestedRoutes.map((route, index) => (
 								<li
-									key={index}
+									key={index.toString()}
 									className="flex justify-between"
 								>
 									<span>{route.route}</span>
@@ -341,7 +343,6 @@ export default function DashboardPage() {
 							{lastRequests.map(
 								(
 									{
-										route,
 										startTime,
 										endTime,
 										scholar,
@@ -366,7 +367,7 @@ export default function DashboardPage() {
 
 									return (
 										<li
-											key={index}
+											key={index.toString()}
 											className="flex flex-col items-start justify-start w-full p-6 border-b gap-4 border-border hover:bg-muted/25 transition-colors cursor-pointer bg-card md:rounded-lg md:border-none"
 										>
 											<div className="font-semibold flex flex-row items-start justify-between gap-4 w-full">

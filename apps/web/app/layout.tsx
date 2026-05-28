@@ -1,9 +1,11 @@
 import { Geist_Mono, Inter } from "next/font/google";
 
-import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { cn } from "@/lib/utils";
+
+import { ThemeProvider } from "@/providers/theme-provider";
+
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });

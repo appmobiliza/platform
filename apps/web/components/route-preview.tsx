@@ -1,9 +1,16 @@
-import EndPoint from "./temp-icons/end-point";
-import StartPoint from "./temp-icons/start-point";
+import { cn } from "@/lib/utils";
 
-export function RoutePreview() {
+import EndPoint from "@/assets/icons/end-point";
+import StartPoint from "@/assets/icons/start-point";
+
+export function RoutePreview({ className }: { className?: string }) {
 	return (
-		<div className="flex w-full flex-row items-start justify-start gap-4 rounded-lg border border-border p-4">
+		<div
+			className={cn(
+				"flex w-full flex-row items-start justify-start gap-4",
+				className,
+			)}
+		>
 			<div className="flex flex-col items-center justify-start gap-2">
 				<StartPoint />
 				<div className="h-4 w-0.5 bg-primary" />

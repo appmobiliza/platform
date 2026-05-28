@@ -1,19 +1,14 @@
-import {
-  pgTable,
-  text,
-  timestamp,
-  boolean,
-  unique,
-} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import { boolean, pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
+
 import { user } from "./auth";
 import {
-  campusEnum,
-  courseEnum,
-  disabilityTypeEnum,
-  genderEnum,
-  studentShiftEnum,
-  scholarShiftEnum,
+	campusEnum,
+	courseEnum,
+	disabilityTypeEnum,
+	genderEnum,
+	scholarShiftEnum,
+	studentShiftEnum,
 } from "./enums";
 
 /**
@@ -21,42 +16,42 @@ import {
  * Estende `user` com informações específicas necessárias para o atendimento.
  */
 export const studentProfile = pgTable("student_profile", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .unique()
-    .references(() => user.id, { onDelete: "cascade" }),
+	id: text("id").primaryKey(),
+	userId: text("user_id")
+		.notNull()
+		.unique()
+		.references(() => user.id, { onDelete: "cascade" }),
 
-  enrollment: text("enrollment").notNull().unique(),
-  course: courseEnum("course").notNull(),
-  campus: campusEnum("campus").notNull(),
-  phone: text("phone").notNull(),
-  shift: studentShiftEnum("shift").notNull(),
-  gender: genderEnum("gender").notNull(),
+	enrollment: text("enrollment").notNull().unique(),
+	course: courseEnum("course").notNull(),
+	campus: campusEnum("campus").notNull(),
+	phone: text("phone").notNull(),
+	shift: studentShiftEnum("shift").notNull(),
+	gender: genderEnum("gender").notNull(),
 
-  /*
-   * Apelido (opcional) do estudante.
-   */
-  nickname: text("nickname"),
+	/*
+	 * Apelido (opcional) do estudante.
+	 */
+	nickname: text("nickname"),
 
-  /*
-   * Campo livre para o estudante informar preferências de atendimento,
-   * como "prefere áudio descrição contínua" ou "usa cadeira de rodas elétrica".
-   * Exibido ao bolsista antes e durante o atendimento.
-   */
-  attendanceNotes: text("attendance_notes"),
+	/*
+	 * Campo livre para o estudante informar preferências de atendimento,
+	 * como "prefere áudio descrição contínua" ou "usa cadeira de rodas elétrica".
+	 * Exibido ao bolsista antes e durante o atendimento.
+	 */
+	attendanceNotes: text("attendance_notes"),
 
-  /*
-   * Quando ativo, a interface do app é simplificada para usuários com
-   * baixa visão.
-   */
-  simplifiedInterface: boolean("simplified_interface")
-    .notNull()
-    .default(false),
+	/*
+	 * Quando ativo, a interface do app é simplificada para usuários com
+	 * baixa visão.
+	 */
+	simplifiedInterface: boolean("simplified_interface")
+		.notNull()
+		.default(false),
 
-  isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+	isActive: boolean("is_active").notNull().default(true),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+	updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 /**
@@ -66,58 +61,58 @@ export const studentProfile = pgTable("student_profile", {
  * de quando a aprovação ocorreu.
  */
 export const scholarProfile = pgTable("scholar_profile", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .unique()
-    .references(() => user.id, { onDelete: "cascade" }),
+	id: text("id").primaryKey(),
+	userId: text("user_id")
+		.notNull()
+		.unique()
+		.references(() => user.id, { onDelete: "cascade" }),
 
-  enrollment: text("enrollment").notNull().unique(),
-  course: text("course").notNull(),
-  campus: text("campus").notNull(),
-  phone: text("phone").notNull(),
-  cpf: text("cpf").notNull().unique(),
-  shift: scholarShiftEnum("shift").notNull(),
+	enrollment: text("enrollment").notNull().unique(),
+	course: text("course").notNull(),
+	campus: text("campus").notNull(),
+	phone: text("phone").notNull(),
+	cpf: text("cpf").notNull().unique(),
+	shift: scholarShiftEnum("shift").notNull(),
 
-  /*
-   * Bolsistas precisam ser aprovados pela coordenação do NAC antes de
-   * aparecerem como disponíveis no sistema.
-   */
-  isApproved: boolean("is_approved").notNull().default(false),
-  approvedAt: timestamp("approved_at"),
-  approvedBy: text("approved_by").references(() => user.id, {
-    onDelete: "set null",
-  }),
+	/*
+	 * Bolsistas precisam ser aprovados pela coordenação do NAC antes de
+	 * aparecerem como disponíveis no sistema.
+	 */
+	isApproved: boolean("is_approved").notNull().default(false),
+	approvedAt: timestamp("approved_at"),
+	approvedBy: text("approved_by").references(() => user.id, {
+		onDelete: "set null",
+	}),
 
-  /*
-   * Controlado pelo próprio bolsista no app — indica se ele está apto a
-   * receber solicitações no momento atual, dentro do seu turno.
-   */
-  isAvailable: boolean("is_available").notNull().default(false),
+	/*
+	 * Controlado pelo próprio bolsista no app — indica se ele está apto a
+	 * receber solicitações no momento atual, dentro do seu turno.
+	 */
+	isAvailable: boolean("is_available").notNull().default(false),
 
-  isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+	isActive: boolean("is_active").notNull().default(true),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+	updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 /**
  * Tabela para cadastrar os tipos de deficiência que um estudante pode ter.
  */
 export const studentDisability = pgTable(
-  "student_disability",
-  {
-    id: text("id").primaryKey(),
+	"student_disability",
+	{
+		id: text("id").primaryKey(),
 
-    studentProfileId: text("student_profile_id")
-      .notNull()
-      .references(() => studentProfile.id, { onDelete: "cascade" }),
+		studentProfileId: text("student_profile_id")
+			.notNull()
+			.references(() => studentProfile.id, { onDelete: "cascade" }),
 
-    disabilityType: disabilityTypeEnum("disability_type").notNull(),
+		disabilityType: disabilityTypeEnum("disability_type").notNull(),
 
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
-  },
-  (table) => [unique().on(table.studentProfileId, table.disabilityType)],
+		createdAt: timestamp("created_at").notNull().defaultNow(),
+		updatedAt: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [unique().on(table.studentProfileId, table.disabilityType)],
 );
 
 export type StudentProfile = typeof studentProfile.$inferSelect;
@@ -159,5 +154,4 @@ export const studentDisabilityRelations = relations(studentDisability, ({ one })
 }));
 
 // ─── Import serviceRequest here for relations ─────────────────────────────────
-import { serviceRequest } from "./requests";
-import { serviceAttendance } from "./requests";
+import { serviceAttendance, serviceRequest } from "./requests";

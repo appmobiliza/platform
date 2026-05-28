@@ -11,9 +11,8 @@ import {
 	Users,
 } from "lucide-react";
 
-import { NavMain } from "@/components/nav-main";
-import { NavUser } from "@/components/nav-user";
-import Logo from "@/components/temp-icons/logo";
+import { NavMain } from "@/components/sidebar/nav-main";
+import { NavUser } from "@/components/sidebar/nav-user";
 import {
 	Sidebar,
 	SidebarContent,
@@ -24,6 +23,8 @@ import {
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
 
+import Logo from "@/assets/icons/logo";
+
 const data = {
 	user: {
 		name: "Marcos Silveira",
@@ -33,32 +34,32 @@ const data = {
 	navMain: [
 		{
 			title: "Visão Geral",
-			url: "#",
+			url: "/",
 			icon: LayoutDashboard,
 		},
 		{
 			title: "Atendimentos",
-			url: "#",
+			url: "/atendimentos",
 			icon: File,
 		},
 		{
 			title: "Bolsistas",
-			url: "#",
+			url: "/bolsistas",
 			icon: Users,
 		},
 		{
 			title: "Alunos",
-			url: "#",
+			url: "/estudantes",
 			icon: User,
 		},
 		{
 			title: "Relatórios",
-			url: "#",
+			url: "/relatorios",
 			icon: ChartNoAxesColumn,
 		},
 		{
 			title: "Configurações",
-			url: "#",
+			url: "/configuracoes",
 			icon: Settings2,
 		},
 	],

@@ -14,6 +14,9 @@
 	"[typescript]": {
 		"editor.defaultFormatter": "biomejs.biome"
 	},
-	"js/ts.preferences.autoImportFileExcludePatterns": ["lucide-react"],
+	"js/ts.preferences.autoImportFileExcludePatterns": [
+		"radix-ui",
+		"@base-ui/react"
+	],
 	"js/ts.tsdk.path": "node_modules/typescript/lib"
 }
