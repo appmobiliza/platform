@@ -373,6 +373,9 @@ importers:
       '@mobiliza/db':
         specifier: workspace:*
         version: link:../db
+      '@mobiliza/realtime':
+        specifier: workspace:*
+        version: link:../realtime
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(@neondatabase/serverless@1.1.0)(kysely@0.28.17)
