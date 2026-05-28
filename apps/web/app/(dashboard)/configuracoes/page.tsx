@@ -97,7 +97,7 @@ export default function SettingsPage() {
 						iconClassName="bg-muted text-muted-foreground"
 						title="Noturno"
 						description="17:00 – 22:00"
-						active={false}
+						active
 					>
 						<ShiftScheduleBlock
 							start="17:00"
@@ -181,6 +181,7 @@ export default function SettingsPage() {
 							description="Separados por vírgula"
 							content={
 								<Input
+									readOnly
 									value="@ufal.br, @ic.ufal.br"
 									className="h-9 bg-background px-3 text-foreground shadow-none"
 								/>

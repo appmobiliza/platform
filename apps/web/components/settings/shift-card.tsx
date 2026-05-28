@@ -41,47 +41,40 @@ function ShiftCard({
 
 	return (
 		<Card className="gap-0 overflow-hidden rounded-xl border border-border/80 bg-card py-0 shadow-none ring-0">
-			<div
+			<button
+				onClick={toggleExpanded}
+				onKeyDown={(event) => {
+					if (!isActive) {
+						return;
+					}
+
+					if (event.key === "Enter" || event.key === " ") {
+						event.preventDefault();
+						toggleExpanded();
+					}
+				}}
+				type="button"
 				className={cn(
-					"flex items-center gap-4 border-border/80 p-5",
-					isActive && "border-b -mb-px",
+					"flex min-w-0 flex-1 items-center gap-4 border-border/80 p-5  text-left cursor-default z-0",
+					isActive && "border-b -mb-px cursor-pointer",
 				)}
 			>
-				<button
-					type="button"
+				<div
 					className={cn(
-						"flex min-w-0 flex-1 items-center gap-4 text-left cursor-default",
-						isActive && "cursor-pointer",
+						"flex size-12 shrink-0 items-center justify-center rounded-lg",
+						iconClassName,
 					)}
-					onClick={toggleExpanded}
-					onKeyDown={(event) => {
-						if (!isActive) {
-							return;
-						}
-
-						if (event.key === "Enter" || event.key === " ") {
-							event.preventDefault();
-							toggleExpanded();
-						}
-					}}
 				>
-					<div
-						className={cn(
-							"flex size-12 shrink-0 items-center justify-center rounded-lg",
-							iconClassName,
-						)}
-					>
-						<Icon className="size-6" />
-					</div>
-					<div className="min-w-0 flex-1">
-						<p className="text-sm font-medium text-foreground">
-							{title}
-						</p>
-						<p className="truncate text-sm text-muted-foreground">
-							{isActive ? description : "Desativado"}
-						</p>
-					</div>
-				</button>
+					<Icon className="size-6" />
+				</div>
+				<div className="min-w-0 flex-1">
+					<p className="text-sm font-medium text-foreground">
+						{title}
+					</p>
+					<p className="truncate text-sm text-muted-foreground">
+						{isActive ? description : "Desativado"}
+					</p>
+				</div>
 
 				<div className="flex shrink-0 items-center gap-2">
 					<Switch
@@ -89,19 +82,19 @@ function ShiftCard({
 						onCheckedChange={(checked, eventDetails) => {
 							eventDetails.event.preventDefault();
 							setIsActive(Boolean(checked));
+							setIsExpanded(Boolean(checked));
 						}}
 						size="default"
-						className="h-6 w-11 bg-muted data-checked:bg-primary"
+						className="h-6 w-11 cursor-default bg-muted data-checked:bg-primary"
 					/>
 					<ChevronDown
 						className={cn(
-							"size-4 shrink-0 text-muted-foreground transition-transform",
+							"size-4 shrink-0 text-muted-foreground transition-transform hidden md:flex",
 							isExpanded && isActive && "rotate-180",
 						)}
 					/>
 				</div>
-			</div>
-
+			</button>
 			{children ? (
 				<div
 					data-state={isActive && isExpanded ? "open" : "closed"}

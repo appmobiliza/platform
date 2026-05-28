@@ -39,7 +39,7 @@ function ShiftScheduleBlock({ start, end, days }: ShiftScheduleBlockProps) {
 				<p className="text-sm font-medium text-foreground">
 					Intervalo de horário
 				</p>
-				<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+				<div className="flex gap-3 flex-row sm:items-center">
 					<TimeRangeField label="Início" defaultValue={start} />
 					<TimeRangeField label="até" defaultValue={end} />
 				</div>
