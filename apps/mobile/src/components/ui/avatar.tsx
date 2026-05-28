@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import * as AvatarPrimitive from '@rn-primitives/avatar';
+import { Text } from 'react-native';
 
 function Avatar({
   className,
@@ -22,6 +23,8 @@ function AvatarImage({
 
 function AvatarFallback({
   className,
+  children,
+  style,
   ...props
 }: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
   return (
@@ -30,8 +33,15 @@ function AvatarFallback({
         'bg-muted flex size-full flex-row items-center justify-center rounded-full',
         className
       )}
+      style={style}
       {...props}
-    />
+    >
+      {typeof children === 'string' ? (
+        <Text style={[style, { color: (style as any)?.color }]} className={className}>{children}</Text>
+      ) : (
+        children
+      )}
+    </AvatarPrimitive.Fallback>
   );
 }
 
