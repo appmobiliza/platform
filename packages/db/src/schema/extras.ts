@@ -3,11 +3,8 @@ import {
   text,
   timestamp,
   integer,
-  serial,
 } from "drizzle-orm/pg-core";
-import { studentProfile } from "./profiles";
 import { serviceRequest } from "./requests";
-import { campusLocation } from "./locations";
 import { user } from "./auth";
 import { notificationTypeEnum } from "./enums";
 
@@ -51,35 +48,6 @@ export const audioMessage = pgTable("audio_message", {
 });
 
 /**
- * Rotas favoritas salvas pelo estudante para agilizar solicitações futuras.
- * Uma rota favorita preenche automaticamente os campos de origem e destino
- * na tela de nova solicitação.
- */
-export const favoriteRoute = pgTable("favorite_route", {
-  id: serial("id").primaryKey(),
-
-  studentProfileId: text("student_profile_id")
-    .notNull()
-    .references(() => studentProfile.id, { onDelete: "cascade" }),
-
-  /*
-   * Nome dado pelo estudante à rota. Ex: "Minha rota do almoço"
-   */
-  label: text("label").notNull(),
-
-  originLocationId: integer("origin_location_id")
-    .notNull()
-    .references(() => campusLocation.id, { onDelete: "cascade" }),
-
-  destinationLocationId: integer("destination_location_id")
-    .notNull()
-    .references(() => campusLocation.id, { onDelete: "cascade" }),
-
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-/**
  * Notificações enviadas a usuários pelo sistema.
  *
  * O registro aqui serve como fonte de verdade do histórico de notificações —
@@ -116,7 +84,5 @@ export const notification = pgTable("notification", {
 
 export type AudioMessage = typeof audioMessage.$inferSelect;
 export type NewAudioMessage = typeof audioMessage.$inferInsert;
-export type FavoriteRoute = typeof favoriteRoute.$inferSelect;
-export type NewFavoriteRoute = typeof favoriteRoute.$inferInsert;
 export type Notification = typeof notification.$inferSelect;
 export type NewNotification = typeof notification.$inferInsert;
