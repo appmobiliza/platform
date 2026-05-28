@@ -39,6 +39,45 @@ describe("metricsRouter", () => {
     to: new Date().toISOString(),
   });
 
+  describe("exportCSV", () => {
+    it("deve retornar CSV com relatório de atendimentos", async () => {
+      // Arrange
+      await seedUser({ id: "manager-user-id", role: "manager" });
+      const student = await seedUser({ role: "student" });
+      const scholar = await seedUser({ role: "scholar", email: "scholar_export@test.com" });
+      const studentProfile = await seedStudentProfile(student.id);
+      const scholarProfile = await seedScholarProfile(scholar.id, { isApproved: true });
+      const loc1 = await seedCampusLocation();
+      const loc2 = await seedCampusLocation();
+
+      const request1 = await seedServiceRequest(studentProfile.id, {
+        status: "completed",
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 dias atrás
+        originLocationId: loc1.id,
+        destinationLocationId: loc2.id,
+      });
+
+      await seedServiceAttendance(request1.id, scholarProfile.id, {
+        startedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000 + 300000), // 5 min depois
+        completedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000 + 900000), // 15 min depois
+        durationSeconds: 600,
+        rating: 5,
+      });
+
+      const session = createManagerSession();
+      caller = appRouter.createCaller(() => session);
+
+      // Act
+      const result = await caller.metrics.exportCSV({});
+
+      // Assert
+      expect(typeof result).toBe("string");
+      expect(result).toContain("ID Atendimento,Data da Solicitação");
+      expect(result).toContain("600");
+      expect(result).toContain("5");
+    });
+  });
+
   // ─── summary ────────────────────────────────────────────────────────────────
 
   describe("summary", () => {

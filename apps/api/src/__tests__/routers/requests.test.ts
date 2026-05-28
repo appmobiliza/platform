@@ -620,4 +620,46 @@ describe("requestsRouter", () => {
       });
     });
   });
+
+  // ─── scholarHistory ─────────────────────────────────────────────────────────────
+
+  describe("scholarHistory", () => {
+    it("deve retornar o histórico do bolsista com duração total", async () => {
+      // Arrange
+      const scholar = await seedUser({ role: "scholar" });
+      const scholarProfile = await seedScholarProfile(scholar.id, { isApproved: true });
+      const student = await seedUser({ role: "student" });
+      const studentProfile = await seedStudentProfile(student.id);
+
+      const loc1 = await seedCampusLocation();
+      const loc2 = await seedCampusLocation();
+
+      const request1 = await seedServiceRequest(studentProfile.id, { status: "completed", originLocationId: loc1.id, destinationLocationId: loc2.id });
+      const request2 = await seedServiceRequest(studentProfile.id, { status: "completed", originLocationId: loc1.id, destinationLocationId: loc2.id });
+
+      await seedServiceAttendance(request1.id, scholarProfile.id, { durationSeconds: 600 });
+      await seedServiceAttendance(request2.id, scholarProfile.id, { durationSeconds: 1200 });
+
+      const session = createScholarSession({ id: scholar.id });
+      caller = appRouter.createCaller(() => session);
+
+      // Act
+      const result = await caller.requests.scholarHistory({});
+
+      // Assert
+      expect(result.items).toHaveLength(2);
+      expect(result.totalDurationSeconds).toBe(1800);
+      expect(result.items[0].request).toBeDefined();
+    });
+
+    it("deve falhar se estudante tentar acessar histórico de bolsista", async () => {
+      const student = await seedUser({ role: "student" });
+      const session = createStudentSession({ id: student.id });
+      caller = appRouter.createCaller(() => session);
+
+      await expect(caller.requests.scholarHistory({})).rejects.toMatchObject({
+        code: "FORBIDDEN",
+      });
+    });
+  });
 });
