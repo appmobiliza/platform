@@ -1,0 +1,18 @@
+{
+	"name": "@mobiliza/auth",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"main": "./src/index.ts",
+	"types": "./src/index.ts",
+	"dependencies": {
+		"@mobiliza/db": "workspace:*",
+		"@mobiliza/env": "workspace:*",
+		"better-auth": "^1.6.11"
+	},
+	"devDependencies": {
+		"@mobiliza/typescript-config": "workspace:*",
+		"@types/node": "^25.8.0",
+		"typescript": "^5.9.0"
+	}
+}

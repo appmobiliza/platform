@@ -1,0 +1,13 @@
+{
+	"extends": "@mobiliza/typescript-config/base.json",
+	"compilerOptions": {
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"outDir": "dist",
+		"rootDir": ".",
+		"strictNullChecks": true,
+		"types": ["node"]
+	},
+	"include": ["src"],
+	"exclude": ["node_modules", "dist"]
+}

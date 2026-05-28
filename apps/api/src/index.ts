@@ -15,7 +15,7 @@ import { serve } from "@hono/node-server";
 import { trpcServer } from "@hono/trpc-server";
 import "dotenv/config";
 
-import { auth } from "@mobiliza/db/auth";
+import { auth } from "@mobiliza/auth";
 import { db } from "@mobiliza/db/client";
 import { notifyUnansweredRequests } from "@mobiliza/domain";
 import { realtimeEnv, serverEnv } from "@mobiliza/env";

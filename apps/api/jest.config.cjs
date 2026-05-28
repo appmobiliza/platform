@@ -23,7 +23,7 @@ const config = {
     '<rootDir>/src/__tests__/setup.ts',
   ],
   moduleNameMapper: {
-    '^@mobiliza/db/auth$': '<rootDir>/src/__tests__/mocks/auth.ts',
+    '^@mobiliza/auth$': '<rootDir>/src/__tests__/mocks/auth.ts',
     '^@mobiliza/realtime$': '<rootDir>/src/__tests__/mocks/realtime.ts',
   },
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],

@@ -13,7 +13,7 @@
  *   managerProcedure  → role === "manager"
  */
 
-import { auth } from "@mobiliza/db/auth";
+import { auth } from "@mobiliza/auth";
 import type { RealtimeAdapter } from "@mobiliza/realtime";
 import { createRealtimeAdapter } from "@mobiliza/realtime";
 import { initTRPC, TRPCError } from "@trpc/server";

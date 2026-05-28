@@ -30,6 +30,9 @@ importers:
       '@hono/trpc-server':
         specifier: ^0.4.2
         version: 0.4.2(@trpc/server@11.17.0(typescript@6.0.3))(hono@4.12.22)
+      '@mobiliza/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@mobiliza/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -339,6 +342,28 @@ importers:
 
   config/typescript: {}
 
+  packages/auth:
+    dependencies:
+      '@mobiliza/db':
+        specifier: workspace:*
+        version: link:../db
+      '@mobiliza/env':
+        specifier: workspace:*
+        version: link:../env
+      better-auth:
+        specifier: ^1.6.11
+        version: 1.6.11(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@neondatabase/serverless@1.1.0)(kysely@0.28.17))(next@16.2.6(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+    devDependencies:
+      '@mobiliza/typescript-config':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@types/node':
+        specifier: ^25.8.0
+        version: 25.9.1
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+
   packages/contracts:
     dependencies:
       zod:
@@ -360,9 +385,6 @@ importers:
       '@neondatabase/serverless':
         specifier: ^1.1.0
         version: 1.1.0
-      better-auth:
-        specifier: ^1.6.11
-        version: 1.6.11(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@neondatabase/serverless@1.1.0)(kysely@0.28.17))(next@16.2.6(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
