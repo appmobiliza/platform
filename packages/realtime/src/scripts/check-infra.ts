@@ -1,14 +1,17 @@
+import "dotenv/config";
+
+import { realtimeEnv } from "@mobiliza/env";
 import Ably from "ably";
 
 async function checkInfra() {
 	console.log("📡 [REALTIME] Validando conexão com Ably...");
-	if (!process.env.ABLY_API_KEY) {
+	if (!realtimeEnv.ABLY_API_KEY) {
 		console.warn(
 			"⚠️  Aviso: ABLY_API_KEY não definida. Pulando teste do Ably.",
 		);
 	} else {
 		try {
-			const ably = new Ably.Realtime(process.env.ABLY_API_KEY);
+			const ably = new Ably.Realtime(realtimeEnv.ABLY_API_KEY);
 
 			const connectionResult = await Promise.race([
 				new Promise((resolve) => {

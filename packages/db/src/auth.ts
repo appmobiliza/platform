@@ -1,3 +1,4 @@
+import { serverEnv } from "@mobiliza/env";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { testUtils } from "better-auth/plugins";
@@ -40,8 +41,8 @@ export const auth = betterAuth({
 
 	socialProviders: {
 		google: {
-			clientId: process.env.GOOGLE_CLIENT_ID!,
-			clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+			clientId: serverEnv.GOOGLE_CLIENT_ID,
+			clientSecret: serverEnv.GOOGLE_CLIENT_SECRET,
 		},
 	},
 
@@ -77,7 +78,7 @@ export const auth = betterAuth({
 		updateAge: 60 * 60 * 24,
 	},
 
-	trustedOrigins: process.env.TRUSTED_ORIGINS?.split(",") ?? [],
+	trustedOrigins: serverEnv.TRUSTED_ORIGINS,
 
 	plugins: [
 		testUtils(),

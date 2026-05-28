@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { db } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
+import { realtimeEnv, serverEnv } from "@mobiliza/env";
 import { createRealtimeAdapter } from "@mobiliza/realtime";
 
 async function checkInfra() {
@@ -9,7 +10,7 @@ async function checkInfra() {
 
 	// 1. Banco de Dados (Neon)
 	console.log("🐘 [DATABASE] Validando conexão com Neon...");
-	if (!process.env.DATABASE_URL) {
+	if (!serverEnv.DATABASE_URL) {
 		console.error("❌ Erro: DATABASE_URL não definida no .env");
 	} else {
 		try {
@@ -24,6 +25,8 @@ async function checkInfra() {
 			console.error(error);
 		}
 	}
+
+	console.log(`📡 Realtime provider atual: ${realtimeEnv.REALTIME_PROVIDER}`);
 
 	console.log("");
 

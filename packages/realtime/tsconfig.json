@@ -1,14 +1,14 @@
 {
-  "extends": "@mobiliza/typescript-config/base.json",
-  "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src",
-    "strictNullChecks": true,
-    "types": ["node", "jest"],
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "module": "ESNext"
-  },
-  "include": ["src", "src/__tests__/types"],
-  "exclude": ["node_modules", "dist"]
+	"extends": "@mobiliza/typescript-config/base.json",
+	"compilerOptions": {
+		"outDir": "dist",
+		"rootDir": "src",
+		"strictNullChecks": true,
+		"types": ["node", "jest"],
+		"skipLibCheck": true,
+		"moduleResolution": "bundler",
+		"module": "ESNext"
+	},
+	"include": ["src", "src/__tests__/types"],
+	"exclude": ["node_modules", "dist"]
 }

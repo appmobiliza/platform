@@ -13,9 +13,12 @@
 
 import { serve } from "@hono/node-server";
 import { trpcServer } from "@hono/trpc-server";
+import "dotenv/config";
+
 import { auth } from "@mobiliza/db/auth";
-import { db, db } from "@mobiliza/db/client";
+import { db } from "@mobiliza/db/client";
 import { notifyUnansweredRequests } from "@mobiliza/domain";
+import { realtimeEnv, serverEnv } from "@mobiliza/env";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
@@ -36,7 +39,7 @@ const app = new Hono();
  */
 app.get("/api/cron/check-timeouts", async (c) => {
   // Verificação simples de segredo para evitar chamadas maliciosas
-  const cronSecret = process.env.CRON_SECRET;
+  const cronSecret = serverEnv.CRON_SECRET;
   const authHeader = c.req.header("Authorization");
 
   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
@@ -58,7 +61,7 @@ app.use(logger());
 app.use(
   "*",
   cors({
-    origin: process.env.TRUSTED_ORIGINS?.split(",") ?? ["http://localhost:3000"],
+    origin: serverEnv.TRUSTED_ORIGINS,
     allowHeaders: ["Content-Type", "Authorization"],
     allowMethods: ["GET", "POST", "OPTIONS"],
     credentials: true,
@@ -71,7 +74,7 @@ app.get("/health", (c) =>
   c.json({
     status: "ok",
     timestamp: new Date().toISOString(),
-    provider: process.env.REALTIME_PROVIDER ?? "supabase",
+    provider: realtimeEnv.REALTIME_PROVIDER,
   }),
 );
 
@@ -107,7 +110,7 @@ app.use(
     createContext: (_opts, c) => createTRPCContext(c),
 
     onError:
-      process.env.NODE_ENV === "development"
+      serverEnv.NODE_ENV === "development"
         ? ({ path, error }) => {
             console.error(`[tRPC error] ${path ?? "unknown"}:`, error);
           }
@@ -117,7 +120,7 @@ app.use(
 
 // ─── Servidor ─────────────────────────────────────────────────────────────────
 
-const port = Number(process.env.PORT ?? 3001);
+const port = serverEnv.PORT;
 
 serve({
   fetch: app.fetch,
@@ -125,7 +128,7 @@ serve({
 });
 
 console.log(`🚀 Mobiliza API rodando em http://localhost:${port}`);
-console.log(`   Realtime provider: ${process.env.REALTIME_PROVIDER ?? "supabase"}`);
+console.log(`   Realtime provider: ${realtimeEnv.REALTIME_PROVIDER}`);
 
 export default {
   port,

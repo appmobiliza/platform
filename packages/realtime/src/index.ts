@@ -1,3 +1,11 @@
+import {
+  realtimeEnv,
+  requireAblyEnv,
+  requirePusherEnv,
+  requireSupabaseEnv,
+  requireWebSocketEnv,
+} from '@mobiliza/env'
+
 import type { RealtimeAdapter, RealtimeProvider } from './types'
 
 /**
@@ -29,36 +37,30 @@ import type { RealtimeAdapter, RealtimeProvider } from './types'
  * ```
  */
 export function createRealtimeAdapter(): RealtimeAdapter {
-  const provider = (process.env.REALTIME_PROVIDER ?? 'supabase') as RealtimeProvider
+  const provider = realtimeEnv.REALTIME_PROVIDER as RealtimeProvider
 
   switch (provider) {
     case 'supabase': {
-      const url = requireEnv('SUPABASE_URL')
-      const anonKey = requireEnv('SUPABASE_ANON_KEY')
+      const { url, anonKey } = requireSupabaseEnv()
       const { SupabaseRealtimeAdapter } = require('./adapters/server/supabase') as typeof import('./adapters/server/supabase')
       return new SupabaseRealtimeAdapter({ url, anonKey })
     }
 
     case 'websocket': {
-      const url = requireEnv('WS_URL')
+      const { url } = requireWebSocketEnv()
       const { WebSocketRealtimeAdapter } = require('./adapters/server/websocket') as typeof import('./adapters/server/websocket')
       return new WebSocketRealtimeAdapter({ url })
     }
 
     case 'ably': {
-      const apiKey = requireEnv('ABLY_API_KEY')
+      const { apiKey } = requireAblyEnv()
       const { AblyRealtimeAdapter } = require('./adapters/server/ably') as typeof import('./adapters/server/ably')
       return new AblyRealtimeAdapter({ apiKey })
     }
 
     case 'pusher': {
       const { PusherRealtimeAdapter } = require('./adapters/server/pusher') as typeof import('./adapters/server/pusher')
-      return new PusherRealtimeAdapter({
-        appId: requireEnv('PUSHER_APP_ID'),
-        key: requireEnv('PUSHER_KEY'),
-        secret: requireEnv('PUSHER_SECRET'),
-        cluster: requireEnv('PUSHER_CLUSTER'),
-      })
+      return new PusherRealtimeAdapter(requirePusherEnv())
     }
 
     case 'mock': {
@@ -76,37 +78,20 @@ export function createRealtimeAdapter(): RealtimeAdapter {
   }
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function requireEnv(key: string): string {
-  const value = process.env[key]
-  if (!value) {
-    throw new Error(
-      `[realtime] Variável de ambiente obrigatória não definida: ${key}\n` +
-        `Verifique o arquivo .env do pacote de API.`,
-    )
-  }
-  return value
-}
-
 // ─── Re-exports ───────────────────────────────────────────────────────────────
 
-export type { RealtimeAdapter, RealtimeClientAdapter, RealtimeProvider } from './types'
-export type {
-  SupabaseAdapterOptions,
-  AblyAdapterOptions,
-  AblyClientAdapterOptions,
-  WebSocketAdapterOptions,
-  PusherAdapterOptions,
-  RealtimePayload,
-  Unsubscribe,
-} from './types'
-
-// Adaptadores server-side (para uso avançado / testes)
-export { MockRealtimeAdapter } from './adapters/server/mock'
-
+export { AblyClientAdapter } from './adapters/client/ably'
+export { MockClientAdapter } from './adapters/client/mock'
 // Adaptadores client-side
 export { SupabaseClientAdapter } from './adapters/client/supabase'
 export { WebSocketClientAdapter } from './adapters/client/websocket'
-export { AblyClientAdapter } from './adapters/client/ably'
-export { MockClientAdapter } from './adapters/client/mock'
+// Adaptadores server-side (para uso avançado / testes)
+export { MockRealtimeAdapter } from './adapters/server/mock'
+export type { 
+  AblyAdapterOptions,
+  AblyClientAdapterOptions,
+  PusherAdapterOptions,RealtimeAdapter, RealtimeClientAdapter, 
+  RealtimePayload,RealtimeProvider, 
+  SupabaseAdapterOptions,
+  Unsubscribe,
+  WebSocketAdapterOptions,} from './types'
