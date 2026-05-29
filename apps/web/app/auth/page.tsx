@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 
 import google from "@/public/google.svg";
@@ -5,15 +6,15 @@ import logo from "@/public/logo.svg";
 
 import { GoogleSignInButton } from "./google-sign-in-button";
 
+export const metadata: Metadata = {
+	title: "Autenticação",
+};
+
 export default async function AuthPage() {
 	return (
 		<main className="flex min-h-svh w-full flex-col md:flex-row">
 			<div className="flex w-full flex-col items-center justify-center gap-12 bg-primary p-12 text-primary-foreground md:w-1/2 md:items-start md:justify-between max-md:h-[40vh]">
-				<Image
-					src={logo}
-					alt="Logo"
-					className="h-4.5 md:h-6"
-				/>
+				<Image src={logo} alt="Logo" className="h-4.5 md:h-6" />
 
 				<div className="flex flex-col items-center gap-2 text-center md:items-start md:text-left">
 					<p className="text-3xl font-bold md:text-4xl">

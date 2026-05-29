@@ -10,6 +10,7 @@ import {
 
 import { HorizontalBarsChart } from "@/components/horizontal-bars-chart";
 import { RoutePreview } from "@/components/route-preview";
+import { StatusMessage } from "@/components/status-message";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -29,9 +30,9 @@ import {
 	formatDurationShort,
 	getRouteLabel,
 	getTodayRange,
+	type ManagerRequest,
 	mapRequestToServiceEntry,
 	toDate,
-	type ManagerRequest,
 } from "@/lib/dashboard-data";
 import {
 	createServerTRPCClient,
@@ -93,7 +94,10 @@ function getHourlyChartData(requests: ManagerRequest[]) {
 	const counts = new Map<string, number>();
 
 	for (const request of requests) {
-		const hour = toDate(request.createdAt).getHours().toString().padStart(2, "0");
+		const hour = toDate(request.createdAt)
+			.getHours()
+			.toString()
+			.padStart(2, "0");
 		counts.set(hour, (counts.get(hour) ?? 0) + 1);
 	}
 
@@ -119,7 +123,9 @@ function getPendingAlert(requests: ManagerRequest[]) {
 	return {
 		delay: Math.max(
 			1,
-			Math.floor((Date.now() - toDate(pending.createdAt).getTime()) / 60_000),
+			Math.floor(
+				(Date.now() - toDate(pending.createdAt).getTime()) / 60_000,
+			),
 		),
 		name: pending.studentProfile.user.name,
 	};
@@ -138,7 +144,8 @@ export default async function DashboardPage() {
 		ManagerRequest[],
 	];
 	const inProgressCount = requests.filter(
-		(request) => request.status === "accepted" || request.status === "ongoing",
+		(request) =>
+			request.status === "accepted" || request.status === "ongoing",
 	).length;
 	const availableScholars = scholarDashboard.scholars.filter(
 		(scholar) => scholar.status === "available",
@@ -247,48 +254,67 @@ export default async function DashboardPage() {
 						</CardHeader>
 						<CardContent>
 							<ul className="flex flex-col gap-3">
-								{scholarDashboard.scholars
-									.slice(0, 5)
-									.map((scholar) => (
-										<li
-											key={scholar.user.id}
-											className="flex items-center flex-row justify-between gap-2 text-sm w-full"
-										>
-											<div className="flex items-start justify-center flex-row gap-3">
-												<Avatar className="h-10 w-10">
-													<AvatarImage
-														src={
-															scholar.user.image ||
-															undefined
-														}
-														alt={scholar.user.name}
-													/>
-													<AvatarFallback>
-														{getInitials(
-															scholar.user.name,
-														)}
-													</AvatarFallback>
-												</Avatar>
-												<div className="flex flex-col items-start justify-start gap-2">
-													<span className="font-semibold">
-														{scholar.user.name}
-													</span>
-													<span className="text-xs">
-														{scholar.shiftLabel} ·{" "}
-														{scholar.profile.course}
-													</span>
-												</div>
-											</div>
-											<Badge
-												className="border-none"
-												variant={getScholarBadgeVariant(
-													scholar.status,
-												)}
+								{scholarDashboard.scholars.length > 0 ? (
+									scholarDashboard.scholars
+										.slice(0, 5)
+										.map((scholar) => (
+											<li
+												key={scholar.user.id}
+												className="flex items-center flex-row justify-between gap-2 text-sm w-full"
 											>
-												{scholar.statusLabel}
-											</Badge>
-										</li>
-									))}
+												<div className="flex items-start justify-center flex-row gap-3">
+													<Avatar className="h-10 w-10">
+														<AvatarImage
+															src={
+																scholar.user
+																	.image ||
+																undefined
+															}
+															alt={
+																scholar.user
+																	.name
+															}
+														/>
+														<AvatarFallback>
+															{getInitials(
+																scholar.user
+																	.name,
+															)}
+														</AvatarFallback>
+													</Avatar>
+													<div className="flex flex-col items-start justify-start gap-2">
+														<span className="font-semibold">
+															{scholar.user.name}
+														</span>
+														<span className="text-xs">
+															{scholar.shiftLabel}{" "}
+															·{" "}
+															{
+																scholar.profile
+																	.course
+															}
+														</span>
+													</div>
+												</div>
+												<Badge
+													className="border-none"
+													variant={getScholarBadgeVariant(
+														scholar.status,
+													)}
+												>
+													{scholar.statusLabel}
+												</Badge>
+											</li>
+										))
+								) : (
+									<div className="flex items-center justify-center h-full">
+										<StatusMessage
+											className="max-w-1/2"
+											title="Nenhum bolsista encontrado."
+											description="Os status dos bolsistas serão exibidos aqui assim que houver registros."
+										/>
+									</div>
+								)}
 							</ul>
 						</CardContent>
 					</Card>
@@ -298,11 +324,21 @@ export default async function DashboardPage() {
 							<CardTitle>Demanda por horário — hoje</CardTitle>
 						</CardHeader>
 						<CardContent className="flex-1 min-h-0">
-							<HorizontalBarsChart
-								data={getHourlyChartData(requests)}
-								config={chartConfig}
-								className="h-70 lg:h-full"
-							/>
+							{requests.length > 0 ? (
+								<HorizontalBarsChart
+									data={getHourlyChartData(requests)}
+									config={chartConfig}
+									className="h-70 lg:h-full"
+								/>
+							) : (
+								<div className="flex items-center justify-center h-full">
+									<StatusMessage
+										className="max-w-1/2"
+										title="Nenhuma solicitação registrada hoje."
+										description="Os dados de demanda por horário serão exibidos aqui assim que houver solicitações."
+									/>
+								</div>
+							)}
 						</CardContent>
 					</Card>
 				</div>
@@ -334,88 +370,91 @@ export default async function DashboardPage() {
 					</CardContent>
 				</Card>
 
-				<Card className="p-0 gap-0">
-					<CardHeader className="flex flex-row items-center justify-between bg-background px-6 pb-3 pt-6 md:bg-card border-b border-border">
-						<CardTitle>Últimos atendimentos</CardTitle>
-						<CardAction>
-							<Button variant={"outline"} size={"xs"}>
-								Ver todos
-							</Button>
-						</CardAction>
-					</CardHeader>
-					<CardContent className="p-0 md:p-4 md:bg-background">
-						<ul className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 md:gap-4">
-							{lastRequests.map((entry) => {
-								const isDuring =
-									entry.status === "in_progress";
+				{lastRequests.length > 0 ? (
+					<Card className="p-0 gap-0">
+						<CardHeader className="flex flex-row items-center justify-between bg-background px-6 pb-3 pt-6 md:bg-card border-b border-border">
+							<CardTitle>Últimos atendimentos</CardTitle>
+							<CardAction>
+								<Button variant={"outline"} size={"xs"}>
+									Ver todos
+								</Button>
+							</CardAction>
+						</CardHeader>
+						<CardContent className="p-0 md:p-4 md:bg-background">
+							<ul className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 md:gap-4">
+								{lastRequests.map((entry) => {
+									const isDuring =
+										entry.status === "in_progress";
 
-								return (
-									<li
-										key={entry.id}
-										className="flex flex-col items-start justify-start w-full p-6 border-b gap-4 border-border hover:bg-muted/25 transition-colors cursor-pointer bg-card md:rounded-lg md:border-none"
-									>
-										<div className="font-semibold flex flex-row items-start justify-between gap-4 w-full">
-											<div className="flex items-start justify-start flex-row gap-3">
-												<div
-													className={cn(
-														"h-2 w-2 mt-1.5 rounded-full",
-														{
-															"bg-green-500":
-																entry.status ===
-																"concluded",
-															"bg-yellow-500 animate-pulse":
-																isDuring,
-															"bg-destructive":
-																entry.status ===
-																"not_attended",
-														},
-													)}
-												/>
-												<div className="flex flex-col items-start justify-start gap-1">
-													<span className="flex-wrap">
-														{entry.scholar?.user
-															.name ??
-															"Aguardando bolsista"}{" "}
-														→{" "}
-														<br className="flex md:hidden" />{" "}
-														{
-															entry.student.user
-																.name
-														}
-													</span>
-													<span className="text-xs font-normal text-muted-foreground">
-														{entry.route} ·{" "}
-														{entry.time} ·{" "}
-														{entry.duration}
-													</span>
+									return (
+										<li
+											key={entry.id}
+											className="flex flex-col items-start justify-start w-full p-6 border-b gap-4 border-border hover:bg-muted/25 transition-colors cursor-pointer bg-card md:rounded-lg md:border-none"
+										>
+											<div className="font-semibold flex flex-row items-start justify-between gap-4 w-full">
+												<div className="flex items-start justify-start flex-row gap-3">
+													<div
+														className={cn(
+															"h-2 w-2 mt-1.5 rounded-full",
+															{
+																"bg-green-500":
+																	entry.status ===
+																	"concluded",
+																"bg-yellow-500 animate-pulse":
+																	isDuring,
+																"bg-destructive":
+																	entry.status ===
+																	"not_attended",
+															},
+														)}
+													/>
+													<div className="flex flex-col items-start justify-start gap-1">
+														<span className="flex-wrap">
+															{entry.scholar?.user
+																.name ??
+																"Aguardando bolsista"}{" "}
+															→{" "}
+															<br className="flex md:hidden" />{" "}
+															{
+																entry.student
+																	.user.name
+															}
+														</span>
+														<span className="text-xs font-normal text-muted-foreground">
+															{entry.route} ·{" "}
+															{entry.time} ·{" "}
+															{entry.duration}
+														</span>
+													</div>
 												</div>
-											</div>
-											<Badge
-												className="border-none"
-												variant={
-													entry.status === "concluded"
-														? "success"
+												<Badge
+													className="border-none"
+													variant={
+														entry.status ===
+														"concluded"
+															? "success"
+															: entry.status ===
+																	"in_progress"
+																? "warning"
+																: "destructive"
+													}
+												>
+													{isDuring
+														? "Em atendimento"
 														: entry.status ===
-																"in_progress"
-															? "warning"
-															: "destructive"
-												}
-											>
-												{isDuring
-													? "Em atendimento"
-													: entry.status ===
-															"concluded"
-														? "Finalizado"
-														: "Não atendido"}
-											</Badge>
-										</div>
-										<RoutePreview />
-									</li>
-								);
-							})}
-						</ul>
-					</CardContent>
-				</Card>
+																"concluded"
+															? "Finalizado"
+															: "Não atendido"}
+												</Badge>
+											</div>
+											<RoutePreview />
+										</li>
+									);
+								})}
+							</ul>
+						</CardContent>
+					</Card>
+				) : null}
 			</div>
 		</section>
 	);

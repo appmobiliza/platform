@@ -18,7 +18,7 @@ import type { RealtimeAdapter } from "@mobiliza/realtime";
 import { createRealtimeAdapter } from "@mobiliza/realtime";
 import { initTRPC, TRPCError } from "@trpc/server";
 import type { Context } from "hono";
-import type { OpenApiMeta } from 'trpc-to-openapi';
+import type { OpenApiMeta } from "trpc-to-openapi";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -76,7 +76,7 @@ export async function getRealtimeAdapter(): Promise<RealtimeAdapter> {
 	} catch (error) {
 		_realtimePromise = null;
 		throw error;
-  }
+	}
 }
 
 // ─── Factory de contexto ──────────────────────────────────────────────────────
@@ -100,25 +100,28 @@ export async function createTRPCContext(c: Context): Promise<TRPCContext> {
 
 // ─── Instância do tRPC ────────────────────────────────────────────────────────
 
-const t = initTRPC.meta<OpenApiMeta>().context<TRPCContext>().create({
-	/**
-	 * Transforma erros antes de enviá-los ao cliente.
-	 * Remove stack traces em produção e padroniza o formato.
-	 */
-	errorFormatter({ shape, error }) {
-		return {
-			...shape,
-			data: {
-				...shape.data,
-				// Stack trace apenas em desenvolvimento
-				stack:
-					process.env.NODE_ENV === "development"
-						? error.stack
-						: undefined,
-			},
-		};
-	},
-});
+const t = initTRPC
+	.meta<OpenApiMeta>()
+	.context<TRPCContext>()
+	.create({
+		/**
+		 * Transforma erros antes de enviá-los ao cliente.
+		 * Remove stack traces em produção e padroniza o formato.
+		 */
+		errorFormatter({ shape, error }) {
+			return {
+				...shape,
+				data: {
+					...shape.data,
+					// Stack trace apenas em desenvolvimento
+					stack:
+						process.env.NODE_ENV === "development"
+							? error.stack
+							: undefined,
+				},
+			};
+		},
+	});
 
 export const router = t.router;
 export const middleware = t.middleware;
@@ -138,7 +141,10 @@ const isAuthenticated = t.middleware(({ ctx, next }) => {
 
 const isScholar = t.middleware(({ ctx, next }) => {
 	if (!ctx.session) {
-		throw new TRPCError({ code: "UNAUTHORIZED" });
+		throw new TRPCError({
+			code: "UNAUTHORIZED",
+			message: "Acesso negado.",
+		});
 	}
 	if (ctx.session.user.role !== "scholar") {
 		throw new TRPCError({
@@ -151,7 +157,10 @@ const isScholar = t.middleware(({ ctx, next }) => {
 
 const isManager = t.middleware(({ ctx, next }) => {
 	if (!ctx.session) {
-		throw new TRPCError({ code: "UNAUTHORIZED" });
+		throw new TRPCError({
+			code: "UNAUTHORIZED",
+			message: "Acesso negado.",
+		});
 	}
 	if (ctx.session.user.role !== "manager") {
 		throw new TRPCError({
