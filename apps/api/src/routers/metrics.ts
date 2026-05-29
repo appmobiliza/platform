@@ -13,7 +13,7 @@ import { AppError, generateAttendanceReportCSV } from "@mobiliza/domain";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { managerProcedure, router } from "@/trpc/context";
+import { managerProcedure, router } from "../trpc/context";
 
 const dateRangeInput = z.object({
 	from: z.iso.datetime(),

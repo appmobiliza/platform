@@ -32,9 +32,13 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 
+import {
+	createServerTRPCClient,
+	handleServerTRPCError,
+} from "@/lib/trpc-server";
 import { cn, getInitials } from "@/lib/utils";
 
-import { dashboardCards, studentsData } from "@/data/students-data";
+import type { StudentData } from "@/data/students-data";
 
 export const metadata: Metadata = {
 	title: "Estudantes",
@@ -47,7 +51,23 @@ const sortOptions = [
 	{ value: "name-desc", label: "Nome (Z-A)" },
 ];
 
-export default function StudentsPage() {
+type StudentDashboardResponse = {
+	cards: Array<{
+		title: string;
+		value: string;
+		variant?: "default" | "blue";
+	}>;
+	students: StudentData[];
+};
+
+export default async function StudentsPage() {
+	const trpc = await createServerTRPCClient();
+	const dashboard =
+		(await trpc.profiles.studentDashboard
+			.query()
+			.catch(handleServerTRPCError)) as StudentDashboardResponse;
+	const studentsData = dashboard.students;
+
 	return (
 		<>
 			<section className="min-w-0 flex-1">
@@ -64,7 +84,7 @@ export default function StudentsPage() {
 				</header>
 
 				<div className="grid grid-cols-1 gap-4 border-b border-border p-4 md:grid-cols-4 md:p-6">
-					{dashboardCards.map(({ title, value, variant }) => (
+					{dashboard.cards.map(({ title, value, variant }) => (
 						<Card key={title} className="group w-full gap-2">
 							<CardHeader>
 								<CardTitle>{title}</CardTitle>
@@ -154,8 +174,11 @@ export default function StudentsPage() {
 											{entry.summary.servicesAmount}
 										</TableCell>
 										<TableCell>
-											{entry.summary.recentRoutes[0]
-												?.date || "-"}
+											{entry.summary.recentRoutes[0]?.date
+												? new Date(
+														entry.summary.recentRoutes[0].date,
+													).toLocaleDateString("pt-BR")
+												: "-"}
 										</TableCell>
 										<TableCell className="pr-6 md:pr-8 text-right">
 											<StudentDetailsTrigger

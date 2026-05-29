@@ -115,7 +115,8 @@ function StudentDetailsContent({ student }: { student: StudentData }) {
 						className="flex items-center justify-between gap-3 text-sm px-3 py-1.5 rounded-md bg-muted"
 					>
 						<span>
-							{route.date} → {route.route}
+							{new Date(route.date).toLocaleDateString("pt-BR")}{" "}
+							→ {route.route}
 						</span>
 						<Badge variant={getRouteStatusVariant(route.status)}>
 							{getRouteStatusLabel(route.status)}

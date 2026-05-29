@@ -12,7 +12,7 @@ import * as schema from "@mobiliza/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { managerProcedure, publicProcedure, router } from "@/trpc/context";
+import { managerProcedure, publicProcedure, router } from "../trpc/context";
 
 export const locationsRouter = router({
 	/**

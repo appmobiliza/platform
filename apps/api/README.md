@@ -58,6 +58,7 @@ packages/api/
 | `requests.rate` | mutation | student | Avalia o atendimento (1-5) |
 | `requests.myHistory` | query | any | Histórico paginado |
 | `requests.available` | query | scholar | Solicitações disponíveis |
+| `requests.managerList` | query | manager | Lista solicitações com relações para o dashboard web |
 
 ### `profiles.*`
 | Procedure | Tipo | Role | Descrição |
@@ -68,6 +69,8 @@ packages/api/
 | `profiles.toggleAvailability` | mutation | scholar | Liga/desliga disponibilidade |
 | `profiles.pendingScholars` | query | manager | Bolsistas aguardando aprovação |
 | `profiles.reviewScholar` | mutation | manager | Aprova ou rejeita bolsista |
+| `profiles.scholarDashboard` | query | manager | Lista bolsistas com status operacional |
+| `profiles.studentDashboard` | query | manager | Lista estudantes com resumo operacional |
 
 ### `locations.*`
 | Procedure | Tipo | Role | Descrição |

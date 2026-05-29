@@ -11,7 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
-import { createServerTRPCClient } from "@/lib/trpc-server";
+import {
+	createServerTRPCClient,
+	handleServerTRPCError,
+} from "@/lib/trpc-server";
 import { cn, getInitials } from "@/lib/utils";
 
 import { MutateScholarDialog } from "./dialog/add-scholar";
@@ -105,7 +108,9 @@ export default async function ScholarsPage({
 	const query = getFirstValue(resolvedSearchParams.q)?.trim() ?? "";
 	const statusFilter = normalizeStatus(resolvedSearchParams.status);
 	const trpc = await createServerTRPCClient();
-	const dashboard = (await trpc.profiles.scholarDashboard.query()) as ScholarDashboardResponse;
+	const dashboard = (await trpc.profiles.scholarDashboard
+		.query()
+		.catch(handleServerTRPCError)) as ScholarDashboardResponse;
 	const normalizedQuery = query.toLowerCase();
 	const filteredScholars = dashboard.scholars.filter((item) => {
 		if (statusFilter !== "all" && item.status !== statusFilter) {

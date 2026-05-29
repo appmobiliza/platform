@@ -5,7 +5,6 @@ import { Plus, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import {
 	Table,
 	TableBody,
@@ -16,103 +15,49 @@ import {
 } from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
+import {
+	createServerTRPCClient,
+	handleServerTRPCError,
+} from "@/lib/trpc-server";
+
 import { AddLocationDialog } from "./dialog/add-location";
+import { LocationStatusSwitch } from "./location-status-switch";
 
 export const metadata: Metadata = {
 	title: "Locais do campus",
 };
 
-const locationFilters = [
-	{
-		value: "all",
-		label: "Todos (11)",
-	},
-	{
-		value: "active",
-		label: "Ativos (9)",
-	},
-	{
-		value: "inactive",
-		label: "Inativos (2)",
-	},
-];
+type CampusLocation = {
+	id: number;
+	name: string;
+	abbreviation: string;
+	description: string | null;
+	isActive: boolean;
+};
 
-const campusLocations = [
-	{
-		name: "Instituto de Computação",
-		sigla: "IC",
-		type: "Fixo",
-		active: true,
-	},
-	{
-		name: "Restaurante Universitário",
-		sigla: "RU",
-		type: "Fixo",
-		active: true,
-	},
-	{
-		name: "Biblioteca Central",
-		sigla: "—",
-		type: "Fixo",
-		active: true,
-	},
-	{
-		name: "Reitoria",
-		sigla: "—",
-		type: "Fixo",
-		active: true,
-	},
-	{
-		name: "Faculdade de Medicina",
-		sigla: "FAMED",
-		type: "Fixo",
-		active: true,
-	},
-	{
-		name: "Entrada principal da UFAL",
-		sigla: "—",
-		type: "Ponto aberto",
-		active: true,
-	},
-	{
-		name: "Estacionamento central",
-		sigla: "—",
-		type: "Ponto aberto",
-		active: true,
-	},
-	{
-		name: "Faculdade de Artes",
-		sigla: "FA",
-		type: "Fixo",
-		active: true,
-	},
-	{
-		name: "Instituto de Tecnologia",
-		sigla: "IT",
-		type: "Fixo",
-		active: true,
-	},
-	{
-		name: "Portaria leste",
-		sigla: "—",
-		type: "Ponto aberto",
-		active: true,
-	},
-	{
-		name: "Centro de Ciências Exatas",
-		sigla: "CCE",
-		type: "Fixo",
-		active: false,
-	},
-	{
-		name: "Centro de Educação",
-		sigla: "CEDU",
-		type: "Fixo",
-		active: false,
-	},
-];
+export default async function SettingsPage() {
+	const trpc = await createServerTRPCClient();
+	const campusLocations =
+		(await trpc.locations.listAll
+			.query()
+			.catch(handleServerTRPCError)) as CampusLocation[];
+	const activeLocations = campusLocations.filter((location) => location.isActive);
+	const inactiveLocations = campusLocations.length - activeLocations.length;
+	const locationFilters = [
+		{
+			value: "all",
+			label: `Todos (${campusLocations.length})`,
+		},
+		{
+			value: "active",
+			label: `Ativos (${activeLocations.length})`,
+		},
+		{
+			value: "inactive",
+			label: `Inativos (${inactiveLocations})`,
+		},
+	];
 
-export default function SettingsPage() {
 	return (
 		<section className="min-w-0 flex-1 bg-background">
 			<div className="mx-auto flex w-full flex-col px-4 py-4 md:px-6 md:py-6">
@@ -182,35 +127,31 @@ export default function SettingsPage() {
 							<TableBody>
 								{campusLocations.map((location) => (
 									<TableRow
-										key={location.name}
+										key={location.id}
 										className="h-14"
 									>
 										<TableCell className="px-4 py-4 text-sm text-foreground">
 											{location.name}
 										</TableCell>
 										<TableCell className="px-4 py-4 text-right text-sm text-foreground/90">
-											{location.sigla}
+											{location.abbreviation || "—"}
 										</TableCell>
 										<TableCell className="hidden px-4 py-4 text-center md:table-cell">
 											<Badge
-												variant={
-													location.type === "Fixo"
-														? "default"
-														: "secondary"
-												}
+												variant="default"
 												className="h-5"
 											>
-												{location.type}
+												Fixo
 											</Badge>
 										</TableCell>
 										<TableCell className="hidden px-4 py-4 md:table-cell">
 											<div className="flex justify-center">
-												<Switch
-													size="lg"
-													defaultChecked={
-														location.active
+												<LocationStatusSwitch
+													id={location.id}
+													name={location.name}
+													isActive={
+														location.isActive
 													}
-													aria-label={`Ativar local ${location.name}`}
 												/>
 											</div>
 										</TableCell>

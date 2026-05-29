@@ -5,7 +5,7 @@ import * as schema from "@mobiliza/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { scholarProcedure } from "@/trpc/context";
+import { scholarProcedure } from "../../trpc/context";
 
 import { execTx, generateAttendanceId } from "./shared";
 

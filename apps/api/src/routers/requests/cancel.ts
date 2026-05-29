@@ -5,7 +5,7 @@ import * as schema from "@mobiliza/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { protectedProcedure } from "@/trpc/context";
+import { protectedProcedure } from "../../trpc/context";
 
 export const cancel = protectedProcedure
 	.meta({ openapi: { method: "POST", path: "/requests/cancel" } })
