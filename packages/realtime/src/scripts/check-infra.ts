@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-import { realtimeEnv } from "@mobiliza/env";
+import { realtimeEnv } from "@mobiliza/env/realtime";
 import Ably from "ably";
 
 async function checkInfra() {

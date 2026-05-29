@@ -9,6 +9,26 @@
 		".": {
 			"types": "./src/index.ts",
 			"default": "./src/index.ts"
+		},
+		"./api": {
+			"types": "./src/api.ts",
+			"default": "./src/api.ts"
+		},
+		"./auth": {
+			"types": "./src/auth.ts",
+			"default": "./src/auth.ts"
+		},
+		"./realtime": {
+			"types": "./src/realtime.ts",
+			"default": "./src/realtime.ts"
+		},
+		"./shared": {
+			"types": "./src/shared.ts",
+			"default": "./src/shared.ts"
+		},
+		"./base-url": {
+			"types": "./src/base-url.ts",
+			"default": "./src/base-url.ts"
 		}
 	},
 	"dependencies": {

@@ -1,12 +1,12 @@
 import {
-  realtimeEnv,
-  requireAblyEnv,
-  requirePusherEnv,
-  requireSupabaseEnv,
-  requireWebSocketEnv,
-} from '@mobiliza/env'
+	realtimeEnv,
+	requireAblyEnv,
+	requirePusherEnv,
+	requireSupabaseEnv,
+	requireWebSocketEnv,
+} from "@mobiliza/env/realtime";
 
-import type { RealtimeAdapter, RealtimeProvider } from './types'
+import type { RealtimeAdapter, RealtimeProvider } from "./types";
 
 /**
  * Cria e retorna o adaptador server-side configurado por
@@ -16,92 +16,92 @@ import type { RealtimeAdapter, RealtimeProvider } from './types'
  * evitando dependências desnecessárias no bundle.
  */
 export async function createRealtimeAdapter(): Promise<RealtimeAdapter> {
-  const provider = realtimeEnv.REALTIME_PROVIDER as RealtimeProvider
+	const provider = realtimeEnv.REALTIME_PROVIDER as RealtimeProvider;
 
-  switch (provider) {
-    case 'supabase': {
-      const { url, anonKey } = requireSupabaseEnv()
+	switch (provider) {
+		case "supabase": {
+			const { url, anonKey } = requireSupabaseEnv();
 
-      const { SupabaseRealtimeAdapter } = await import(
-        './adapters/server/supabase'
-      )
+			const { SupabaseRealtimeAdapter } = await import(
+				"./adapters/server/supabase"
+			);
 
-      return new SupabaseRealtimeAdapter({
-        url,
-        anonKey,
-      })
-    }
+			return new SupabaseRealtimeAdapter({
+				url,
+				anonKey,
+			});
+		}
 
-    case 'websocket': {
-      const { url } = requireWebSocketEnv()
+		case "websocket": {
+			const { url } = requireWebSocketEnv();
 
-      const { WebSocketRealtimeAdapter } = await import(
-        './adapters/server/websocket'
-      )
+			const { WebSocketRealtimeAdapter } = await import(
+				"./adapters/server/websocket"
+			);
 
-      return new WebSocketRealtimeAdapter({
-        url,
-      })
-    }
+			return new WebSocketRealtimeAdapter({
+				url,
+			});
+		}
 
-    case 'ably': {
-      const { apiKey } = requireAblyEnv()
+		case "ably": {
+			const { apiKey } = requireAblyEnv();
 
-      const { AblyRealtimeAdapter } = await import(
-        './adapters/server/ably'
-      )
+			const { AblyRealtimeAdapter } = await import(
+				"./adapters/server/ably"
+			);
 
-      return await AblyRealtimeAdapter.create({
-        apiKey,
-      })
-    }
+			return await AblyRealtimeAdapter.create({
+				apiKey,
+			});
+		}
 
-    case 'pusher': {
-      const { PusherRealtimeAdapter } = await import(
-        './adapters/server/pusher'
-      )
+		case "pusher": {
+			const { PusherRealtimeAdapter } = await import(
+				"./adapters/server/pusher"
+			);
 
-      return new PusherRealtimeAdapter(requirePusherEnv())
-    }
+			return new PusherRealtimeAdapter(requirePusherEnv());
+		}
 
-    case 'mock': {
-      const { MockRealtimeAdapter } = await import(
-        './adapters/server/mock'
-      )
+		case "mock": {
+			const { MockRealtimeAdapter } = await import(
+				"./adapters/server/mock"
+			);
 
-      return new MockRealtimeAdapter()
-    }
+			return new MockRealtimeAdapter();
+		}
 
-    default: {
-      const exhaustive: never = provider
+		default: {
+			const exhaustive: never = provider;
 
-      throw new Error(
-        `[realtime] Provider desconhecido: "${exhaustive}". ` +
-          'Valores aceitos: supabase | websocket | ably | pusher | mock',
-      )
-    }
-  }
+			throw new Error(
+				`[realtime] Provider desconhecido: "${exhaustive}". ` +
+					"Valores aceitos: supabase | websocket | ably | pusher | mock",
+			);
+		}
+	}
 }
 
 // ─── Re-exports ──────────────────────────────────────────────────────────────
 
 // Client-side adapters
-export { AblyClientAdapter } from './adapters/client/ably'
-export { MockClientAdapter } from './adapters/client/mock'
-export { SupabaseClientAdapter } from './adapters/client/supabase'
-export { WebSocketClientAdapter } from './adapters/client/websocket'
+export { AblyClientAdapter } from "./adapters/client/ably";
+export { MockClientAdapter } from "./adapters/client/mock";
+export { SupabaseClientAdapter } from "./adapters/client/supabase";
+export { WebSocketClientAdapter } from "./adapters/client/websocket";
 // Server-side adapters
-export { MockRealtimeAdapter } from './adapters/server/mock'
+export { MockRealtimeAdapter } from "./adapters/server/mock";
 // Types
 export type {
-  AblyAdapterOptions,
-  AblyClientAdapterOptions,
-  PusherAdapterOptions,
-  RealtimeAdapter,
-  RealtimeClientAdapter,
-  RealtimePayload,
-  RealtimeProvider,
-  SupabaseAdapterOptions,
-  Unsubscribe,
-  WebSocketAdapterOptions,
-} from './types'
+	AblyAdapterOptions,
+	AblyClientAdapterOptions,
+	PusherAdapterOptions,
+	RealtimeAdapter,
+	RealtimeClientAdapter,
+	RealtimePayload,
+	RealtimeProvider,
+	SupabaseAdapterOptions,
+	Unsubscribe,
+	WebSocketAdapterOptions,
+} from "./types";

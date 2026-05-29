@@ -1,6 +1,7 @@
 import { db } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
-import { serverEnv } from "@mobiliza/env";
+import { roleValues } from "@mobiliza/db/schema";
+import { authEnv } from "@mobiliza/env/auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { testUtils } from "better-auth/plugins";
@@ -40,8 +41,8 @@ export const auth = betterAuth({
 
 	socialProviders: {
 		google: {
-			clientId: serverEnv.GOOGLE_CLIENT_ID,
-			clientSecret: serverEnv.GOOGLE_CLIENT_SECRET,
+			clientId: authEnv.GOOGLE_CLIENT_ID,
+			clientSecret: authEnv.GOOGLE_CLIENT_SECRET,
 		},
 	},
 
@@ -64,7 +65,7 @@ export const auth = betterAuth({
 	user: {
 		additionalFields: {
 			role: {
-				type: ["student", "scholar", "manager"],
+				type: [...roleValues],
 				required: true,
 				defaultValue: "student",
 				input: true,
@@ -77,11 +78,9 @@ export const auth = betterAuth({
 		updateAge: 60 * 60 * 24,
 	},
 
-	trustedOrigins: serverEnv.TRUSTED_ORIGINS,
+	trustedOrigins: authEnv.TRUSTED_ORIGINS,
 
-	plugins: [
-		testUtils(),
-	],
+	plugins: [testUtils()],
 });
 
 export type Auth = typeof auth;

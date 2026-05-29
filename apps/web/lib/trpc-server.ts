@@ -1,9 +1,8 @@
 import { cookies } from "next/headers";
 
 import type { AppRouter } from "@mobiliza/api/src/router";
+import { backendBaseUrl } from "@mobiliza/env/base-url";
 import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
-
-import { getBackendBaseUrl } from "@/lib/api";
 
 export async function createServerTRPCClient() {
 	const cookieStore = await cookies();
@@ -12,7 +11,7 @@ export async function createServerTRPCClient() {
 	return createTRPCProxyClient<AppRouter>({
 		links: [
 			httpBatchLink({
-				url: `${getBackendBaseUrl()}/trpc`,
+				url: `${backendBaseUrl}/trpc`,
 				headers() {
 					return cookieHeader ? { cookie: cookieHeader } : {};
 				},

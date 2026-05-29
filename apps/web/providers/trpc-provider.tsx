@@ -3,11 +3,10 @@
 import { useState } from "react";
 
 import type { AppRouter } from "@mobiliza/api/src/router";
+import { backendBaseUrl } from "@mobiliza/env/base-url";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
-
-import { getBackendBaseUrl } from "@/lib/api";
 
 export const trpc = createTRPCReact<AppRouter>();
 
@@ -42,7 +41,7 @@ export function TRPCProvider({
 		trpc.createClient({
 			links: [
 				httpBatchLink({
-					url: `${getBackendBaseUrl()}/trpc`,
+					url: `${backendBaseUrl}/trpc`,
 					fetch(url, options) {
 						return fetch(url, {
 							...options,

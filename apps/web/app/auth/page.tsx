@@ -1,35 +1,11 @@
-"use client";
-
 import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
-
-import { Loader2 } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
 
 import google from "@/public/google.svg";
 import logo from "@/public/logo.svg";
 
-import { authClient } from "@/lib/auth-client";
+import { GoogleSignInButton } from "./google-sign-in-button";
 
-export default function AuthPage() {
-	const { data: session, isPending } = authClient.useSession();
-	const [isSigningIn, setIsSigningIn] = useState(false);
-	const isBusy = isPending || isSigningIn;
-
-	async function handleGoogleSignIn() {
-		setIsSigningIn(true);
-
-		try {
-			await authClient.signIn.social({
-				provider: "google",
-			});
-		} finally {
-			setIsSigningIn(false);
-		}
-	}
-
+export default async function AuthPage() {
 	return (
 		<main className="flex min-h-svh w-full flex-col md:flex-row">
 			<div className="flex w-full flex-col items-center justify-center gap-12 bg-primary p-12 text-primary-foreground md:w-1/2 md:items-start md:justify-between max-md:h-[40vh]">
@@ -57,28 +33,7 @@ export default function AuthPage() {
 							plataforma
 						</p>
 					</div>
-					{session ? (
-						<Link href="/dashboard" className="w-full">
-							<Button variant="secondary" className="w-full" size="lg">
-								Continuar para o painel
-							</Button>
-						</Link>
-					) : (
-						<Button
-							variant="secondary"
-							className="w-full"
-							size="lg"
-							onClick={handleGoogleSignIn}
-							disabled={isBusy}
-						>
-							{isBusy ? (
-								<Loader2 className="mr-2 size-4 animate-spin" />
-							) : (
-								<Image src={google} alt="Google" className="mr-2" />
-							)}
-							Entrar com o Google
-						</Button>
-					)}
+					<GoogleSignInButton googleLogo={google} />
 					<span className="text-center text-xs text-muted-foreground lg:px-12">
 						Ao continuar, você concorda com nossos{" "}
 						<a
@@ -99,11 +54,6 @@ export default function AuthPage() {
 							Política de Privacidade
 						</a>
 					</span>
-					{session ? (
-						<p className="text-xs text-muted-foreground">
-							Conectado como {session.user.name}.
-						</p>
-					) : null}
 				</div>
 			</div>
 		</main>

@@ -1,9 +1,8 @@
 "use client";
 
+import { backendBaseUrl } from "@mobiliza/env/base-url";
 import { createAuthClient } from "better-auth/react";
 
-import { getBackendBaseUrl } from "@/lib/api";
-
 export const authClient = createAuthClient({
-	baseURL: `${getBackendBaseUrl()}/api/auth`,
+	baseURL: `${backendBaseUrl}/api/auth`,
 });

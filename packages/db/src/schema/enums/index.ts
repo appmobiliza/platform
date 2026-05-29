@@ -4,5 +4,6 @@ export * from "./disability-type";
 export * from "./gender";
 export * from "./notification-type";
 export * from "./request-status";
+export * from "./role";
 export * from "./scholar-shift";
 export * from "./student-shift";

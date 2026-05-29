@@ -1,6 +1,6 @@
-import 'dotenv/config'
+import "dotenv/config";
 
-import { serverEnv } from "@mobiliza/env";
+import { apiEnv } from "@mobiliza/env/api";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 
@@ -14,11 +14,11 @@ import * as schema from "./schema";
  * Fly.io), considere trocar para `drizzle-orm/neon-serverless` com WebSocket
  * pool, que oferece melhor performance em alta concorrência.
  */
-const sql = neon(serverEnv.DATABASE_URL);
+const sql = neon(apiEnv.DATABASE_URL);
 
 export const db = drizzle(sql, {
 	schema,
-	logger: serverEnv.NODE_ENV === "development",
+	logger: apiEnv.NODE_ENV === "development",
 });
 
 export type Database = typeof db;

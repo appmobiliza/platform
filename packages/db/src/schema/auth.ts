@@ -23,7 +23,7 @@ export const user = pgTable("user", {
    * saiba qual papel o usuário exerce sem precisar fazer joins adicionais
    * em cada requisição autenticada.
    */
-  role: text("role", { enum: ["student", "scholar", "manager"] })
+  role: roleEnum("role")
     .notNull()
     .default("student"),
 });
@@ -87,5 +87,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
   }),
 }));
 
+import { roleEnum } from "./enums/role";
 // ─── Import other schemas for cross-schema relations ─────────────────────────
 import { scholarProfile, studentProfile } from "./profiles";
+

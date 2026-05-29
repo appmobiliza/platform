@@ -29,10 +29,17 @@
 	},
 	"javascript": {
 		"formatter": {
-			"enabled": false,
+			"enabled": true,
 			"indentStyle": "tab",
 			"indentWidth": 4,
 			"quoteStyle": "double"
+		}
+	},
+	"html": {
+		"formatter": {
+			"enabled": true,
+			"indentStyle": "tab",
+			"indentWidth": 4
 		}
 	},
 	"json": {
