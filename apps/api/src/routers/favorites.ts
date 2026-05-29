@@ -1,17 +1,18 @@
-import { TRPCError } from "@trpc/server";
-import { protectedProcedure, router } from "../trpc/context";
 import {
   CreateFavoriteRouteSchema,
   DeleteFavoriteRouteSchema,
 } from "@mobiliza/contracts";
+import { db } from "@mobiliza/db/client";
+import { eq } from "@mobiliza/db/drizzle";
+import * as schema from "@mobiliza/db/schema";
 import {
+  AppError,
   createFavoriteRoute,
   deleteFavoriteRoute,
-  AppError,
 } from "@mobiliza/domain";
-import { db } from "@mobiliza/db/client";
-import { eq } from "drizzle-orm";
-import * as schema from "@mobiliza/db/schema";
+import { TRPCError } from "@trpc/server";
+
+import { protectedProcedure, router } from "../trpc/context";
 
 export const favoritesRouter = router({
   create: protectedProcedure

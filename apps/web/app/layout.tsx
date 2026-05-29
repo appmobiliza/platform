@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 import { ThemeProvider } from "@/providers/theme-provider";
+import { TRPCProvider } from "@/providers/trpc-provider";
 
 import "./globals.css";
 
@@ -32,9 +33,11 @@ export default function RootLayout({
 			)}
 		>
 			<body>
-				<ThemeProvider>
-					<TooltipProvider>{children}</TooltipProvider>
-				</ThemeProvider>
+				<TRPCProvider>
+					<ThemeProvider>
+						<TooltipProvider>{children}</TooltipProvider>
+					</ThemeProvider>
+				</TRPCProvider>
 			</body>
 		</html>
 	);

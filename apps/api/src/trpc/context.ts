@@ -59,12 +59,24 @@ export interface TRPCContext extends Record<string, unknown> {
  * por exemplo, mantém um servidor aberto.
  */
 let _realtime: RealtimeAdapter | null = null;
+let _realtimePromise: Promise<RealtimeAdapter> | null = null;
 
-export function getRealtimeAdapter(): RealtimeAdapter {
-  if (!_realtime) {
-    _realtime = createRealtimeAdapter();
+export async function getRealtimeAdapter(): Promise<RealtimeAdapter> {
+	if (_realtime) {
+		return _realtime;
+	}
+
+	_realtimePromise ??= createRealtimeAdapter().then((adapter) => {
+		_realtime = adapter;
+		return adapter;
+	});
+
+	try {
+		return await _realtimePromise;
+	} catch (error) {
+		_realtimePromise = null;
+		throw error;
   }
-  return _realtime;
 }
 
 // ─── Factory de contexto ──────────────────────────────────────────────────────
@@ -81,7 +93,7 @@ export async function createTRPCContext(c: Context): Promise<TRPCContext> {
 
 	return {
 		session: session as Session | null,
-		realtime: getRealtimeAdapter(),
+		realtime: await getRealtimeAdapter(),
 		headers,
 	};
 }

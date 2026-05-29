@@ -31,13 +31,8 @@ async function checkInfra() {
 	console.log("");
 
 	// 2. Realtime (Ably)
-	const realtimeAdapter = createRealtimeAdapter();
-	if (realtimeAdapter instanceof Error) {
-		console.error(
-			"❌ REALTIME: Falha ao criar adapter de Realtime. Verifique as variáveis de ambiente.",
-		);
-		console.error(realtimeAdapter);
-	} else {
+	try {
+		const realtimeAdapter = await createRealtimeAdapter();
 		await realtimeAdapter
 			.publish("health-check", "ping", { timestamp: Date.now() })
 			.then(() => {
@@ -51,6 +46,11 @@ async function checkInfra() {
 				);
 				console.error(error);
 			});
+	} catch (error) {
+		console.error(
+			"❌ REALTIME: Falha ao criar adapter de Realtime. Verifique as variáveis de ambiente.",
+		);
+		console.error(error);
 	}
 
 	console.log("\n✨ Health Check finalizado.");
