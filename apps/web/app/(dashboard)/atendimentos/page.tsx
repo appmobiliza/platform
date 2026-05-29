@@ -26,13 +26,10 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
 	formatDurationShort,
 	getCurrentMonthRange,
-	mapRequestToServiceEntry,
 	type ManagerRequest,
+	mapRequestToServiceEntry,
 } from "@/lib/dashboard-data";
-import {
-	createServerTRPCClient,
-	handleServerTRPCError,
-} from "@/lib/trpc-server";
+import { withServerTRPC } from "@/lib/trpc-server";
 import { cn, getInitials } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -62,15 +59,16 @@ type StudentDashboardResponse = {
 
 export default async function ServicesPage() {
 	const currentDate = new Date();
-	const trpc = await createServerTRPCClient();
 	const monthRange = getCurrentMonthRange();
 	const [summary, requests, scholarsDashboard, studentsDashboard] =
-		(await Promise.all([
-			trpc.metrics.summary.query(monthRange),
-			trpc.requests.managerList.query({ limit: 200 }),
-			trpc.profiles.scholarDashboard.query(),
-			trpc.profiles.studentDashboard.query(),
-		]).catch(handleServerTRPCError)) as [
+		(await withServerTRPC(async (trpc) =>
+			Promise.all([
+				trpc.metrics.summary(monthRange),
+				trpc.requests.managerList({ limit: 200 }),
+				trpc.profiles.scholarDashboard(),
+				trpc.profiles.studentDashboard(),
+			]),
+		)) as [
 			MetricsSummary,
 			ManagerRequest[],
 			ScholarDashboardResponse,
@@ -156,7 +154,8 @@ export default async function ServicesPage() {
 								(scholar) => ({
 									id: scholar.user.id,
 									label: scholar.user.name,
-								}))}
+								}),
+							)}
 							allLabel="Todos os bolsistas"
 						/>
 						<ComboboxMultiple
@@ -165,7 +164,8 @@ export default async function ServicesPage() {
 								(student) => ({
 									id: student.user.id,
 									label: student.user.name,
-								}))}
+								}),
+							)}
 							allLabel="Todos os alunos"
 						/>
 					</div>

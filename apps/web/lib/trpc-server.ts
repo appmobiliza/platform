@@ -1,24 +1,28 @@
-import { cookies } from "next/headers";
+import "server-only";
+
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
-import type { AppRouter } from "@mobiliza/api/src/router";
-import { backendBaseUrl } from "@mobiliza/env/base-url";
-import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
+import { appRouter } from "@mobiliza/api/src/router";
+import { createTRPCContextFromHeaders } from "@mobiliza/api/src/trpc/context";
 
-export async function createServerTRPCClient() {
-	const cookieStore = await cookies();
-	const cookieHeader = cookieStore.toString();
+type ServerTRPCCaller = ReturnType<typeof appRouter.createCaller>;
 
-	return createTRPCProxyClient<AppRouter>({
-		links: [
-			httpBatchLink({
-				url: `${backendBaseUrl}/trpc`,
-				headers() {
-					return cookieHeader ? { cookie: cookieHeader } : {};
-				},
-			}),
-		],
-	});
+const getServerTRPCCaller = cache(async () => {
+	return appRouter.createCaller(async () =>
+		createTRPCContextFromHeaders(await headers()),
+	);
+});
+
+export async function withServerTRPC<T>(
+	operation: (trpc: ServerTRPCCaller) => Promise<T> | T,
+): Promise<T> {
+	try {
+		return await operation(await getServerTRPCCaller());
+	} catch (error) {
+		handleServerTRPCError(error);
+	}
 }
 
 export function handleServerTRPCError(error: unknown): never {

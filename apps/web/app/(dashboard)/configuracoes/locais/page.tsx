@@ -15,10 +15,7 @@ import {
 } from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
-import {
-	createServerTRPCClient,
-	handleServerTRPCError,
-} from "@/lib/trpc-server";
+import { withServerTRPC } from "@/lib/trpc-server";
 
 import { AddLocationDialog } from "./dialog/add-location";
 import { LocationStatusSwitch } from "./location-status-switch";
@@ -36,12 +33,12 @@ type CampusLocation = {
 };
 
 export default async function SettingsPage() {
-	const trpc = await createServerTRPCClient();
-	const campusLocations =
-		(await trpc.locations.listAll
-			.query()
-			.catch(handleServerTRPCError)) as CampusLocation[];
-	const activeLocations = campusLocations.filter((location) => location.isActive);
+	const campusLocations = (await withServerTRPC((trpc) =>
+		trpc.locations.listAll(),
+	)) as CampusLocation[];
+	const activeLocations = campusLocations.filter(
+		(location) => location.isActive,
+	);
 	const inactiveLocations = campusLocations.length - activeLocations.length;
 	const locationFilters = [
 		{
@@ -149,9 +146,7 @@ export default async function SettingsPage() {
 												<LocationStatusSwitch
 													id={location.id}
 													name={location.name}
-													isActive={
-														location.isActive
-													}
+													isActive={location.isActive}
 												/>
 											</div>
 										</TableCell>

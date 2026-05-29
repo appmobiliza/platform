@@ -13,7 +13,7 @@
  *   managerProcedure  → role === "manager"
  */
 
-import { auth } from "@mobiliza/auth";
+import { getSession } from "@mobiliza/auth/server";
 import type { RealtimeAdapter } from "@mobiliza/realtime";
 import { createRealtimeAdapter } from "@mobiliza/realtime";
 import { initTRPC, TRPCError } from "@trpc/server";
@@ -86,10 +86,20 @@ export async function getRealtimeAdapter(): Promise<RealtimeAdapter> {
  * Chamado uma vez por requisição pelo adaptador Hono-tRPC.
  */
 export async function createTRPCContext(c: Context): Promise<TRPCContext> {
-	const headers = new Headers(c.req.raw.headers);
+	return createTRPCContextFromHeaders(c.req.raw.headers);
+}
+
+/**
+ * Cria o contexto do tRPC a partir de headers puros.
+ * Útil para servidores que não passam por um objeto Hono, como o app web.
+ */
+export async function createTRPCContextFromHeaders(
+	headersInit: HeadersInit,
+): Promise<TRPCContext> {
+	const headers = new Headers(headersInit);
 
 	// O Better Auth valida o cookie/token de sessão nos headers
-	const session = await auth.api.getSession({ headers }).catch(() => null);
+	const session = await getSession(headers);
 
 	return {
 		session: session as Session | null,

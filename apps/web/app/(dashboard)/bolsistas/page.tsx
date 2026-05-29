@@ -11,10 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
-import {
-	createServerTRPCClient,
-	handleServerTRPCError,
-} from "@/lib/trpc-server";
+import { withServerTRPC } from "@/lib/trpc-server";
 import { cn, getInitials } from "@/lib/utils";
 
 import { MutateScholarDialog } from "./dialog/add-scholar";
@@ -107,10 +104,9 @@ export default async function ScholarsPage({
 	const resolvedSearchParams = await searchParams;
 	const query = getFirstValue(resolvedSearchParams.q)?.trim() ?? "";
 	const statusFilter = normalizeStatus(resolvedSearchParams.status);
-	const trpc = await createServerTRPCClient();
-	const dashboard = (await trpc.profiles.scholarDashboard
-		.query()
-		.catch(handleServerTRPCError)) as ScholarDashboardResponse;
+	const dashboard = (await withServerTRPC((trpc) =>
+		trpc.profiles.scholarDashboard(),
+	)) as ScholarDashboardResponse;
 	const normalizedQuery = query.toLowerCase();
 	const filteredScholars = dashboard.scholars.filter((item) => {
 		if (statusFilter !== "all" && item.status !== statusFilter) {
@@ -140,7 +136,9 @@ export default async function ScholarsPage({
 			<header className="flex flex-col justify-between gap-4 border-b border-border bg-card p-4 md:flex-row md:items-center md:p-6">
 				<div className="flex flex-col gap-1">
 					<h1 className="text-base font-semibold">Bolsistas</h1>
-					<h2 className="text-sm text-muted-foreground">{currentMonth}</h2>
+					<h2 className="text-sm text-muted-foreground">
+						{currentMonth}
+					</h2>
 				</div>
 				<div className="flex flex-wrap items-center gap-4">
 					<MutateScholarDialog>
@@ -178,7 +176,11 @@ export default async function ScholarsPage({
 
 			<div className="flex min-w-0 flex-col gap-4 overflow-hidden p-4 md:p-6">
 				<div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 md:flex-row md:items-end md:justify-between">
-					<form action="/bolsistas" method="get" className="flex w-full flex-col gap-3 md:max-w-xl md:flex-row md:items-center">
+					<form
+						action="/bolsistas"
+						method="get"
+						className="flex w-full flex-col gap-3 md:max-w-xl md:flex-row md:items-center"
+					>
 						<div className="relative w-full">
 							<Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 							<Input
@@ -189,9 +191,17 @@ export default async function ScholarsPage({
 							/>
 						</div>
 						{statusFilter !== "all" ? (
-							<input type="hidden" name="status" value={statusFilter} />
+							<input
+								type="hidden"
+								name="status"
+								value={statusFilter}
+							/>
 						) : null}
-						<Button type="submit" variant="outline" className="gap-2">
+						<Button
+							type="submit"
+							variant="outline"
+							className="gap-2"
+						>
 							Filtrar
 						</Button>
 					</form>
@@ -199,9 +209,15 @@ export default async function ScholarsPage({
 					<div className="flex flex-wrap gap-2">
 						{[
 							{ label: "Todos", value: "all" as const },
-							{ label: "Disponíveis", value: "available" as const },
+							{
+								label: "Disponíveis",
+								value: "available" as const,
+							},
 							{ label: "Em atendimento", value: "busy" as const },
-							{ label: "Fora do turno", value: "off_shift" as const },
+							{
+								label: "Fora do turno",
+								value: "off_shift" as const,
+							},
 							{ label: "Pendentes", value: "pending" as const },
 						].map((item) => {
 							const active = statusFilter === item.value;
@@ -213,7 +229,12 @@ export default async function ScholarsPage({
 									size="sm"
 									variant={active ? "default" : "outline"}
 								>
-									<Link href={buildFilterHref(query, item.value)}>
+									<Link
+										href={buildFilterHref(
+											query,
+											item.value,
+										)}
+									>
 										{item.label}
 									</Link>
 								</Button>
@@ -234,9 +255,12 @@ export default async function ScholarsPage({
 								key={scholar.user.id}
 								className={cn(
 									"gap-4 border-border/80 bg-card/95 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md",
-									scholar.status === "available" && "ring-1 ring-success/20",
-									scholar.status === "busy" && "ring-1 ring-warning/20",
-									scholar.status === "off_shift" && "ring-1 ring-destructive/20",
+									scholar.status === "available" &&
+										"ring-1 ring-success/20",
+									scholar.status === "busy" &&
+										"ring-1 ring-warning/20",
+									scholar.status === "off_shift" &&
+										"ring-1 ring-destructive/20",
 								)}
 							>
 								<CardHeader className="space-y-4">
@@ -244,16 +268,29 @@ export default async function ScholarsPage({
 										<div className="flex items-start gap-3">
 											<Avatar className="size-12 border border-border">
 												<AvatarFallback>
-													{getInitials(scholar.user.name)}
+													{getInitials(
+														scholar.user.name,
+													)}
 												</AvatarFallback>
-												<AvatarImage src={scholar.user.image || undefined} alt={scholar.user.name} />
+												<AvatarImage
+													src={
+														scholar.user.image ||
+														undefined
+													}
+													alt={scholar.user.name}
+												/>
 											</Avatar>
 											<div className="space-y-1">
-												<CardTitle className="text-lg">{scholar.user.name}</CardTitle>
+												<CardTitle className="text-lg">
+													{scholar.user.name}
+												</CardTitle>
 												<p className="text-sm text-muted-foreground">
-													{scholar.shiftLabel} · {scholar.profile.course}
+													{scholar.shiftLabel} ·{" "}
+													{scholar.profile.course}
 												</p>
-												<p className="text-xs text-muted-foreground">{scholar.profile.campus}</p>
+												<p className="text-xs text-muted-foreground">
+													{scholar.profile.campus}
+												</p>
 											</div>
 										</div>
 										<Badge
@@ -262,7 +299,8 @@ export default async function ScholarsPage({
 													? "success"
 													: scholar.status === "busy"
 														? "warning"
-														: scholar.status === "off_shift"
+														: scholar.status ===
+																"off_shift"
 															? "destructive"
 															: "secondary"
 											}
@@ -271,18 +309,31 @@ export default async function ScholarsPage({
 										</Badge>
 									</div>
 									<p className="text-xs text-muted-foreground">
-										Matrícula {scholar.profile.enrollment} · {scholar.profile.isApproved ? "Aprovado" : "Pendente de aprovação"}
+										Matrícula {scholar.profile.enrollment} ·{" "}
+										{scholar.profile.isApproved
+											? "Aprovado"
+											: "Pendente de aprovação"}
 									</p>
 								</CardHeader>
 								<CardContent className="space-y-3">
 									<div className="grid grid-cols-2 gap-3 text-sm">
 										<div className="rounded-md border bg-muted/40 p-3">
-											<p className="text-xs text-muted-foreground">Telefone</p>
-											<p className="font-medium">{scholar.profile.phone}</p>
+											<p className="text-xs text-muted-foreground">
+												Telefone
+											</p>
+											<p className="font-medium">
+												{scholar.profile.phone}
+											</p>
 										</div>
 										<div className="rounded-md border bg-muted/40 p-3">
-											<p className="text-xs text-muted-foreground">Situação</p>
-											<p className="font-medium">{scholar.profile.isActive ? "Ativo" : "Inativo"}</p>
+											<p className="text-xs text-muted-foreground">
+												Situação
+											</p>
+											<p className="font-medium">
+												{scholar.profile.isActive
+													? "Ativo"
+													: "Inativo"}
+											</p>
 										</div>
 									</div>
 								</CardContent>

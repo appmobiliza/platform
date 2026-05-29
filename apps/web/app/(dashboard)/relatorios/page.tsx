@@ -25,13 +25,10 @@ import {
 	formatDurationShort,
 	getCurrentMonthRange,
 	getRouteLabel,
-	toDate,
 	type ManagerRequest,
+	toDate,
 } from "@/lib/dashboard-data";
-import {
-	createServerTRPCClient,
-	handleServerTRPCError,
-} from "@/lib/trpc-server";
+import { withServerTRPC } from "@/lib/trpc-server";
 import { getInitials } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -287,10 +284,10 @@ function toProgressItems(items: Array<{ label: string; value: number }>) {
 }
 
 function getTopItem(items: ReadonlyArray<{ label: string; value: number }>) {
-	return items.reduce(
-		(top, item) => (item.value > top.value ? item : top),
-		{ label: "Sem dados", value: 0 },
-	);
+	return items.reduce((top, item) => (item.value > top.value ? item : top), {
+		label: "Sem dados",
+		value: 0,
+	});
 }
 
 function getHourlyChartData(requests: ManagerRequest[]) {
@@ -318,7 +315,6 @@ function getHourlyChartData(requests: ManagerRequest[]) {
 }
 
 export default async function ReportsPage() {
-	const trpc = await createServerTRPCClient();
 	const monthRange = getCurrentMonthRange();
 	const [
 		summary,
@@ -326,13 +322,15 @@ export default async function ReportsPage() {
 		requests,
 		scholarDashboard,
 		studentDashboard,
-	] = (await Promise.all([
-		trpc.metrics.summary.query(monthRange),
-		trpc.metrics.scholarPerformance.query(monthRange),
-		trpc.requests.managerList.query({ limit: 500 }),
-		trpc.profiles.scholarDashboard.query(),
-		trpc.profiles.studentDashboard.query(),
-	]).catch(handleServerTRPCError)) as [
+	] = (await withServerTRPC(async (trpc) =>
+		Promise.all([
+			trpc.metrics.summary(monthRange),
+			trpc.metrics.scholarPerformance(monthRange),
+			trpc.requests.managerList({ limit: 500 }),
+			trpc.profiles.scholarDashboard(),
+			trpc.profiles.studentDashboard(),
+		]),
+	)) as [
 		MetricsSummary,
 		ScholarPerformance[],
 		ManagerRequest[],

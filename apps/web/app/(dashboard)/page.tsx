@@ -34,10 +34,7 @@ import {
 	mapRequestToServiceEntry,
 	toDate,
 } from "@/lib/dashboard-data";
-import {
-	createServerTRPCClient,
-	handleServerTRPCError,
-} from "@/lib/trpc-server";
+import { withServerTRPC } from "@/lib/trpc-server";
 import { cn, getInitials } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -132,17 +129,15 @@ function getPendingAlert(requests: ManagerRequest[]) {
 }
 
 export default async function DashboardPage() {
-	const trpc = await createServerTRPCClient();
 	const todayRange = getTodayRange();
-	const [summary, scholarDashboard, requests] = (await Promise.all([
-		trpc.metrics.summary.query(todayRange),
-		trpc.profiles.scholarDashboard.query(),
-		trpc.requests.managerList.query({ limit: 100 }),
-	]).catch(handleServerTRPCError)) as [
-		MetricsSummary,
-		ScholarDashboardResponse,
-		ManagerRequest[],
-	];
+	const [summary, scholarDashboard, requests] = (await withServerTRPC(
+		async (trpc) =>
+			Promise.all([
+				trpc.metrics.summary(todayRange),
+				trpc.profiles.scholarDashboard(),
+				trpc.requests.managerList({ limit: 100 }),
+			]),
+	)) as [MetricsSummary, ScholarDashboardResponse, ManagerRequest[]];
 	const inProgressCount = requests.filter(
 		(request) =>
 			request.status === "accepted" || request.status === "ongoing",

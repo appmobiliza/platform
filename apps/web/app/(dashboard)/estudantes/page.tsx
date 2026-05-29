@@ -32,10 +32,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 
-import {
-	createServerTRPCClient,
-	handleServerTRPCError,
-} from "@/lib/trpc-server";
+import { withServerTRPC } from "@/lib/trpc-server";
 import { cn, getInitials } from "@/lib/utils";
 
 import type { StudentData } from "@/data/students-data";
@@ -61,11 +58,9 @@ type StudentDashboardResponse = {
 };
 
 export default async function StudentsPage() {
-	const trpc = await createServerTRPCClient();
-	const dashboard =
-		(await trpc.profiles.studentDashboard
-			.query()
-			.catch(handleServerTRPCError)) as StudentDashboardResponse;
+	const dashboard = (await withServerTRPC((trpc) =>
+		trpc.profiles.studentDashboard(),
+	)) as StudentDashboardResponse;
 	const studentsData = dashboard.students;
 
 	return (
@@ -176,8 +171,12 @@ export default async function StudentsPage() {
 										<TableCell>
 											{entry.summary.recentRoutes[0]?.date
 												? new Date(
-														entry.summary.recentRoutes[0].date,
-													).toLocaleDateString("pt-BR")
+														entry.summary
+															.recentRoutes[0]
+															.date,
+													).toLocaleDateString(
+														"pt-BR",
+													)
 												: "-"}
 										</TableCell>
 										<TableCell className="pr-6 md:pr-8 text-right">

@@ -26,8 +26,7 @@
 	"dependencies": {
 		"@mobiliza/db": "workspace:*",
 		"@mobiliza/env": "workspace:*",
-		"better-auth": "^1.6.11",
-		"server-only": "^0.0.1"
+		"better-auth": "^1.6.11"
 	},
 	"devDependencies": {
 		"@mobiliza/typescript-config": "workspace:*"
