@@ -1,12 +1,12 @@
 <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="./.github/cover.png">
+   <source media="(prefers-color-scheme: dark)" srcset="./.github/cover_dark.png">
    <source media="(prefers-color-scheme: light)" srcset="./.github/cover.png">
    <img alt="Capa do projeto Mobiliza" src="./.github/cover.png">
 </picture>
 
 ## ✨ Visão geral
 
-O Mobiliza é um monorepo que reúne os principais serviços e aplicações da plataforma, com foco em atendimento, gestão e estruturação de dados para o ecossistema do projeto.
+Este monorepo reúne os principais serviços e aplicações da plataforma, com foco em atendimento, gestão e estruturação de dados para o ecossistema do projeto Mobiliza.
 
 A base atual do repositório inclui:
 
