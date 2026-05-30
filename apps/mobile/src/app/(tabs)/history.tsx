@@ -2,13 +2,13 @@ import { FlatList, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { FeaturedHistoryCard } from "@/components/featured-history-card";
+import { ScholarHistory } from "@/components/scholar/history";
 import { SimpleHistoryItem } from "@/components/simple-history-item";
 import { StatusMessage } from "@/components/status-message";
 import { Text } from "@/components/ui/text";
 
+import { UserRole, useUserRole } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
-import { useUserRole } from "@/lib/auth-store";
-import { ScholarHistory } from "@/components/scholar/ScholarHistory";
 
 const historyItems = [
 	{
@@ -99,5 +99,5 @@ function StudentHistory() {
 
 export default function History() {
 	const role = useUserRole();
-	return role === "scholar" ? <ScholarHistory /> : <StudentHistory />;
+	return role === UserRole.Scholar ? <ScholarHistory /> : <StudentHistory />;
 }

@@ -7,9 +7,10 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import { useIsLoggedIn, useUserRole } from "@/lib/auth-store";
+import { useIsLoggedIn } from "@/lib/auth-store";
 import { THEME } from "@/lib/theme";
-import { ThemeProvider } from "@/components/ThemeProvider";
+
+import { ThemeProvider } from "@/providers/theme-provider";
 
 // Set the animation options. This is optional.
 /* SplashScreen.setOptions({
@@ -19,11 +20,10 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 
 export default function RootLayout() {
 	const isLoggedIn = useIsLoggedIn();
-	const role = useUserRole();
 
 	const colorScheme = useColorScheme();
-	// For background we can rely on NativeWind, but if we need the RN style, 
-	// we should probably derive it from the scheme. 
+	// For background we can rely on NativeWind, but if we need the RN style,
+	// we should probably derive it from the scheme.
 	// For now we keep using the THEME constant for the base background.
 	const bgColor = THEME[colorScheme ?? "light"].background;
 

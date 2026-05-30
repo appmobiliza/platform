@@ -4,12 +4,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { NewsCarousel } from "@/components/news-carousel";
 import { PlaceCard } from "@/components/place-card";
+import { ScholarHome } from "@/components/scholar/home";
 import { SearchBar } from "@/components/search-bar";
 import { Text } from "@/components/ui/text";
 
-import { Logo } from "@/assets/logo";
 import { useUserRole } from "@/lib/auth-store";
-import { ScholarHome } from "@/components/scholar/ScholarHome";
+
+import { Logo } from "@/assets/logo";
 
 const newsItems = [
 	{

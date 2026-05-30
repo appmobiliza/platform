@@ -52,8 +52,9 @@ function Address({
 	);
 }
 
-type AddressRouteProps = {
+export type AddressRouteProps = {
 	className?: string;
+	shouldShowRoute?: boolean;
 	from: {
 		label: string;
 		children?: React.ReactNode;
@@ -66,7 +67,12 @@ type AddressRouteProps = {
 	};
 };
 
-function AddressRoute({ className, from, to }: AddressRouteProps) {
+function AddressRoute({
+	className,
+	shouldShowRoute,
+	from,
+	to,
+}: AddressRouteProps) {
 	return (
 		<View className={cn("w-full flex-col items-start gap-1", className)}>
 			<Address
@@ -79,9 +85,11 @@ function AddressRoute({ className, from, to }: AddressRouteProps) {
 			</Address>
 
 			<View className="w-full flex-row items-center justify-start gap-4">
-				<View className="size-6 items-center justify-center">
-					<View className="h-6 w-0.5 bg-primary" />
-				</View>
+				{shouldShowRoute && (
+					<View className="size-6 items-center justify-center">
+						<View className="h-6 w-0.5 bg-primary" />
+					</View>
+				)}
 				<View className="flex-1 h-px bg-border" />
 			</View>
 

@@ -1,8 +1,9 @@
-import { View, FlatList, Pressable } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Text } from "@/components/ui/text";
-import { Clock } from "lucide-react-native";
 import { useRouter } from "expo-router";
+import { Clock } from "lucide-react-native";
+import { FlatList, Pressable, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { Text } from "@/components/ui/text";
 
 const mockedShifts = [
 	{ id: "1", date: "1 de agosto", count: 5 },
@@ -23,7 +24,7 @@ export function ScholarHistory() {
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={{ paddingBottom: 24 }}
 				ListHeaderComponent={
-					<View 
+					<View
 						className="px-6 pb-6"
 						style={{ paddingTop: insets.top + 32 }}
 					>
@@ -36,8 +37,12 @@ export function ScholarHistory() {
 					</View>
 				}
 				renderItem={({ item }) => (
-					<Pressable 
-						onPress={() => item.count > 0 ? router.push(`/history/${item.id}`) : null}
+					<Pressable
+						onPress={() =>
+							item.count > 0
+								? router.push(`/history/shift/${item.id}`)
+								: null
+						}
 						className="px-6 mb-4"
 					>
 						<View className="bg-card border border-border rounded-[24px] p-4 flex-row items-center">
@@ -46,7 +51,9 @@ export function ScholarHistory() {
 							</View>
 							<View>
 								<Text className="font-bold text-lg text-foreground">
-									{item.count > 0 ? `${item.count} deslocamentos` : "Nenhum deslocamento"}
+									{item.count > 0
+										? `${item.count} deslocamentos`
+										: "Nenhum deslocamento"}
 								</Text>
 								<Text className="text-muted-foreground text-sm">
 									{item.date}

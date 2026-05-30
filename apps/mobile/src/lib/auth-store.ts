@@ -1,9 +1,12 @@
 import { useSyncExternalStore } from "react";
 
-type UserRole = "student" | "scholar";
+export enum UserRole {
+	Student = "student",
+	Scholar = "scholar",
+}
 
 let isLoggedIn = false;
-let userRole: UserRole = "student";
+let userRole: UserRole = UserRole.Student;
 
 const listeners = new Set<() => void>();
 
@@ -45,7 +48,7 @@ export function useUserRole() {
 			};
 		},
 		() => userRole,
-		() => "student",
+		() => UserRole.Student,
 	);
 }
 

@@ -1,38 +1,48 @@
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { useColorScheme } from "react-native";
 
-import { THEME } from "@/lib/theme";
 import { useUserRole } from "@/lib/auth-store";
+import { SCHOLAR_THEME, THEME } from "@/lib/theme";
 
 export default function AppTabs() {
 	const colorScheme = useColorScheme();
 	const role = useUserRole();
-	
+
 	const bgColor =
 		colorScheme === "dark" ? THEME.dark.background : THEME.light.background;
 
 	// Scholar Specific Overrides
 	const isScholar = role === "scholar";
 
-	const barColor = isScholar 
-		? "#1A1F1F" // Dark background for scholar tab bar
-		: (colorScheme === "dark" ? THEME.dark.bar.background : THEME.light.bar.background);
+	const barColor = isScholar
+		? SCHOLAR_THEME.bar.background
+		: colorScheme === "dark"
+			? THEME.dark.bar.background
+			: THEME.light.bar.background;
 
 	const labelColor = isScholar
-		? { default: "#A3A3A3", selected: "#60A5FA" } // Gray default, light blue selected
-		: (colorScheme === "dark" ? THEME.dark.bar.label : THEME.light.bar.label);
+		? SCHOLAR_THEME.bar.label
+		: colorScheme === "dark"
+			? THEME.dark.bar.label
+			: THEME.light.bar.label;
 
 	const indicatorColor = isScholar
-		? "#0A2540" // Deep blue indicator
-		: (colorScheme === "dark" ? THEME.dark.bar.indicator : THEME.light.bar.indicator);
+		? SCHOLAR_THEME.bar.indicator
+		: colorScheme === "dark"
+			? THEME.dark.bar.indicator
+			: THEME.light.bar.indicator;
 
 	const iconColor = isScholar
-		? { default: "#A3A3A3", selected: "#FFFFFF" } // Gray default, white inside indicator
-		: (colorScheme === "dark" ? THEME.dark.bar.icon : THEME.light.bar.icon);
+		? SCHOLAR_THEME.bar.icon
+		: colorScheme === "dark"
+			? THEME.dark.bar.icon
+			: THEME.light.bar.icon;
 
 	const rippleColor = isScholar
-		? "rgba(255, 255, 255, 0.1)"
-		: (colorScheme === "dark" ? THEME.dark.bar.ripple : THEME.light.bar.ripple);
+		? SCHOLAR_THEME.bar.ripple
+		: colorScheme === "dark"
+			? THEME.dark.bar.ripple
+			: THEME.light.bar.ripple;
 
 	return (
 		<NativeTabs
