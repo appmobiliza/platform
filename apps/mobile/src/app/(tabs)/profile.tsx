@@ -103,11 +103,11 @@ export default function Profile() {
 									},
 								)}
 							>
-								<View className="w-16 h-16 rounded-full flex items-center justify-center text-foreground">
+								<View className="w-16 h-16 rounded-full flex items-center justify-center">
 									<Icon
 										icon={item.icon}
 										size={32}
-										color="foreground"
+										color="--foreground"
 									/>
 								</View>
 								<View className="ml-4 flex-1">

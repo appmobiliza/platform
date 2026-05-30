@@ -1,3 +1,4 @@
+import { useUnstableNativeVariable as _useUnstableNativeVariable } from "nativewind";
 import type { ColorSchemeName } from "react-native";
 
 export type ThemeColors = {
@@ -84,4 +85,6 @@ export const SCHOLAR_THEME: ThemeColors = {
 	},
 };
 
-export const useUnstableNativeVariable = (name: string) => `var(${name})`;
+export const useUnstableNativeVariable = (name: string) =>
+	// @ts-expect-error - nativewind web stub returns never, but native works correctly
+	_useUnstableNativeVariable(name);

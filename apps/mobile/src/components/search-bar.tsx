@@ -102,7 +102,7 @@ export function SearchBar({ examples, placeholder, onPress }: SearchBarProps) {
 				<Icon
 					icon={Search}
 					size={20}
-					color="foreground"
+					color="--foreground"
 					style={{ marginRight: 12 }}
 				/>
 				<Text

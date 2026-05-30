@@ -45,7 +45,7 @@ export default function ScholarHistoryDetails() {
 						<Icon
 							icon={Footprints}
 							size={14}
-							color="primary-foreground"
+							color="--primary-foreground"
 						/>
 						<Text>2,1km</Text>
 					</Badge>
@@ -53,7 +53,7 @@ export default function ScholarHistoryDetails() {
 						<Icon
 							icon={Clock}
 							size={14}
-							color="primary-foreground"
+							color="--primary-foreground"
 						/>
 						<Text>29m</Text>
 					</Badge>

@@ -17,6 +17,7 @@ import { Text } from "@/components/ui/text";
 
 import { Logo } from "@/assets/logo";
 
+import { Icon } from "../ui/icon";
 import { PendingRequestCard } from "./pending-request-card";
 
 type ShiftState = "out" | "pre" | "waiting" | "pending";
@@ -74,12 +75,12 @@ export function ScholarHome() {
 
 						{/* Empty State Card */}
 						<View className="border border-border rounded-[32px] flex-1 items-center justify-center p-6">
-							<Palmtree
-								color="currentColor"
-								className="text-foreground mb-6"
+							<Icon
+								icon={Palmtree}
+								color="--foreground"
 								size={56}
 							/>
-							<Text className="text-2xl font-bold text-foreground text-center mb-3">
+							<Text className="text-2xl font-bold text-foreground text-center mt-6 mb-3">
 								Seu turno ainda não{"\n"}começou
 							</Text>
 							<Text className="text-center text-muted-foreground text-base leading-tight">

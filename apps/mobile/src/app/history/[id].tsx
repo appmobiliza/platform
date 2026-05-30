@@ -19,19 +19,19 @@ function StudentHistoryDetails() {
 			subtitle="6 de agosto • 19h"
 			mapBadges={
 				<>
-					<Badge className="text-primary-foreground">
+					<Badge>
 						<Icon
 							icon={Footprints}
 							size={14}
-							color="primary-foreground"
+							color="--primary-foreground"
 						/>
 						<Text>2,1km</Text>
 					</Badge>
-					<Badge className="text-primary-foreground">
+					<Badge>
 						<Icon
 							icon={Clock}
 							size={14}
-							color="primary-foreground"
+							color="--primary-foreground"
 						/>
 						<Text>29m</Text>
 					</Badge>
@@ -61,7 +61,7 @@ function StudentHistoryDetails() {
 						variant="secondary"
 						className="px-2 py-0.5 text-foreground"
 					>
-						<Icon icon={Cloud} size={14} color="foreground" />
+						<Icon icon={Cloud} size={14} color="--foreground" />
 						<Text>Manhã</Text>
 					</Badge>
 				</View>
@@ -90,12 +90,16 @@ function StudentHistoryDetails() {
 		>
 			<View className="gap-3 w-full">
 				<Button className="rounded-full w-full text-white">
-					<Icon icon={Star} size={18} color="white" />
+					<Icon icon={Star} size={18} color="--primary-foreground" />
 					<Text>Avaliar</Text>
 				</Button>
 
 				<Button className="rounded-full w-full text-white">
-					<Icon icon={RotateCcw} size={18} color="white" />
+					<Icon
+						icon={RotateCcw}
+						size={18}
+						color="--primary-foreground"
+					/>
 					<Text>Reagendar</Text>
 				</Button>
 			</View>
