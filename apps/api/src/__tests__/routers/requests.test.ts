@@ -14,22 +14,23 @@
  */
 
 import { TRPCError } from "@trpc/server";
+
 import { appRouter } from "../../router";
+import { rollbackTransaction } from "../db-setup";
+import {
+  seedCampusLocation,
+  seedScholarProfile,
+  seedServiceAttendance,
+  seedServiceRequest,
+  seedStudentProfile,
+  seedUser,
+} from "../helpers/seed";
 import {
   createMockTRPCContext,
-  createStudentSession,
-  createScholarSession,
   createNullSessionContext,
+  createScholarSession,
+  createStudentSession,
 } from "../mocks/context";
-import {
-  seedUser,
-  seedStudentProfile,
-  seedScholarProfile,
-  seedCampusLocation,
-  seedServiceRequest,
-  seedServiceAttendance,
-} from "../helpers/seed";
-import { rollbackTransaction } from "../db-setup";
 
 let caller: ReturnType<typeof appRouter.createCaller>;
 
@@ -55,8 +56,8 @@ describe("requestsRouter", () => {
       // Act & Assert
       await expect(
         caller.requests.create({
-          originLocationId: 1,
-          destinationLocationId: 2,
+          originLocationId: "1",
+          destinationLocationId: "2",
           notes: "Test note",
         })
       ).rejects.toThrow(TRPCError);
@@ -72,8 +73,8 @@ describe("requestsRouter", () => {
       // Act & Assert
       await expect(
         caller.requests.create({
-          originLocationId: 1,
-          destinationLocationId: 2,
+          originLocationId: "1",
+          destinationLocationId: "2",
         })
       ).rejects.toMatchObject({
         code: "FORBIDDEN",
@@ -90,8 +91,8 @@ describe("requestsRouter", () => {
       // Act & Assert
       await expect(
         caller.requests.create({
-          originLocationId: 1,
-          destinationLocationId: 1,
+          originLocationId: "1",
+          destinationLocationId: "1",
         })
       ).rejects.toMatchObject({
         code: "BAD_REQUEST",
@@ -112,8 +113,8 @@ describe("requestsRouter", () => {
       // Act & Assert
       await expect(
         caller.requests.create({
-          originLocationId: 1,
-          destinationLocationId: 2,
+          originLocationId: "1",
+          destinationLocationId: "2",
         })
       ).rejects.toMatchObject({
         code: "CONFLICT",

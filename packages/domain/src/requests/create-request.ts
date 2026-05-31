@@ -1,3 +1,4 @@
+import { uuidv7 } from "uuidv7";
 import type { CreateRequestSchema } from "@mobiliza/contracts";
 import type { Database } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
@@ -5,11 +6,6 @@ import { and, eq, sql } from "drizzle-orm";
 import type { z } from "zod";
 
 import { BadRequestError, ConflictError, ForbiddenError } from "../errors";
-
-/** Gera um ID de request no formato `req_<timestamp>_<random>` */
-export function generateRequestId(): string {
-	return `req_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-}
 
 export async function createRequest(
 	input: z.infer<typeof CreateRequestSchema>,
@@ -52,7 +48,7 @@ export async function createRequest(
 		);
 	}
 
-	const id = generateRequestId();
+	const id = uuidv7();
 
 	const [request] = await db
 		.insert(schema.serviceRequest)

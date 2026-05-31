@@ -3,9 +3,7 @@ import {
   text,
   timestamp,
   boolean,
-  serial,
   doublePrecision,
-  integer,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { studentProfile } from "./profiles";
@@ -21,7 +19,7 @@ import { studentProfile } from "./profiles";
  * referência espacial — sem geolocalização em tempo real.
  */
 export const campusLocation = pgTable("campus_location", {
-  id: serial("id").primaryKey(),
+  id: text("id").primaryKey(),
 
   /*
    * Nome completo exibido na interface e lido pelo leitor de tela.
@@ -63,11 +61,11 @@ export const favoriteRoute = pgTable("favorite_route", {
     .notNull()
     .references(() => studentProfile.id, { onDelete: "cascade" }),
     
-  originLocationId: integer("origin_location_id")
+  originLocationId: text("origin_location_id")
     .notNull()
     .references(() => campusLocation.id, { onDelete: "restrict" }),
     
-  destinationLocationId: integer("destination_location_id")
+  destinationLocationId: text("destination_location_id")
     .notNull()
     .references(() => campusLocation.id, { onDelete: "restrict" }),
     

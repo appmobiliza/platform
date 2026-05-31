@@ -9,23 +9,24 @@
  */
 
 import { TRPCError } from "@trpc/server";
+
 import { appRouter } from "../../router";
 import {
-  createMockTRPCContext,
-  createStudentSession,
-  createScholarSession,
-  createNullSessionContext,
-} from "../mocks/context";
-import {
-  seedUser,
-  seedStudentProfile,
-  seedScholarProfile,
   seedCampusLocation,
-  seedServiceRequest,
   seedNotification,
+  seedScholarProfile,
+  seedServiceRequest,
+  seedStudentProfile,
+  seedUser,
 } from "../helpers/seed";
+import { clearAuthMock, createMockSession, mockAuthSession } from "../mocks/auth";
+import {
+  createMockTRPCContext,
+  createNullSessionContext,
+  createScholarSession,
+  createStudentSession,
+} from "../mocks/context";
 import { rollbackTransaction } from "../setup";
-import { mockAuthSession, clearAuthMock, createMockSession } from "../mocks/auth";
 
 let caller: ReturnType<typeof appRouter.createCaller>;
 
@@ -158,7 +159,7 @@ describe("auth", () => {
 
       // Act & Assert
       await expect(
-        caller.requests.create({ originLocationId: 1, destinationLocationId: 2 })
+        caller.requests.create({ originLocationId: "1", destinationLocationId: "2" })
       ).rejects.toMatchObject({ code: "FORBIDDEN" });
     });
   });
