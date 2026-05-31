@@ -3,7 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { testUtils } from "better-auth/plugins";
 
 import { db } from "./client.js";
-import * as schema from "./schema/index.js";
+import * as schema from "./schema";
 
 /*
 const allowedDomains = [
