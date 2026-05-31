@@ -4,6 +4,7 @@
  * Implementação direta que funciona com os routers sem modificá-los.
  */
 
+import { uuidv7 } from "uuidv7";
 import type * as Schema from './schema'
 
 // ─── In-Memory Store ───────────────────────────────────────────────────────────
@@ -41,7 +42,7 @@ export function resetDB(): void {
 export function seedUser(overrides: Partial<Schema.User> = {}): Schema.User {
   ensureTable('user')
   const user: Schema.User = {
-    id: `user_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+    id: uuidv7(),
     name: 'Test User',
     email: 'test@example.com',
     emailVerified: true,
@@ -58,7 +59,7 @@ export function seedUser(overrides: Partial<Schema.User> = {}): Schema.User {
 export function seedScholarProfile(userId: string, overrides: Partial<Schema.ScholarProfile> = {}): Schema.ScholarProfile {
   ensureTable('scholarProfile')
   const profile: Schema.ScholarProfile = {
-    id: `schol_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+    id: uuidv7(),
     userId,
     enrollment: '2024001',
     course: 'Ciência da Computação',
@@ -82,7 +83,7 @@ export function seedScholarProfile(userId: string, overrides: Partial<Schema.Sch
 export function seedStudentProfile(userId: string, overrides: Partial<Schema.StudentProfile> = {}): Schema.StudentProfile {
   ensureTable('studentProfile')
   const profile: Schema.StudentProfile = {
-    id: `sp_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+    id: uuidv7(),
     userId,
     enrollment: '2024002',
     course: 'Ciência da Computação',
@@ -105,7 +106,7 @@ export function seedStudentProfile(userId: string, overrides: Partial<Schema.Stu
 export function seedCampusLocation(overrides: Partial<Schema.CampusLocation> = {}): Schema.CampusLocation {
   ensureTable('campusLocation')
   const location: Schema.CampusLocation = {
-    id: `loc_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+    id: uuidv7(),
     name: 'Bloco de Aulas',
     abbreviation: 'BLA',
     description: 'Bloco principal de aulas',
@@ -123,7 +124,7 @@ export function seedCampusLocation(overrides: Partial<Schema.CampusLocation> = {
 export function seedServiceRequest(studentProfileId: string, overrides: Partial<Schema.ServiceRequest> = {}): Schema.ServiceRequest {
   ensureTable('serviceRequest')
   const request: Schema.ServiceRequest = {
-    id: `req_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+    id: uuidv7(),
     studentProfileId,
     originLocationId: 'loc_default_origin',
     destinationLocationId: 'loc_default_dest',
@@ -141,7 +142,7 @@ export function seedServiceRequest(studentProfileId: string, overrides: Partial<
 export function seedServiceAttendance(requestId: string, scholarProfileId: string, overrides: Partial<Schema.ServiceAttendance> = {}): Schema.ServiceAttendance {
   ensureTable('serviceAttendance')
   const attendance: Schema.ServiceAttendance = {
-    id: `att_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+    id: uuidv7(),
     requestId,
     scholarProfileId,
     acceptedAt: new Date(),
@@ -161,7 +162,7 @@ export function seedServiceAttendance(requestId: string, scholarProfileId: strin
 export function seedNotification(userId: string, overrides: Partial<Schema.Notification> = {}): Schema.Notification {
   ensureTable('notification')
   const notification: Schema.Notification = {
-    id: `notif_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+    id: uuidv7(),
     userId,
     type: 'new_request_available',
     title: 'Nova solicitação',

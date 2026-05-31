@@ -6,8 +6,9 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { scholarProcedure } from "@/trpc/context";
+import { uuidv7 } from "uuidv7";
 
-import { execTx, generateAttendanceId } from "./shared";
+import { execTx } from "./shared";
 
 export const accept = scholarProcedure
 	.meta({ openapi: { method: "POST", path: "/requests/accept" } })
@@ -66,7 +67,7 @@ export const accept = scholarProcedure
 			const [attendance] = await tx
 				.insert(schema.serviceAttendance)
 				.values({
-					id: generateAttendanceId(),
+					id: uuidv7(),
 					requestId: input.requestId,
 					scholarProfileId: scholarProfile.id,
 					acceptedAt: now,

@@ -7,6 +7,7 @@ import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { TRPCError } from "@trpc/server";
+import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
 import {
@@ -15,10 +16,6 @@ import {
 	router,
 	scholarProcedure,
 } from "@/trpc/context";
-
-function generateProfileId(prefix: string): string {
-	return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-}
 
 export const profilesRouter = router({
 	/**
@@ -82,7 +79,7 @@ export const profilesRouter = router({
 			const [profile] = await db
 				.insert(schema.studentProfile)
 				.values({
-					id: generateProfileId("sp"),
+					id: uuidv7(),
 					userId: ctx.session.user.id,
 					...profileData,
 				})
@@ -90,7 +87,7 @@ export const profilesRouter = router({
 
 			await db.insert(schema.studentDisability).values(
 				disabilityTypes.map((dt) => ({
-					id: generateProfileId("sd"),
+					id: uuidv7(),
 					studentProfileId: profile.id,
 					disabilityType: dt,
 				})),
@@ -131,7 +128,7 @@ export const profilesRouter = router({
 			const [profile] = await db
 				.insert(schema.scholarProfile)
 				.values({
-					id: generateProfileId("schol"),
+					id: uuidv7(),
 					userId: ctx.session.user.id,
 					...input,
 					isApproved: false,

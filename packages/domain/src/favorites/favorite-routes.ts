@@ -1,14 +1,10 @@
+import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { CreateFavoriteRouteSchema } from "@mobiliza/contracts";
 import type { Database } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
 import { eq, and } from "drizzle-orm";
 import { ForbiddenError, BadRequestError, ConflictError, NotFoundError } from "../errors";
-
-/** Gera um ID de rota favorita no formato `fav_<timestamp>_<random>` */
-export function generateFavoriteRouteId(): string {
-  return `fav_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-}
 
 export async function createFavoriteRoute(
   input: z.infer<typeof CreateFavoriteRouteSchema>,
@@ -47,7 +43,7 @@ export async function createFavoriteRoute(
     throw new ConflictError("Você já tem uma rota favorita com esta origem e destino.");
   }
 
-  const id = generateFavoriteRouteId();
+  const id = uuidv7();
 
   const [route] = await db
     .insert(schema.favoriteRoute)

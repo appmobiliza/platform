@@ -5,6 +5,7 @@
  */
 
 import { sql } from "drizzle-orm";
+import { uuidv7 } from "uuidv7";
 import {
   user,
   studentProfile,
@@ -33,11 +34,11 @@ export async function seedUser(
   }> = {}
 ) {
   const { id, name, email, role = "student", createdAt } = overrides;
-  const uniqueSuffix = crypto.randomUUID().slice(0, 8);
+  const uniqueSuffix = uuidv7().slice(0, 8);
   const [created] = await db
     .insert(user)
     .values({
-      id: id ?? crypto.randomUUID(),
+      id: id ?? uuidv7(),
       name: name ?? "Test User",
       email: email ?? `test_${uniqueSuffix}@example.com`,
       emailVerified: true,
@@ -64,11 +65,11 @@ export async function seedStudentProfile(
   }> = {}
 ) {
   const { createdAt } = overrides;
-  const uniqueSuffix = crypto.randomUUID().slice(0, 8);
+  const uniqueSuffix = uuidv7().slice(0, 8);
   const [created] = await db
     .insert(studentProfile)
     .values({
-      id: crypto.randomUUID(),
+      id: uuidv7(),
       userId,
       enrollment: overrides.enrollment ?? `2024${uniqueSuffix}`,
       course: (overrides.course ?? "Ciência da Computação") as "Ciência da Computação" | "Pedagogia" | "Engenharia Civil" | "Direito" | "Medicina",
@@ -101,11 +102,11 @@ export async function seedScholarProfile(
   }> = {}
 ) {
   const { createdAt } = overrides;
-  const uniqueSuffix = crypto.randomUUID().slice(0, 8);
+  const uniqueSuffix = uuidv7().slice(0, 8);
   const [created] = await db
     .insert(scholarProfile)
     .values({
-      id: crypto.randomUUID(),
+      id: uuidv7(),
       userId,
       enrollment: overrides.enrollment ?? `2024${uniqueSuffix}`,
       course: (overrides.course ?? "Ciência da Computação") as "Ciência da Computação" | "Pedagogia" | "Engenharia Civil" | "Direito" | "Medicina",
@@ -174,7 +175,7 @@ export async function seedServiceRequest(
   const [created] = await db
     .insert(serviceRequest)
     .values({
-      id: crypto.randomUUID(),
+      id: uuidv7(),
       studentProfileId,
       originLocationId: originId,
       destinationLocationId: destId,
@@ -206,7 +207,7 @@ export async function seedServiceAttendance(
   const [created] = await db
     .insert(serviceAttendance)
     .values({
-      id: crypto.randomUUID(),
+      id: uuidv7(),
       requestId,
       scholarProfileId,
       acceptedAt: overrides.acceptedAt ?? new Date(),
@@ -236,7 +237,7 @@ export async function seedNotification(
   const [created] = await db
     .insert(notification)
     .values({
-      id: crypto.randomUUID(),
+      id: uuidv7(),
       userId,
       type: (overrides.type ?? "new_request_available") as any,
       title: overrides.title ?? "Nova solicitacao",
@@ -259,7 +260,7 @@ export async function seedStudentDisability(
   const [created] = await db
     .insert(studentDisability)
     .values({
-      id: crypto.randomUUID(),
+      id: uuidv7(),
       studentProfileId,
       disabilityType: (overrides.disabilityType ?? "physical_disability") as any,
     })

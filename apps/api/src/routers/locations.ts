@@ -10,6 +10,7 @@ import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { TRPCError } from "@trpc/server";
+import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
 import { managerProcedure, publicProcedure, router } from "@/trpc/context";
@@ -60,7 +61,7 @@ export const locationsRouter = router({
 			const [location] = await db
 				.insert(schema.campusLocation)
 				.values({
-					id: crypto.randomUUID(),
+					id: uuidv7(),
 					...input,
 				})
 				.returning();

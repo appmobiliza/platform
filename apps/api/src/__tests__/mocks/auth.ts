@@ -5,6 +5,8 @@
  * Não faz chamadas reais ao banco ou serviços externos.
  */
 
+import { uuidv7 } from "uuidv7";
+
 /**
  * Mock do Better Auth — retorna sessões simuladas.
  */
@@ -46,7 +48,7 @@ export interface MockSession {
 export function createMockSession(overrides: Partial<MockSession['user']> = {}): MockSession {
   return {
     user: {
-      id: `user_${Date.now()}`,
+      id: uuidv7(),
       name: 'Test User',
       email: 'test@example.com',
       role: 'student',
@@ -54,7 +56,7 @@ export function createMockSession(overrides: Partial<MockSession['user']> = {}):
       ...overrides,
     },
     session: {
-      id: `session_${crypto.randomUUID().slice(0, 8)}`,
+      id: uuidv7(),
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias
     },
   }
