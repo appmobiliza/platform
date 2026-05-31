@@ -6,6 +6,24 @@
 
 import { sql } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
+import type {
+  CampusLocation,
+  NewCampusLocation,
+  NewNotification,
+  NewScholarProfile,
+  NewServiceAttendance,
+  NewServiceRequest,
+  NewStudentDisability,
+  NewStudentProfile,
+  NewUser,
+  Notification,
+  ScholarProfile,
+  ServiceAttendance,
+  ServiceRequest,
+  StudentDisability,
+  StudentProfile,
+  User,
+} from "@mobiliza/db/schema";
 import {
   user,
   studentProfile,
@@ -25,25 +43,18 @@ import { db } from "@mobiliza/db/client";
 // ─── User ─────────────────────────────────────────────────────────────────────
 
 export async function seedUser(
-  overrides: Partial<{
-    id: string;
-    name: string;
-    email: string;
-    role: "student" | "scholar" | "manager";
-    createdAt?: Date;
-  }> = {}
-) {
-  const { id, name, email, role = "student", createdAt } = overrides;
+  overrides: Partial<NewUser> = {},
+): Promise<User> {
   const uniqueSuffix = uuidv7().slice(0, 8);
   const [created] = await db
     .insert(user)
     .values({
-      id: id ?? uuidv7(),
-      name: name ?? "Test User",
-      email: email ?? `test_${uniqueSuffix}@example.com`,
+      id: uuidv7(),
+      name: "Test User",
+      email: `test_${uniqueSuffix}@example.com`,
       emailVerified: true,
-      role,
-      createdAt: createdAt ?? new Date(),
+      role: "student",
+      ...overrides,
     })
     .returning();
   return created;
@@ -53,32 +64,25 @@ export async function seedUser(
 
 export async function seedStudentProfile(
   userId: string,
-  overrides: Partial<{
-    enrollment: string;
-    course: string;
-    campus: string;
-    phone: string;
-    shift: string;
-    gender: string;
-    isActive: boolean;
-    createdAt?: Date;
-  }> = {}
-) {
-  const { createdAt } = overrides;
+  overrides: Partial<NewStudentProfile> = {},
+): Promise<StudentProfile> {
   const uniqueSuffix = uuidv7().slice(0, 8);
   const [created] = await db
     .insert(studentProfile)
     .values({
       id: uuidv7(),
       userId,
-      enrollment: overrides.enrollment ?? `2024${uniqueSuffix}`,
-      course: (overrides.course ?? "Ciência da Computação") as "Ciência da Computação" | "Pedagogia" | "Engenharia Civil" | "Direito" | "Medicina",
-      campus: (overrides.campus ?? "Campus A.C. Simões") as "Campus A.C. Simões" | "Campus CECA" | "Campus Arapiraca" | "Campus Sertão",
-      phone: overrides.phone ?? "82111113333",
-      shift: (overrides.shift ?? "morning") as "morning" | "afternoon" | "night",
-      gender: (overrides.gender ?? "male") as "male" | "female" | "non_binary" | "prefer_not_to_say",
-      isActive: overrides.isActive ?? true,
-      createdAt: createdAt ?? new Date(),
+      enrollment: `2024${uniqueSuffix}`,
+      course: "Ciência da Computação",
+      campus: "Campus A.C. Simões",
+      phone: "82111113333",
+      shift: "morning",
+      gender: "male",
+      nickname: null,
+      attendanceNotes: null,
+      simplifiedInterface: false,
+      isActive: true,
+      ...overrides,
     })
     .returning();
   return created;
@@ -88,36 +92,26 @@ export async function seedStudentProfile(
 
 export async function seedScholarProfile(
   userId: string,
-  overrides: Partial<{
-    enrollment: string;
-    course: string;
-    campus: string;
-    phone: string;
-    cpf: string;
-    shift: string;
-    isApproved: boolean;
-    isAvailable: boolean;
-    isActive: boolean;
-    createdAt?: Date;
-  }> = {}
-) {
-  const { createdAt } = overrides;
+  overrides: Partial<NewScholarProfile> = {},
+): Promise<ScholarProfile> {
   const uniqueSuffix = uuidv7().slice(0, 8);
   const [created] = await db
     .insert(scholarProfile)
     .values({
       id: uuidv7(),
       userId,
-      enrollment: overrides.enrollment ?? `2024${uniqueSuffix}`,
-      course: (overrides.course ?? "Ciência da Computação") as "Ciência da Computação" | "Pedagogia" | "Engenharia Civil" | "Direito" | "Medicina",
-      campus: (overrides.campus ?? "Campus A.C. Simões") as "Campus A.C. Simões" | "Campus CECA" | "Campus Arapiraca" | "Campus Sertão",
-      phone: overrides.phone ?? "82111112222",
-      cpf: overrides.cpf ?? `${uniqueSuffix}`.padEnd(11, '0').slice(0, 11),
-      shift: (overrides.shift ?? "morning") as "morning" | "afternoon" | "night",
-      isApproved: overrides.isApproved ?? false,
-      isAvailable: overrides.isAvailable ?? false,
-      isActive: overrides.isActive ?? true,
-      createdAt: createdAt ?? new Date(),
+      enrollment: `2024${uniqueSuffix}`,
+      course: "Ciência da Computação",
+      campus: "Campus A.C. Simões",
+      phone: "82111112222",
+      cpf: `${uniqueSuffix}`.padEnd(11, "0").slice(0, 11),
+      shift: "morning",
+      isApproved: false,
+      approvedAt: null,
+      approvedBy: null,
+      isAvailable: false,
+      isActive: true,
+      ...overrides,
     })
     .returning();
   return created;
@@ -126,25 +120,19 @@ export async function seedScholarProfile(
 // ─── Campus Location ────────────────────────────────────────────────────────────
 
 export async function seedCampusLocation(
-  overrides: Partial<{
-    name: string;
-    abbreviation: string;
-    latitude: number;
-    longitude: number;
-    isActive: boolean;
-    createdAt?: Date;
-  }> = {}
-) {
-  const { createdAt } = overrides;
+  overrides: Partial<NewCampusLocation> = {},
+): Promise<CampusLocation> {
   const [created] = await db
     .insert(campusLocation)
     .values({
-      name: overrides.name ?? "Bloco de Aulas",
-      abbreviation: overrides.abbreviation ?? "BLA",
-      latitude: overrides.latitude ?? -9,
-      longitude: overrides.longitude ?? -35,
-      isActive: overrides.isActive ?? true,
-      createdAt: createdAt ?? new Date(),
+      id: uuidv7(),
+      name: "Bloco de Aulas",
+      abbreviation: "BLA",
+      description: "Bloco principal de aulas",
+      latitude: -9,
+      longitude: -35,
+      isActive: true,
+      ...overrides,
     })
     .returning();
   return created;
@@ -154,36 +142,20 @@ export async function seedCampusLocation(
 
 export async function seedServiceRequest(
   studentProfileId: string,
-  overrides: Partial<{
-    originLocationId: number;
-    destinationLocationId: number;
-    status: string;
-    notes: string | null;
-    createdAt?: Date;
-  }> = {}
-) {
-  const { createdAt } = overrides;
-  let originId = overrides.originLocationId;
-  let destId = overrides.destinationLocationId;
-
-  if (!originId || !destId) {
-    const locs = await db.select().from(campusLocation).limit(2);
-    originId = originId ?? (locs[0] as any)?.id ?? 1;
-    destId = destId ?? (locs[1] as any)?.id ?? 2;
-  }
-
+  overrides: Partial<NewServiceRequest> = {},
+): Promise<ServiceRequest> {
   const [created] = await db
     .insert(serviceRequest)
     .values({
       id: uuidv7(),
       studentProfileId,
-      originLocationId: originId,
-      destinationLocationId: destId,
-      status: (overrides.status ?? "pending") as "pending" | "accepted" | "ongoing" | "completed" | "cancelled",
-      notes: overrides.notes ?? null,
-      createdAt: createdAt ?? new Date(),
-      updatedAt: createdAt ?? new Date(),
-    } as typeof serviceRequest.$inferInsert)
+      originLocationId: "default-origin",
+      destinationLocationId: "default-dest",
+      status: "pending",
+      notes: null,
+      respondedAt: null,
+      ...overrides,
+    })
     .returning();
   return created;
 }
@@ -193,30 +165,21 @@ export async function seedServiceRequest(
 export async function seedServiceAttendance(
   requestId: string,
   scholarProfileId: string,
-  overrides: Partial<{
-    acceptedAt: Date;
-    startedAt: Date | null;
-    completedAt: Date | null;
-    durationSeconds: number | null;
-    rating: number | null;
-    ratingComment: string | null;
-    createdAt?: Date;
-  }> = {}
-) {
-  const { createdAt } = overrides;
+  overrides: Partial<NewServiceAttendance> = {},
+): Promise<ServiceAttendance> {
   const [created] = await db
     .insert(serviceAttendance)
     .values({
       id: uuidv7(),
       requestId,
       scholarProfileId,
-      acceptedAt: overrides.acceptedAt ?? new Date(),
-      startedAt: overrides.startedAt ?? null,
-      completedAt: overrides.completedAt ?? null,
-      durationSeconds: overrides.durationSeconds ?? null,
-      rating: overrides.rating ?? null,
-      ratingComment: overrides.ratingComment ?? null,
-      createdAt: createdAt ?? new Date(),
+      acceptedAt: new Date(),
+      startedAt: null,
+      completedAt: null,
+      durationSeconds: null,
+      rating: null,
+      ratingComment: null,
+      ...overrides,
     })
     .returning();
   return created;
@@ -226,24 +189,19 @@ export async function seedServiceAttendance(
 
 export async function seedNotification(
   userId: string,
-  overrides: Partial<{
-    type: string;
-    title: string;
-    body: string;
-    resourceId: string | null;
-    readAt: Date | null;
-  }> = {}
-) {
+  overrides: Partial<NewNotification> = {},
+): Promise<Notification> {
   const [created] = await db
     .insert(notification)
     .values({
       id: uuidv7(),
       userId,
-      type: (overrides.type ?? "new_request_available") as any,
-      title: overrides.title ?? "Nova solicitacao",
-      body: overrides.body ?? "Uma nova solicitacao foi criada",
-      resourceId: overrides.resourceId ?? null,
-      readAt: overrides.readAt ?? null,
+      type: "new_request_available",
+      title: "Nova solicitação",
+      body: "Uma nova solicitação foi criada",
+      resourceId: null,
+      readAt: null,
+      ...overrides,
     })
     .returning();
   return created;
@@ -253,16 +211,15 @@ export async function seedNotification(
 
 export async function seedStudentDisability(
   studentProfileId: string,
-  overrides: Partial<{
-    disabilityType: string;
-  }> = {}
-) {
+  overrides: Partial<NewStudentDisability> = {},
+): Promise<StudentDisability> {
   const [created] = await db
     .insert(studentDisability)
     .values({
       id: uuidv7(),
       studentProfileId,
-      disabilityType: (overrides.disabilityType ?? "physical_disability") as any,
+      disabilityType: "physical_disability",
+      ...overrides,
     })
     .returning();
   return created;
