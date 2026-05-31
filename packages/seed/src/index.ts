@@ -9,6 +9,7 @@
  *   tsx src/index.ts --seed=42 --reset               # Determinístico + reset
  */
 
+import { generators } from "./generators";
 import { logError, parseCLIArgs, SeedRunner } from "./lib/seed";
 
 // ─── Bootstrap ────────────────────────────────────────────────────────────────
@@ -16,6 +17,7 @@ import { logError, parseCLIArgs, SeedRunner } from "./lib/seed";
 async function main(): Promise<void> {
 	const cliOverrides = parseCLIArgs(process.argv.slice(2));
 	const runner = new SeedRunner(cliOverrides);
+	runner.registerAll(generators);
 	await runner.run();
 }
 

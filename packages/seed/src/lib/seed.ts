@@ -12,7 +12,7 @@ import { sql } from "drizzle-orm";
 
 import { db } from "./db";
 import { setFakerSeed } from "./faker";
-import type { SeedConfig, SeedContext, SeedCounters } from "./types";
+import type { SeedConfig, SeedContext, SeedCounters, SeedGenerator } from "./types";
 
 // ─── Configuração Padrão ──────────────────────────────────────────────────────
 
@@ -135,6 +135,7 @@ export class SeedRunner {
 	private config: Required<SeedConfig>;
 	private counters: SeedCounters = {};
 	private startTime = 0;
+	private generators: SeedGenerator[] = [];
 
 	constructor(config?: Partial<SeedConfig>) {
 		this.config = { ...DEFAULT_SEED_CONFIG, ...config };
@@ -172,6 +173,21 @@ export class SeedRunner {
 	}
 
 	/**
+	 * Registra um generator para execução.
+	 */
+	register(generator: SeedGenerator): void {
+		this.generators.push(generator);
+	}
+
+	/**
+	 * Registra múltiplos generators de uma vez.
+	 * A ordem do array determina a ordem de execução.
+	 */
+	registerAll(generators: SeedGenerator[]): void {
+		this.generators.push(...generators);
+	}
+
+	/**
 	 * Ponto de entrada principal: prepara o ambiente e executa os generators.
 	 */
 	async run(): Promise<void> {
@@ -189,10 +205,33 @@ export class SeedRunner {
 			await this.reset();
 		}
 
-		// ── 3. Placeholder para execução de generators ───────────────────
-		// Os generators serão adicionados em tarefas futuras.
-		// A ordem de execução respeitará as dependências entre entidades.
-		log("Nenhum generator registrado ainda — implementação futura.");
+		// ── 3. Executar generators ───────────────────────────────────────
+		if (this.generators.length === 0) {
+			logWarn("Nenhum generator registrado.");
+		} else {
+			log(`\n${"─".repeat(40)}`);
+			log("Executando generators:");
+
+			for (const gen of this.generators) {
+				log(`\n▶️  Generator: ${gen.name}`);
+				const genStart = Date.now();
+
+				try {
+					await gen.generate(this.getContext());
+					const elapsed = ((Date.now() - genStart) / 1000).toFixed(2);
+
+					const genCounters = Object.entries(this.counters)
+						.filter(([key]) => key.startsWith(`${gen.name}.`) || key === gen.name)
+						.map(([key, val]) => `${key}=${val}`)
+						.join(", ");
+
+					logSuccess(`${gen.name} concluído (${elapsed}s) — ${genCounters}`);
+				} catch (err) {
+					logError(`Falha no generator "${gen.name}"`, err);
+					throw err;
+				}
+			}
+		}
 
 		// ── 4. Sumário ──────────────────────────────────────────────────
 		this.printSummary();
