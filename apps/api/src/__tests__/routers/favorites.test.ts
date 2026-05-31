@@ -1,11 +1,12 @@
-import { appRouter } from "../../../src/router";
-import { createMockTRPCContext, createStudentSession } from "../mocks/context";
-import { clearTable, seedUser, seedStudentProfile, seedCampusLocation } from "../helpers/seed";
-import { rollbackTransaction } from "../setup";
-import { mockAuthSession, clearAuthMock } from "../mocks/auth";
 import { db } from "@mobiliza/db/client";
 import { favoriteRoute } from "@mobiliza/db/schema";
 import { eq } from "drizzle-orm";
+
+import { appRouter } from "../../../src/router";
+import { clearTable, seedCampusLocation, seedStudentProfile, seedUser } from "../helpers/seed";
+import { clearAuthMock, mockAuthSession } from "../mocks/auth";
+import { createMockTRPCContext, createStudentSession } from "../mocks/context";
+import { rollbackTransaction } from "../setup";
 
 let caller: ReturnType<typeof appRouter.createCaller>;
 
@@ -210,7 +211,7 @@ describe("favoritesRouter", () => {
       const loc2 = await seedCampusLocation();
 
       const session1 = createStudentSession({ id: user1.id });
-      let caller1 = appRouter.createCaller(() => session1);
+      const caller1 = appRouter.createCaller(() => session1);
       const route = await caller1.favorites.create({
         name: "Rota",
         originLocationId: loc1.id,
@@ -218,7 +219,7 @@ describe("favoritesRouter", () => {
       });
 
       const session2 = createStudentSession({ id: user2.id });
-      let caller2 = appRouter.createCaller(() => session2);
+      const caller2 = appRouter.createCaller(() => session2);
 
       await expect(
         caller2.favorites.delete({ routeId: route.id })

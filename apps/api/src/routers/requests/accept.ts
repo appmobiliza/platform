@@ -3,10 +3,10 @@ import { db } from "@mobiliza/db";
 import { and, eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { TRPCError } from "@trpc/server";
+import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
 import { scholarProcedure } from "@/trpc/context";
-import { uuidv7 } from "uuidv7";
 
 import { execTx } from "./shared";
 

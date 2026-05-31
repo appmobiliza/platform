@@ -4,8 +4,8 @@
  * As operacoes sao parte da transaction do teste - rollback desfaz tudo.
  */
 
-import { sql } from "drizzle-orm";
-import { uuidv7 } from "uuidv7";
+// Use the same db instance as routers (mocked in tests via @mobiliza/db/client mapping)
+import { db } from "@mobiliza/db/client";
 import type {
   CampusLocation,
   NewCampusLocation,
@@ -25,17 +25,17 @@ import type {
   User,
 } from "@mobiliza/db/schema";
 import {
-  user,
-  studentProfile,
-  scholarProfile,
   campusLocation,
-  serviceRequest,
-  serviceAttendance,
   notification,
+  scholarProfile,
+  serviceAttendance,
+  serviceRequest,
   studentDisability,
+  studentProfile,
+  user,
 } from "@mobiliza/db/schema";
-// Use the same db instance as routers (mocked in tests via @mobiliza/db/client mapping)
-import { db } from "@mobiliza/db/client";
+import { sql } from "drizzle-orm";
+import { uuidv7 } from "uuidv7";
 
 // Use db from @mobiliza/db/client (mocked in tests)
 // All seed operations use the same mocked db as the routers under test

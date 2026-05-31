@@ -8,21 +8,22 @@
  */
 
 import { TRPCError } from "@trpc/server";
+
 import { appRouter } from "../../router";
 import {
-  createMockTRPCContext,
-  createStudentSession,
-  createScholarSession,
   createManagerSession,
+  createMockTRPCContext,
   createNullSessionContext,
+  createScholarSession,
+  createStudentSession,
 } from "../mocks/context";
 import {
   resetDB,
-  seedUser,
-  seedStudentProfile,
-  seedScholarProfile,
   seedCampusLocation,
+  seedScholarProfile,
   seedServiceRequest,
+  seedStudentProfile,
+  seedUser,
 } from "../mocks/db";
 
 let caller: ReturnType<typeof appRouter.createCaller>;

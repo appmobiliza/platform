@@ -4,8 +4,8 @@
  * Implementação direta que funciona com os routers sem modificá-los.
  */
 
-import { uuidv7 } from "uuidv7";
 import type * as schema from '@mobiliza/db/schema'
+import { uuidv7 } from "uuidv7";
 
 // ─── In-Memory Store ───────────────────────────────────────────────────────────
 
