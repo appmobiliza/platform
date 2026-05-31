@@ -23,18 +23,20 @@ function Address({
 	size = "md",
 	children,
 }: AddressProps) {
+	const sizePx = size === "sm" ? 12 : size === "md" ? 24 : 36;
+
 	return (
 		<View className={cn("w-full flex-row items-center gap-4", className)}>
 			<View
-				className={cn("size-3 items-center justify-center", {
-					"size-6": size === "md",
+				className={cn("size-6 items-center justify-center", {
+					"size-3": size === "sm",
 					"size-9": size === "lg",
 				})}
 			>
 				{marker === "from" ? (
-					<FromMarker width={24} />
+					<FromMarker width={sizePx} />
 				) : (
-					<ToMarker width={24} />
+					<ToMarker width={sizePx} />
 				)}
 			</View>
 			<View className="min-w-0 flex-1 flex-row items-center justify-between gap-4">
@@ -65,6 +67,7 @@ export type AddressRouteProps = {
 		children?: React.ReactNode;
 		className?: string;
 	};
+	size?: AddressProps["size"];
 };
 
 function AddressRoute({
@@ -72,6 +75,7 @@ function AddressRoute({
 	shouldShowRoute,
 	from,
 	to,
+	size,
 }: AddressRouteProps) {
 	return (
 		<View className={cn("w-full flex-col items-start gap-1", className)}>
@@ -79,14 +83,19 @@ function AddressRoute({
 				label={from.label}
 				marker="from"
 				className={from.className}
-				size="md"
+				size={size}
 			>
 				{from.children}
 			</Address>
 
 			<View className="w-full flex-row items-center justify-start gap-4">
 				{shouldShowRoute && (
-					<View className="size-6 items-center justify-center">
+					<View
+						className={cn("size-6 items-center justify-center", {
+							"size-9": size === "lg",
+							"size-3": size === "sm",
+						})}
+					>
 						<View className="h-6 w-0.5 bg-primary" />
 					</View>
 				)}
@@ -97,7 +106,7 @@ function AddressRoute({
 				label={to.label}
 				marker="to"
 				className={to.className}
-				size="md"
+				size={size}
 			>
 				{to.children}
 			</Address>
