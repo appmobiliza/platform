@@ -1,27 +1,48 @@
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { useColorScheme } from "react-native";
 
-import { THEME } from "@/lib/theme";
+import { useUserRole } from "@/lib/auth-store";
+import { SCHOLAR_THEME, THEME } from "@/lib/theme";
 
 export default function AppTabs() {
 	const colorScheme = useColorScheme();
+	const role = useUserRole();
+
 	const bgColor =
 		colorScheme === "dark" ? THEME.dark.background : THEME.light.background;
 
-	const barColor =
-		colorScheme === "dark"
+	// Scholar Specific Overrides
+	const isScholar = role === "scholar";
+
+	const barColor = isScholar
+		? SCHOLAR_THEME.bar.background
+		: colorScheme === "dark"
 			? THEME.dark.bar.background
 			: THEME.light.bar.background;
-	const labelColor =
-		colorScheme === "dark" ? THEME.dark.bar.label : THEME.light.bar.label;
-	const indicatorColor =
-		colorScheme === "dark"
+
+	const labelColor = isScholar
+		? SCHOLAR_THEME.bar.label
+		: colorScheme === "dark"
+			? THEME.dark.bar.label
+			: THEME.light.bar.label;
+
+	const indicatorColor = isScholar
+		? SCHOLAR_THEME.bar.indicator
+		: colorScheme === "dark"
 			? THEME.dark.bar.indicator
 			: THEME.light.bar.indicator;
-	const iconColor =
-		colorScheme === "dark" ? THEME.dark.bar.icon : THEME.light.bar.icon;
-	const rippleColor =
-		colorScheme === "dark" ? THEME.dark.bar.ripple : THEME.light.bar.ripple;
+
+	const iconColor = isScholar
+		? SCHOLAR_THEME.bar.icon
+		: colorScheme === "dark"
+			? THEME.dark.bar.icon
+			: THEME.light.bar.icon;
+
+	const rippleColor = isScholar
+		? SCHOLAR_THEME.bar.ripple
+		: colorScheme === "dark"
+			? THEME.dark.bar.ripple
+			: THEME.light.bar.ripple;
 
 	return (
 		<NativeTabs

@@ -10,12 +10,16 @@ export default function AccessibilityProfile() {
 			<SettingsButton title="Tema" label="Sistema" />
 			<SettingsButton title="Cor de destaque" label="Azul oceano" />
 			<SettingsButton
+				title="Estilo de barra de navegação"
+				label="Padrão"
+			/>
+			<SettingsButton
 				title="Sair do aplicativo"
 				label="Encerra sua sessão e desloga sua conta"
 				className="text-destructive"
 				variant="destructive"
 			>
-				<Icon icon={LogOut} size={24} color="destructive" />
+				<Icon icon={LogOut} size={24} color="--destructive" />
 			</SettingsButton>
 		</View>
 	);

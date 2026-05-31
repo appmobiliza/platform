@@ -38,7 +38,7 @@ export const PlaceCard = ({
 			)}
 		>
 			<View className={cn("p-2 rounded-md bg-primary", iconClassName)}>
-				<Icon size={18} color="white" />
+				<Icon size={18} color="--primary-foreground" />
 			</View>
 			<View className="flex-1">
 				<Text className="font-bold text-base" numberOfLines={1}>

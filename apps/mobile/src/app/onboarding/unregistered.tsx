@@ -16,8 +16,12 @@ export default function Unregistered() {
 
 			<View className="flex-1 px-6 pt-24 pb-8 justify-between">
 				<View>
-					<View className="mb-6 text-foreground">
-						<Icon icon={CircleAlert} size={36} color="foreground" />
+					<View className="mb-6">
+						<Icon
+							icon={CircleAlert}
+							size={36}
+							color="--foreground"
+						/>
 					</View>
 
 					<Text className="text-3xl font-bold leading-tight mb-4">

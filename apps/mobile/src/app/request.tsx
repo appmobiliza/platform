@@ -20,10 +20,10 @@ export default function RequestScreen() {
 			<MapView scholar={scholar} />
 			<View className="relative z-10 flex-row items-start gap-4 px-4 pt-4">
 				<Pressable
-					className="shrink-0 p-3 bg-secondary text-foreground rounded-full shadow-sm shadow-secondary/20 mt-4"
+					className="shrink-0 p-3 bg-secondary rounded-full shadow-sm shadow-secondary/20 mt-4"
 					onPress={() => router.back()}
 				>
-					<Icon icon={ArrowLeft} size={24} color="foreground" />
+					<Icon icon={ArrowLeft} size={24} color="--foreground" />
 				</Pressable>
 				<View className="min-w-0 flex-1 gap-1 items-start justify-start">
 					<Text

@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
+import { useUserRole } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
 
 const options = [
@@ -35,12 +36,14 @@ const options = [
 		description: "Atualize suas informações de locais salvos.",
 		icon: Star,
 		href: "/profile/saved-locations",
+		studentExclusive: true,
 	},
 	{
 		title: "Acessibilidade",
 		description: "Atualize suas informações de acessibilidade.",
 		icon: PersonStanding,
 		href: "/profile/accessibility",
+		studentExclusive: true,
 	},
 	{
 		title: "Configurações",
@@ -52,6 +55,7 @@ const options = [
 
 export default function Profile() {
 	const insets = useSafeAreaInsets();
+	const role = useUserRole();
 
 	return (
 		<View className="flex-1 items-center justify-start">
@@ -87,35 +91,37 @@ export default function Profile() {
 						</Text>
 					</View>
 				}
-				renderItem={({ item, index }) => (
-					<Link href={item.href} asChild>
-						<Pressable
-							android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
-							className={cn(
-								"w-full flex-row items-center justify-center px-8 py-6 border-border active:bg-accent/50 transition-colors",
-								{
-									"border-b": index < options.length - 1,
-								},
-							)}
-						>
-							<View className="w-16 h-16 rounded-full flex items-center justify-center text-foreground">
-								<Icon
-									icon={item.icon}
-									size={32}
-									color="foreground"
-								/>
-							</View>
-							<View className="ml-4 flex-1">
-								<Text className="font-medium text-lg">
-									{item.title}
-								</Text>
-								<Text className="text-sm text-muted-foreground">
-									{item.description}
-								</Text>
-							</View>
-						</Pressable>
-					</Link>
-				)}
+				renderItem={({ item, index }) =>
+					item.studentExclusive && role !== "student" ? null : (
+						<Link href={item.href} asChild>
+							<Pressable
+								android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
+								className={cn(
+									"w-full flex-row items-center justify-center px-8 py-6 border-border active:bg-accent/50 transition-colors",
+									{
+										"border-b": index < options.length - 1,
+									},
+								)}
+							>
+								<View className="w-16 h-16 rounded-full flex items-center justify-center">
+									<Icon
+										icon={item.icon}
+										size={32}
+										color="--foreground"
+									/>
+								</View>
+								<View className="ml-4 flex-1">
+									<Text className="font-medium text-lg">
+										{item.title}
+									</Text>
+									<Text className="text-sm text-muted-foreground">
+										{item.description}
+									</Text>
+								</View>
+							</Pressable>
+						</Link>
+					)
+				}
 			/>
 		</View>
 	);
