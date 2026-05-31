@@ -158,7 +158,7 @@ describe("auth", () => {
 
       // Act & Assert
       await expect(
-        caller.requests.create({ originLocationId: 1, destinationLocationId: 2 })
+        caller.requests.create({ originLocationId: "1", destinationLocationId: "2" })
       ).rejects.toMatchObject({ code: "FORBIDDEN" });
     });
   });

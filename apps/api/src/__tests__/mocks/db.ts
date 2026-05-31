@@ -105,7 +105,7 @@ export function seedStudentProfile(userId: string, overrides: Partial<Schema.Stu
 export function seedCampusLocation(overrides: Partial<Schema.CampusLocation> = {}): Schema.CampusLocation {
   ensureTable('campusLocation')
   const location: Schema.CampusLocation = {
-    id: (dbStore.campusLocation.length + 1) as number,
+    id: `loc_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
     name: 'Bloco de Aulas',
     abbreviation: 'BLA',
     description: 'Bloco principal de aulas',
@@ -125,8 +125,8 @@ export function seedServiceRequest(studentProfileId: string, overrides: Partial<
   const request: Schema.ServiceRequest = {
     id: `req_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
     studentProfileId,
-    originLocationId: 1,
-    destinationLocationId: 2,
+    originLocationId: 'loc_default_origin',
+    destinationLocationId: 'loc_default_dest',
     status: 'pending',
     notes: null,
     respondedAt: null,

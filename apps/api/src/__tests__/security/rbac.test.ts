@@ -43,8 +43,8 @@ describe("rbac", () => {
       const scholar = seedUser({ role: "scholar" });
       seedStudentProfile(student.id);
       seedScholarProfile(scholar.id, { isApproved: true, isAvailable: true });
-      seedCampusLocation({ id: 1 });
-      seedCampusLocation({ id: 2 });
+      seedCampusLocation({ id: "1" });
+      seedCampusLocation({ id: "2" });
       const request = seedServiceRequest(seedStudentProfile(student.id).id, {
         status: "pending",
       });
@@ -63,8 +63,8 @@ describe("rbac", () => {
       const scholar = seedUser({ role: "scholar" });
       seedStudentProfile(student.id);
       const scholarProfile = seedScholarProfile(scholar.id, { isApproved: true });
-      seedCampusLocation({ id: 1 });
-      seedCampusLocation({ id: 2 });
+      seedCampusLocation({ id: "1" });
+      seedCampusLocation({ id: "2" });
       const request = seedServiceRequest(seedStudentProfile(student.id).id, {
         status: "accepted",
       });
@@ -83,8 +83,8 @@ describe("rbac", () => {
       const scholar = seedUser({ role: "scholar" });
       seedStudentProfile(student.id);
       const scholarProfile = seedScholarProfile(scholar.id, { isApproved: true });
-      seedCampusLocation({ id: 1 });
-      seedCampusLocation({ id: 2 });
+      seedCampusLocation({ id: "1" });
+      seedCampusLocation({ id: "2" });
       const request = seedServiceRequest(seedStudentProfile(student.id).id, {
         status: "ongoing",
       });
@@ -131,7 +131,7 @@ describe("rbac", () => {
       // Arrange
       const scholar = seedUser({ role: "scholar" });
       seedScholarProfile(scholar.id, { isApproved: true });
-      seedCampusLocation({ id: 1 });
+      seedCampusLocation({ id: "1" });
       const session = createScholarSession({ id: scholar.id, role: "scholar" });
       caller = appRouter.createCaller(() => session);
 
@@ -198,14 +198,14 @@ caller.profiles.pendingScholars()
   describe("unauthenticated access", () => {
     it("deve negar create (requests) sem autenticação", async () => {
       // Arrange
-      seedCampusLocation({ id: 1 });
-      seedCampusLocation({ id: 2 });
+      seedCampusLocation({ id: "1" });
+      seedCampusLocation({ id: "2" });
       const session = createNullSessionContext();
       caller = appRouter.createCaller(() => session);
 
       // Act & Assert
       await expect(
-        caller.requests.create({ originLocationId: 1, destinationLocationId: 2 })
+        caller.requests.create({ originLocationId: "1", destinationLocationId: "2" })
       ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
     });
 

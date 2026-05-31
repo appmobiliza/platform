@@ -59,7 +59,10 @@ export const locationsRouter = router({
 		.mutation(async ({ input }) => {
 			const [location] = await db
 				.insert(schema.campusLocation)
-				.values(input)
+				.values({
+					id: crypto.randomUUID(),
+					...input,
+				})
 				.returning();
 
 			return location;
@@ -72,7 +75,7 @@ export const locationsRouter = router({
 	 */
 	setActive: managerProcedure
 		.meta({ openapi: { method: "POST", path: "/locations/active" } })
-		.input(z.object({ id: z.number(), isActive: z.boolean() }))
+		.input(z.object({ id: z.string(), isActive: z.boolean() }))
 		.output(z.any())
 		.mutation(async ({ input }) => {
 			const [updated] = await db

@@ -165,7 +165,7 @@ export const studentDisability = pgTable(
 // ─── Location Table ────────────────────────────────────────────────────────────
 
 export const campusLocation = pgTable("campus_location", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  id: text("id").primaryKey(),
   name: text("name").notNull(),
   abbreviation: text("abbreviation").notNull(),
   description: text("description"),
@@ -181,8 +181,8 @@ export const campusLocation = pgTable("campus_location", {
 export const serviceRequest = pgTable("service_request", {
   id: text("id").primaryKey(),
   studentProfileId: text("student_profile_id").notNull().references(() => studentProfile.id, { onDelete: "restrict" }),
-  originLocationId: integer("origin_location_id").notNull().references(() => campusLocation.id, { onDelete: "restrict" }),
-  destinationLocationId: integer("destination_location_id").notNull().references(() => campusLocation.id, { onDelete: "restrict" }),
+  originLocationId: text("origin_location_id").notNull().references(() => campusLocation.id, { onDelete: "restrict" }),
+  destinationLocationId: text("destination_location_id").notNull().references(() => campusLocation.id, { onDelete: "restrict" }),
   status: text("status").notNull().default("pending"),
   notes: text("notes"),
   respondedAt: timestamp("responded_at"),
@@ -220,8 +220,8 @@ export const favoriteRoute = pgTable("favorite_route", {
   id: text("id").primaryKey(),
   studentProfileId: text("student_profile_id").notNull().references(() => studentProfile.id, { onDelete: "cascade" }),
   label: text("label").notNull(),
-  originLocationId: integer("origin_location_id").notNull().references(() => campusLocation.id, { onDelete: "restrict" }),
-  destinationLocationId: integer("destination_location_id").notNull().references(() => campusLocation.id, { onDelete: "restrict" }),
+  originLocationId: text("origin_location_id").notNull().references(() => campusLocation.id, { onDelete: "restrict" }),
+  destinationLocationId: text("destination_location_id").notNull().references(() => campusLocation.id, { onDelete: "restrict" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

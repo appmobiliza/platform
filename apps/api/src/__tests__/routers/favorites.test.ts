@@ -55,8 +55,8 @@ describe("favoritesRouter", () => {
       await expect(
         caller.favorites.create({
           name: "Rota",
-          originLocationId: 1,
-          destinationLocationId: 2,
+          originLocationId: "1",
+          destinationLocationId: "2",
         })
       ).rejects.toMatchObject({ code: "FORBIDDEN" });
     });
