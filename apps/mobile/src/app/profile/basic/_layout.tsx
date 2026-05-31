@@ -18,7 +18,7 @@ export default function BasicProfileLayout() {
 		>
 			<Stack.Screen
 				name="index"
-				options={{ headerTitle: "Dados pessoais", ...HEADER_CONFIG }}
+				options={{ headerTitle: "Dados pessoais", ...HEADER_CONFIG() }}
 			/>
 			<Stack.Screen
 				name="name"

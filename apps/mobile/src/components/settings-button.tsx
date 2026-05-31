@@ -61,9 +61,7 @@ export function SettingsButton({
 			{children ? (
 				children
 			) : (
-				<View className="text-foreground">
-					<Icon icon={ChevronRight} size={24} color="foreground" />
-				</View>
+				<Icon icon={ChevronRight} size={24} color="--foreground" />
 			)}
 		</Pressable>
 	);

@@ -5,7 +5,7 @@ import { THEME } from "@/lib/theme";
 
 import { HEADER_CONFIG } from "../_layout";
 
-export default function AcademicProfileLayout() {
+export default function SettingsProfileLayout() {
 	const colorScheme = useColorScheme();
 
 	return (
@@ -18,14 +18,14 @@ export default function AcademicProfileLayout() {
 		>
 			<Stack.Screen
 				name="index"
-				options={{ headerTitle: "Acadêmico", ...HEADER_CONFIG() }}
+				options={{ headerTitle: "Configurações", ...HEADER_CONFIG() }}
 			/>
-			{/* <Stack.Screen
-				name="course"
+			<Stack.Screen
+				name="app-bar"
 				options={{
 					headerShown: false,
 				}}
-			/> */}
+			/>
 		</Stack>
 	);
 }
