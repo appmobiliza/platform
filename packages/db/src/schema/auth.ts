@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 import { roleEnum } from "./enums";
+import { scholarProfile, studentProfile } from "./profiles";
 
 /**
  * Gerado automaticamente pelo Better Auth.
@@ -87,9 +88,17 @@ export const verification = pgTable(
 	(table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
-export const userRelations = relations(user, ({ many }) => ({
+export const userRelations = relations(user, ({ many, one }) => ({
 	sessions: many(session),
 	accounts: many(account),
+	studentProfile: one(studentProfile, {
+		fields: [user.id],
+		references: [studentProfile.userId],
+	}),
+	scholarProfile: one(scholarProfile, {
+		fields: [user.id],
+		references: [scholarProfile.userId],
+	}),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({

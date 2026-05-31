@@ -17,6 +17,98 @@ import {
 	scholarProcedure,
 } from "../trpc/context";
 
+const scholarDashboardStatusValues = [
+	"available",
+	"busy",
+	"off_shift",
+	"pending",
+] as const;
+
+function getScholarDashboardStatus(profile: {
+	isApproved: boolean;
+	isActive: boolean;
+	isAvailable: boolean;
+	shift: (typeof schema.scholarShiftValues)[number];
+}) {
+	if (!profile.isApproved || !profile.isActive) {
+		return "pending" as const;
+	}
+
+	if (profile.shift !== schema.getCurrentShift()) {
+		return "off_shift" as const;
+	}
+
+	if (profile.isAvailable) {
+		return "available" as const;
+	}
+
+	return "busy" as const;
+}
+
+function getScholarDashboardStatusLabel(
+	status: (typeof scholarDashboardStatusValues)[number],
+) {
+	switch (status) {
+		case "available":
+			return "Disponível";
+		case "busy":
+			return "Em atendimento";
+		case "off_shift":
+			return "Fora do turno";
+		case "pending":
+			return "Pendente";
+	}
+}
+
+function getScholarShiftLabel(
+	shift: (typeof schema.scholarShiftValues)[number],
+) {
+	return schema.scholarShiftLabels[shift];
+}
+
+function getRouteLabel(request: {
+	originLocation?: { abbreviation: string; name: string } | null;
+	destinationLocation?: { abbreviation: string; name: string } | null;
+}) {
+	const origin =
+		request.originLocation?.abbreviation ||
+		request.originLocation?.name ||
+		"-";
+	const destination =
+		request.destinationLocation?.abbreviation ||
+		request.destinationLocation?.name ||
+		"-";
+
+	return `${origin} → ${destination}`;
+}
+
+function getStudentRouteStatus(
+	status: (typeof schema.requestStatusValues)[number],
+) {
+	if (status === "completed") {
+		return "completed" as const;
+	}
+
+	if (status === "cancelled" || status === "unattended") {
+		return "canceled" as const;
+	}
+
+	return "pending" as const;
+}
+
+function getTopCounts(items: string[], limit = 3) {
+	const counts = new Map<string, number>();
+
+	for (const item of items) {
+		counts.set(item, (counts.get(item) ?? 0) + 1);
+	}
+
+	return Array.from(counts.entries())
+		.sort(([, countA], [, countB]) => countB - countA)
+		.slice(0, limit)
+		.map(([name, amount]) => ({ name, amount }));
+}
+
 export const profilesRouter = router({
 	/**
 	 * Retorna o perfil completo do usuário autenticado.

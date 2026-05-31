@@ -5,10 +5,6 @@ import { authEnv } from "@mobiliza/env/auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { testUtils } from "better-auth/plugins";
-
-import { db } from "./client.js";
-import * as schema from "./schema";
-
 /*
 const allowedDomains = [
 	"@ufal.br",
