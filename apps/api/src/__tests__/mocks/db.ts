@@ -5,7 +5,7 @@
  */
 
 import { uuidv7 } from "uuidv7";
-import type * as Schema from './schema'
+import type * as schema from '@mobiliza/db/schema'
 
 // ─── In-Memory Store ───────────────────────────────────────────────────────────
 
@@ -39,9 +39,9 @@ export function resetDB(): void {
   dbStore.notification.length = 0
 }
 
-export function seedUser(overrides: Partial<Schema.User> = {}): Schema.User {
+export function seedUser(overrides: Partial<schema.User> = {}): schema.User {
   ensureTable('user')
-  const user: Schema.User = {
+  const user: schema.User = {
     id: uuidv7(),
     name: 'Test User',
     email: 'test@example.com',
@@ -56,9 +56,9 @@ export function seedUser(overrides: Partial<Schema.User> = {}): Schema.User {
   return user
 }
 
-export function seedScholarProfile(userId: string, overrides: Partial<Schema.ScholarProfile> = {}): Schema.ScholarProfile {
+export function seedScholarProfile(userId: string, overrides: Partial<schema.ScholarProfile> = {}): schema.ScholarProfile {
   ensureTable('scholarProfile')
-  const profile: Schema.ScholarProfile = {
+  const profile: schema.ScholarProfile = {
     id: uuidv7(),
     userId,
     enrollment: '2024001',
@@ -66,7 +66,7 @@ export function seedScholarProfile(userId: string, overrides: Partial<Schema.Sch
     campus: 'AC.Simões',
     phone: '82111112222',
     cpf: '12345678901',
-    shift: 'matutino',
+    shift: 'morning',
     isApproved: false,
     approvedAt: null,
     approvedBy: null,
@@ -80,17 +80,17 @@ export function seedScholarProfile(userId: string, overrides: Partial<Schema.Sch
   return profile
 }
 
-export function seedStudentProfile(userId: string, overrides: Partial<Schema.StudentProfile> = {}): Schema.StudentProfile {
+export function seedStudentProfile(userId: string, overrides: Partial<schema.StudentProfile> = {}): schema.StudentProfile {
   ensureTable('studentProfile')
-  const profile: Schema.StudentProfile = {
+  const profile: schema.StudentProfile = {
     id: uuidv7(),
     userId,
     enrollment: '2024002',
     course: 'Ciência da Computação',
-    campus: 'AC.Simões',
+    campus: 'Campus A.C. Simões',
     phone: '82111113333',
-    shift: 'matutino',
-    gender: 'Masculino',
+    shift: 'morning',
+    gender: 'male',
     nickname: null,
     attendanceNotes: null,
     simplifiedInterface: false,
@@ -103,9 +103,9 @@ export function seedStudentProfile(userId: string, overrides: Partial<Schema.Stu
   return profile
 }
 
-export function seedCampusLocation(overrides: Partial<Schema.CampusLocation> = {}): Schema.CampusLocation {
+export function seedCampusLocation(overrides: Partial<schema.CampusLocation> = {}): schema.CampusLocation {
   ensureTable('campusLocation')
-  const location: Schema.CampusLocation = {
+  const location: schema.CampusLocation = {
     id: uuidv7(),
     name: 'Bloco de Aulas',
     abbreviation: 'BLA',
@@ -121,9 +121,9 @@ export function seedCampusLocation(overrides: Partial<Schema.CampusLocation> = {
   return location
 }
 
-export function seedServiceRequest(studentProfileId: string, overrides: Partial<Schema.ServiceRequest> = {}): Schema.ServiceRequest {
+export function seedServiceRequest(studentProfileId: string, overrides: Partial<schema.ServiceRequest> = {}): schema.ServiceRequest {
   ensureTable('serviceRequest')
-  const request: Schema.ServiceRequest = {
+  const request: schema.ServiceRequest = {
     id: uuidv7(),
     studentProfileId,
     originLocationId: 'loc_default_origin',
@@ -139,9 +139,9 @@ export function seedServiceRequest(studentProfileId: string, overrides: Partial<
   return request
 }
 
-export function seedServiceAttendance(requestId: string, scholarProfileId: string, overrides: Partial<Schema.ServiceAttendance> = {}): Schema.ServiceAttendance {
+export function seedServiceAttendance(requestId: string, scholarProfileId: string, overrides: Partial<schema.ServiceAttendance> = {}): schema.ServiceAttendance {
   ensureTable('serviceAttendance')
-  const attendance: Schema.ServiceAttendance = {
+  const attendance: schema.ServiceAttendance = {
     id: uuidv7(),
     requestId,
     scholarProfileId,
@@ -159,9 +159,9 @@ export function seedServiceAttendance(requestId: string, scholarProfileId: strin
   return attendance
 }
 
-export function seedNotification(userId: string, overrides: Partial<Schema.Notification> = {}): Schema.Notification {
+export function seedNotification(userId: string, overrides: Partial<schema.Notification> = {}): schema.Notification {
   ensureTable('notification')
-  const notification: Schema.Notification = {
+  const notification: schema.Notification = {
     id: uuidv7(),
     userId,
     type: 'new_request_available',
