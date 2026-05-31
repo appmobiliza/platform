@@ -13,7 +13,7 @@ import { AppError, generateAttendanceReportCSV } from "@mobiliza/domain";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { managerProcedure, router } from "@/trpc/context";
+import { managerProcedure, router } from "../trpc/context";
 
 const dateRangeInput = z.object({
 	from: z.iso.datetime(),
@@ -21,97 +21,105 @@ const dateRangeInput = z.object({
 });
 
 export const metricsRouter = router({
-/**
-   * Resumo geral do período — cards no topo do dashboard.
-   */
-  summary: managerProcedure
- 	.meta({ openapi: { method: "GET", path: "/metrics/summary" } })
-    .input(dateRangeInput)
-	.output(z.any())
-    .query(async ({input}) => {
-      const from = new Date(input.from);
-      const to = new Date(input.to);
+	/**
+	 * Resumo geral do período — cards no topo do dashboard.
+	 */
+	summary: managerProcedure
+		.meta({ openapi: { method: "GET", path: "/metrics/summary" } })
+		.input(dateRangeInput)
+		.output(z.any())
+		.query(async ({ input, ctx }) => {
+			console.log(
+				ctx.session.session.id,
+				"requested metrics summary with input:",
+				input,
+			);
 
-		const inPeriod = and(
-			gte(schema.serviceRequest.createdAt, from),
-			lte(schema.serviceRequest.createdAt, to),
-		);
+			const from = new Date(input.from);
+			const to = new Date(input.to);
 
-		const [totals] = await db
-			.select({
-				total: count(),
-				completed: sql<number>`COUNT(*) FILTER (WHERE status = 'completed')`,
-				cancelled: sql<number>`COUNT(*) FILTER (WHERE status = 'cancelled')`,
-				unattended: sql<number>`COUNT(*) FILTER (WHERE status = 'unattended')`,
-			})
-			.from(schema.serviceRequest)
-			.where(inPeriod);
+			const inPeriod = and(
+				gte(schema.serviceRequest.createdAt, from),
+				lte(schema.serviceRequest.createdAt, to),
+			);
 
-		const [attendanceStats] = await db
-			.select({
-				avgDurationSeconds: avg(
-					schema.serviceAttendance.durationSeconds,
-				),
-				avgRating: avg(schema.serviceAttendance.rating),
-				totalRated: sql<number>`COUNT(*) FILTER (WHERE rating IS NOT NULL)`,
-			})
-			.from(schema.serviceAttendance)
-			.innerJoin(
-				schema.serviceRequest,
-				eq(
-					schema.serviceAttendance.requestId,
-					schema.serviceRequest.id,
-				),
-			)
-			.where(inPeriod);
+			const [totals] = await db
+				.select({
+					total: count(),
+					completed: sql<number>`COUNT(*) FILTER (WHERE status = 'completed')`,
+					cancelled: sql<number>`COUNT(*) FILTER (WHERE status = 'cancelled')`,
+					unattended: sql<number>`COUNT(*) FILTER (WHERE status = 'unattended')`,
+				})
+				.from(schema.serviceRequest)
+				.where(inPeriod);
 
-		return {
-			totalRequests: Number(totals?.total ?? 0),
-			completedRequests: Number(totals?.completed ?? 0),
-			cancelledRequests: Number(totals?.cancelled ?? 0),
-			unattendedRequests: Number(totals?.unattended ?? 0),
-			completionRate: totals?.total
-				? Number(totals.completed) / Number(totals.total)
-				: 0,
-			avgDurationSeconds: attendanceStats?.avgDurationSeconds
-				? Math.round(Number(attendanceStats.avgDurationSeconds))
-				: null,
-			avgRating: attendanceStats?.avgRating
-				? Number(Number(attendanceStats.avgRating).toFixed(1))
-				: null,
-		};
-	}),
+			const [attendanceStats] = await db
+				.select({
+					avgDurationSeconds: avg(
+						schema.serviceAttendance.durationSeconds,
+					),
+					avgRating: avg(schema.serviceAttendance.rating),
+					totalRated: sql<number>`COUNT(*) FILTER (WHERE rating IS NOT NULL)`,
+				})
+				.from(schema.serviceAttendance)
+				.innerJoin(
+					schema.serviceRequest,
+					eq(
+						schema.serviceAttendance.requestId,
+						schema.serviceRequest.id,
+					),
+				)
+				.where(inPeriod);
+
+			return {
+				totalRequests: Number(totals?.total ?? 0),
+				completedRequests: Number(totals?.completed ?? 0),
+				cancelledRequests: Number(totals?.cancelled ?? 0),
+				unattendedRequests: Number(totals?.unattended ?? 0),
+				completionRate: totals?.total
+					? Number(totals.completed) / Number(totals.total)
+					: 0,
+				avgDurationSeconds: attendanceStats?.avgDurationSeconds
+					? Math.round(Number(attendanceStats.avgDurationSeconds))
+					: null,
+				avgRating: attendanceStats?.avgRating
+					? Number(Number(attendanceStats.avgRating).toFixed(1))
+					: null,
+			};
+		}),
 
 	/**
-   * Exportação de relatório completo em CSV para análise offline.
-   * Gera um arquivo com detalhes de cada solicitação e atendimento.
-   */
-  exportCSV: managerProcedure
-    .input(ExportReportSchema)
-    .query(async ({ input }) => {
-      try {
-        const csv = await generateAttendanceReportCSV(input, db);
-        return csv;
-      } catch (error) {
-        if (error instanceof AppError) {
-          throw new TRPCError({
-            code: error.code as any,
-            message: error.message,
-          });
-        }
-        throw error;
-      }
-    }),
+	 * Exportação de relatório completo em CSV para análise offline.
+	 * Gera um arquivo com detalhes de cada solicitação e atendimento.
+	 */
+	exportCSV: managerProcedure
+		.input(ExportReportSchema)
+		.query(async ({ input }) => {
+			try {
+				const csv = await generateAttendanceReportCSV(input, db);
+				return csv;
+			} catch (error) {
+				if (error instanceof AppError) {
+					throw new TRPCError({
+						code: error.code as any,
+						message: error.message,
+					});
+				}
+				throw error;
+			}
+		}),
 
 	/**
 	 * Distribuição de solicitações por local de origem.
 	 * Identifica pontos do campus com maior demanda.
 	 */
 	byOriginLocation: managerProcedure
-		.meta({ openapi: { method: "GET", path: "/metrics/by-origin-location" } })
+		.meta({
+			openapi: { method: "GET", path: "/metrics/by-origin-location" },
+		})
 		.input(dateRangeInput)
 		.output(z.any())
-		.query(async ({input}) => {
+		.query(async ({ input }) => {
 			const from = new Date(input.from);
 			const to = new Date(input.to);
 
@@ -149,10 +157,12 @@ export const metricsRouter = router({
 	 * Mostra atendimentos, avaliação média e duração média por bolsista.
 	 */
 	scholarPerformance: managerProcedure
-		.meta({ openapi: { method: "GET", path: "/metrics/scholar-performance" } })
+		.meta({
+			openapi: { method: "GET", path: "/metrics/scholar-performance" },
+		})
 		.input(dateRangeInput)
 		.output(z.any())
-		.query(async ({input}) => {
+		.query(async ({ input }) => {
 			const from = new Date(input.from);
 			const to = new Date(input.to);
 

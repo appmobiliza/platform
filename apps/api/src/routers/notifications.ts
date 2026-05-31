@@ -11,7 +11,7 @@ import { and, desc, eq, isNull } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { z } from "zod";
 
-import { protectedProcedure, router } from "@/trpc/context";
+import { protectedProcedure, router } from "../trpc/context";
 
 export const notificationsRouter = router({
 	/**

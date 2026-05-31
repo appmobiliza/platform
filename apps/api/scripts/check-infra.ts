@@ -2,6 +2,8 @@ import "dotenv/config";
 
 import { db } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
+import { apiEnv } from "@mobiliza/env/api";
+import { realtimeEnv } from "@mobiliza/env/realtime";
 import { createRealtimeAdapter } from "@mobiliza/realtime";
 
 async function checkInfra() {
@@ -9,7 +11,7 @@ async function checkInfra() {
 
 	// 1. Banco de Dados (Neon)
 	console.log("🐘 [DATABASE] Validando conexão com Neon...");
-	if (!process.env.DATABASE_URL) {
+	if (!apiEnv.DATABASE_URL) {
 		console.error("❌ Erro: DATABASE_URL não definida no .env");
 	} else {
 		try {
@@ -25,16 +27,13 @@ async function checkInfra() {
 		}
 	}
 
+	console.log(`📡 Realtime provider atual: ${realtimeEnv.REALTIME_PROVIDER}`);
+
 	console.log("");
 
 	// 2. Realtime (Ably)
-	const realtimeAdapter = createRealtimeAdapter();
-	if (realtimeAdapter instanceof Error) {
-		console.error(
-			"❌ REALTIME: Falha ao criar adapter de Realtime. Verifique as variáveis de ambiente.",
-		);
-		console.error(realtimeAdapter);
-	} else {
+	try {
+		const realtimeAdapter = await createRealtimeAdapter();
 		await realtimeAdapter
 			.publish("health-check", "ping", { timestamp: Date.now() })
 			.then(() => {
@@ -48,6 +47,11 @@ async function checkInfra() {
 				);
 				console.error(error);
 			});
+	} catch (error) {
+		console.error(
+			"❌ REALTIME: Falha ao criar adapter de Realtime. Verifique as variáveis de ambiente.",
+		);
+		console.error(error);
 	}
 
 	console.log("\n✨ Health Check finalizado.");

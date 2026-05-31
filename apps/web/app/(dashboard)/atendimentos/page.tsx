@@ -23,17 +23,77 @@ import {
 } from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
+import {
+	formatDurationShort,
+	getCurrentMonthRange,
+	type ManagerRequest,
+	mapRequestToServiceEntry,
+} from "@/lib/dashboard-data";
+import { withServerTRPC } from "@/lib/trpc-server";
 import { cn, getInitials } from "@/lib/utils";
-
-import { users } from "@/data/mock";
-import { dashboardCards, serviceEntries } from "@/data/services-data";
 
 export const metadata: Metadata = {
 	title: "Atendimentos",
 };
 
-export default function ServicesPage() {
+type MetricsSummary = {
+	totalRequests: number;
+	avgDurationSeconds: number | null;
+	unattendedRequests: number;
+};
+
+type PersonOption = {
+	user: {
+		id: string;
+		name: string;
+	};
+};
+
+type ScholarDashboardResponse = {
+	scholars: PersonOption[];
+};
+
+type StudentDashboardResponse = {
+	students: PersonOption[];
+};
+
+export default async function ServicesPage() {
 	const currentDate = new Date();
+	const monthRange = getCurrentMonthRange();
+	const [summary, requests, scholarsDashboard, studentsDashboard] =
+		(await withServerTRPC(async (trpc) =>
+			Promise.all([
+				trpc.metrics.summary(monthRange),
+				trpc.requests.managerList({ limit: 200 }),
+				trpc.profiles.scholarDashboard(),
+				trpc.profiles.studentDashboard(),
+			]),
+		)) as [
+			MetricsSummary,
+			ManagerRequest[],
+			ScholarDashboardResponse,
+			StudentDashboardResponse,
+		];
+	const serviceEntries = requests.map(mapRequestToServiceEntry);
+	const dashboardCards: Array<{
+		title: string;
+		value: string;
+		variant?: "default" | "destructive";
+	}> = [
+		{
+			title: "Total no mês",
+			value: String(summary.totalRequests),
+		},
+		{
+			title: "Tempo médio",
+			value: formatDurationShort(summary.avgDurationSeconds),
+		},
+		{
+			title: "Não atendidos",
+			value: String(summary.unattendedRequests),
+			variant: "destructive",
+		},
+	];
 
 	return (
 		<>
@@ -90,22 +150,22 @@ export default function ServicesPage() {
 						<DatePickerWithRange className="w-full md:w-fit md:flex-1" />
 						<ComboboxMultiple
 							className="w-full flex-1 md:w-fit md:flex-1"
-							items={users
-								.filter((user) => user.role === "scholar")
-								.map((scholar) => ({
-									id: scholar.id,
-									label: scholar.name,
-								}))}
+							items={scholarsDashboard.scholars.map(
+								(scholar) => ({
+									id: scholar.user.id,
+									label: scholar.user.name,
+								}),
+							)}
 							allLabel="Todos os bolsistas"
 						/>
 						<ComboboxMultiple
 							className="w-full flex-1 md:w-fit md:flex-1"
-							items={users
-								.filter((user) => user.role === "student")
-								.map((student) => ({
-									id: student.id,
-									label: student.name,
-								}))}
+							items={studentsDashboard.students.map(
+								(student) => ({
+									id: student.user.id,
+									label: student.user.name,
+								}),
+							)}
 							allLabel="Todos os alunos"
 						/>
 					</div>
@@ -168,19 +228,28 @@ export default function ServicesPage() {
 										</TableCell>
 										<TableCell>{entry.time}</TableCell>
 										<TableCell>
-											<div className="flex items-center gap-3">
-												<Avatar className="h-8 w-8">
-													<AvatarFallback>
-														{getInitials(
+											{entry.scholar ? (
+												<div className="flex items-center gap-3">
+													<Avatar className="h-8 w-8">
+														<AvatarFallback>
+															{getInitials(
+																entry.scholar
+																	.user.name,
+															)}
+														</AvatarFallback>
+													</Avatar>
+													<span className="font-medium">
+														{
 															entry.scholar.user
-																.name,
-														)}
-													</AvatarFallback>
-												</Avatar>
-												<span className="font-medium">
-													{entry.scholar.user.name}
+																.name
+														}
+													</span>
+												</div>
+											) : (
+												<span className="text-muted-foreground">
+													Aguardando aceite
 												</span>
-											</div>
+											)}
 										</TableCell>
 										<TableCell>
 											<div className="flex items-center gap-3">

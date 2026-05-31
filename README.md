@@ -1,178 +1,125 @@
-# Turborepo starter
+<picture>
+   <source media="(prefers-color-scheme: dark)" srcset="./.github/cover_dark.png">
+   <source media="(prefers-color-scheme: light)" srcset="./.github/cover.png">
+   <img alt="Capa do projeto Mobiliza" src="./.github/cover.png">
+</picture>
 
-This Turborepo starter is maintained by the Turborepo core team.
+## ✨ Visão geral
 
-## Using this example
+Este monorepo reúne os principais serviços e aplicações da plataforma, com foco em atendimento, gestão e estruturação de dados para o ecossistema do projeto Mobiliza.
 
-Run the following command:
+A base atual do repositório inclui:
 
-```sh
-npx create-turbo@latest
+* uma aplicação mobile para uso em campo e operação
+* um dashboard web para gestão e acompanhamento
+* um backend HTTP para orquestração de rotas, autenticação e integrações
+* pacotes compartilhados para domínio, contratos, ambiente, banco e tempo real
+
+---
+
+## 🧩 Estrutura do monorepo
+
+### Apps
+
+* `apps/api` — servidor HTTP com Hono, tRPC e Better Auth
+* `apps/mobile` — aplicação mobile em Expo / React Native
+* `apps/web` — dashboard web em Next.js
+
+### Packages
+
+* `packages/auth` — autenticação compartilhada com Better Auth
+* `packages/contracts` — contratos e schemas compartilhados com Zod
+* `packages/db` — acesso ao banco com Drizzle ORM e PostgreSQL
+* `packages/domain` — regras de negócio e casos de uso
+* `packages/env` — validação e centralização de variáveis de ambiente
+* `packages/realtime` — integrações de tempo real e canais externos
+
+### Configurações compartilhadas
+
+* `config/typescript` — presets de TypeScript para o monorepo
+* `biome.json` — configuração de lint e formatação
+* `turbo.json` — pipeline do Turborepo
+
+---
+
+## 🛠️ Tecnologias principais
+
+| Camada | Tecnologias |
+| --- | --- |
+| Mobile | Expo, React Native, Expo Router, NativeWind |
+| Web | Next.js, React, tRPC, React Query |
+| Backend | Node.js, Hono, tRPC, Better Auth |
+| Dados | Drizzle ORM, PostgreSQL, Neon |
+| Compartilhamento | Zod, TypeScript, pacotes internos |
+
+---
+
+## 🚀 Como rodar localmente
+
+1. Instale as dependências:
+
+```bash
+pnpm install
 ```
 
-## What's inside?
+2. Configure as variáveis de ambiente necessárias no arquivo `.env` da raiz.
 
-This Turborepo includes the following packages/apps:
+3. Execute o ambiente de desenvolvimento:
 
-### Apps and Packages
-
-- `api`: backend Node service for the Mobiliza platform
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@mobiliza/contracts`: shared domain contracts for backend layers
-- `@mobiliza/db`: **Drizzle ORM + PostgreSQL** repository implementations and database adapters
-- `@mobiliza/domain`: business rules and use cases
-- `@mobiliza/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@mobiliza/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [Biome](https://biomejs.dev/) for code formatting and linting
-- [Drizzle ORM](https://orm.drizzle.team/) for database access (PostgreSQL + NeonDB)
-
-## Database Setup
-
-The Mobiliza backend uses **Drizzle ORM** with **PostgreSQL** (via NeonDB for cloud deployment).
-
-### Quick Start
-
-1. Create a PostgreSQL database (e.g., on [NeonDB](https://neon.tech))
-2. Create `.env` file in the project root:
-   ```
-   DATABASE_URL=postgresql://username:password@host:5432/dbname
-   PORT=3001
-   ```
-3. Run: `pnpm dev`
-
-For detailed setup instructions, see [packages/db/DATABASE_SETUP.md](packages/db/DATABASE_SETUP.md)
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+```bash
+pnpm dev
 ```
 
-Without global `turbo`, use your package manager:
+---
 
-```sh
-cd my-turborepo
-npx turbo build
-pnpm dlx turbo build
-pnpm exec turbo build
+## 📦 Scripts disponíveis
+
+Na raiz do projeto, os comandos principais são:
+
+```bash
+pnpm build
+pnpm dev
+pnpm lint
+pnpm check-types
+pnpm format-and-lint
+pnpm format-and-lint:fix
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+---
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+## 🗄️ Banco de dados
 
-```sh
-turbo build --filter=docs
+O projeto utiliza PostgreSQL com Drizzle ORM, e o pacote `packages/db` concentra a camada de acesso ao banco.
+
+Fluxo esperado:
+
+* configurar `DATABASE_URL` na raiz
+* manter o schema dentro de `packages/db`
+* usar os scripts de migração e geração quando houver mudanças estruturais
+
+---
+
+## 🔌 Arquitetura em alto nível
+
+```mermaid
+flowchart LR
+      M[App Mobile] --> A[API Hono + tRPC]
+      W[Dashboard Web] --> A
+      A --> D[Contratos + Domínio]
+      D --> B[(PostgreSQL / Neon)]
+      A --> R[Camada de tempo real]
 ```
 
-Without global `turbo`:
+---
 
-```sh
-npx turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
+## 🤝 Direção do projeto
 
-### Develop
+Este repositório está organizado como base de evolução da plataforma Mobiliza. A ideia é manter a lógica compartilhada fora das aplicações e deixar cada app com sua responsabilidade clara.
 
-To develop all apps and packages, run the following command:
+Nos READMEs individuais, cada pacote e aplicação tem sua própria documentação com detalhes de execução, escopo e decisões de implementação.
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+---
 
-```sh
-cd my-turborepo
-turbo dev
-```
+## 📄 Licença
 
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-pnpm exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-pnpm exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-pnpm exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+Consulte o arquivo [LICENSE](LICENSE) para os termos de uso do projeto.

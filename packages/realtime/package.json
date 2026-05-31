@@ -24,8 +24,10 @@
 		"ts-jest": "^29.4.11"
 	},
 	"dependencies": {
+		"@mobiliza/env": "workspace:*",
 		"@supabase/supabase-js": "^2.106.0",
 		"ably": "^2.21.0",
+		"dotenv": "^17.4.2",
 		"pusher": "^5.3.3",
 		"ws": "^8.21.0"
 	}

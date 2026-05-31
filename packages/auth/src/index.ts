@@ -1,14 +1,14 @@
+import { db } from "@mobiliza/db/client";
+import * as schema from "@mobiliza/db/schema";
+import { roleValues } from "@mobiliza/db/schema";
+import { authEnv } from "@mobiliza/env/auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { testUtils } from "better-auth/plugins";
-
-import { db } from "./client.js";
-import * as schema from "./schema";
-
 /*
 const allowedDomains = [
-  "@ufal.br",
-  "@ic.ufal.br",
+	"@ufal.br",
+	"@ic.ufal.br",
 ];
 */
 
@@ -40,31 +40,31 @@ export const auth = betterAuth({
 
 	socialProviders: {
 		google: {
-			clientId: process.env.GOOGLE_CLIENT_ID!,
-			clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+			clientId: authEnv.GOOGLE_CLIENT_ID,
+			clientSecret: authEnv.GOOGLE_CLIENT_SECRET,
 		},
 	},
 
-  // Futuramente podemos restringir o login apenas para emails do domínio da universidade, mas por enquanto é melhor deixar aberto para facilitar testes e desenvolvimento.
-  // O callback de signIn pode ser reativado quando quisermos implementar essa restrição.
-  /* callbacks: {
-  signIn: async ({ user }) => {
-    return allowedDomains.some(domain =>
-      user.email.endsWith(domain)
-    );
-  },
+	// Futuramente podemos restringir o login apenas para emails do domínio da universidade, mas por enquanto é melhor deixar aberto para facilitar testes e desenvolvimento.
+	// O callback de signIn pode ser reativado quando quisermos implementar essa restrição.
+	/* callbacks: {
+	signIn: async ({ user }) => {
+		return allowedDomains.some(domain =>
+			user.email.endsWith(domain)
+		);
+	},
 }, */
 
 	/*
- 	 * Campos extras do `user` que o Better Auth deve reconhecer e
- 	 * retornar na sessão. O campo `role` é o mais importante — permite
- 	 * que o middleware de autorização do tRPC saiba se o usuário é
- 	 * estudante, bolsista ou gestor sem query adicional.
- 	 */
+	 * Campos extras do `user` que o Better Auth deve reconhecer e
+	 * retornar na sessão. O campo `role` é o mais importante — permite
+	 * que o middleware de autorização do tRPC saiba se o usuário é
+	 * estudante, bolsista ou gestor sem query adicional.
+	 */
 	user: {
 		additionalFields: {
 			role: {
-				type: ["student", "scholar", "manager"],
+				type: [...roleValues],
 				required: true,
 				defaultValue: "student",
 				input: true,
@@ -77,11 +77,9 @@ export const auth = betterAuth({
 		updateAge: 60 * 60 * 24,
 	},
 
-	trustedOrigins: process.env.TRUSTED_ORIGINS?.split(",") ?? [],
+	trustedOrigins: authEnv.TRUSTED_ORIGINS,
 
-	plugins: [
-		testUtils(),
-	],
+	plugins: [testUtils()],
 });
 
 export type Auth = typeof auth;

@@ -6,7 +6,7 @@ import { TRPCError } from "@trpc/server";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
-import { scholarProcedure } from "@/trpc/context";
+import { scholarProcedure } from "../../trpc/context";
 
 import { execTx } from "./shared";
 

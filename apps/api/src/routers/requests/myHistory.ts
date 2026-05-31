@@ -3,7 +3,7 @@ import { and, desc, eq, sql } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { z } from "zod";
 
-import { protectedProcedure } from "@/trpc/context";
+import { protectedProcedure } from "../../trpc/context";
 
 import { paginationInput } from "./shared";
 

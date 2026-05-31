@@ -13,12 +13,12 @@
  *   managerProcedure  → role === "manager"
  */
 
-import { auth } from "@mobiliza/db/auth";
+import { getSession } from "@mobiliza/auth/server";
 import type { RealtimeAdapter } from "@mobiliza/realtime";
 import { createRealtimeAdapter } from "@mobiliza/realtime";
 import { initTRPC, TRPCError } from "@trpc/server";
 import type { Context } from "hono";
-import type { OpenApiMeta } from 'trpc-to-openapi';
+import type { OpenApiMeta } from "trpc-to-openapi";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -59,12 +59,24 @@ export interface TRPCContext extends Record<string, unknown> {
  * por exemplo, mantém um servidor aberto.
  */
 let _realtime: RealtimeAdapter | null = null;
+let _realtimePromise: Promise<RealtimeAdapter> | null = null;
 
-export function getRealtimeAdapter(): RealtimeAdapter {
-  if (!_realtime) {
-    _realtime = createRealtimeAdapter();
-  }
-  return _realtime;
+export async function getRealtimeAdapter(): Promise<RealtimeAdapter> {
+	if (_realtime) {
+		return _realtime;
+	}
+
+	_realtimePromise ??= createRealtimeAdapter().then((adapter) => {
+		_realtime = adapter;
+		return adapter;
+	});
+
+	try {
+		return await _realtimePromise;
+	} catch (error) {
+		_realtimePromise = null;
+		throw error;
+	}
 }
 
 // ─── Factory de contexto ──────────────────────────────────────────────────────
@@ -74,39 +86,52 @@ export function getRealtimeAdapter(): RealtimeAdapter {
  * Chamado uma vez por requisição pelo adaptador Hono-tRPC.
  */
 export async function createTRPCContext(c: Context): Promise<TRPCContext> {
-	const headers = new Headers(c.req.raw.headers);
+	return createTRPCContextFromHeaders(c.req.raw.headers);
+}
+
+/**
+ * Cria o contexto do tRPC a partir de headers puros.
+ * Útil para servidores que não passam por um objeto Hono, como o app web.
+ */
+export async function createTRPCContextFromHeaders(
+	headersInit: HeadersInit,
+): Promise<TRPCContext> {
+	const headers = new Headers(headersInit);
 
 	// O Better Auth valida o cookie/token de sessão nos headers
-	const session = await auth.api.getSession({ headers }).catch(() => null);
+	const session = await getSession(headers);
 
 	return {
 		session: session as Session | null,
-		realtime: getRealtimeAdapter(),
+		realtime: await getRealtimeAdapter(),
 		headers,
 	};
 }
 
 // ─── Instância do tRPC ────────────────────────────────────────────────────────
 
-const t = initTRPC.meta<OpenApiMeta>().context<TRPCContext>().create({
-	/**
-	 * Transforma erros antes de enviá-los ao cliente.
-	 * Remove stack traces em produção e padroniza o formato.
-	 */
-	errorFormatter({ shape, error }) {
-		return {
-			...shape,
-			data: {
-				...shape.data,
-				// Stack trace apenas em desenvolvimento
-				stack:
-					process.env.NODE_ENV === "development"
-						? error.stack
-						: undefined,
-			},
-		};
-	},
-});
+const t = initTRPC
+	.meta<OpenApiMeta>()
+	.context<TRPCContext>()
+	.create({
+		/**
+		 * Transforma erros antes de enviá-los ao cliente.
+		 * Remove stack traces em produção e padroniza o formato.
+		 */
+		errorFormatter({ shape, error }) {
+			return {
+				...shape,
+				data: {
+					...shape.data,
+					// Stack trace apenas em desenvolvimento
+					stack:
+						process.env.NODE_ENV === "development"
+							? error.stack
+							: undefined,
+				},
+			};
+		},
+	});
 
 export const router = t.router;
 export const middleware = t.middleware;
@@ -126,7 +151,10 @@ const isAuthenticated = t.middleware(({ ctx, next }) => {
 
 const isScholar = t.middleware(({ ctx, next }) => {
 	if (!ctx.session) {
-		throw new TRPCError({ code: "UNAUTHORIZED" });
+		throw new TRPCError({
+			code: "UNAUTHORIZED",
+			message: "Acesso negado.",
+		});
 	}
 	if (ctx.session.user.role !== "scholar") {
 		throw new TRPCError({
@@ -139,7 +167,10 @@ const isScholar = t.middleware(({ ctx, next }) => {
 
 const isManager = t.middleware(({ ctx, next }) => {
 	if (!ctx.session) {
-		throw new TRPCError({ code: "UNAUTHORIZED" });
+		throw new TRPCError({
+			code: "UNAUTHORIZED",
+			message: "Acesso negado.",
+		});
 	}
 	if (ctx.session.user.role !== "manager") {
 		throw new TRPCError({

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Toaster } from "@/components/ui/sonner"
 
 import Logo from "@/assets/icons/logo";
 
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 	metadataBase: new URL("https://mobiliza.vercel.app"),
 };
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
 	children,
 }: {
 	children: React.ReactNode;
@@ -28,6 +29,7 @@ export default function DashboardLayout({
 				</header>
 				{children}
 			</main>
+			<Toaster />
 		</SidebarProvider>
 	);
 }

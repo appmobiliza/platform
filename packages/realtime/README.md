@@ -1,16 +1,20 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../../.github/realtime.png">
+  <source media="(prefers-color-scheme: light)" srcset="../../.github/realtime.png">
+  <img alt="Capa do projeto Mobiliza" src="../../.github/realtime.png">
+</picture>
+
 # @mobiliza/realtime
 
 Adaptador de tempo real **agnóstico de provedor** para o Mobiliza.
 
-O restante da aplicação importa apenas a interface `RealtimeAdapter` — nunca
-o SDK de um provedor específico. Trocar de Supabase para WebSocket próprio
-(ou Ably, ou Pusher) é uma mudança de variável de ambiente.
+O restante da aplicação importa apenas os contratos públicos do pacote. A escolha entre Supabase, WebSocket próprio, Ably, Pusher ou mock é feita por configuração e pela camada que vai consumir a API.
 
 ---
 
 ## Estrutura
 
-```
+```text
 packages/realtime/
   src/
     types.ts                   → interfaces RealtimeAdapter e RealtimeClientAdapter
@@ -26,57 +30,85 @@ packages/realtime/
         supabase.ts            → Supabase client (React Native / Next.js)
         websocket.ts           → WebSocket nativo (browser / RN)
         mock.ts                → Mock client (testes de componente)
-    __tests__/
-      adapters.test.ts
+  __tests__/
+    adapters.test.ts
 ```
+
+---
+
+## Arquitetura
+
+Este pacote implementa o padrão **Adapter**.
+
+O contrato central está em [src/types.ts](src/types.ts) e define o que o restante da aplicação pode esperar de cada implementação. A entrada pública está em [src/index.ts](src/index.ts), que resolve o provider em tempo de execução no servidor e reexporta os adapters client-side para o frontend.
+
+### O que vai para cada camada
+
+* `types.ts` concentra os contratos e os tipos compartilhados.
+* `index.ts` concentra a fábrica do servidor e os re-exports públicos.
+* `adapters/server` contém as implementações usadas pelo backend.
+* `adapters/client` contém as implementações usadas pelo app React Native e pelo frontend Next.js.
+
+### Decisão arquitetural
+
+Vantagens do desenho atual:
+
+* **Sem lock-in**: trocar de provedor é basicamente trocar configuração.
+* **Testabilidade**: os adapters `mock` permitem testar sem infraestrutura externa.
+* **Coerência**: cliente e servidor falam a mesma linguagem conceitual, mesmo com implementações diferentes.
+* **Bundle menor no servidor**: o provider real é carregado dinamicamente apenas quando necessário.
 
 ---
 
 ## Configuração
 
-Defina `REALTIME_PROVIDER` no `.env` do pacote `api`:
+Defina `REALTIME_PROVIDER` no `.env` do pacote que consome o realtime, normalmente `apps/api`.
 
-| Provider     | `REALTIME_PROVIDER` | Variáveis adicionais                                                |
-|--------------|---------------------|---------------------------------------------------------------------|
-| Supabase     | `supabase`          | `SUPABASE_URL`, `SUPABASE_ANON_KEY`                                 |
-| WebSocket    | `websocket`         | `WS_URL` (ex.: `ws://0.0.0.0:4001`)                                |
-| Ably         | `ably`              | `ABLY_API_KEY`                                                      |
-| Pusher       | `pusher`            | `PUSHER_APP_ID`, `PUSHER_KEY`, `PUSHER_SECRET`, `PUSHER_CLUSTER`    |
-| Mock         | `mock`              | —                                                                   |
+| Provider | `REALTIME_PROVIDER` | Variáveis adicionais |
+| --- | --- | --- |
+| Supabase | `supabase` | `SUPABASE_URL`, `SUPABASE_ANON_KEY` |
+| WebSocket | `websocket` | `WS_URL` como `ws://0.0.0.0:4001` |
+| Ably | `ably` | `ABLY_API_KEY` |
+| Pusher | `pusher` | `PUSHER_APP_ID`, `PUSHER_KEY`, `PUSHER_SECRET`, `PUSHER_CLUSTER` |
+| Mock | `mock` | — |
 
-Dependências de cada provedor são **peer dependencies opcionais** — instale
-apenas o que for usar:
+Do ponto de vista do consumidor, carregue apenas o provider que for usar e mantenha as variáveis correspondentes no ambiente:
 
 ```bash
-# Supabase (padrão para a apresentação)
+# Supabase
 pnpm add @supabase/supabase-js --filter @mobiliza/api
 
-# WebSocket (produção com infra própria do NAC)
+# WebSocket
 pnpm add ws --filter @mobiliza/api
 
-# Ably (alternativa gerenciada)
+# Ably
 pnpm add ably --filter @mobiliza/api
+
+# Pusher
+pnpm add pusher --filter @mobiliza/api
 ```
 
 ---
 
 ## Uso no pacote `api` (server-side)
 
-```typescript
+No backend, use `createRealtimeAdapter()` para carregar o provider correto em runtime.
+
+```ts
 import { createRealtimeAdapter } from '@mobiliza/realtime'
 
 // Inicializa uma vez no bootstrap do servidor
-const realtime = createRealtimeAdapter()
+const realtime = await createRealtimeAdapter()
 
 // Publica um evento para todos os clientes numa sala
 await realtime.publish('sala:42', 'voto:registrado', {
-  userId: 'user-abc',
-  valor: 5,
+	userId: 'user-abc',
+	valor: 5,
 })
 
 // Escuta eventos de um canal (ex.: integração interna entre serviços)
 const cancelar = realtime.subscribe('sala:42', 'voto:registrado', (data) => {
-  console.log('voto recebido:', data)
+	console.log('voto recebido:', data)
 })
 
 // Remove inscrição de um canal específico (ex.: sala encerrada)
@@ -86,51 +118,65 @@ await realtime.unsubscribe('sala:42')
 await realtime.disconnect()
 ```
 
+### Convenção de canais
+
+Para manter consistência entre cliente e servidor, use o padrão:
+
+```text
+{recurso}:{id}
+
+sala:42           → eventos de uma sala específica
+presenca:sala:42  → presença (quem está online)
+usuario:abc       → eventos de um usuário específico
+```
+
 ---
 
 ## Uso no app React Native / Next.js (client-side)
 
-```typescript
-// O client-side NÃO usa createRealtimeAdapter() — instancia diretamente
+O client-side não usa `createRealtimeAdapter()`. Ele instancia diretamente o adapter do provider escolhido.
+
+```ts
 import { SupabaseClientAdapter } from '@mobiliza/realtime'
 
 const adapter = new SupabaseClientAdapter({
-  url: process.env.EXPO_PUBLIC_SUPABASE_URL!,
-  anonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
+	url: process.env.EXPO_PUBLIC_SUPABASE_URL!,
+	anonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
 })
 
 // Em um hook React
 useEffect(() => {
-  const unsub = adapter.subscribe('sala:42', 'voto:registrado', (data) => {
-    setVotos(prev => [...prev, data])
-  })
+	const unsub = adapter.subscribe('sala:42', 'voto:registrado', (data) => {
+		setVotos((prev) => [...prev, data])
+	})
 
-  return () => {
-    unsub()
-  }
+	return () => {
+		unsub()
+	}
 }, [salaId])
 ```
 
 Para usar WebSocket em vez de Supabase no client:
 
-```typescript
+```ts
 import { WebSocketClientAdapter } from '@mobiliza/realtime'
 
 const adapter = new WebSocketClientAdapter({
-  url: 'ws://seu-servidor.nac.br:4001',
-  autoReconnect: true,
-  reconnectInterval: 3000,
+	url: 'ws://seu-servidor.nac.br:4001',
+	autoReconnect: true,
+	reconnectInterval: 3000,
 })
 ```
+
+Os demais adapters client-side seguem a mesma lógica: a aplicação escolhe o provider, o pacote entrega a implementação.
 
 ---
 
 ## Testes
 
-O `MockRealtimeAdapter` (server) e o `MockClientAdapter` (client) permitem
-testar fluxos de realtime sem nenhuma conexão externa:
+O `MockRealtimeAdapter` e o `MockClientAdapter` existem para testar realtime sem nenhuma conexão externa.
 
-```typescript
+```ts
 // Server
 import { MockRealtimeAdapter } from '@mobiliza/realtime'
 
@@ -145,7 +191,7 @@ const adapter = new MockClientAdapter()
 render(<SalaScreen realtimeAdapter={adapter} />)
 
 act(() => {
-  adapter.simulateEvent('sala:42', 'voto:registrado', { valor: 5 })
+	adapter.simulateEvent('sala:42', 'voto:registrado', { valor: 5 })
 })
 
 expect(screen.getByText('Votos: 1')).toBeInTheDocument()
@@ -153,29 +199,22 @@ expect(screen.getByText('Votos: 1')).toBeInTheDocument()
 
 ---
 
-## Convenção de canais
+## Como executar
 
-Para manter consistência entre cliente e servidor, use o padrão:
-
+```bash
+pnpm --filter @mobiliza/realtime build
+pnpm --filter @mobiliza/realtime check-types
+pnpm --filter @mobiliza/realtime test
 ```
-{recurso}:{id}
 
-sala:42           → eventos de uma sala específica
-presenca:sala:42  → presença (quem está online)
-usuario:abc       → eventos de um usuário específico
-```
+| Script | O que faz | Quando usar |
+| --- | --- | --- |
+| `build` | Compila o pacote com TypeScript | Antes de validar integração ou distribuição |
+| `check-types` | Faz checagem de tipos sem emitir build | Durante desenvolvimento e revisão |
+| `test` | Executa a suíte de testes com Jest | Para validar adapters, mocks e contratos |
 
 ---
 
-## Decisão arquitetural
+## Observação
 
-Este pacote implementa o padrão **Adapter** — uma interface contratual que
-abstrai o provedor de tempo real do restante da aplicação.
-
-Vantagens:
-- **Sem lock-in**: trocar de um provedor para outro é uma linha no `.env`
-- **Testabilidade**: o `MockAdapter` elimina dependências externas nos testes
-- **Demonstração acadêmica**: Supabase gratuito para a apresentação; WebSocket
-  próprio para produção com infraestrutura do NAC
-- **Coerência**: cliente (React Native) e servidor (API) compartilham as mesmas
-  interfaces, mesmo que com implementações diferentes
+Este pacote existe para manter o restante do sistema desacoplado da infraestrutura de tempo real. Isso facilita testes, troca de provedor e evolução da plataforma sem espalhar dependência de SDK por toda a aplicação.

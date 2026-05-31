@@ -1,55 +1,61 @@
-# Welcome to your Expo app 👋
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../../.github/mobile/cover_dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="../../.github/mobile/cover.png">
+  <img alt="Capa do projeto Mobiliza" src="../../.github/mobile/cover.png">
+</picture>
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Aplicação mobile
 
-## Get started
+A aplicação mobile do Mobiliza é a interface voltada para estudantes e bolsistas. Ela concentra os fluxos operacionais do serviço e usa Expo com React Native para oferecer uma base única para Android, iOS e web.
 
-1. Install dependencies
+### O que este app cobre
 
-   ```bash
-   npm install
-   ```
+* navegação por rotas com Expo Router
+* telas e componentes acessíveis
+* integração com a API do projeto via tRPC
+* uso de mapas, formulários e estados de operação
+* integração com bibliotecas nativas quando necessário
 
-2. Start the app
+### Stack principal
 
-   ```bash
-   npx expo start
-   ```
+| Camada | Tecnologia |
+| --- | --- |
+| Runtime | Expo |
+| UI | React Native |
+| Rotas | Expo Router |
+| Estilo | NativeWind + Tailwind |
+| Formulários | React Hook Form + Zod |
 
-In the output, you'll find options to open the app in a
+### Estrutura esperada
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```text
+apps/mobile/
+   src/
+      app/         -> rotas e layouts
+      components/  -> componentes reutilizáveis
+      hooks/       -> hooks compartilhados
+      lib/         -> clientes e utilitários
+      services/    -> integrações externas
+      schemas/     -> schemas locais
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Como rodar
 
-### Other setup steps
+```bash
+pnpm install
+pnpm start
+```
 
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+> [!NOTE]
+> Caso perceba inconsistências visuais ou erros de build não relacionado ao código, tente limpar o cache do Expo com `npx expo start --clear`
 
-## Learn more
+### Troubleshooting
 
-To learn more about developing your project with Expo, look at the following resources:
+* para problemas de dependências nativas, rode `expo doctor` e siga as instruções
+* consulte os logs do Expo para erros específicos de build ou runtime
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Observações
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+* a maior parte da lógica compartilhada deve vir de `@mobiliza/contracts`, `@mobiliza/domain`, `@mobiliza/env` e `@mobiliza/realtime`
+* o código da app deve priorizar experiência e acessibilidade
+* o diretório `src/app` é o ponto principal das rotas

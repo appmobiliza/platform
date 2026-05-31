@@ -7,7 +7,6 @@
 		".": "./src/index.ts",
 		"./schema": "./src/schema/index.ts",
 		"./drizzle": "./src/drizzle.ts",
-		"./auth": "./src/auth.ts",
 		"./client": "./src/client.ts"
 	},
 	"scripts": {
@@ -17,14 +16,13 @@
 		"db:studio": "drizzle-kit studio"
 	},
 	"dependencies": {
+		"@mobiliza/env": "workspace:*",
 		"@neondatabase/serverless": "^1.1.0",
-		"better-auth": "^1.6.11",
 		"dotenv": "^17.4.2",
 		"drizzle-orm": "^0.45.2"
 	},
 	"devDependencies": {
 		"@mobiliza/typescript-config": "workspace:*",
-		"@types/node": "^25.8.0",
 		"drizzle-kit": "^0.31.10"
 	}
 }

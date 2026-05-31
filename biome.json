@@ -35,6 +35,13 @@
 			"quoteStyle": "double"
 		}
 	},
+	"html": {
+		"formatter": {
+			"enabled": true,
+			"indentStyle": "tab",
+			"indentWidth": 4
+		}
+	},
 	"json": {
 		"formatter": {
 			"enabled": true,

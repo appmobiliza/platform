@@ -1,0 +1,34 @@
+{
+	"name": "@mobiliza/auth",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"main": "./src/index.ts",
+	"types": "./src/index.ts",
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"default": "./src/index.ts"
+		},
+		"./proxy": {
+			"types": "./src/proxy.ts",
+			"default": "./src/proxy.ts"
+		},
+		"./client": {
+			"types": "./src/client.ts",
+			"default": "./src/client.ts"
+		},
+		"./server": {
+			"types": "./src/server.ts",
+			"default": "./src/server.ts"
+		}
+	},
+	"dependencies": {
+		"@mobiliza/db": "workspace:*",
+		"@mobiliza/env": "workspace:*",
+		"better-auth": "^1.6.11"
+	},
+	"devDependencies": {
+		"@mobiliza/typescript-config": "workspace:*"
+	}
+}

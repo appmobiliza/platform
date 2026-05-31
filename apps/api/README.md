@@ -1,8 +1,30 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../../.github/api.png">
+  <source media="(prefers-color-scheme: light)" srcset="../../.github/api.png">
+  <img alt="Capa do projeto Mobiliza" src="../../.github/api.png">
+</picture>
+
 # @mobiliza/api
 
-Servidor HTTP do Mobiliza — **Hono + tRPC + Better Auth**.
+O pacote `apps/api` concentra o backend do Mobiliza. Ele expõe a API HTTP da plataforma, integra autenticação, conversa com o banco e distribui eventos de tempo real para os clientes.
 
----
+### Responsabilidades
+
+* servir a API principal com Hono
+* expor procedures tipadas com tRPC
+* integrar Better Auth com os demais pacotes
+* publicar eventos via `@mobiliza/realtime`
+* concentrar a orquestração entre domínio, banco e contratos
+
+### Stack
+
+| Camada | Tecnologia |
+| --- | --- |
+| HTTP | Hono |
+| API tipada | tRPC |
+| Autenticação | Better Auth |
+| Banco | Drizzle ORM + PostgreSQL |
+| Tempo real | `@mobiliza/realtime` |
 
 ## Stack e por quê
 
@@ -16,21 +38,16 @@ Servidor HTTP do Mobiliza — **Hono + tRPC + Better Auth**.
 
 ---
 
-## Estrutura
+### Estrutura esperada
 
-```
-packages/api/
+```text
+apps/api/
   src/
-    index.ts              → Bootstrap do servidor Hono
-    router.ts             → Root router (agrega todos os sub-routers)
-    trpc/
-      context.ts          → TRPCContext, createTRPCContext, procedures base
-    routers/
-      requests.ts         → Solicitações de deslocamento (fluxo principal)
-      profiles.ts         → Onboarding, aprovação de bolsistas
-      locations.ts        → Locais do campus
-      notifications.ts    → Notificações do usuário
-      metrics.ts          → Dashboard do gestor NAC
+    index.ts      -> bootstrap do servidor
+    router.ts     -> agregação dos routers
+    openapi.ts    -> definição da documentação OpenAPI
+    trpc/         -> contexto e procedimentos base
+    routers/      -> rotas de domínio
 ```
 
 ---
@@ -58,6 +75,7 @@ packages/api/
 | `requests.rate` | mutation | student | Avalia o atendimento (1-5) |
 | `requests.myHistory` | query | any | Histórico paginado |
 | `requests.available` | query | scholar | Solicitações disponíveis |
+| `requests.managerList` | query | manager | Lista solicitações com relações para o dashboard web |
 
 ### `profiles.*`
 | Procedure | Tipo | Role | Descrição |
@@ -68,6 +86,8 @@ packages/api/
 | `profiles.toggleAvailability` | mutation | scholar | Liga/desliga disponibilidade |
 | `profiles.pendingScholars` | query | manager | Bolsistas aguardando aprovação |
 | `profiles.reviewScholar` | mutation | manager | Aprova ou rejeita bolsista |
+| `profiles.scholarDashboard` | query | manager | Lista bolsistas com status operacional |
+| `profiles.studentDashboard` | query | manager | Lista estudantes com resumo operacional |
 
 ### `locations.*`
 | Procedure | Tipo | Role | Descrição |

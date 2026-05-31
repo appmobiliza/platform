@@ -1,12 +1,13 @@
 import {
+  integer,
   pgTable,
   text,
   timestamp,
-  integer,
 } from "drizzle-orm/pg-core";
-import { serviceRequest } from "./requests";
+
 import { user } from "./auth";
 import { notificationTypeEnum } from "./enums";
+import { serviceRequest } from "./requests";
 
 /**
  * Mensagens de áudio enviadas durante uma solicitação.

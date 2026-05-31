@@ -1,5 +1,5 @@
 /**
- * Mock do módulo @mobiliza/db/auth
+ * Mock do módulo @mobiliza/auth
  *
  * Simula o Better Auth para testes unitários.
  * Não faz chamadas reais ao banco ou serviços externos.

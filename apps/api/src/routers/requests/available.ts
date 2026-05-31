@@ -3,7 +3,7 @@ import { desc, eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { z } from "zod";
 
-import { scholarProcedure } from "@/trpc/context";
+import { scholarProcedure } from "../../trpc/context";
 
 export const available = scholarProcedure
 	.meta({ openapi: { method: "GET", path: "/requests/available" } })

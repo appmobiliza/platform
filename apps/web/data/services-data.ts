@@ -18,7 +18,7 @@ export type ServiceEntry = {
 	scholar: {
 		user: User;
 		profile: ScholarProfile;
-	};
+	} | null;
 	time: string;
 };
 

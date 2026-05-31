@@ -13,7 +13,7 @@ import { TRPCError } from "@trpc/server";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
-import { managerProcedure, publicProcedure, router } from "@/trpc/context";
+import { managerProcedure, publicProcedure, router } from "../trpc/context";
 
 export const locationsRouter = router({
 	/**

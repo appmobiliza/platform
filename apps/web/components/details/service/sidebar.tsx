@@ -57,47 +57,58 @@ function ServiceDetailsContent({ entry }: { entry: ServiceEntry }) {
 			</DetailsSection>
 
 			<DetailsSection label="Bolsista">
-				<div className="flex items-center gap-3">
-					<Avatar className="h-10 w-10">
-						<AvatarFallback>
-							{getInitials(entry.scholar.user.name)}
-						</AvatarFallback>
-					</Avatar>
-					<div className="min-w-0">
-						<p className="font-medium">{entry.scholar.user.name}</p>
-						<p className="text-sm text-muted-foreground">
-							Turno{" "}
-							{scholarShiftLabels[entry.scholar.profile.shift]}
-						</p>
+				{entry.scholar ? (
+					<div className="flex items-center gap-3">
+						<Avatar className="h-10 w-10">
+							<AvatarFallback>
+								{getInitials(entry.scholar.user.name)}
+							</AvatarFallback>
+						</Avatar>
+						<div className="min-w-0">
+							<p className="font-medium">
+								{entry.scholar.user.name}
+							</p>
+							<p className="text-sm text-muted-foreground">
+								Turno{" "}
+								{
+									scholarShiftLabels[
+										entry.scholar.profile.shift
+									]
+								}
+							</p>
+						</div>
 					</div>
-				</div>
+				) : (
+					<p className="text-sm text-muted-foreground">
+						Aguardando aceite por um bolsista.
+					</p>
+				)}
 			</DetailsSection>
 
 			<DetailsSection label="Percurso">
+				<p className="mb-3 text-sm font-medium">{entry.route}</p>
 				<RoutePreview />
 			</DetailsSection>
 
 			<div className="grid grid-cols-2 gap-4">
 				<DetailsSection label="Início">
-					<p className="text-sm">10h17</p>
+					<p className="text-sm">{entry.time}</p>
 				</DetailsSection>
 				<DetailsSection label="Duração">
-					<p className="text-sm">em andamento</p>
+					<p className="text-sm">{entry.duration}</p>
 				</DetailsSection>
 				<DetailsSection label="Espera">
-					<p className="text-sm">1 min 42 s</p>
+					<p className="text-sm">-</p>
 				</DetailsSection>
 				<DetailsSection label="Data">
-					<p className="text-sm">24/04/2026</p>
+					<p className="text-sm">{entry.date}</p>
 				</DetailsSection>
 			</div>
 
 			<DetailsSection label="Observação">
 				<div className="rounded-md bg-muted p-3">
 					<p className="text-sm">
-						"Lorem ipsum dolor sit amet, consectetur adipiscing
-						elit. Sed do eiusmod tempor incididunt ut labore et
-						dolore magna aliqua."
+						{entry.notes || "Nenhuma observação registrada."}
 					</p>
 				</div>
 			</DetailsSection>

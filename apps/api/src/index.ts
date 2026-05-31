@@ -13,9 +13,13 @@
 
 import { serve } from "@hono/node-server";
 import { trpcServer } from "@hono/trpc-server";
-import { auth } from "@mobiliza/db/auth";
-import { db, db } from "@mobiliza/db/client";
+import "dotenv/config";
+
+import { auth } from "@mobiliza/auth";
+import { db } from "@mobiliza/db/client";
 import { notifyUnansweredRequests } from "@mobiliza/domain";
+import { apiEnv } from "@mobiliza/env/api";
+import { realtimeEnv } from "@mobiliza/env/realtime";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
@@ -31,24 +35,24 @@ const app = new Hono();
 // ─── Cron Jobs (REST) ─────────────────────────────────────────────────────────
 
 /**
- * Endpoint de manutenção/cron. 
+ * Endpoint de manutenção/cron.
  * Deve ser chamado periodicamente por um serviço externo (Vercel Cron, GitHub Actions, etc.)
  */
 app.get("/api/cron/check-timeouts", async (c) => {
-  // Verificação simples de segredo para evitar chamadas maliciosas
-  const cronSecret = process.env.CRON_SECRET;
-  const authHeader = c.req.header("Authorization");
+	// Verificação simples de segredo para evitar chamadas maliciosas
+	const cronSecret = apiEnv.CRON_SECRET;
+	const authHeader = c.req.header("Authorization");
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    return c.json({ error: "Unauthorized" }, 401);
-  }
+	if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+		return c.json({ error: "Unauthorized" }, 401);
+	}
 
-  const result = await notifyUnansweredRequests(db, getRealtimeAdapter());
-  return c.json({ 
-    success: true, 
-    ...result,
-    timestamp: new Date().toISOString() 
-  });
+	const result = await notifyUnansweredRequests(db, getRealtimeAdapter());
+	return c.json({
+		success: true,
+		...result,
+		timestamp: new Date().toISOString(),
+	});
 });
 
 // ─── Middlewares globais ──────────────────────────────────────────────────────
@@ -56,23 +60,23 @@ app.get("/api/cron/check-timeouts", async (c) => {
 app.use(logger());
 
 app.use(
-  "*",
-  cors({
-    origin: process.env.TRUSTED_ORIGINS?.split(",") ?? ["http://localhost:3000"],
-    allowHeaders: ["Content-Type", "Authorization"],
-    allowMethods: ["GET", "POST", "OPTIONS"],
-    credentials: true,
-  }),
+	"*",
+	cors({
+		origin: apiEnv.TRUSTED_ORIGINS,
+		allowHeaders: ["Content-Type", "Authorization"],
+		allowMethods: ["GET", "POST", "OPTIONS"],
+		credentials: true,
+	}),
 );
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 
 app.get("/health", (c) =>
-  c.json({
-    status: "ok",
-    timestamp: new Date().toISOString(),
-    provider: process.env.REALTIME_PROVIDER ?? "supabase",
-  }),
+	c.json({
+		status: "ok",
+		timestamp: new Date().toISOString(),
+		provider: realtimeEnv.REALTIME_PROVIDER,
+	}),
 );
 
 // ─── OpenAPI ─────────────────────────────────────────────────────────────────
@@ -101,33 +105,36 @@ app.on(["GET", "POST"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 // ─── tRPC ─────────────────────────────────────────────────────────────────────
 
 app.use(
-  "/trpc/*",
-  trpcServer({
-    router: appRouter,
-    createContext: (_opts, c) => createTRPCContext(c),
+	"/trpc/*",
+	trpcServer({
+		router: appRouter,
+		createContext: (_opts, c) => createTRPCContext(c),
 
-    onError:
-      process.env.NODE_ENV === "development"
-        ? ({ path, error }) => {
-            console.error(`[tRPC error] ${path ?? "unknown"}:`, error);
-          }
-        : undefined,
-  }),
+		onError:
+			apiEnv.NODE_ENV === "development"
+				? ({ path, error }) => {
+						console.error(
+							`[tRPC error] ${path ?? "unknown"}:`,
+							error,
+						);
+					}
+				: undefined,
+	}),
 );
 
 // ─── Servidor ─────────────────────────────────────────────────────────────────
 
-const port = Number(process.env.PORT ?? 3001);
+const port = apiEnv.PORT;
 
 serve({
-  fetch: app.fetch,
-  port,
+	fetch: app.fetch,
+	port,
 });
 
 console.log(`🚀 Mobiliza API rodando em http://localhost:${port}`);
-console.log(`   Realtime provider: ${process.env.REALTIME_PROVIDER ?? "supabase"}`);
+console.log(`   Realtime provider: ${realtimeEnv.REALTIME_PROVIDER}`);
 
 export default {
-  port,
-  fetch: app.fetch,
+	port,
+	fetch: app.fetch,
 };

@@ -5,8 +5,8 @@
 	"editor.tabSize": 4,
 	"editor.insertSpaces": false,
 	"editor.codeActionsOnSave": {
-		"source.organizeImports.biome": "explicit",
-		"source.fixAll.biome": "explicit"
+		"source.organizeImports.biome": "always",
+		"source.fixAll.biome": "always"
 	},
 	"[javascript]": {
 		"editor.defaultFormatter": "biomejs.biome"
@@ -14,6 +14,8 @@
 	"[typescript]": {
 		"editor.defaultFormatter": "biomejs.biome"
 	},
+	"biome.requireConfiguration": false,
+	"biome.lsp.bin": "../node_modules/@biomejs/biome/bin/biome",
 	"js/ts.preferences.autoImportFileExcludePatterns": [
 		"radix-ui",
 		"@base-ui/react"

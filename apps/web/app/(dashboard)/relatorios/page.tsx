@@ -20,90 +20,53 @@ import {
 import type { ChartConfig } from "@/components/ui/chart";
 import { VerticalBarsChart } from "@/components/vertical-bars-chart";
 
+import {
+	countBy,
+	formatDurationShort,
+	getCurrentMonthRange,
+	getRouteLabel,
+	type ManagerRequest,
+	toDate,
+} from "@/lib/dashboard-data";
+import { withServerTRPC } from "@/lib/trpc-server";
 import { getInitials } from "@/lib/utils";
 
-const reportMonth = new Date().toLocaleDateString("pt-BR", {
-	month: "long",
-	year: "numeric",
-});
+export const metadata: Metadata = {
+	title: "Relatórios",
+};
 
-const studentOptions = [
-	"João Pedro",
-	"Ana Beatriz",
-	"Carlos Eduardo",
-	"Fernanda Santos",
-];
+type MetricsSummary = {
+	totalRequests: number;
+	completedRequests: number;
+	cancelledRequests: number;
+	unattendedRequests: number;
+	completionRate: number;
+	avgDurationSeconds: number | null;
+};
 
-const scholarOptions = [
-	"Lucas Carvalho",
-	"Maria Costa",
-	"Rafael Souza",
-	"Juliana Oliveira",
-];
+type ScholarPerformance = {
+	scholarProfileId: string;
+	scholarName: string;
+	totalAttendances: number;
+};
 
-const shiftOptions = ["Matutino", "Vespertino", "Noturno"];
+type ScholarDashboardResponse = {
+	scholars: Array<{
+		user: {
+			id: string;
+			name: string;
+		};
+	}>;
+};
 
-const stats = [
-	{
-		title: "Total de atendimentos",
-		value: "94",
-		caption: "+18% vs março",
-		valueClassName: "text-foreground",
-	},
-	{
-		title: "Tempo médio de espera",
-		value: "4 min",
-		caption: "do pedido ao aceite",
-		valueClassName: "text-foreground",
-	},
-	{
-		title: "Tempo médio de atendimento",
-		value: "14",
-		caption: "por deslocamento",
-		valueClassName: "text-foreground",
-	},
-	{
-		title: "Taxa de conclusão",
-		value: "97%",
-		caption: "3 não atendidos",
-		valueClassName: "text-success",
-	},
-	{
-		title: "Alunos atendidos",
-		value: "9",
-		caption: "de 9 cadastrados",
-		valueClassName: "text-foreground",
-	},
-] as const;
-
-const weekdayProgress = [
-	{ label: "Seg", value: 24, percent: 44 },
-	{ label: "Ter", value: 18, percent: 12 },
-	{ label: "Qua", value: 11, percent: 16 },
-	{ label: "Qui", value: 54, percent: 24 },
-	{ label: "Sex", value: 31, percent: 4 },
-] as const;
-
-const shiftProgress = [
-	{ label: "Matutino", value: 52, percent: 55 },
-	{ label: "Vespertino", value: 18, percent: 19 },
-	{ label: "Noturno", value: 24, percent: 26 },
-] as const;
-
-const hourlyChartData = [
-	{ label: "08h", value: 2 },
-	{ label: "09h", value: 5 },
-	{ label: "10h", value: 7 },
-	{ label: "11h", value: 6 },
-	{ label: "12h", value: 3 },
-	{ label: "13h", value: 2 },
-	{ label: "14h", value: 4 },
-	{ label: "15h", value: 7 },
-	{ label: "16h", value: 5 },
-	{ label: "17h", value: 2 },
-	{ label: "18h", value: 3 },
-	{ label: "19h", value: 1 },
-] as const;
+type StudentDashboardResponse = {
+	students: Array<{
+		user: {
+			id: string;
+			name: string;
+		};
+	}>;
+};
 
 const hourlyChartConfig = {
 	value: {
@@ -111,30 +74,6 @@ const hourlyChartConfig = {
 		color: "var(--chart-1)",
 	},
 } satisfies ChartConfig;
-
-const scholarRanking = [
-	{ name: "Lucas C.", count: 23 },
-	{ name: "Beatriz F.", count: 18 },
-	{ name: "Rafael S.", count: 15 },
-	{ name: "Thais M.", count: 13 },
-	{ name: "Pedro L.", count: 8 },
-] as const;
-
-const routeRanking = [
-	{ name: "IC → RU", count: 12 },
-	{ name: "Lanchonete → COS", count: 2 },
-	{ name: "RU → Reitoria", count: 5 },
-	{ name: "Bradesco → IQB", count: 3 },
-	{ name: "FAED → Biblioteca", count: 8 },
-] as const;
-
-const studentRanking = [
-	{ name: "Maria Aparecida", count: 37 },
-	{ name: "Rodrigo Santos", count: 24 },
-	{ name: "João Henrique", count: 19 },
-	{ name: "Ana Clara", count: 17 },
-	{ name: "Paulo Teixeira", count: 12 },
-] as const;
 
 const exportCards = [
 	{
@@ -153,6 +92,13 @@ const exportCards = [
 			"Histórico consolidado de solicitações, rotas preferidas e atendimento por aluno cadastrado.",
 	},
 ] as const;
+
+const shiftLabels: Record<string, string> = {
+	morning: "Matutino",
+	afternoon: "Vespertino",
+	night: "Noturno",
+	full_day: "Integral",
+};
 
 function StatCard({
 	title,
@@ -228,7 +174,7 @@ function ProgressSection({
 								{item.label}
 							</span>
 							<span className="text-muted-foreground">
-								{item.value} ⋅ {item.percent}%
+								{item.value} · {item.percent}%
 							</span>
 						</div>
 						<div className="h-2.5 overflow-hidden rounded-full bg-muted/80">
@@ -261,35 +207,41 @@ function RankingCard({
 	return (
 		<SectionCard title={title}>
 			<div className="flex flex-col gap-0">
-				{items.map((item, index) => (
-					<div
-						key={item.name}
-						className="flex items-center justify-between gap-3 border-b border-border/60 py-3 last:border-b-0 last:pb-0 first:pt-0"
-					>
-						<div className="flex min-w-0 items-center gap-3">
-							{prefix === "x" ? null : (
-								<p className="w-3 shrink-0 text-xs text-foreground/80">
-									{index + 1}
-								</p>
-							)}
-							{showUser && (
-								<Avatar className="h-8 w-8 shrink-0">
-									<AvatarFallback className="text-[10px]">
-										{getInitials(item.name)}
-									</AvatarFallback>
-								</Avatar>
-							)}
-							<div className="min-w-0">
-								<p className="truncate text-sm font-medium">
-									{item.name}
-								</p>
+				{items.length > 0 ? (
+					items.map((item, index) => (
+						<div
+							key={item.name}
+							className="flex items-center justify-between gap-3 border-b border-border/60 py-3 last:border-b-0 last:pb-0 first:pt-0"
+						>
+							<div className="flex min-w-0 items-center gap-3">
+								{prefix === "x" ? null : (
+									<p className="w-3 shrink-0 text-xs text-foreground/80">
+										{index + 1}
+									</p>
+								)}
+								{showUser && (
+									<Avatar className="h-8 w-8 shrink-0">
+										<AvatarFallback className="text-[10px]">
+											{getInitials(item.name)}
+										</AvatarFallback>
+									</Avatar>
+								)}
+								<div className="min-w-0">
+									<p className="truncate text-sm font-medium">
+										{item.name}
+									</p>
+								</div>
 							</div>
+							<Badge variant="secondary" className="shrink-0">
+								{item.count} {prefix}
+							</Badge>
 						</div>
-						<Badge variant="secondary" className="shrink-0">
-							{item.count} {prefix}
-						</Badge>
-					</div>
-				))}
+					))
+				) : (
+					<p className="text-sm text-muted-foreground">
+						Sem registros no período.
+					</p>
+				)}
 			</div>
 		</SectionCard>
 	);
@@ -322,11 +274,143 @@ function ExportCard({
 	);
 }
 
-export const metadata: Metadata = {
-	title: "Relatórios",
-};
+function toProgressItems(items: Array<{ label: string; value: number }>) {
+	const total = items.reduce((sum, item) => sum + item.value, 0);
 
-export default function ReportsPage() {
+	return items.map((item) => ({
+		...item,
+		percent: total > 0 ? Math.round((item.value / total) * 100) : 0,
+	}));
+}
+
+function getTopItem(items: ReadonlyArray<{ label: string; value: number }>) {
+	return items.reduce((top, item) => (item.value > top.value ? item : top), {
+		label: "Sem dados",
+		value: 0,
+	});
+}
+
+function getHourlyChartData(requests: ManagerRequest[]) {
+	const counts = new Map<string, number>();
+
+	for (const request of requests) {
+		const label = `${toDate(request.createdAt).getHours().toString().padStart(2, "0")}h`;
+		counts.set(label, (counts.get(label) ?? 0) + 1);
+	}
+
+	return [
+		"08h",
+		"09h",
+		"10h",
+		"11h",
+		"12h",
+		"13h",
+		"14h",
+		"15h",
+		"16h",
+		"17h",
+		"18h",
+		"19h",
+	].map((label) => ({ label, value: counts.get(label) ?? 0 }));
+}
+
+export default async function ReportsPage() {
+	const monthRange = getCurrentMonthRange();
+	const [
+		summary,
+		scholarPerformance,
+		requests,
+		scholarDashboard,
+		studentDashboard,
+	] = (await withServerTRPC(async (trpc) =>
+		Promise.all([
+			trpc.metrics.summary(monthRange),
+			trpc.metrics.scholarPerformance(monthRange),
+			trpc.requests.managerList({ limit: 500 }),
+			trpc.profiles.scholarDashboard(),
+			trpc.profiles.studentDashboard(),
+		]),
+	)) as [
+		MetricsSummary,
+		ScholarPerformance[],
+		ManagerRequest[],
+		ScholarDashboardResponse,
+		StudentDashboardResponse,
+	];
+	const reportMonth = new Date().toLocaleDateString("pt-BR", {
+		month: "long",
+		year: "numeric",
+	});
+	const weekdayCounts = countBy(requests, (request) =>
+		toDate(request.createdAt).toLocaleDateString("pt-BR", {
+			weekday: "short",
+		}),
+	);
+	const weekdayProgress = toProgressItems(
+		["seg.", "ter.", "qua.", "qui.", "sex."].map((label) => ({
+			label: label.replace(".", ""),
+			value:
+				weekdayCounts.find(
+					(item) =>
+						item.name.toLowerCase().replace(".", "") ===
+						label.replace(".", ""),
+				)?.count ?? 0,
+		})),
+	);
+	const shiftProgress = toProgressItems(
+		Object.entries(shiftLabels).map(([shift, label]) => ({
+			label,
+			value: requests.filter(
+				(request) => request.studentProfile.shift === shift,
+			).length,
+		})),
+	);
+	const hourlyChartData = getHourlyChartData(requests);
+	const peakHour = getTopItem(hourlyChartData);
+	const topWeekday = getTopItem(weekdayProgress);
+	const topShift = getTopItem(shiftProgress);
+	const stats = [
+		{
+			title: "Total de atendimentos",
+			value: String(summary.totalRequests),
+			caption: `${summary.completedRequests} concluídos`,
+			valueClassName: "text-foreground",
+		},
+		{
+			title: "Tempo médio",
+			value: formatDurationShort(summary.avgDurationSeconds),
+			caption: "por deslocamento concluído",
+			valueClassName: "text-foreground",
+		},
+		{
+			title: "Não atendidos",
+			value: String(summary.unattendedRequests),
+			caption: `${summary.cancelledRequests} cancelados`,
+			valueClassName: "text-foreground",
+		},
+		{
+			title: "Taxa de conclusão",
+			value: `${Math.round(summary.completionRate * 100)}%`,
+			caption: "do período selecionado",
+			valueClassName: "text-success",
+		},
+		{
+			title: "Alunos atendidos",
+			value: String(studentDashboard.students.length),
+			caption: "cadastros no painel",
+			valueClassName: "text-foreground",
+		},
+	];
+	const scholarRanking = scholarPerformance.slice(0, 5).map((scholar) => ({
+		name: scholar.scholarName,
+		count: Number(scholar.totalAttendances),
+	}));
+	const routeRanking = countBy(requests, getRouteLabel).slice(0, 5);
+	const studentRanking = countBy(
+		requests,
+		(request) => request.studentProfile.user.name,
+	).slice(0, 5);
+
 	return (
 		<section className="min-w-0 flex-1">
 			<header className="border-b border-border bg-card px-4 py-4 backdrop-blur md:px-6 md:py-5">
@@ -361,23 +445,23 @@ export default function ReportsPage() {
 					</div>
 
 					<ComboboxMultiple
-						items={studentOptions.map((option) => ({
-							id: option,
-							label: option,
+						items={studentDashboard.students.map((student) => ({
+							id: student.user.id,
+							label: student.user.name,
 						}))}
 						allLabel="Todos os alunos"
 					/>
 
 					<ComboboxMultiple
-						items={scholarOptions.map((option) => ({
-							id: option,
-							label: option,
+						items={scholarDashboard.scholars.map((scholar) => ({
+							id: scholar.user.id,
+							label: scholar.user.name,
 						}))}
 						allLabel="Todos os bolsistas"
 					/>
 
 					<ComboboxMultiple
-						items={shiftOptions.map((option) => ({
+						items={Object.values(shiftLabels).map((option) => ({
 							id: option,
 							label: option,
 						}))}
@@ -399,7 +483,7 @@ export default function ReportsPage() {
 						note={
 							<>
 								<strong className="font-semibold text-foreground">
-									Quinta-feira
+									{topWeekday.label}
 								</strong>{" "}
 								concentra o maior volume de solicitações no mês.
 							</>
@@ -410,7 +494,7 @@ export default function ReportsPage() {
 						title="Atendimentos por turno"
 						items={shiftProgress}
 						accentClassName="h-full rounded-full bg-[var(--chart-2)]"
-						note="Matutino concentra a maior parte dos atendimentos registrados no mês analisado."
+						note={`${topShift.label} concentra a maior parte dos atendimentos registrados no mês analisado.`}
 					/>
 				</div>
 
@@ -419,17 +503,15 @@ export default function ReportsPage() {
 				>
 					<div className="space-y-4">
 						<VerticalBarsChart
-							data={hourlyChartData.map((item) => ({
-								label: item.label,
-								value: item.value,
-							}))}
+							data={hourlyChartData}
 							config={hourlyChartConfig}
 							className="h-44 md:h-52"
 						/>
 						<Alert variant={"info"}>
 							<InfoIcon className="size-4" />
-							Pico entre 10h e 16h, com queda consistente no fim
-							da tarde.
+							{peakHour.value > 0
+								? `Pico às ${peakHour.label}, com ${peakHour.value} solicitações no período.`
+								: "Sem solicitações registradas no período."}
 						</Alert>
 					</div>
 				</SectionCard>
