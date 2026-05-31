@@ -3,11 +3,12 @@ import { db } from "@mobiliza/db";
 import { and, eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { TRPCError } from "@trpc/server";
+import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
 import { scholarProcedure } from "../../trpc/context";
 
-import { execTx, generateAttendanceId } from "./shared";
+import { execTx } from "./shared";
 
 export const accept = scholarProcedure
 	.meta({ openapi: { method: "POST", path: "/requests/accept" } })
@@ -66,7 +67,7 @@ export const accept = scholarProcedure
 			const [attendance] = await tx
 				.insert(schema.serviceAttendance)
 				.values({
-					id: generateAttendanceId(),
+					id: uuidv7(),
 					requestId: input.requestId,
 					scholarProfileId: scholarProfile.id,
 					acceptedAt: now,

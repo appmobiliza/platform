@@ -13,7 +13,7 @@ import { Icon } from "./ui/icon";
 type Option = {
 	id: string;
 	label: string;
-	icon: React.ComponentType<any>;
+	icon: React.ComponentType<{ size?: number; color?: string }>;
 };
 
 interface AccessibilityOptionsProps {
@@ -64,10 +64,9 @@ export function AccessibilityOptions({
 							accessibilityRole="checkbox"
 							accessibilityState={{ checked: isSelected }}
 							className={cn(
-								"mb-4 min-h-[120px] w-[48%] items-center justify-center rounded-xl border-2 p-4 border-border bg-background text-foreground",
+								"mb-4 min-h-[120px] w-[48%] items-center justify-center rounded-xl border-2 p-4 border-border bg-background",
 								{
-									"border-primary bg-primary text-primary-foreground":
-										isSelected,
+									"border-primary bg-primary": isSelected,
 								},
 							)}
 						>
@@ -76,8 +75,8 @@ export function AccessibilityOptions({
 								size={32}
 								color={
 									isSelected
-										? "primary-foreground"
-										: "foreground"
+										? "--primary-foreground"
+										: "--foreground"
 								}
 							/>
 							<Text

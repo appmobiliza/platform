@@ -79,7 +79,7 @@ function RequestFlowSheet() {
 							<Icon
 								icon={MapPin}
 								size={20}
-								color={"muted-foreground"}
+								color="--muted-foreground"
 							/>
 							<Text className="pb-0.5">
 								{destinationValue ||
@@ -89,7 +89,7 @@ function RequestFlowSheet() {
 						<Icon
 							icon={Search}
 							size={20}
-							color={"muted-foreground"}
+							color="--muted-foreground"
 						/>
 					</Pressable>
 				</SheetFrame>
@@ -125,7 +125,7 @@ function RequestFlowSheet() {
 									<Icon
 										icon={CircleX}
 										size={20}
-										color={"secondary-foreground"}
+										color="--secondary-foreground"
 									/>
 								</Pressable>
 							),
@@ -137,7 +137,7 @@ function RequestFlowSheet() {
 									<Icon
 										icon={CircleX}
 										size={20}
-										color={"secondary-foreground"}
+										color="--secondary-foreground"
 									/>
 								</Pressable>
 							),
@@ -289,7 +289,7 @@ function RequestFlowSheet() {
 								<Icon
 									icon={MessageSquareText}
 									size={17}
-									color={"muted-foreground"}
+									color="--muted-foreground"
 								/>
 								<TextInput
 									className="flex-1 text-[16px] leading-6 text-foreground"

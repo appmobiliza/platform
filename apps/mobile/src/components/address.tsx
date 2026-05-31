@@ -11,85 +11,120 @@ import { FromMarker, ToMarker } from "@/assets/route";
 interface AddressProps {
 	className?: string;
 	label: string;
+	description?: string;
 	marker: "from" | "to";
 	children?: React.ReactNode;
 	size?: "sm" | "md" | "lg";
 }
 
 function Address({
-	label: title,
+	label,
+	description,
 	className,
 	marker = "from",
 	size = "md",
 	children,
 }: AddressProps) {
+	const sizePx = size === "sm" ? 12 : size === "md" ? 24 : 36;
+
 	return (
 		<View className={cn("w-full flex-row items-center gap-4", className)}>
 			<View
-				className={cn("size-3 items-center justify-center", {
-					"size-6": size === "md",
+				className={cn("size-6 items-center justify-center", {
+					"size-3": size === "sm",
 					"size-9": size === "lg",
 				})}
 			>
 				{marker === "from" ? (
-					<FromMarker width={24} />
+					<FromMarker width={sizePx} />
 				) : (
-					<ToMarker width={24} />
+					<ToMarker width={sizePx} />
 				)}
 			</View>
 			<View className="min-w-0 flex-1 flex-row items-center justify-between gap-4">
-				<Text
-					className={
-						"min-w-0 flex-1 text-lg font-normal leading-none text-foreground"
-					}
-					numberOfLines={1}
-				>
-					{title}
-				</Text>
+				<View className="flex-1 flex-col items-start">
+					<Text
+						className={
+							"min-w-0 flex-1 text-lg font-normal leading-none text-foreground"
+						}
+						numberOfLines={1}
+					>
+						{label}
+					</Text>
+					{description && (
+						<Text
+							className={
+								"min-w-0 flex-1 text-sm font-normal leading-none text-muted-foreground mt-1"
+							}
+							numberOfLines={1}
+						>
+							{description}
+						</Text>
+					)}
+				</View>
 				{children}
 			</View>
 		</View>
 	);
 }
 
-type AddressRouteProps = {
+export type AddressRouteProps = {
 	className?: string;
+	shouldShowRoute?: boolean;
 	from: {
 		label: string;
+		description?: string;
 		children?: React.ReactNode;
 		className?: string;
 	};
 	to: {
 		label: string;
+		description?: string;
 		children?: React.ReactNode;
 		className?: string;
 	};
+	size?: AddressProps["size"];
 };
 
-function AddressRoute({ className, from, to }: AddressRouteProps) {
+function AddressRoute({
+	className,
+	shouldShowRoute,
+	from,
+	to,
+	size,
+}: AddressRouteProps) {
 	return (
 		<View className={cn("w-full flex-col items-start gap-1", className)}>
 			<Address
 				label={from.label}
+				description={from.description}
 				marker="from"
 				className={from.className}
-				size="md"
+				size={size}
 			>
 				{from.children}
 			</Address>
 
 			<View className="w-full flex-row items-center justify-start gap-4">
-				<View className="size-6 items-center justify-center">
-					<View className="h-6 w-0.5 bg-primary" />
-				</View>
+				{shouldShowRoute && (
+					<View
+						className={cn("size-6 items-center justify-center", {
+							"size-9": size === "lg",
+							"size-3": size === "sm",
+						})}
+					>
+						<View className="h-6 w-0.5 bg-primary" />
+					</View>
+				)}
 				<View className="flex-1 h-px bg-border" />
 			</View>
 
 			<Address
 				label={to.label}
+				description={to.description}
 				marker="to"
 				className={to.className}
-				size="md"
+				size={size}
 			>
 				{to.children}
 			</Address>

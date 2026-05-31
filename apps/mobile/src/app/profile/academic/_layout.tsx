@@ -18,7 +18,7 @@ export default function AcademicProfileLayout() {
 		>
 			<Stack.Screen
 				name="index"
-				options={{ headerTitle: "Acadêmico", ...HEADER_CONFIG }}
+				options={{ headerTitle: "Acadêmico", ...HEADER_CONFIG() }}
 			/>
 			{/* <Stack.Screen
 				name="course"

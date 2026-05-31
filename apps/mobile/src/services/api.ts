@@ -4,15 +4,15 @@
  */
 
 import type {
-  AuthResponse,
-  SessionResponse,
-  OnboardingResponse,
-  UserResponse,
   ApiError,
+  AuthResponse,
   GoogleAuthRequest,
   OnboardingApiRequest,
+  OnboardingResponse,
+  SessionResponse,
+  UserResponse,
 } from '../types/api';
-import { HTTP_STATUS, API_ERROR_CODES } from '../types/api';
+import { API_ERROR_CODES, HTTP_STATUS } from '../types/api';
 
 // ============================================
 // CONFIG
@@ -296,4 +296,4 @@ export async function getUserById(
 // EXPORTS
 // ============================================
 
-export { endpoints, HTTP_STATUS, API_ERROR_CODES };
+export { API_ERROR_CODES, endpoints, HTTP_STATUS };

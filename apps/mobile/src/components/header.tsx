@@ -18,11 +18,8 @@ export function Header({ title, description, size = "default" }: HeaderProps) {
 
 	return (
 		<View className="gap-4 pt-12 px-4">
-			<TouchableOpacity
-				className="text-foreground"
-				onPress={() => router.back()}
-			>
-				<Icon icon={ArrowLeftToLine} size={32} color="foreground" />
+			<TouchableOpacity onPress={() => router.back()}>
+				<Icon icon={ArrowLeftToLine} size={32} color="--foreground" />
 			</TouchableOpacity>
 			<View className="gap-1">
 				{title ? (

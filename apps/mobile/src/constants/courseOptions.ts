@@ -1,4 +1,4 @@
-import { SelectOption } from "@/types";
+import type { SelectOption } from "@/types";
 
 export const courseOptions: SelectOption[] = [
   { label: "Pedagogia", value: "Pedagogia" },

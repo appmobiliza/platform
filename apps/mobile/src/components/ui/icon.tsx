@@ -9,11 +9,9 @@ interface IconProps {
 	style?: React.ComponentProps<typeof View>["style"];
 }
 
-export function Icon({
-	icon: IconComponent,
-	color = "currentColor",
-	...props
-}: IconProps) {
-	const themeColor = useUnstableNativeVariable(color) || color;
-	return <IconComponent color={themeColor} {...props} />;
+export function Icon({ icon: IconComponent, color, ...props }: IconProps) {
+	const themeColor = useUnstableNativeVariable(color || "currentColor");
+	return (
+		<IconComponent color={color ? themeColor : "currentColor"} {...props} />
+	);
 }

@@ -63,7 +63,11 @@ function SelectField({
 						>
 							{value || placeholder}
 						</Text>
-						<Icon icon={ChevronDown} size={20} color="foreground" />
+						<Icon
+							icon={ChevronDown}
+							size={20}
+							color="--foreground"
+						/>
 					</Button>
 				</SheetTrigger>
 

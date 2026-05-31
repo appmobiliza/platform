@@ -2,10 +2,12 @@ import { FlatList, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { FeaturedHistoryCard } from "@/components/featured-history-card";
+import { ScholarHistory } from "@/components/scholar/history";
 import { SimpleHistoryItem } from "@/components/simple-history-item";
 import { StatusMessage } from "@/components/status-message";
 import { Text } from "@/components/ui/text";
 
+import { UserRole, useUserRole } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
 
 const historyItems = [
@@ -35,7 +37,7 @@ const historyItems = [
 	},
 ];
 
-export default function History() {
+function StudentHistory() {
 	const insets = useSafeAreaInsets();
 
 	return (
@@ -93,4 +95,9 @@ export default function History() {
 			/>
 		</View>
 	);
+}
+
+export default function History() {
+	const role = useUserRole();
+	return role === UserRole.Scholar ? <ScholarHistory /> : <StudentHistory />;
 }

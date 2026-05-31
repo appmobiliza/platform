@@ -1,29 +1,39 @@
 import { Stack } from "expo-router";
 import { useColorScheme } from "react-native";
 
-import { THEME } from "@/lib/theme";
+import { useUserRole } from "@/lib/auth-store";
+import { SCHOLAR_THEME, THEME, useUnstableNativeVariable } from "@/lib/theme";
 
-export const HEADER_CONFIG = {
-	headerStyle: {
-		backgroundColor: THEME.dark.primary,
-	},
-	headerTintColor: "#fff",
-	headerTitleStyle: {
-		color: "#fff",
-	},
-	headerShadowVisible: false,
+export const HEADER_CONFIG = () => {
+	const primary = useUnstableNativeVariable("--primary") as string;
+
+	return {
+		headerStyle: {
+			backgroundColor: primary,
+		},
+		headerTintColor: "#fff",
+		headerTitleStyle: {
+			color: "#fff",
+		},
+		headerShadowVisible: false,
+	};
 };
 
 export default function ProfileLayout() {
 	const colorScheme = useColorScheme();
-	const bgColor =
-		colorScheme === "dark" ? THEME.dark.background : THEME.light.background;
+	const role = useUserRole();
+	const isScholar = role === "scholar";
+	const theme = isScholar
+		? SCHOLAR_THEME
+		: colorScheme === "dark"
+			? THEME.dark
+			: THEME.light;
 
 	return (
 		<Stack
 			screenOptions={{
 				headerShown: false,
-				contentStyle: { backgroundColor: bgColor },
+				contentStyle: { backgroundColor: theme.background },
 			}}
 		/>
 	);

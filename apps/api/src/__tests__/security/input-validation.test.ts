@@ -10,7 +10,6 @@
  */
 
 import { z } from "zod";
-import * as schema from "../mocks/schema";
 
 describe("input-validation", () => {
   // ─── Phone validation ───────────────────────────────────────────────────────

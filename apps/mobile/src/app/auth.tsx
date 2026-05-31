@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
-import { setIsLoggedIn } from "@/lib/auth-store";
+import { setIsLoggedIn, setUserRole } from "@/lib/auth-store";
 
 import GoogleIcon from "@/assets/google";
 import { Logo } from "@/assets/logo";
@@ -14,7 +14,8 @@ export default function Auth() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
 
-	const handleLogin = () => {
+	const handleLogin = (role: "student" | "scholar") => {
+		setUserRole(role);
 		setIsLoggedIn(true);
 		router.replace("/(tabs)");
 	};
@@ -41,31 +42,32 @@ export default function Auth() {
 					<Text className="text-2xl font-bold text-foreground mb-2">
 						Autenticação
 					</Text>
-					<Text className="">
+					<Text className="text-muted-foreground mb-6">
 						Entre com seu e-mail institucional para acessar a
 						plataforma
 					</Text>
 
 					<Button
-						className="mt-8 relative"
-						onPress={handleLogin}
+						className="relative mb-3"
+						onPress={() => handleLogin("student")}
 						variant={"inverted"}
 						size={"lg"}
 					>
 						<GoogleIcon />
-						<Text>Continuar com o Google</Text>
+						<Text>Entrar como Aluno</Text>
 					</Button>
-
+					
 					<Button
-						className="mt-4 relative"
-						onPress={() => router.push("/onboarding")}
+						className="relative"
+						onPress={() => handleLogin("scholar")}
 						variant={"outline"}
-						size={"sm"}
+						size={"lg"}
 					>
-						<Text>Testar onboarding</Text>
+						<GoogleIcon />
+						<Text>Entrar como Bolsista</Text>
 					</Button>
 
-					<Text className="text-center text-sm text-muted-foreground mt-6">
+					<Text className="text-center text-sm text-muted-foreground mt-8">
 						Ao continuar, você concorda com nossos{"\n"}
 						<Text
 							onPress={() => openURL("https://example.com/terms")}

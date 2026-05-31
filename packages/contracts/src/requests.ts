@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const CreateRequestSchema = z.object({
-  originLocationId: z.number().int().positive(),
-  destinationLocationId: z.number().int().positive(),
+  originLocationId: z.string(),
+  destinationLocationId: z.string(),
   notes: z.string().max(500).optional(),
 });
 

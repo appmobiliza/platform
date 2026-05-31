@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
-  integer, 
+  integer,
   pgTable, 
   text, 
   timestamp 
@@ -25,11 +25,11 @@ export const serviceRequest = pgTable("service_request", {
 		.notNull()
 		.references(() => studentProfile.id, { onDelete: "restrict" }),
 
-	originLocationId: integer("origin_location_id")
+	originLocationId: text("origin_location_id")
 		.notNull()
 		.references(() => campusLocation.id, { onDelete: "restrict" }),
 
-	destinationLocationId: integer("destination_location_id")
+	destinationLocationId: text("destination_location_id")
 		.notNull()
 		.references(() => campusLocation.id, { onDelete: "restrict" }),
 

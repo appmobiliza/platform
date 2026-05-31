@@ -7,6 +7,7 @@ import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { TRPCError } from "@trpc/server";
+import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
 import {
@@ -15,98 +16,6 @@ import {
 	router,
 	scholarProcedure,
 } from "../trpc/context";
-
-function generateProfileId(prefix: string): string {
-	return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-}
-
-const scholarDashboardStatusValues = [
-	"available",
-	"busy",
-	"off_shift",
-	"pending",
-] as const;
-
-function getScholarDashboardStatus(profile: {
-	isApproved: boolean;
-	isActive: boolean;
-	isAvailable: boolean;
-	shift: (typeof schema.scholarShiftValues)[number];
-}) {
-	if (!profile.isApproved || !profile.isActive) {
-		return "pending" as const;
-	}
-
-	if (profile.shift !== schema.getCurrentShift()) {
-		return "off_shift" as const;
-	}
-
-	if (profile.isAvailable) {
-		return "available" as const;
-	}
-
-	return "busy" as const;
-}
-
-function getScholarDashboardStatusLabel(
-	status: (typeof scholarDashboardStatusValues)[number],
-) {
-	switch (status) {
-		case "available":
-			return "Disponível";
-		case "busy":
-			return "Em atendimento";
-		case "off_shift":
-			return "Fora do turno";
-		case "pending":
-			return "Pendente";
-	}
-}
-
-function getScholarShiftLabel(shift: (typeof schema.scholarShiftValues)[number]) {
-	return schema.scholarShiftLabels[shift];
-}
-
-function getRouteLabel(request: {
-	originLocation?: { abbreviation: string; name: string } | null;
-	destinationLocation?: { abbreviation: string; name: string } | null;
-}) {
-	const origin =
-		request.originLocation?.abbreviation || request.originLocation?.name || "-";
-	const destination =
-		request.destinationLocation?.abbreviation ||
-		request.destinationLocation?.name ||
-		"-";
-
-	return `${origin} → ${destination}`;
-}
-
-function getStudentRouteStatus(
-	status: (typeof schema.requestStatusValues)[number],
-) {
-	if (status === "completed") {
-		return "completed" as const;
-	}
-
-	if (status === "cancelled" || status === "unattended") {
-		return "canceled" as const;
-	}
-
-	return "pending" as const;
-}
-
-function getTopCounts(items: string[], limit = 3) {
-	const counts = new Map<string, number>();
-
-	for (const item of items) {
-		counts.set(item, (counts.get(item) ?? 0) + 1);
-	}
-
-	return Array.from(counts.entries())
-		.sort(([, countA], [, countB]) => countB - countA)
-		.slice(0, limit)
-		.map(([name, amount]) => ({ name, amount }));
-}
 
 export const profilesRouter = router({
 	/**
@@ -117,17 +26,17 @@ export const profilesRouter = router({
 		.meta({ openapi: { method: "GET", path: "/profiles/me" } })
 		.output(z.any())
 		.query(async ({ ctx }) => {
-		const user = await db.query.user.findFirst({
-			where: eq(schema.user.id, ctx.session.user.id),
-			with: {
-				studentProfile: true,
-				scholarProfile: true,
-			},
-		});
+			const user = await db.query.user.findFirst({
+				where: eq(schema.user.id, ctx.session.user.id),
+				with: {
+					studentProfile: true,
+					scholarProfile: true,
+				},
+			});
 
-		if (!user) throw new TRPCError({ code: "NOT_FOUND" });
-		return user;
-	}),
+			if (!user) throw new TRPCError({ code: "NOT_FOUND" });
+			return user;
+		}),
 
 	scholarDashboard: managerProcedure
 		.meta({ openapi: { method: "GET", path: "/profiles/scholars" } })
@@ -179,7 +88,10 @@ export const profilesRouter = router({
 
 			return {
 				cards: [
-					{ title: "Total de bolsistas", value: String(totalScholars) },
+					{
+						title: "Total de bolsistas",
+						value: String(totalScholars),
+					},
 					{
 						title: "Disponível agora",
 						value: String(availableNow),
@@ -228,7 +140,9 @@ export const profilesRouter = router({
 			const todayEnd = new Date(now);
 			todayEnd.setHours(23, 59, 59, 999);
 
-			const activeStudents = students.filter((profile) => profile.isActive);
+			const activeStudents = students.filter(
+				(profile) => profile.isActive,
+			);
 			const allRequests = students.flatMap((profile) => profile.requests);
 			const requestedToday = new Set(
 				allRequests
@@ -255,7 +169,10 @@ export const profilesRouter = router({
 
 			return {
 				cards: [
-					{ title: "Total de alunos", value: String(activeStudents.length) },
+					{
+						title: "Total de alunos",
+						value: String(activeStudents.length),
+					},
 					{
 						title: "Com solicitação hoje",
 						value: String(requestedToday),
@@ -265,10 +182,14 @@ export const profilesRouter = router({
 						title: "Deficiência visual",
 						value: String(visualImpairmentCount),
 					},
-					{ title: "Deficiência motora", value: String(mobilityCount) },
+					{
+						title: "Deficiência motora",
+						value: String(mobilityCount),
+					},
 				],
 				students: students.map((student) => {
-					const { disabilities, requests, user, ...profile } = student;
+					const { disabilities, requests, user, ...profile } =
+						student;
 					const sortedRequests = [...requests].sort(
 						(requestA, requestB) =>
 							new Date(requestB.createdAt).getTime() -
@@ -322,7 +243,9 @@ export const profilesRouter = router({
 								.slice(0, 3)
 								.map((request) => ({
 									route: getRouteLabel(request),
-									date: new Date(request.createdAt).toISOString(),
+									date: new Date(
+										request.createdAt,
+									).toISOString(),
 									status: getStudentRouteStatus(
 										request.status,
 									),
@@ -375,7 +298,7 @@ export const profilesRouter = router({
 			const [profile] = await db
 				.insert(schema.studentProfile)
 				.values({
-					id: generateProfileId("sp"),
+					id: uuidv7(),
 					userId: ctx.session.user.id,
 					...profileData,
 				})
@@ -390,7 +313,7 @@ export const profilesRouter = router({
 
 			await db.insert(schema.studentDisability).values(
 				disabilityTypes.map((dt) => ({
-					id: generateProfileId("sd"),
+					id: uuidv7(),
 					studentProfileId: profile.id,
 					disabilityType: dt,
 				})),
@@ -431,7 +354,7 @@ export const profilesRouter = router({
 			const [profile] = await db
 				.insert(schema.scholarProfile)
 				.values({
-					id: generateProfileId("schol"),
+					id: uuidv7(),
 					userId: ctx.session.user.id,
 					...input,
 					isApproved: false,
@@ -450,31 +373,31 @@ export const profilesRouter = router({
 		.meta({ openapi: { method: "POST", path: "/profiles/availability" } })
 		.output(z.any())
 		.mutation(async ({ ctx }) => {
-		const profile = await db.query.scholarProfile.findFirst({
-			where: eq(schema.scholarProfile.userId, ctx.session.user.id),
-		});
-
-		if (!profile) throw new TRPCError({ code: "NOT_FOUND" });
-
-		if (!profile.isApproved) {
-			throw new TRPCError({
-				code: "FORBIDDEN",
-				message:
-					"Seu cadastro ainda não foi aprovado pelo NAC. Aguarde a aprovação para ativar a disponibilidade.",
+			const profile = await db.query.scholarProfile.findFirst({
+				where: eq(schema.scholarProfile.userId, ctx.session.user.id),
 			});
-		}
 
-		const [updated] = await db
-			.update(schema.scholarProfile)
-			.set({
-				isAvailable: !profile.isAvailable,
-				updatedAt: new Date(),
-			})
-			.where(eq(schema.scholarProfile.id, profile.id))
-			.returning();
+			if (!profile) throw new TRPCError({ code: "NOT_FOUND" });
 
-		return updated;
-	}),
+			if (!profile.isApproved) {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message:
+						"Seu cadastro ainda não foi aprovado pelo NAC. Aguarde a aprovação para ativar a disponibilidade.",
+				});
+			}
+
+			const [updated] = await db
+				.update(schema.scholarProfile)
+				.set({
+					isAvailable: !profile.isAvailable,
+					updatedAt: new Date(),
+				})
+				.where(eq(schema.scholarProfile.id, profile.id))
+				.returning();
+
+			return updated;
+		}),
 
 	// ─── Rotas do gestor ──────────────────────────────────────────────────────
 
@@ -482,15 +405,17 @@ export const profilesRouter = router({
 	 * Lista todos os bolsistas pendentes de aprovação.
 	 */
 	pendingScholars: managerProcedure
-		.meta({ openapi: { method: "GET", path: "/profiles/pending-scholars" } })
+		.meta({
+			openapi: { method: "GET", path: "/profiles/pending-scholars" },
+		})
 		.output(z.any())
 		.query(async () => {
-		return db.query.scholarProfile.findMany({
-			where: eq(schema.scholarProfile.isApproved, false),
-			with: { user: true },
-			orderBy: (t, { asc }) => [asc(t.createdAt)],
-		});
-	}),
+			return db.query.scholarProfile.findMany({
+				where: eq(schema.scholarProfile.isApproved, false),
+				with: { user: true },
+				orderBy: (t, { asc }) => [asc(t.createdAt)],
+			});
+		}),
 
 	/**
 	 * Aprova ou rejeita um bolsista.
