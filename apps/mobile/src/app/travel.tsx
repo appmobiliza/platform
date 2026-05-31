@@ -5,6 +5,7 @@ import { ChevronLeft, Clock } from "lucide-react-native";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AddressRoute } from "@/components/address";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
@@ -20,16 +21,15 @@ export default function TravelScreen() {
 		<View className="flex-1 bg-background">
 			{/* Header */}
 			<View
-				className="bg-primary px-6 rounded-b-3xl pb-8"
-				style={{ paddingTop: insets.top + 16 }}
+				className="bg-primary px-6 pb-8 gap-6"
+				style={{ paddingTop: insets.top + 24 }}
 			>
 				{/* Top Nav */}
-				<View className="flex-row items-center justify-between mb-8">
+				<View className="flex-row items-center justify-between">
 					<ChevronLeft
 						color="#FFFFFF"
-						size={28}
+						size={32}
 						onPress={() => router.back()}
-						className="p-2 -ml-2"
 					/>
 
 					{/* Header Right Content (Avatar and Timer) */}
@@ -40,7 +40,7 @@ export default function TravelScreen() {
 								size={14}
 								className="mr-1.5"
 							/>
-							<Text className="text-primary-foreground text-sm font-semibold">
+							<Text className="text-primary-foreground text-sm mb-0.5 font-semibold">
 								{isDuring ? "05:21" : "00:00"}
 							</Text>
 						</View>
@@ -51,16 +51,14 @@ export default function TravelScreen() {
 				<View className="flex-row items-center">
 					<Avatar
 						alt="Maria Aparecida's Avatar"
-						className="h-16 w-16 mr-4 bg-[#E6F4F5]"
+						className="h-16 w-16 mr-4"
 					>
 						<AvatarFallback>
-							<Text className="text-[#005E65] font-bold text-xl">
-								MA
-							</Text>
+							<Text>MA</Text>
 						</AvatarFallback>
 					</Avatar>
 					<View>
-						<Text className="font-bold text-2xl text-primary-foreground mb-1">
+						<Text className="font-bold text-2xl text-primary-foreground">
 							Maria Aparecida
 						</Text>
 						<Text className="text-primary-foreground/80 font-medium">
@@ -72,63 +70,43 @@ export default function TravelScreen() {
 
 			<ScrollView
 				className="flex-1 px-6 pt-6"
+				contentContainerClassName="gap-4"
 				showsVerticalScrollIndicator={false}
 			>
 				{/* Route Card */}
-				<View className="mb-6">
+				<View className="p-5 bg-card border border-border rounded-lg">
 					<Text className="text-muted-foreground font-semibold text-xs mb-3 tracking-widest uppercase">
 						PERCURSO
 					</Text>
-					<View className="bg-card border border-border rounded-2xl p-5">
-						<View className="flex-row items-start mb-1">
-							<View className="w-5 h-5 rounded-full bg-info items-center justify-center mr-3 mt-0.5">
-								<View className="w-2 h-2 bg-white rounded-full" />
-							</View>
-							<View>
-								<Text className="text-foreground font-bold text-base">
-									Instituto de Computação
-								</Text>
-								<Text className="text-muted-foreground text-sm">
-									Ponto de partida
-								</Text>
-							</View>
-						</View>
-
-						<View className="w-0.5 h-8 bg-border ml-2.5 my-1" />
-
-						<View className="flex-row items-start">
-							<View className="w-5 h-5 rounded-full bg-primary items-center justify-center mr-3 mt-0.5">
-								<View className="w-2 h-2 bg-white rounded-full" />
-							</View>
-							<View>
-								<Text className="text-foreground font-bold text-base">
-									Biblioteca Central
-								</Text>
-								<Text className="text-muted-foreground text-sm">
-									Destino
-								</Text>
-							</View>
-						</View>
-					</View>
+					<AddressRoute
+						from={{
+							label: "Instituto de Computação",
+							description: "Ponto de partida",
+						}}
+						to={{
+							label: "Biblioteca Central",
+							description: "Destino",
+						}}
+						shouldShowRoute
+						size="lg"
+					/>
 				</View>
 
 				{/* Observation Card */}
-				<View className="mb-6">
+				<View className="bg-card p-4 border border-border rounded-lg">
 					<Text className="text-muted-foreground font-semibold text-xs mb-3 tracking-widest uppercase">
 						OBSERVAÇÃO DO ESTUDANTE
 					</Text>
-					<View className="bg-secondary rounded-2xl p-4">
-						<Text className="text-foreground leading-relaxed font-medium">
-							"Prefere áudio descrição contínua durante todo o
-							percurso."
-						</Text>
-					</View>
+					<Text className="text-foreground leading-relaxed font-medium">
+						"Prefere áudio descrição contínua durante todo o
+						percurso."
+					</Text>
 				</View>
 
 				{/* Extra Info during travel */}
 				{isDuring && (
 					<View className="flex-row gap-4 mb-6">
-						<View className="flex-1 bg-card border border-border rounded-2xl p-4 items-center justify-center">
+						<View className="flex-1 bg-card border border-border rounded-lg p-4 items-center justify-center">
 							<Text className="text-muted-foreground text-sm mb-1">
 								Início
 							</Text>
@@ -136,7 +114,7 @@ export default function TravelScreen() {
 								10h17
 							</Text>
 						</View>
-						<View className="flex-1 bg-card border border-border rounded-2xl p-4 items-center justify-center">
+						<View className="flex-1 bg-card border border-border rounded-lg p-4 items-center justify-center">
 							<Text className="text-muted-foreground text-sm mb-1 text-center">
 								Distância restante
 							</Text>
@@ -149,33 +127,32 @@ export default function TravelScreen() {
 			</ScrollView>
 
 			{/* Footer Actions */}
-			<View className="px-6 pb-8 pt-4 bg-background">
+			<View className="px-6 pb-8 pt-4 gap-2">
 				{isDuring ? (
 					<Button
+						size="lg"
 						onPress={() => router.back()}
-						className="w-full rounded-2xl h-14 mb-4"
+						className="w-full rounded-xl py-7"
 					>
-						<Text className="font-semibold text-base text-white">
-							Concluir atendimento
-						</Text>
+						<Text>Concluir atendimento</Text>
 					</Button>
 				) : (
 					<Button
+						size="lg"
 						onPress={() => setIsDuring(true)}
-						className="w-full rounded-2xl h-14 bg-card border border-border mb-4"
-						variant="outline"
+						className="w-full rounded-xl py-7"
 					>
-						<Text className="font-semibold text-base text-muted-foreground">
-							Aguardando encontro...
-						</Text>
+						<Text>Aguardando encontro...</Text>
 					</Button>
 				)}
 
-				<View className="items-center">
-					<Text className="text-muted-foreground font-medium py-2">
-						Reportar problema
-					</Text>
-				</View>
+				<Button
+					variant="outline"
+					className="bg-transparent dark:bg-transparent"
+					size={"lg"}
+				>
+					<Text>Reportar problema</Text>
+				</Button>
 			</View>
 		</View>
 	);

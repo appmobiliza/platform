@@ -11,13 +11,15 @@ import { FromMarker, ToMarker } from "@/assets/route";
 interface AddressProps {
 	className?: string;
 	label: string;
+	description?: string;
 	marker: "from" | "to";
 	children?: React.ReactNode;
 	size?: "sm" | "md" | "lg";
 }
 
 function Address({
-	label: title,
+	label,
+	description,
 	className,
 	marker = "from",
 	size = "md",
@@ -40,14 +42,26 @@ function Address({
 				)}
 			</View>
 			<View className="min-w-0 flex-1 flex-row items-center justify-between gap-4">
-				<Text
-					className={
-						"min-w-0 flex-1 text-lg font-normal leading-none text-foreground"
-					}
-					numberOfLines={1}
-				>
-					{title}
-				</Text>
+				<View className="flex-1 flex-col items-start">
+					<Text
+						className={
+							"min-w-0 flex-1 text-lg font-normal leading-none text-foreground"
+						}
+						numberOfLines={1}
+					>
+						{label}
+					</Text>
+					{description && (
+						<Text
+							className={
+								"min-w-0 flex-1 text-sm font-normal leading-none text-muted-foreground mt-1"
+							}
+							numberOfLines={1}
+						>
+							{description}
+						</Text>
+					)}
+				</View>
 				{children}
 			</View>
 		</View>
@@ -59,11 +73,13 @@ export type AddressRouteProps = {
 	shouldShowRoute?: boolean;
 	from: {
 		label: string;
+		description?: string;
 		children?: React.ReactNode;
 		className?: string;
 	};
 	to: {
 		label: string;
+		description?: string;
 		children?: React.ReactNode;
 		className?: string;
 	};
@@ -81,6 +97,7 @@ function AddressRoute({
 		<View className={cn("w-full flex-col items-start gap-1", className)}>
 			<Address
 				label={from.label}
+				description={from.description}
 				marker="from"
 				className={from.className}
 				size={size}
@@ -104,6 +121,7 @@ function AddressRoute({
 
 			<Address
 				label={to.label}
+				description={to.description}
 				marker="to"
 				className={to.className}
 				size={size}

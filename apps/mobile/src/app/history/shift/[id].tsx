@@ -1,9 +1,13 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
+import { ChevronLeft, Clock } from "lucide-react-native";
 import { Pressable, ScrollView, View } from "react-native";
 
+import { Header } from "@/components/header";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
+
+import { cn } from "@/lib/utils";
 
 // Mocking services in the shift
 const services = [
@@ -13,8 +17,6 @@ const services = [
 		time: "18:00 - 18:23",
 		studentName: "João Carlos",
 		studentInitials: "JC",
-		avatarBg: "#EAF3DE",
-		avatarColor: "#27500A",
 	},
 	{
 		id: "s2",
@@ -22,8 +24,6 @@ const services = [
 		time: "18:30 - 18:53",
 		studentName: "João Carlos",
 		studentInitials: "JC",
-		avatarBg: "#EAF3DE",
-		avatarColor: "#27500A",
 	},
 	{
 		id: "s3",
@@ -31,8 +31,6 @@ const services = [
 		time: "19:00 - 19:23",
 		studentName: "Ana Beatriz",
 		studentInitials: "AB",
-		avatarBg: "#E6F4F5",
-		avatarColor: "#005E65",
 	},
 	{
 		id: "s4",
@@ -40,8 +38,6 @@ const services = [
 		time: "19:30 - 19:53",
 		studentName: "Lucas Mendes",
 		studentInitials: "LM",
-		avatarBg: "#FCEBEB",
-		avatarColor: "#A32D2D",
 	},
 ];
 
@@ -51,67 +47,55 @@ export default function ScholarShiftDetails() {
 
 	return (
 		<View className="flex-1 bg-background">
-			{/* Simple Header */}
-			<View className="px-4 py-6 border-b border-border bg-card flex-row items-center">
-				<ChevronLeft
-					size={28}
-					color="currentColor"
-					className="text-foreground mr-4"
-					onPress={() => router.back()}
-				/>
-				<View>
-					<Text className="font-extrabold text-2xl text-foreground">
-						1 de agosto
-					</Text>
-					<Text className="font-medium text-muted-foreground text-sm">
-						4 deslocamentos
-					</Text>
-				</View>
-			</View>
+			<Header title="1 de agosto" />
+
+			<Text className="font-semibold text-xl mt-4 pl-4">
+				4 deslocamentos
+			</Text>
 
 			<ScrollView
-				className="flex-1 pt-6 px-4"
+				className="flex-1 pt-6"
 				showsVerticalScrollIndicator={false}
 			>
 				{services.map((service, index) => (
 					<Pressable
 						key={service.id}
 						onPress={() => router.push(`/history/${service.id}`)}
-						className="flex-row items-center mb-6"
+						className={cn(
+							"flex-row items-center p-5 gap-4 border-b border-border",
+							index === services.length - 1 &&
+								"border-transparent",
+						)}
 					>
-						<View className="bg-primary w-12 h-12 rounded-xl items-center justify-center mr-4">
-							<Text className="text-white text-xs font-bold">
-								⏱
-							</Text>
+						<View className="flex-row items-start flex-1">
+							<View className="bg-primary p-4 rounded-sm items-center justify-center mr-4">
+								<Clock size={20} color="white" />
+							</View>
+							<View className="flex-1 mr-2">
+								<Text
+									className="font-bold text-foreground text-lg"
+									numberOfLines={2}
+								>
+									{service.title}
+								</Text>
+								<Text className="text-muted-foreground text-sm font-medium">
+									{service.time}
+								</Text>
+							</View>
 						</View>
-						<View className="flex-1 mr-2">
-							<Text
-								className="font-bold text-foreground mb-1"
-								numberOfLines={1}
-							>
-								{service.title}
-							</Text>
-							<Text className="text-muted-foreground text-sm font-medium">
-								{service.time}
-							</Text>
-						</View>
-						<View className="flex-row items-center">
+						<View className="flex-row items-center justify-start min-w-1/3">
 							<Avatar
-								alt={`${service.studentName}'s Avatar`}
-								className="h-8 w-8 mr-2"
-								style={{ backgroundColor: service.avatarBg }}
+								alt={`Avatar de ${service.studentName}`}
+								className="mr-2"
 							>
 								<AvatarFallback>
-									<Text
-										className="text-xs font-bold"
-										style={{ color: service.avatarColor }}
-									>
+									<Text className="text-xs font-bold">
 										{service.studentInitials}
 									</Text>
 								</AvatarFallback>
 							</Avatar>
 							<Text className="font-medium text-sm text-foreground">
-								{service.studentName.split(" ")[0]}
+								{service.studentName}
 							</Text>
 						</View>
 					</Pressable>

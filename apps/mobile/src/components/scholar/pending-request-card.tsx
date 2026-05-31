@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { Info } from "lucide-react-native";
 import { View } from "react-native";
@@ -21,6 +21,7 @@ import { AddressRoute } from "../address";
 
 export enum ServiceStatus {
 	Pending = "pending",
+	During = "during",
 	Concluded = "concluded",
 }
 
@@ -52,6 +53,7 @@ export function PendingRequestCard({
 	onAccept,
 	onReject,
 }: PendingRequestCardProps) {
+	const [hasAccepted, setHasAccepted] = useState(false);
 	const opacity = useSharedValue(0.4);
 
 	useEffect(() => {
@@ -83,12 +85,21 @@ export function PendingRequestCard({
 
 	return (
 		<View className="p-1">
-			<Animated.View
-				className="absolute inset-0 rounded-2xl"
-				style={[animatedStyle]}
-			/>
+			{!hasAccepted && (
+				<Animated.View
+					className="absolute inset-0 rounded-2xl"
+					style={[animatedStyle]}
+				/>
+			)}
 
-			<View className="border border-border bg-card p-5 gap-4 rounded-xl">
+			<View
+				className={cn(
+					"border border-border bg-card p-5 gap-4 rounded-xl",
+					{
+						"border-info-border border-2": hasAccepted,
+					},
+				)}
+			>
 				<View className="flex-row items-start justify-between">
 					<View className="flex-row items-center gap-3">
 						<Avatar
@@ -117,14 +128,13 @@ export function PendingRequestCard({
 					</View>
 					<Text
 						className={cn("mt-1 text-xs font-semibold", {
-							"text-[#1D9E75]":
-								service.status === ServiceStatus.Concluded,
-							"text-[#EAB308]":
+							"text-warning-foreground":
 								service.status === ServiceStatus.Pending,
+							"text-info-foreground": hasAccepted,
 						})}
 					>
-						{service.status === ServiceStatus.Concluded
-							? "Concluído"
+						{hasAccepted
+							? "Em andamento"
 							: `há ${Math.floor((currentDate.getTime() - (service.startedAt?.getTime() ?? currentDate.getTime())) / 60000)} min`}
 					</Text>
 				</View>
@@ -151,16 +161,26 @@ export function PendingRequestCard({
 				</View>
 
 				<View className="flex-row gap-3">
+					{!hasAccepted && (
+						<Button
+							variant="outline"
+							onPress={onReject}
+							className="px-6"
+						>
+							<Text className="font-semibold">Recusar</Text>
+						</Button>
+					)}
 					<Button
-						variant="outline"
-						onPress={onReject}
-						className="px-6"
+						onPress={() => {
+							setHasAccepted(true);
+							onAccept();
+						}}
+						className="flex-1"
 					>
-						<Text className="font-semibold">Recusar</Text>
-					</Button>
-					<Button onPress={onAccept} className="flex-1">
 						<Text className="font-semibold">
-							Aceitar atendimento
+							{hasAccepted
+								? "Retomar atendimento"
+								: "Aceitar atendimento"}
 						</Text>
 					</Button>
 				</View>
