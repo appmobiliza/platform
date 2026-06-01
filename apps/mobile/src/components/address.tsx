@@ -14,6 +14,7 @@ interface AddressProps {
 	description?: string;
 	marker: "from" | "to";
 	children?: React.ReactNode;
+	maxLines?: number;
 	size?: "sm" | "md" | "lg";
 }
 
@@ -24,6 +25,7 @@ function Address({
 	marker = "from",
 	size = "md",
 	children,
+	maxLines,
 }: AddressProps) {
 	const sizePx = size === "sm" ? 12 : size === "md" ? 24 : 36;
 
@@ -47,7 +49,7 @@ function Address({
 						className={
 							"min-w-0 flex-1 text-lg font-normal leading-none text-foreground"
 						}
-						numberOfLines={1}
+						numberOfLines={maxLines ?? 1}
 					>
 						{label}
 					</Text>
@@ -83,6 +85,7 @@ export type AddressRouteProps = {
 		children?: React.ReactNode;
 		className?: string;
 	};
+	maxLines?: number;
 	size?: AddressProps["size"];
 };
 
@@ -91,6 +94,7 @@ function AddressRoute({
 	shouldShowRoute,
 	from,
 	to,
+	maxLines,
 	size,
 }: AddressRouteProps) {
 	return (
@@ -101,6 +105,7 @@ function AddressRoute({
 				marker="from"
 				className={from.className}
 				size={size}
+				maxLines={maxLines}
 			>
 				{from.children}
 			</Address>
@@ -125,6 +130,7 @@ function AddressRoute({
 				marker="to"
 				className={to.className}
 				size={size}
+				maxLines={maxLines}
 			>
 				{to.children}
 			</Address>

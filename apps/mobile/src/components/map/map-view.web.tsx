@@ -33,10 +33,13 @@ export default function MapView({ scholar }: Props) {
 	const { currentPosition, route, distance } = useMapLogic({
 		destinationCoords: [scholar.longitude, scholar.latitude],
 	});
+
+	const mapRef = useRef<MapRef>(null);
 	const geolocateRef = useRef<GeolocateControlInstance | null>(null);
 
 	return (
 		<MapGL
+			ref={mapRef}
 			mapStyle={STYLES[scheme ?? "light"]}
 			initialViewState={{ longitude: -35.7, latitude: -9.6, zoom: 14 }}
 			style={{
@@ -52,9 +55,22 @@ export default function MapView({ scholar }: Props) {
 				ref={geolocateRef}
 				// style={{ display: "none" }}
 				positionOptions={{ enableHighAccuracy: true }}
-				trackUserLocation={true} // mantém rastreamento contínuo
-				showUserLocation={true} // exibe o ícone de localização
-				showAccuracyCircle={true} // exibe o círculo de precisão
+				showUserLocation
+				showAccuracyCircle
+				trackUserLocation={false}
+				onGeolocate={(event) => {
+					mapRef.current?.easeTo({
+						center: [event.coords.longitude, event.coords.latitude],
+						zoom: 16,
+						duration: 1000,
+						padding: {
+							top: 0,
+							right: 0,
+							left: 0,
+							bottom: window.innerHeight * 0.4,
+						},
+					});
+				}}
 			/>
 
 			{/* {route && (

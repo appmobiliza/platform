@@ -61,7 +61,7 @@ function useRequestFlow() {
 	);
 
 	const exitFlow = React.useCallback(() => {
-		router.back();
+		router.replace("/");
 	}, [router]);
 
 	const dismissAndExit = React.useCallback(() => {
@@ -111,7 +111,7 @@ function useRequestFlow() {
 
 		const timer = setTimeout(() => {
 			transitionTo("trip");
-		}, 1800);
+		}, 500);
 
 		return () => clearTimeout(timer);
 	}, [activeStage, transitionTo]);

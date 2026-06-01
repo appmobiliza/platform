@@ -4,6 +4,7 @@ import {
 	MessageSquareText,
 	PencilLine,
 	Search,
+	UserRoundSearch,
 	UsersRound,
 } from "lucide-react-native";
 import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
@@ -17,7 +18,10 @@ import { cn } from "@/lib/utils";
 
 import { SheetFrame, StageSheet } from "./request-flow-sheet/components";
 import { DestinationSelector } from "./request-flow-sheet/destination-selector";
+import { SearchIndicator } from "./request-flow-sheet/seach-indicator";
 import { useRequestFlow } from "./request-flow-sheet/use-request-flow";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Badge } from "./ui/badge";
 import { Icon } from "./ui/icon";
 import {
 	inputClassName,
@@ -141,7 +145,7 @@ function RequestFlowSheet() {
 						onSelectDestination={setDestinationValue}
 					/>
 
-					<PlaceCard
+					{/*<PlaceCard
 						title="Locais salvos"
 						subtitle="Acesse suas rotas favoritas"
 						icon={{
@@ -149,7 +153,7 @@ function RequestFlowSheet() {
 							className: "rounded-full w-12 h-12",
 						}}
 						className="rounded-none border-l-0 border-r-0 border-b-0 border-t border-border"
-					/>
+					/>*/}
 				</SheetFrame>
 			</StageSheet>
 
@@ -192,19 +196,11 @@ function RequestFlowSheet() {
 			>
 				<SheetFrame
 					title="Procurando contribuintes..."
-					accessory={
-						<View className="flex-row gap-2">
-							<View className="h-1.5 flex-1 rounded-full bg-primary" />
-							<View className="h-1.5 flex-1 rounded-full bg-primary" />
-							<View className="h-1.5 flex-1 rounded-full bg-primary" />
-							<View className="h-1.5 flex-1 rounded-full bg-border" />
-						</View>
-					}
 					footer={
 						<>
 							<Button disabled>
-								<Text>Procurando</Text>
-								<ActivityIndicator size="small" color="white" />
+								<Text className="mb-0.5">Procurando</Text>
+								<ActivityIndicator size={16} color="white" />
 							</Button>
 							<Button variant="outline" onPress={dismissAndExit}>
 								<Text>Cancelar</Text>
@@ -213,16 +209,15 @@ function RequestFlowSheet() {
 					}
 				>
 					<View className="items-center gap-4 py-2">
-						<View className="size-16 items-center justify-center rounded-full bg-primary">
-							<UsersRound size={28} color="white" />
-						</View>
-						<Text className="max-w-[290px] text-center text-[16px] leading-6 text-foreground">
-							Aguarde um pouco enquanto procuramos. O tempo médio
-							de espera é de 1-10m.
+						<SearchIndicator />
+						<Text className="text-center text-base leading-6 text-foreground">
+							Aguarde um pouco enquanto procuramos. {"\n"}O tempo
+							médio de espera é de 1-10m.
 						</Text>
 					</View>
 
 					<AddressRoute
+						className="bg-input p-4 rounded-lg gap-4"
 						from={{ label: originSummary }}
 						to={{ label: destinationValue }}
 					/>
@@ -243,12 +238,19 @@ function RequestFlowSheet() {
 						</Button>
 					}
 				>
-					<View className="gap-3 rounded-2xl border border-border bg-card px-4 py-4">
-						<View className="flex-row items-start gap-3">
-							<View className="size-12 items-center justify-center overflow-hidden rounded-full bg-primary/30">
-								<Text className="text-[20px]">🐸</Text>
-							</View>
-							<View className="flex-1 gap-2">
+					<View className="gap-6 rounded-md border border-border bg-card px-4 py-4">
+						<View className="flex-row items-start gap-4">
+							<Avatar alt="Avatar de X" className="size-12">
+								<AvatarImage
+									source={{
+										uri: "https://github.com/mrzachnugent.png",
+									}}
+								/>
+								<AvatarFallback>
+									<Text>ZN</Text>
+								</AvatarFallback>
+							</Avatar>
+							<View className="flex-1 gap-0.5">
 								<View className="flex-row items-center justify-between gap-3">
 									<Text className="text-[16px] font-semibold leading-6 text-foreground">
 										João Carlos
@@ -257,14 +259,12 @@ function RequestFlowSheet() {
 										desde ago/2024
 									</Text>
 								</View>
-								<View className="self-start rounded-full bg-secondary px-3 py-1">
-									<Text className="text-[12px] font-medium leading-4 text-secondary-foreground">
-										Manhã
-									</Text>
-								</View>
+								<Badge variant={"secondary"}>
+									<Text>Matutino</Text>
+								</Badge>
 							</View>
 						</View>
-						<View className="rounded-xl bg-secondary px-4 py-3">
+						<View className="rounded-md bg-secondary px-4 py-2.5">
 							<View className="flex-row items-center gap-3">
 								<Icon
 									icon={MessageSquareText}
@@ -282,17 +282,24 @@ function RequestFlowSheet() {
 					</View>
 
 					<AddressRoute
+						className="bg-input p-4 rounded-lg"
 						from={{
 							label: `ICAT - Instituto de Ciências Atmosféricas`,
 						}}
 						to={{
 							label: destinationValue,
-							children: (
-								<Button variant="ghost" size="icon">
-									<PencilLine size={16} />
-								</Button>
-							),
+							// children: (
+							// 	<Button variant="ghost" size="icon">
+							// 		<Icon
+							// 			icon={PencilLine}
+							// 			color="--muted-foreground"
+							// 			size={16}
+							// 		/>
+							// 	</Button>
+							// ),
 						}}
+						maxLines={2}
+						shouldShowRoute
 					/>
 				</SheetFrame>
 			</StageSheet>
