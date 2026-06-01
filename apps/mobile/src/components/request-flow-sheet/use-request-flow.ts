@@ -31,12 +31,12 @@ function useRequestFlow() {
 		"destination-selection",
 	);
 
-	const [destinationValue, setDestinationValue] =
+	const [destination, setDestination] =
 		React.useState("Biblioteca Central");
-	const [originLabel, setOriginLabel] = React.useState(
+	const [originAbbreviation, setOriginAbbreviation] = React.useState(
 		"Instituto de Computação",
 	);
-	const [originSummary, setOriginSummary] = React.useState(
+	const [origin, setOrigin] = React.useState(
 		"Instituto de Computação, UFAL",
 	);
 	const [message, setMessage] = React.useState("");
@@ -120,18 +120,18 @@ function useRequestFlow() {
 		activeStage,
 		destinationRef,
 		destinationSelectionRef,
-		destinationValue,
+		destinationValue: destination,
 		dismissAndExit,
 		handleDismiss,
 		message,
-		originLabel,
-		originSummary,
+		originLabel: originAbbreviation,
+		originSummary: origin,
 		refs,
 		searchingRef,
-		setDestinationValue,
+		setDestinationValue: setDestination,
 		setMessage,
-		setOriginLabel,
-		setOriginSummary,
+		setOriginLabel: setOriginAbbreviation,
+		setOriginSummary: setOrigin,
 		startConfirmRef,
 		transitionTo,
 		tripRef,

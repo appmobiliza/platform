@@ -16,7 +16,7 @@ import { Text } from "@/components/ui/text";
 import { cn } from "@/lib/utils";
 
 import { SheetFrame, StageSheet } from "./request-flow-sheet/components";
-import { DESTINATION_OPTIONS } from "./request-flow-sheet/types";
+import { DestinationSelector } from "./request-flow-sheet/destination-selector";
 import { useRequestFlow } from "./request-flow-sheet/use-request-flow";
 import { Icon } from "./ui/icon";
 import {
@@ -136,27 +136,10 @@ function RequestFlowSheet() {
 						shouldShowRoute
 					/>
 
-					<View>
-						{DESTINATION_OPTIONS.map((option) => (
-							<PlaceCard
-								key={option.label}
-								title={option.label}
-								icon={{
-									name: "map",
-									className: "bg-transparent",
-									label: "6.2km",
-								}}
-								subtitle={`${option.description} • ${option.distance}`}
-								onPress={() =>
-									setDestinationValue(option.label)
-								}
-								className={cn("border-none", {
-									"bg-input":
-										option.label === destinationValue,
-								})}
-							/>
-						))}
-					</View>
+					<DestinationSelector
+						selectedDestination={destinationValue}
+						onSelectDestination={setDestinationValue}
+					/>
 
 					<PlaceCard
 						title="Locais salvos"

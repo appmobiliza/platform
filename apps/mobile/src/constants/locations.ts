@@ -398,12 +398,6 @@ export const ufalPoints: UfalPoint[] = [
 		longitude: -35.777526,
 	},
 	{
-		name: "Coordenadoria Institucional de Educação a Distância",
-		abbrev: "CIED",
-		latitude: -9.557599,
-		longitude: -35.777413,
-	},
-	{
 		name: "Laboratório de Anatomia",
 		latitude: -9.557395,
 		longitude: -35.775506,
