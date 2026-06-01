@@ -116,7 +116,7 @@ function AddressRoute({
 						<View className="h-6 w-0.5 bg-primary" />
 					</View>
 				)}
-				<View className="flex-1 h-px bg-border" />
+				<View className="flex-1 h-px bg-foreground/50" />
 			</View>
 
 			<Address

@@ -120,15 +120,6 @@ function RequestFlowSheet() {
 						className="bg-input p-4 rounded-lg"
 						from={{
 							label: "Instituto de Computação",
-							children: (
-								<Pressable className="text-secondary-foreground">
-									<Icon
-										icon={CircleX}
-										size={20}
-										color="--secondary-foreground"
-									/>
-								</Pressable>
-							),
 						}}
 						to={{
 							label: destinationValue,
@@ -142,6 +133,7 @@ function RequestFlowSheet() {
 								</Pressable>
 							),
 						}}
+						shouldShowRoute
 					/>
 
 					<View>
@@ -149,9 +141,12 @@ function RequestFlowSheet() {
 							<PlaceCard
 								key={option.label}
 								title={option.label}
-								iconClassName="bg-transparent"
+								icon={{
+									name: "map",
+									className: "bg-transparent",
+									label: "6.2km",
+								}}
 								subtitle={`${option.description} • ${option.distance}`}
-								iconType="map"
 								onPress={() =>
 									setDestinationValue(option.label)
 								}
@@ -166,9 +161,11 @@ function RequestFlowSheet() {
 					<PlaceCard
 						title="Locais salvos"
 						subtitle="Acesse suas rotas favoritas"
-						iconType="star"
+						icon={{
+							name: "star",
+							className: "rounded-full w-12 h-12",
+						}}
 						className="rounded-none border-l-0 border-r-0 border-b-0 border-t border-border"
-						iconClassName="rounded-full"
 					/>
 				</SheetFrame>
 			</StageSheet>
