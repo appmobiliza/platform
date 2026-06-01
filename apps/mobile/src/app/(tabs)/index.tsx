@@ -1,4 +1,7 @@
-import { useRouter } from "expo-router";
+import { useCallback } from "react";
+
+import * as Location from "expo-location";
+import { useFocusEffect, useRouter } from "expo-router";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -33,6 +36,23 @@ const newsItems = [
 function StudentHome() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
+
+	useFocusEffect(
+		useCallback(() => {
+			const checkLocationPermission = async () => {
+				// Checamos o estado atual de permissão
+				const { status } =
+					await Location.getForegroundPermissionsAsync();
+
+				// Se a permissão não estiver concedida, redirecionamos para a tela de solicitação
+				if (status !== "granted") {
+					router.replace("/location-permission");
+				}
+			};
+
+			checkLocationPermission();
+		}, [router]),
+	);
 
 	return (
 		<ScrollView className="flex-1" showsVerticalScrollIndicator={false}>

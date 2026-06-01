@@ -11,16 +11,28 @@ interface HeaderProps {
 	title?: string;
 	description?: string;
 	size?: "default" | "small";
+	allowBack?: boolean;
 }
 
-export function Header({ title, description, size = "default" }: HeaderProps) {
+export function Header({
+	allowBack = true,
+	title,
+	description,
+	size = "default",
+}: HeaderProps) {
 	const router = useRouter();
 
 	return (
 		<View className="gap-4 pt-12 px-4">
-			<TouchableOpacity onPress={() => router.back()}>
-				<Icon icon={ArrowLeftToLine} size={32} color="--foreground" />
-			</TouchableOpacity>
+			{allowBack && (
+				<TouchableOpacity onPress={() => router.back()}>
+					<Icon
+						icon={ArrowLeftToLine}
+						size={32}
+						color="--foreground"
+					/>
+				</TouchableOpacity>
+			)}
 			<View className="gap-1">
 				{title ? (
 					<Text

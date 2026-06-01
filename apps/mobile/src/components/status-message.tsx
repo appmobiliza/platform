@@ -26,7 +26,9 @@ export function StatusMessage({ title, description, icon, button }: Props) {
 			)}
 			{button && (
 				<Link href={button.href} asChild>
-					<Button className="mt-6">{button.label}</Button>
+					<Button className="mt-6">
+						<Text>{button.label}</Text>
+					</Button>
 				</Link>
 			)}
 		</View>
