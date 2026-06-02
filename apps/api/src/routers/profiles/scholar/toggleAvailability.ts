@@ -17,14 +17,6 @@ export const toggleAvailability = scholarProcedure
 
 		if (!profile) throw new TRPCError({ code: "NOT_FOUND" });
 
-		if (!profile.isApproved) {
-			throw new TRPCError({
-				code: "FORBIDDEN",
-				message:
-					"Seu cadastro ainda não foi aprovado pelo NAC. Aguarde a aprovação para ativar a disponibilidade.",
-			});
-		}
-
 		const [updated] = await db
 			.update(schema.scholarProfile)
 			.set({

@@ -1,10 +1,4 @@
-import {
-	campusValues,
-	courseValues,
-	disabilityTypeValues,
-	genderValues,
-	studentShiftValues,
-} from "@mobiliza/contracts";
+import { insertStudentSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
@@ -17,20 +11,7 @@ import { protectedProcedure } from "@/trpc/context";
 
 export const createStudent = protectedProcedure
 	.meta({ openapi: { method: "POST", path: "/profiles/student" } })
-	.input(
-		z.object({
-			enrollment: z.string().min(4).max(20),
-			course: z.enum(courseValues),
-			campus: z.enum(campusValues),
-			phone: z.string().regex(/^\d{10,11}$/),
-			shift: z.enum(studentShiftValues),
-			gender: z.enum(genderValues),
-			nickname: z.string().max(30).optional(),
-			disabilityTypes: z.array(z.enum(disabilityTypeValues)).min(1),
-			attendanceNotes: z.string().max(1000).optional(),
-			simplifiedInterface: z.boolean().default(false),
-		}),
-	)
+	.input(insertStudentSchema)
 	.output(z.any())
 	.mutation(async ({ ctx, input }) => {
 		const existing = await db.query.studentProfile.findFirst({

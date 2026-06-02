@@ -1,3 +1,5 @@
+import { genderValues } from "@mobiliza/contracts";
+
 import { z } from "zod";
 
 import { validateCpf, validatePhone } from "@/utils";
@@ -8,19 +10,11 @@ export const ProfileNameSchema = z.object({
 		.trim()
 		.min(2, "Nome deve ter pelo menos 2 caracteres")
 		.max(50),
-	nickname: z
-		.string()
-		.trim()
-		.optional(),
+	nickname: z.string().trim().optional(),
 });
 
 export const ProfileGenderSchema = z.object({
-	gender: z.enum([
-		"Masculino",
-		"Feminino",
-		"Não binário",
-		"Prefiro não dizer",
-	]),
+	gender: z.enum(genderValues),
 });
 
 export const ProfilePhoneSchema = z.object({
@@ -32,7 +26,7 @@ export const ProfileCpfSchema = z.object({
 });
 
 export const ProfileEmailSchema = z.object({
-	email: z.string().trim().email("E-mail inválido"),
+	email: z.email("E-mail inválido"),
 });
 
 export const BasicInfoSchema = z.object({

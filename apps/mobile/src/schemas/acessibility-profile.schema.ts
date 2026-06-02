@@ -1,8 +1,9 @@
 import { disabilityTypeValues } from "@mobiliza/contracts";
+
 import { z } from "zod";
 
 export const ProfileDisabilitiesSchema = z.object({
-	disabilities: z.array(z.enum(disabilityTypeValues))
+	disabilities: z.array(z.enum(disabilityTypeValues)).min(1),
 });
 
 export const ProfileObservationSchema = z.object({
@@ -18,7 +19,13 @@ export const ProfileAccessibilitySchema = z.object({
 	...ProfileSimplifiedInterfaceSchema.shape,
 });
 
-export type ProfileDisabilitiesInput = z.infer<typeof ProfileDisabilitiesSchema>;
+export type ProfileDisabilitiesInput = z.infer<
+	typeof ProfileDisabilitiesSchema
+>;
 export type ProfileObservationInput = z.infer<typeof ProfileObservationSchema>;
-export type ProfileSimplifiedInterfaceInput = z.infer<typeof ProfileSimplifiedInterfaceSchema>;
-export type ProfileAccessibilityInput = z.infer<typeof ProfileAccessibilitySchema>;
+export type ProfileSimplifiedInterfaceInput = z.infer<
+	typeof ProfileSimplifiedInterfaceSchema
+>;
+export type ProfileAccessibilityInput = z.infer<
+	typeof ProfileAccessibilitySchema
+>;

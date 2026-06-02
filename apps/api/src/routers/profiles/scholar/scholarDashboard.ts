@@ -17,12 +17,11 @@ const scholarDashboardStatusValues = [
 ] as const;
 
 function getScholarDashboardStatus(profile: {
-	isApproved: boolean;
 	isActive: boolean;
 	isAvailable: boolean;
 	shift: (typeof scholarShiftValues)[number];
 }) {
-	if (!profile.isApproved || !profile.isActive) {
+	if (!profile.isActive) {
 		return "pending" as const;
 	}
 
@@ -86,7 +85,6 @@ export const scholarDashboard = managerProcedure
 					campus: profile.campus,
 					phone: profile.phone,
 					shift: profile.shift,
-					isApproved: profile.isApproved,
 					isAvailable: profile.isAvailable,
 					isActive: profile.isActive,
 				},
