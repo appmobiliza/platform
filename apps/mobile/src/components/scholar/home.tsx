@@ -1,5 +1,3 @@
-import { type ReactNode, useMemo, useState } from "react";
-
 import { useRouter } from "expo-router";
 import {
 	CirclePlay,
@@ -8,6 +6,7 @@ import {
 	Palmtree,
 	Power,
 } from "lucide-react-native";
+import { type ReactNode, useMemo, useState } from "react";
 import { FlatList, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -19,7 +18,6 @@ import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 
 import { Logo } from "@/assets/logo";
-
 import { Badge } from "../ui/badge";
 import { Icon } from "../ui/icon";
 import {
