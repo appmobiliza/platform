@@ -6,7 +6,14 @@ import {
 	Search,
 	UsersRound,
 } from "lucide-react-native";
-import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
+import {
+	ActivityIndicator,
+	Platform,
+	Pressable,
+	TextInput,
+	useColorScheme,
+	View,
+} from "react-native";
 
 import { Address, AddressRoute } from "@/components/address";
 import { PlaceCard } from "@/components/place-card";
@@ -26,6 +33,9 @@ import { DESTINATION_OPTIONS } from "./types";
 import { useRequestFlow } from "./use-request-flow";
 
 function RequestFlowSheet() {
+	const colorScheme = useColorScheme();
+	const isDark = colorScheme === "dark";
+
 	const {
 		destinationRef,
 		destinationSelectionRef,
@@ -48,10 +58,11 @@ function RequestFlowSheet() {
 				stage="destination"
 				modalRef={destinationRef}
 				onDismiss={handleDismiss}
+				colorScheme={isDark ? "dark" : "light"}
 			>
 				<SheetFrame
 					title="Insira seu destino"
-					subtitle="Arraste o mapa para mover o marcador"
+					description="Arraste o mapa para mover o marcador"
 					headerPosition="center"
 					footer={
 						<Button
@@ -70,8 +81,12 @@ function RequestFlowSheet() {
 						className={cn(
 							"justify-between px-3",
 							inputClassName,
-							inputNativeClassName,
-							inputWebClassName,
+							// Muito cuidado pra não esquecer esse Platform.select()!!
+							// Se esquecer, o app Android crasha por conta do Reanimated
+							Platform.select({
+								web: inputWebClassName,
+								native: inputNativeClassName,
+							}),
 						)}
 						onPress={() => transitionTo("destination-selection")}
 					>
@@ -99,6 +114,7 @@ function RequestFlowSheet() {
 				stage="destination-selection"
 				modalRef={destinationSelectionRef}
 				onDismiss={handleDismiss}
+				colorScheme={isDark ? "dark" : "light"}
 				panDownToClose
 			>
 				<SheetFrame
@@ -170,6 +186,7 @@ function RequestFlowSheet() {
 				stage="start-confirm"
 				modalRef={startConfirmRef}
 				onDismiss={handleDismiss}
+				colorScheme={isDark ? "dark" : "light"}
 			>
 				<SheetFrame
 					title="Confirme seu ponto de partida"
@@ -202,6 +219,7 @@ function RequestFlowSheet() {
 				stage="searching"
 				modalRef={searchingRef}
 				onDismiss={handleDismiss}
+				colorScheme={isDark ? "dark" : "light"}
 			>
 				<SheetFrame
 					title="Procurando contribuintes..."
@@ -246,10 +264,11 @@ function RequestFlowSheet() {
 				stage="trip"
 				modalRef={tripRef}
 				onDismiss={handleDismiss}
+				colorScheme={isDark ? "dark" : "light"}
 			>
 				<SheetFrame
 					title="Vá até o ponto de partida"
-					subtitle="ICAT - Instituto de Ciências Atmosféricas"
+					description="ICAT - Instituto de Ciências Atmosféricas"
 					footer={
 						<Button variant="destructive" onPress={dismissAndExit}>
 							<Text>Cancelar deslocamento</Text>

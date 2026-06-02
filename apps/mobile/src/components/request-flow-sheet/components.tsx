@@ -6,49 +6,44 @@ import {
 	BottomSheetScrollView,
 	BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import { useColorScheme, View } from "react-native";
+import { View } from "react-native";
 
-import { THEME } from "@/lib/theme";
+import { THEME, useThemeVariables } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
-import { SheetDescription, SheetHeader, SheetTitle } from "../ui/sheet";
+import { SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "../ui/sheet";
 import type { Stage } from "./types";
+import { VariableContextProvider } from "nativewind";
 
-function SheetBackdrop(
-	props: React.ComponentProps<typeof BottomSheetBackdrop> & {
-		panDownToClose?: boolean;
-	},
-) {
-	const { panDownToClose, ...backdropProps } = props;
-	const pressBehavior = panDownToClose ? "close" : "none";
-
-	return (
-		<BottomSheetBackdrop
-			{...backdropProps}
-			appearsOnIndex={0}
-			disappearsOnIndex={-1}
-			pressBehavior={pressBehavior}
-		/>
-	);
+function PortalThemeProvider({ children }: { children: React.ReactNode }) {
+  const variables = useThemeVariables();
+  return (
+    <VariableContextProvider value={variables}>
+      {children}
+    </VariableContextProvider>
+  );
 }
 
-function SheetFrame({
-	title,
-	subtitle,
-	accessory,
-	headerPosition = "start",
-	children,
-	footer,
-}: {
+
+interface SheetFrameProps {
 	title: string;
-	subtitle?: string;
+	description?: string;
 	headerPosition?: "start" | "center";
 	accessory?: React.ReactNode;
 	children: React.ReactNode;
 	footer: React.ReactNode;
-}) {
+}
+
+function SheetFrame({
+	title,
+	description,
+	accessory,
+	headerPosition = "start",
+	children,
+	footer,
+}: SheetFrameProps) {
 	return (
-		<View className="flex-1">
+		<BottomSheetView className="flex-1">
 			<SheetHeader
 				className={cn("border-b border-border py-4 gap-1 items-start", {
 					"items-center": headerPosition === "center",
@@ -64,23 +59,27 @@ function SheetFrame({
 					)}
 				>
 					<SheetTitle>{title}</SheetTitle>
-					{accessory}
+					{accessory ? accessory : null}
 				</View>
-				<SheetDescription>{subtitle}</SheetDescription>
+				{description ? <SheetDescription>{description}</SheetDescription> : null}
 			</SheetHeader>
-			<BottomSheetScrollView
-				className="flex-1"
-				contentContainerClassName="gap-4 px-4 pb-4 pt-4"
-				keyboardShouldPersistTaps="handled"
-				showsVerticalScrollIndicator={false}
-			>
+			<View className="gap-4 px-4 pb-4 pt-4">
 				{children}
-			</BottomSheetScrollView>
-			<View className="gap-3 border-t border-border px-4 pb-4 pt-3">
-				{footer}
 			</View>
-		</View>
+			<SheetFooter className="gap-3 border-t border-border px-4 pb-4 pt-3">
+				{footer}
+			</SheetFooter>
+		</BottomSheetView>
 	);
+}
+
+interface StageSheetProps {
+	stage: Stage;
+	modalRef: React.RefObject<BottomSheetModal | null>;
+	onDismiss: (stage: Stage) => void;
+	panDownToClose?: boolean;
+	children: React.ReactNode;
+	colorScheme: "light" | "dark";
 }
 
 function StageSheet({
@@ -89,39 +88,36 @@ function StageSheet({
 	onDismiss,
 	panDownToClose = false,
 	children,
-}: {
-	stage: Stage;
-	modalRef: React.RefObject<BottomSheetModal | null>;
-	onDismiss: (stage: Stage) => void;
-	panDownToClose?: boolean;
-	children: React.ReactNode;
-}) {
-	const colorScheme = useColorScheme();
-
+	colorScheme,
+}: StageSheetProps) {
 	return (
 		<BottomSheetModal
 			ref={modalRef}
 			index={0}
-			// snapPoints={["94%"]}
-			/* backdropComponent={(backdropProps) => (
-				<SheetBackdrop
-					{...backdropProps}
-					opacity={0}
-					panDownToClose={panDownToClose}
-					enableTouchThrough
+			backdropComponent={(props) => (
+				<BottomSheetBackdrop
+					{...props}
+					appearsOnIndex={0}
+					disappearsOnIndex={-1}
+					style={[props.style, { backgroundColor: "rgba(0,0,0,0.5)" }]}
 				/>
-			)} */
-			enableDynamicSizing={true}
+			)}
+			snapPoints={["90%"]}
+			enableDynamicSizing={false}
 			enablePanDownToClose={panDownToClose}
 			onDismiss={() => onDismiss(stage)}
-			backgroundStyle={{ backgroundColor: THEME[colorScheme].card }}
+			backgroundStyle={{ backgroundColor: "red" }}
 			handleIndicatorStyle={{
-				backgroundColor: THEME[colorScheme].muted,
+				backgroundColor: "red",
 			}}
 		>
-			<BottomSheetView className="flex-1">{children}</BottomSheetView>
+			<BottomSheetView>
+				<PortalThemeProvider>
+					{children}
+				</PortalThemeProvider>
+			</BottomSheetView>
 		</BottomSheetModal>
 	);
 }
 
-export { SheetBackdrop, SheetFrame, StageSheet };
+export { SheetFrame, StageSheet };
