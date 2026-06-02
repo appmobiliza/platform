@@ -12,6 +12,13 @@ jest.mock("nativewind", () => ({
 // Mock do tRPC client
 jest.mock("@/lib/trpc/client", () => ({
   trpc: {
+    useUtils: jest.fn(() => ({
+      requests: {
+        available: {
+          invalidate: jest.fn(),
+        },
+      },
+    })),
     requests: {
       available: {
         useQuery: jest.fn(),
@@ -34,6 +41,10 @@ jest.mock("expo-router", () => ({
 }));
 
 describe("ScholarHome Logic Integration", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it("should display real requests from tRPC when shift is started", async () => {
     // Arrange: Mock tRPC returning a real request
     const mockRequest = {
@@ -57,13 +68,35 @@ describe("ScholarHome Logic Integration", () => {
     // Act
     render(<ScholarHome />);
 
-    // Ativa o estado de turno (clicando no Olá)
+    // Ativa o estado de turno
     const welcomeText = screen.getByText(/Olá,/);
     fireEvent.press(welcomeText);
 
-    // Como o shiftState virou 'during' e há pendingServices (mock do tRPC), a lista é mostrada.
     // Assert: O texto do local real deve estar na tela
     expect(screen.getByText("Bloco A")).toBeTruthy();
     expect(screen.getByText("Restaurante")).toBeTruthy();
+  });
+
+  it("should subscribe to realtime events and invalidate query when a new request arrives", async () => {
+    (trpc.requests.available.useQuery as jest.Mock).mockReturnValue({
+      data: [],
+      isLoading: false,
+    });
+
+    const mockSubscription = jest.fn();
+    (trpc.requests.onAvailable.useSubscription as jest.Mock).mockImplementation(
+      (params, options) => {
+        mockSubscription(params, options);
+      }
+    );
+
+    render(<ScholarHome />);
+
+    const welcomeText = screen.getByText(/Olá,/);
+    fireEvent.press(welcomeText);
+
+    expect(trpc.requests.onAvailable.useSubscription).toHaveBeenCalled();
+    const args = (trpc.requests.onAvailable.useSubscription as jest.Mock).mock.calls[0];
+    expect(args[1].onData).toBeDefined(); // Deve ter um handler de onData
   });
 });

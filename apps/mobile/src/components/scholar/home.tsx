@@ -245,6 +245,16 @@ export function ScholarHome() {
 		},
 	);
 
+	// Subscription para atualizações em tempo real
+	const utils = trpc.useUtils();
+	trpc.requests.onAvailable.useSubscription(undefined, {
+		enabled: shiftState === "during",
+		onData() {
+			// Quando um evento chega, invalidamos a query para forçar o refetch
+			utils.requests.available.invalidate();
+		},
+	});
+
 	// Transformação de dados do tRPC para o formato esperado pelo componente UI
 	const pendingServices: Service[] = useMemo(() => {
 		return availableRequests.map((req) => ({
