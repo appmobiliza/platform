@@ -265,7 +265,7 @@ function SheetDescription({
 	return (
 		<Text
 			variant="muted"
-			className={cn("text-muted-foreground text-left", className)}
+			className={cn("text-muted-foreground text-sm text-left", className)}
 			{...props}
 		/>
 	);

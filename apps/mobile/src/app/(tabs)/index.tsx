@@ -90,7 +90,7 @@ function StudentHome() {
 				<View className="px-4">
 					<PlaceCard
 						title="Restaurante Universitário"
-						subtitle="Hoje, 12h35"
+						description="Hoje, 12h35"
 						icon={{ name: "star" }}
 						className="mb-3"
 					/>
@@ -98,13 +98,13 @@ function StudentHome() {
 						<PlaceCard
 							className="flex-1"
 							title="CECA"
-							subtitle="Ontem, 16h12"
+							description="Ontem, 16h12"
 							icon={{ name: "clock" }}
 						/>
 						<PlaceCard
 							className="flex-1"
 							title="IQB"
-							subtitle="Há 2 dias, 16h24"
+							description="Há 2 dias, 16h24"
 							icon={{ name: "clock" }}
 						/>
 					</View>
@@ -126,22 +126,22 @@ function StudentHome() {
 					<View className="flex-col gap-3">
 						<PlaceCard
 							title="Restaurante Universitário"
-							subtitle="Último deslocamento há 2 dias"
+							description="Último deslocamento há 2 dias"
 							icon={{ name: "map" }}
 						/>
 						<PlaceCard
 							title="Reitoria"
-							subtitle="Último deslocamento há 6 dias"
+							description="Último deslocamento há 6 dias"
 							icon={{ name: "map" }}
 						/>
 						<PlaceCard
 							title="Biblioteca Central"
-							subtitle="Último deslocamento há 10 dias"
+							description="Último deslocamento há 10 dias"
 							icon={{ name: "map" }}
 						/>
 						<PlaceCard
 							title="Instituto de Computação"
-							subtitle="Último deslocamento há 12 dias"
+							description="Último deslocamento há 12 dias"
 							icon={{ name: "map" }}
 						/>
 					</View>

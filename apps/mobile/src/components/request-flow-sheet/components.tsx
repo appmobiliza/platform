@@ -21,7 +21,7 @@ interface SheetFrameProps {
 	accessory?: React.ReactNode;
 	children: React.ReactNode;
 	footer: React.ReactNode;
-	hasList?: boolean;
+	shouldWrapChildren?: boolean;
 }
 
 function SheetFrame({
@@ -31,6 +31,7 @@ function SheetFrame({
 	headerPosition = "start",
 	children,
 	footer,
+	shouldWrapChildren = false,
 }: SheetFrameProps) {
 	return (
 		<>
@@ -53,7 +54,7 @@ function SheetFrame({
 				</View>
 				{description ? <SheetDescription>{description}</SheetDescription> : null}
 			</SheetHeader>
-			{children}
+			{shouldWrapChildren ? <View className="p-4 gap-4">{children}</View> : children}
 			<SheetFooter className="gap-3 border-t border-border px-4 pb-6 pt-3">
 				{footer}
 			</SheetFooter>
@@ -80,13 +81,14 @@ function StageSheet({
 	children,
 	colorScheme,
 }: StageSheetProps) {
+	const hasSnapPoints = snapPoints?.length > 0;
 
 	return (
 		<BottomSheetModal
 			ref={modalRef}
 			index={0}
-			enableDynamicSizing={snapPoints?.length === 0}
-			snapPoints={snapPoints?.length > 0 ? snapPoints : undefined}
+			enableDynamicSizing={!hasSnapPoints}
+			snapPoints={hasSnapPoints ? snapPoints : undefined}
 			enablePanDownToClose={panDownToClose}
 			onDismiss={() => onDismiss(stage)}
 			backgroundStyle={{ backgroundColor: THEME[colorScheme].card }}
@@ -94,7 +96,7 @@ function StageSheet({
 				backgroundColor: THEME[colorScheme].muted,
 			}}
 		>
-			{children}
+			{!hasSnapPoints ? <BottomSheetView>{children}</BottomSheetView> : children}
 		</BottomSheetModal>
 	);
 }

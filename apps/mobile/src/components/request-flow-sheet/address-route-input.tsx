@@ -90,7 +90,7 @@ function SuggestionRow({ item, isSelected, onPress }: SuggestionRowProps) {
 type RouteInputProps = {
 	inputRef: React.RefObject<TextInput | null>;
 	value: string;
-	selectedName: string | undefined;
+	selectedName?: string;
 	isActive: boolean;
 	placeholder: string;
 	onFocus: () => void;
@@ -115,7 +115,7 @@ function RouteInput({
 				value={isActive ? value : (selectedName ?? "")}
 				onChangeText={onChangeText}
 				onFocus={onFocus}
-				placeholder={selectedName ?? placeholder}
+				placeholder={placeholder}
 				className="flex-1 text-base text-foreground"
 				caretHidden={!isActive}
 				returnKeyType="search"
@@ -192,9 +192,11 @@ function AddressRouteInput({
 		if (field === "origin") {
 			onSelectOriginRef.current(item.name, item.id === CURRENT_LOCATION);
 			setOriginQuery("");
+			originInputRef.current?.blur();
 		} else {
 			onSelectDestinationRef.current(item.name);
 			setDestinationQuery("");
+			destinationInputRef.current?.blur();
 		}
 		setActiveField(null);
 	}, []);

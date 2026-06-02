@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 
 import { ufalPoints } from "@/constants/locations";
 
+import { PlaceCard } from "../place-card";
 import { AddressRouteInput } from "./address-route-input";
 import { SheetFrame, StageSheet } from "./components";
 import { SearchIndicator } from "./seach-indicator";
@@ -53,21 +54,6 @@ function RequestFlowSheet() {
 		tripRef,
 	} = useRequestFlow();
 
-	const handleSelectDestination = useCallback(
-		(name: string) => {
-			const point = ufalPoints.find((p) => p.name === name);
-			if (point) {
-				setDestination({
-					name: point.name,
-					abbreviation: point.abbrev,
-					latitude: point.latitude,
-					longitude: point.longitude,
-				});
-			}
-		},
-		[setDestination],
-	);
-
 	return (
 		<View className="absolute inset-0" pointerEvents="box-none">
 			<StageSheet
@@ -75,7 +61,6 @@ function RequestFlowSheet() {
 				modalRef={destinationRef}
 				onDismiss={handleDismiss}
 				colorScheme={isDark ? "dark" : "light"}
-				snapPoints={["35%"]}
 			>
 				<SheetFrame
 					title="Insira seu destino"
@@ -93,6 +78,7 @@ function RequestFlowSheet() {
 							</Text>
 						</Button>
 					}
+					shouldWrapChildren
 				>
 					<Pressable
 						className={cn(
@@ -129,7 +115,6 @@ function RequestFlowSheet() {
 			>
 				<SheetFrame
 					title="Selecione seu destino"
-					hasList
 					footer={
 						<>
 							<Button
@@ -196,10 +181,13 @@ function RequestFlowSheet() {
 							</Button>
 						</>
 					}
+					shouldWrapChildren
 				>
-					<Address
-						label={origin?.abbreviation ?? origin?.name ?? ""}
-						marker="from"
+					<PlaceCard
+						className="px-4 py-2 border-none"
+						title={origin?.abbreviation ?? origin?.name ?? ""}
+						description={`${origin?.abbreviation ? `${origin?.abbreviation} - ` : ""}${origin?.name ?? ""}`}
+						variant="default"
 					>
 						<Button
 							variant="inverted"
@@ -210,7 +198,7 @@ function RequestFlowSheet() {
 						>
 							<Text>Alterar</Text>
 						</Button>
-					</Address>
+					</PlaceCard>
 				</SheetFrame>
 			</StageSheet>
 
@@ -233,6 +221,7 @@ function RequestFlowSheet() {
 							</Button>
 						</>
 					}
+					shouldWrapChildren
 				>
 					<View className="items-center gap-4 py-2">
 						<SearchIndicator />
@@ -260,12 +249,13 @@ function RequestFlowSheet() {
 			>
 				<SheetFrame
 					title="Vá até o ponto de partida"
-					description={origin?.name ?? ""}
+					description={`${origin?.abbreviation ? `${origin?.abbreviation} - ` : ""}${origin?.name ?? ""}`}
 					footer={
 						<Button variant="destructive" onPress={dismissAndExit}>
 							<Text>Cancelar deslocamento</Text>
 						</Button>
 					}
+					shouldWrapChildren
 				>
 					<View className="gap-6 rounded-md border border-border bg-card px-4 py-4">
 						<View className="flex-row items-start gap-4">
@@ -293,7 +283,7 @@ function RequestFlowSheet() {
 								</Badge>
 							</View>
 						</View>
-						<View className="rounded-md bg-secondary px-4 py-2.5">
+						<View className="rounded-md bg-secondary px-4">
 							<View className="flex-row items-center gap-3">
 								<Icon
 									icon={MessageSquareText}
@@ -301,7 +291,7 @@ function RequestFlowSheet() {
 									color="--muted-foreground"
 								/>
 								<TextInput
-									className="flex-1 text-[16px] leading-6 text-foreground"
+									className="flex-1 text-base text-foreground"
 									placeholder="Envie uma mensagem"
 									value={message}
 									onChangeText={setMessage}
