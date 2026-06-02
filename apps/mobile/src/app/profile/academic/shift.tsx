@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { studentShiftValues } from "@mobiliza/db/schema";
+import { studentShiftValues } from "@mobiliza/contracts";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 

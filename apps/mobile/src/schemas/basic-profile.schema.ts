@@ -35,9 +35,11 @@ export const ProfileEmailSchema = z.object({
 	email: z.string().trim().email("E-mail inválido"),
 });
 
-export const BasicInfoSchema = ProfileNameSchema
-	.merge(ProfilePhoneSchema)
-	.merge(ProfileGenderSchema);
+export const BasicInfoSchema = z.object({
+	...ProfileNameSchema.shape,
+	...ProfilePhoneSchema.shape,
+	...ProfileGenderSchema.shape,
+});
 
 export type ProfileNameInput = z.infer<typeof ProfileNameSchema>;
 export type ProfileGenderInput = z.infer<typeof ProfileGenderSchema>;

@@ -3,6 +3,18 @@
  * aprovação de bolsistas pelo gestor, e toggle de disponibilidade.
  */
 
+import {
+	campusValues,
+	courseValues,
+	disabilityTypeLabels,
+	disabilityTypeValues,
+	genderValues,
+	getCurrentShift,
+	requestStatusValues,
+	scholarShiftLabels,
+	scholarShiftValues,
+	studentShiftValues,
+} from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
@@ -28,13 +40,13 @@ function getScholarDashboardStatus(profile: {
 	isApproved: boolean;
 	isActive: boolean;
 	isAvailable: boolean;
-	shift: (typeof schema.scholarShiftValues)[number];
+	shift: (typeof scholarShiftValues)[number];
 }) {
 	if (!profile.isApproved || !profile.isActive) {
 		return "pending" as const;
 	}
 
-	if (profile.shift !== schema.getCurrentShift()) {
+	if (profile.shift !== getCurrentShift()) {
 		return "off_shift" as const;
 	}
 
@@ -60,10 +72,8 @@ function getScholarDashboardStatusLabel(
 	}
 }
 
-function getScholarShiftLabel(
-	shift: (typeof schema.scholarShiftValues)[number],
-) {
-	return schema.scholarShiftLabels[shift];
+function getScholarShiftLabel(shift: (typeof scholarShiftValues)[number]) {
+	return scholarShiftLabels[shift];
 }
 
 function getRouteLabel(request: {
@@ -79,12 +89,10 @@ function getRouteLabel(request: {
 		request.destinationLocation?.name ||
 		"-";
 
-	return `${origin} → ${destination}`;
+	return `${origin} \u2192 ${destination}`;
 }
 
-function getStudentRouteStatus(
-	status: (typeof schema.requestStatusValues)[number],
-) {
+function getStudentRouteStatus(status: (typeof requestStatusValues)[number]) {
 	if (status === "completed") {
 		return "completed" as const;
 	}
@@ -314,8 +322,8 @@ export const profilesRouter = router({
 							...profile,
 							disabilities: disabilities.map(
 								(disability) =>
-									schema.disabilityTypeLabels[
-										disability.disabilityType
+									disabilityTypeLabels[
+									disability.disabilityType
 									],
 							),
 						},
@@ -325,10 +333,10 @@ export const profilesRouter = router({
 							averageDuration:
 								completedRequests.length > 0
 									? Math.round(
-											totalDurationSeconds /
-												completedRequests.length /
-												60,
-										)
+										totalDurationSeconds /
+										completedRequests.length /
+										60,
+									)
 									: 0,
 							frequentRoutes,
 							recentRoutes: sortedRequests
@@ -358,15 +366,13 @@ export const profilesRouter = router({
 		.input(
 			z.object({
 				enrollment: z.string().min(4).max(20),
-				course: z.enum(schema.courseValues),
-				campus: z.enum(schema.campusValues),
+				course: z.enum(courseValues),
+				campus: z.enum(campusValues),
 				phone: z.string().regex(/^\d{10,11}$/),
-				shift: z.enum(schema.studentShiftValues),
-				gender: z.enum(schema.genderValues),
+				shift: z.enum(studentShiftValues),
+				gender: z.enum(genderValues),
 				nickname: z.string().max(30).optional(),
-				disabilityTypes: z
-					.array(z.enum(schema.disabilityTypeValues))
-					.min(1),
+				disabilityTypes: z.array(z.enum(disabilityTypeValues)).min(1),
 				attendanceNotes: z.string().max(1000).optional(),
 				simplifiedInterface: z.boolean().default(false),
 			}),
@@ -423,9 +429,9 @@ export const profilesRouter = router({
 		.input(
 			z.object({
 				enrollment: z.string().min(4).max(20),
-				course: z.enum(schema.courseValues),
-				campus: z.enum(schema.campusValues),
-				shift: z.enum(schema.scholarShiftValues),
+				course: z.enum(courseValues),
+				campus: z.enum(campusValues),
+				shift: z.enum(scholarShiftValues),
 				phone: z.string().regex(/^\d{10,11}$/),
 				cpf: z.string().regex(/^\d{11}$/),
 			}),

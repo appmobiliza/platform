@@ -1,6 +1,6 @@
+import { roleValues } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
-import { roleValues } from "@mobiliza/db/schema";
 import { authEnv } from "@mobiliza/env/auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";

@@ -1,4 +1,4 @@
-import { disabilityTypeValues } from "@mobiliza/db/schema";
+import { disabilityTypeValues } from "@mobiliza/contracts";
 import { z } from "zod";
 
 export const ProfileDisabilitiesSchema = z.object({
@@ -13,8 +13,10 @@ export const ProfileSimplifiedInterfaceSchema = z.object({
 	simplifiedInterface: z.boolean(),
 });
 
-export const ProfileAccessibilitySchema = ProfileDisabilitiesSchema
-	.merge(ProfileSimplifiedInterfaceSchema);
+export const ProfileAccessibilitySchema = z.object({
+	...ProfileDisabilitiesSchema.shape,
+	...ProfileSimplifiedInterfaceSchema.shape,
+});
 
 export type ProfileDisabilitiesInput = z.infer<typeof ProfileDisabilitiesSchema>;
 export type ProfileObservationInput = z.infer<typeof ProfileObservationSchema>;

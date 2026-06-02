@@ -1,4 +1,4 @@
-import { campusValues, courseValues, studentShiftValues } from "@mobiliza/db/schema";
+import { campusValues, courseValues, studentShiftValues } from "@mobiliza/contracts";
 import { z } from "zod";
 
 import { validateEnrollment } from "@/utils";
@@ -19,10 +19,12 @@ export const ProfileEnrollmentSchema = z.object({
 	enrollment: z.string().refine(validateEnrollment, "Matrícula inválida"),
 });
 
-export const CourseInfoSchema = ProfileCourseSchema
-	.merge(ProfileStudentShiftSchema)
-	.merge(ProfileCampusSchema)
-	.merge(ProfileEnrollmentSchema);
+export const CourseInfoSchema = z.object({
+	...ProfileCourseSchema.shape,
+	...ProfileStudentShiftSchema.shape,
+	...ProfileCampusSchema.shape,
+	...ProfileEnrollmentSchema.shape,
+});
 
 export type ProfileCourseInput = z.infer<typeof ProfileCourseSchema>;
 export type ProfileStudentShiftInput = z.infer<typeof ProfileStudentShiftSchema>;

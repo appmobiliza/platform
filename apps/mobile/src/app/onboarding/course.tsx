@@ -1,5 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { campusValues, courseValues, studentShiftValues } from "@mobiliza/db";
+import {
+	campusValues,
+	courseValues,
+	studentShiftValues,
+} from "@mobiliza/contracts";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";

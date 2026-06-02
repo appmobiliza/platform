@@ -1,4 +1,4 @@
-import { disabilityTypeValues } from "@mobiliza/db/schema";
+import { disabilityTypeValues } from "@mobiliza/contracts";
 import { z } from "zod";
 
 export const ProfileDisabilitiesSchema = z.object({

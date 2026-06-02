@@ -8,12 +8,10 @@
  * e destes, ~60% estão marcados como disponíveis.
  */
 
+import { campusValues, courseValues, scholarShiftValues } from "@mobiliza/contracts";
 import type { NewScholarProfile } from "@mobiliza/db/schema";
 import {
-	campusValues,
-	courseValues,
 	scholarProfile,
-	scholarShiftValues,
 	user,
 } from "@mobiliza/db/schema";
 import { eq } from "drizzle-orm";

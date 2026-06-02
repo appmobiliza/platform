@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { campusValues } from "@mobiliza/db/schema";
+import { campusValues } from "@mobiliza/contracts";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 

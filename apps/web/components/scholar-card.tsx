@@ -1,4 +1,4 @@
-import { getCurrentShift, type ScholarShiftValues } from "@mobiliza/db/schema";
+import { getCurrentShift, type ScholarShiftValues } from "@mobiliza/contracts";
 
 import { ScholarDetailsTrigger } from "@/components/details";
 import { ProgressWithLabel } from "@/components/progress-with-label";

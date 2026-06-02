@@ -11,7 +11,7 @@ import { ScrollView, View } from "react-native";
 // import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { genderValues } from "@mobiliza/db";
+import { genderValues } from "@mobiliza/contracts";
 
 import { Header } from "@/components/header";
 import { StepIndicator } from "@/components/step-indicator";
