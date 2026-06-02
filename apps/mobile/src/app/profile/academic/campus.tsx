@@ -1,13 +1,13 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { campusValues } from "@mobiliza/contracts";
+
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 
-import { Button } from "@/components/ui/button";
-import { SelectField } from "@/components/ui/select-field";
-import { Text } from "@/components/ui/text";
-
 import ProfileLayout from "@/layout/profile";
+
+import { SelectField } from "@/components/ui/select-field";
+
 import { type ProfileCampusInput, ProfileCampusSchema } from "@/schemas";
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
@@ -35,6 +35,7 @@ export default function AcademicProfileCampus() {
 		<ProfileLayout
 			title="Campus"
 			description="Selecione seu atual campus de graduação."
+			handleSave={handleSave}
 		>
 			<Controller
 				control={control}
@@ -54,10 +55,6 @@ export default function AcademicProfileCampus() {
 					/>
 				)}
 			/>
-
-			<Button className="mt-8" onPress={handleSave}>
-				<Text>Salvar alterações</Text>
-			</Button>
 		</ProfileLayout>
 	);
 }

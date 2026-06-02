@@ -1,8 +1,6 @@
-import { genderValues } from "@mobiliza/contracts";
+import { insertScholarSchema, insertStudentSchema } from "@mobiliza/contracts";
 
 import { z } from "zod";
-
-import { validateCpf, validatePhone } from "@/utils";
 
 export const ProfileNameSchema = z.object({
 	name: z
@@ -10,23 +8,17 @@ export const ProfileNameSchema = z.object({
 		.trim()
 		.min(2, "Nome deve ter pelo menos 2 caracteres")
 		.max(50),
-	nickname: z.string().trim().optional(),
+	nickname: insertStudentSchema.shape.nickname
 });
 
-export const ProfileGenderSchema = z.object({
-	gender: z.enum(genderValues),
-});
+export const ProfileGenderSchema = insertStudentSchema.pick({ gender: true });
 
-export const ProfilePhoneSchema = z.object({
-	phone: z.string().refine(validatePhone, "Telefone inválido"),
-});
+export const ProfilePhoneSchema = insertStudentSchema.pick({ phone: true });
 
-export const ProfileCpfSchema = z.object({
-	cpf: z.string().refine(validateCpf, "CPF inválido"),
-});
+export const ProfileCpfSchema = insertScholarSchema.pick({ cpf: true });
 
 export const ProfileEmailSchema = z.object({
-	email: z.email("E-mail inválido"),
+	email: z.string().trim().email("E-mail inválido"),
 });
 
 export const BasicInfoSchema = z.object({

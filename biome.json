@@ -61,6 +61,12 @@
 							":BLANK_LINE:",
 							[":PACKAGE:", "!@mobiliza/**", "!@/**"],
 							":BLANK_LINE:",
+							["@/layout/**"],
+							":BLANK_LINE:",
+							["@/components/**"],
+							":BLANK_LINE:",
+							["@/hooks/**", "@/utils/**", "@/lib/**"],
+							":BLANK_LINE:",
 							["type::PACKAGE:"]
 						]
 					}

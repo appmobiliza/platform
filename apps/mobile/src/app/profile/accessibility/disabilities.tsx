@@ -2,11 +2,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 
-import AccessibilityOptions from "@/components/accessibility-options";
-import { Button } from "@/components/ui/button";
-import { Text } from "@/components/ui/text";
-
 import ProfileLayout from "@/layout/profile";
+
+import AccessibilityOptions from "@/components/accessibility-options";
+
 import {
 	type ProfileDisabilitiesInput,
 	ProfileDisabilitiesSchema,
@@ -24,7 +23,7 @@ export default function AcademicProfileCourse() {
 	} = useForm<ProfileDisabilitiesInput>({
 		resolver: zodResolver(ProfileDisabilitiesSchema),
 		defaultValues: {
-			disabilities: undefined,
+			disabilityTypes: undefined,
 		},
 		mode: "onTouched",
 	});
@@ -37,22 +36,19 @@ export default function AcademicProfileCourse() {
 		<ProfileLayout
 			title="Tipo de deficiência"
 			description="Selecione uma ou mais opções com base em suas necessidades de acessibilidade"
+			handleSave={handleSave}
 		>
 			<Controller
 				control={control}
-				name="disabilities"
+				name="disabilityTypes"
 				render={({ field }) => (
 					<AccessibilityOptions
 						value={field.value}
 						onChange={field.onChange}
-						error={errors.disabilities?.message}
+						error={errors.disabilityTypes?.message}
 					/>
 				)}
 			/>
-
-			<Button className="mt-8" onPress={handleSave}>
-				<Text>Salvar alterações</Text>
-			</Button>
 		</ProfileLayout>
 	);
 }

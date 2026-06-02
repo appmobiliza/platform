@@ -1,22 +1,15 @@
-import { campusValues, courseValues, studentShiftValues } from "@mobiliza/contracts";
+import { insertStudentSchema } from "@mobiliza/contracts";
+
 import { z } from "zod";
 
-import { validateEnrollment } from "@/utils";
+export const ProfileCourseSchema = insertStudentSchema.pick({ course: true });
 
-export const ProfileCourseSchema = z.object({
-	course: z.enum(courseValues),
-});
+export const ProfileStudentShiftSchema = insertStudentSchema.pick({ shift: true });
 
-export const ProfileStudentShiftSchema = z.object({
-	studentShift: z.enum(studentShiftValues),
-});
+export const ProfileCampusSchema = insertStudentSchema.pick({ campus: true });
 
-export const ProfileCampusSchema = z.object({
-	campus: z.enum(campusValues)
-});
-
-export const ProfileEnrollmentSchema = z.object({
-	enrollment: z.string().refine(validateEnrollment, "Matrícula inválida"),
+export const ProfileEnrollmentSchema = insertStudentSchema.pick({
+	enrollment: true,
 });
 
 export const CourseInfoSchema = z.object({
@@ -27,7 +20,9 @@ export const CourseInfoSchema = z.object({
 });
 
 export type ProfileCourseInput = z.infer<typeof ProfileCourseSchema>;
-export type ProfileStudentShiftInput = z.infer<typeof ProfileStudentShiftSchema>;
+export type ProfileStudentShiftInput = z.infer<
+	typeof ProfileStudentShiftSchema
+>;
 export type ProfileCampusInput = z.infer<typeof ProfileCampusSchema>;
 export type ProfileEnrollmentInput = z.infer<typeof ProfileEnrollmentSchema>;
 export type CourseInfoInput = z.infer<typeof CourseInfoSchema>;

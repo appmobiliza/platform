@@ -1,5 +1,6 @@
+import { genderLabels, genderValues } from "@mobiliza/contracts";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { genderValues } from "@mobiliza/contracts";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
@@ -23,7 +24,7 @@ export default function BasicProfileGender() {
 	} = useForm<ProfileGenderInput>({
 		resolver: zodResolver(ProfileGenderSchema),
 		defaultValues: {
-			gender: "Masculino",
+			gender: "male",
 		},
 		mode: "onTouched",
 	});
@@ -59,7 +60,7 @@ export default function BasicProfileGender() {
 							placeholder="Selecionar gênero"
 							options={genderValues.map((value) => ({
 								value,
-								label: value,
+								label: genderLabels[value],
 							}))}
 							onValueChange={field.onChange}
 							error={errors.gender?.message}

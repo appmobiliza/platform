@@ -2,12 +2,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 
-import { Button } from "@/components/ui/button";
+import ProfileLayout from "@/layout/profile";
+
 import { Field } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
-import { Text } from "@/components/ui/text";
 
-import ProfileLayout from "@/layout/profile";
 import {
 	type ProfileSimplifiedInterfaceInput,
 	ProfileSimplifiedInterfaceSchema,
@@ -38,6 +37,7 @@ export default function AcademicProfileCourse() {
 		<ProfileLayout
 			title="Interface Simples"
 			description="Ative ou desative a interface simplificada para acessibilidade"
+			handleSave={handleSave}
 		>
 			<Controller
 				control={control}
@@ -48,17 +48,13 @@ export default function AcademicProfileCourse() {
 						error={errors.simplifiedInterface?.message}
 					>
 						<Switch
-							checked={field.value}
+							checked={field.value ?? false}
 							onCheckedChange={field.onChange}
 							disabled={field.disabled}
 						/>
 					</Field>
 				)}
 			/>
-
-			<Button className="mt-8" onPress={handleSave}>
-				<Text>Salvar alterações</Text>
-			</Button>
 		</ProfileLayout>
 	);
 }

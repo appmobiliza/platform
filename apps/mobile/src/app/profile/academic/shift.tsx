@@ -1,13 +1,13 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { studentShiftValues } from "@mobiliza/contracts";
+
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 
-import { Button } from "@/components/ui/button";
-import { SelectField } from "@/components/ui/select-field";
-import { Text } from "@/components/ui/text";
-
 import ProfileLayout from "@/layout/profile";
+
+import { SelectField } from "@/components/ui/select-field";
+
 import {
 	type ProfileStudentShiftInput,
 	ProfileStudentShiftSchema,
@@ -25,7 +25,7 @@ export default function AcademicProfileShift() {
 	} = useForm<ProfileStudentShiftInput>({
 		resolver: zodResolver(ProfileStudentShiftSchema),
 		defaultValues: {
-			studentShift: "afternoon",
+			shift: "afternoon",
 		},
 		mode: "onTouched",
 	});
@@ -38,10 +38,11 @@ export default function AcademicProfileShift() {
 		<ProfileLayout
 			title="Turma"
 			description="Selecione sua turma de graduação."
+			handleSave={handleSave}
 		>
 			<Controller
 				control={control}
-				name="studentShift"
+				name="shift"
 				render={({ field }) => (
 					<SelectField
 						label="Turma"
@@ -53,14 +54,10 @@ export default function AcademicProfileShift() {
 							value,
 						}))}
 						onValueChange={field.onChange}
-						error={errors.studentShift?.message}
+						error={errors.shift?.message}
 					/>
 				)}
 			/>
-
-			<Button className="mt-8" onPress={handleSave}>
-				<Text>Salvar alterações</Text>
-			</Button>
 		</ProfileLayout>
 	);
 }
