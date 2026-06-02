@@ -9,6 +9,7 @@
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+
 import { TRPCError } from "@trpc/server";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
@@ -24,11 +25,11 @@ export const locationsRouter = router({
 		.meta({ openapi: { method: "GET", path: "/locations" } })
 		.output(z.any())
 		.query(async () => {
-		return db.query.campusLocation.findMany({
-			where: eq(schema.campusLocation.isActive, true),
-			orderBy: (t, { asc }) => [asc(t.name)],
-		});
-	}),
+			return db.query.campusLocation.findMany({
+				where: eq(schema.campusLocation.isActive, true),
+				orderBy: (t, { asc }) => [asc(t.name)],
+			});
+		}),
 
 	/**
 	 * Retorna todos os locais incluindo inativos — apenas para o painel do gestor.
@@ -37,10 +38,10 @@ export const locationsRouter = router({
 		.meta({ openapi: { method: "GET", path: "/locations/all" } })
 		.output(z.any())
 		.query(async () => {
-		return db.query.campusLocation.findMany({
-			orderBy: (t, { asc }) => [asc(t.name)],
-		});
-	}),
+			return db.query.campusLocation.findMany({
+				orderBy: (t, { asc }) => [asc(t.name)],
+			});
+		}),
 
 	/**
 	 * Cria um novo local do campus.

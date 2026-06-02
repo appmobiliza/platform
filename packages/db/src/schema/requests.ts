@@ -1,9 +1,9 @@
 import { relations } from "drizzle-orm";
 import {
-  integer,
-  pgTable, 
-  text, 
-  timestamp 
+	integer,
+	pgTable,
+	text,
+	timestamp
 } from "drizzle-orm/pg-core";
 
 import { requestStatusEnum } from "./enums";
@@ -110,36 +110,36 @@ export type NewServiceAttendance = typeof serviceAttendance.$inferInsert;
 
 // ─── Relations ───────────────────────────────────────────────────────────────
 
-export const serviceRequestRelations = relations(serviceRequest, ({ one, many }) => ({
-  studentProfile: one(studentProfile, {
-    fields: [serviceRequest.studentProfileId],
-    references: [studentProfile.id],
-  }),
-  originLocation: one(campusLocation, {
-    fields: [serviceRequest.originLocationId],
-    references: [campusLocation.id],
-    relationName: "originLocation",
-  }),
-  destinationLocation: one(campusLocation, {
-    fields: [serviceRequest.destinationLocationId],
-    references: [campusLocation.id],
-    relationName: "destinationLocation",
-  }),
-  attendance: one(serviceAttendance, {
-    fields: [serviceRequest.id],
-    references: [serviceAttendance.requestId],
-    relationName: "serviceAttendance",
-  }),
+export const serviceRequestRelations = relations(serviceRequest, ({ one }) => ({
+	studentProfile: one(studentProfile, {
+		fields: [serviceRequest.studentProfileId],
+		references: [studentProfile.id],
+	}),
+	originLocation: one(campusLocation, {
+		fields: [serviceRequest.originLocationId],
+		references: [campusLocation.id],
+		relationName: "originLocation",
+	}),
+	destinationLocation: one(campusLocation, {
+		fields: [serviceRequest.destinationLocationId],
+		references: [campusLocation.id],
+		relationName: "destinationLocation",
+	}),
+	attendance: one(serviceAttendance, {
+		fields: [serviceRequest.id],
+		references: [serviceAttendance.requestId],
+		relationName: "serviceAttendance",
+	}),
 }));
 
 export const serviceAttendanceRelations = relations(serviceAttendance, ({ one }) => ({
-  request: one(serviceRequest, {
-    fields: [serviceAttendance.requestId],
-    references: [serviceRequest.id],
-    relationName: "serviceAttendance",
-  }),
-  scholarProfile: one(scholarProfile, {
-    fields: [serviceAttendance.scholarProfileId],
-    references: [scholarProfile.id],
-  }),
+	request: one(serviceRequest, {
+		fields: [serviceAttendance.requestId],
+		references: [serviceRequest.id],
+		relationName: "serviceAttendance",
+	}),
+	scholarProfile: one(scholarProfile, {
+		fields: [serviceAttendance.scholarProfileId],
+		references: [scholarProfile.id],
+	}),
 }));

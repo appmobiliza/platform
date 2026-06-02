@@ -2,13 +2,12 @@ import { RequestIdSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db";
 import { and, eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+
 import { TRPCError } from "@trpc/server";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
-import { scholarProcedure } from "../../trpc/context";
-
-import { execTx } from "./shared";
+import { scholarProcedure } from "@/trpc/context";
 
 export const accept = scholarProcedure
 	.meta({ openapi: { method: "POST", path: "/requests/accept" } })
@@ -39,7 +38,7 @@ export const accept = scholarProcedure
 		}
 
 		// Transação atômica para evitar race condition entre bolsistas
-		const result = await execTx(async (tx) => {
+		const result = await db.transaction(async (tx) => {
 			const request = await tx.query.serviceRequest.findFirst({
 				where: and(
 					eq(schema.serviceRequest.id, input.requestId),

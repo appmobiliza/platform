@@ -57,42 +57,11 @@
 					"level": "on",
 					"options": {
 						"groups": [
-							["next", "next/**", "react"],
-
+							["@mobiliza/**"],
 							":BLANK_LINE:",
-
-							["type:next", "type:react", "type::PACKAGE:"],
-
+							[":PACKAGE:", "!@mobiliza/**", "!@/**"],
 							":BLANK_LINE:",
-
-							[":PACKAGE:", "!@/**"],
-
-							":BLANK_LINE:",
-
-							"@/components/**",
-
-							":BLANK_LINE:",
-
-							[
-								"@/public/**",
-								"**/*.svg",
-								"**/*.png",
-								"**/*.jpg",
-								"**/*.jpeg",
-								"**/*.webp"
-							],
-
-							":BLANK_LINE:",
-
-							["@/lib/**", "@/api/**"],
-
-							":BLANK_LINE:",
-
-							":ALIAS:",
-
-							":BLANK_LINE:",
-
-							":PATH:"
+							["type::PACKAGE:"]
 						]
 					}
 				}

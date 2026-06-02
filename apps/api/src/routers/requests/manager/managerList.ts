@@ -1,9 +1,10 @@
 import { db } from "@mobiliza/db/client";
 import { desc } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+
 import { z } from "zod";
 
-import { managerProcedure } from "../../trpc/context";
+import { managerProcedure } from "@/trpc/context";
 
 export const managerList = managerProcedure
 	.meta({ openapi: { method: "GET", path: "/requests/manager" } })

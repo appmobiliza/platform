@@ -2,12 +2,11 @@ import { RequestIdSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { and, eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { scholarProcedure } from "../../trpc/context";
-
-import { execTx } from "./shared";
+import { scholarProcedure } from "@/trpc/context";
 
 export const start = scholarProcedure
 	.meta({ openapi: { method: "POST", path: "/requests/start" } })
@@ -39,7 +38,7 @@ export const start = scholarProcedure
 
 		const now = new Date();
 
-		await execTx(async (tx) => {
+		await db.transaction(async (tx) => {
 			await tx
 				.update(schema.serviceRequest)
 				.set({ status: "ongoing", updatedAt: now })

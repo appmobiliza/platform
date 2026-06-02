@@ -1,14 +1,14 @@
-import { router } from "../../trpc/context";
-import { accept } from "./accept";
-import { available } from "./available";
-import { cancel } from "./cancel";
-import { complete } from "./complete";
-import { create } from "./create";
-import { managerList } from "./managerList";
-import { myHistory } from "./myHistory";
-import { rate } from "./rate";
-import { scholarHistory } from "./scholarHistory";
-import { start } from "./start";
+import { router } from "@/trpc/context";
+import { managerList } from "./manager/managerList";
+import { accept } from "./scholar/accept";
+import { complete } from "./scholar/complete";
+import { pending } from "./scholar/pending";
+import { scholarHistory } from "./scholar/scholarHistory";
+import { start } from "./scholar/start";
+import { cancel } from "./student/cancel";
+import { create } from "./student/create";
+import { rate } from "./student/rate";
+import { studentHistory } from "./student/studentHistory";
 
 /**
  * Router de solicitações de deslocamento modularizado.
@@ -20,9 +20,9 @@ export const requestsRouter = router({
 	accept,
 	start,
 	complete,
-  rate,
-  myHistory,
-  available,
-  scholarHistory,
-  managerList,
+	rate,
+	studentHistory,
+	scholarHistory,
+	pending,
+	managerList,
 });
