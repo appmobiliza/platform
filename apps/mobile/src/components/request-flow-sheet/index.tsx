@@ -29,7 +29,6 @@ import { ufalPoints } from "@/constants/locations";
 
 import { AddressRouteInput } from "./address-route-input";
 import { SheetFrame, StageSheet } from "./components";
-import { DestinationSelector } from "./destination-selector";
 import { SearchIndicator } from "./seach-indicator";
 import { useRequestFlow } from "./use-request-flow";
 
@@ -69,23 +68,6 @@ function RequestFlowSheet() {
 		[setDestination],
 	);
 
-	const data = useMemo(
-		() =>
-			Array(50)
-				.fill(0)
-				.map((_, index) => `index-${index}`),
-		[],
-	);
-
-	const renderItem = useCallback(
-		({ item }) => (
-			<View className="p-6 m-6">
-				<Text>{item}</Text>
-			</View>
-		),
-		[],
-	);
-
 	return (
 		<View className="absolute inset-0" pointerEvents="box-none">
 			<StageSheet
@@ -93,6 +75,7 @@ function RequestFlowSheet() {
 				modalRef={destinationRef}
 				onDismiss={handleDismiss}
 				colorScheme={isDark ? "dark" : "light"}
+				snapPoints={["35%"]}
 			>
 				<SheetFrame
 					title="Insira seu destino"
@@ -140,7 +123,7 @@ function RequestFlowSheet() {
 				stage="destination-selection"
 				modalRef={destinationSelectionRef}
 				onDismiss={handleDismiss}
-				snapPoints={["78%"]}
+				snapPoints={["95%"]}
 				colorScheme={isDark ? "dark" : "light"}
 				panDownToClose
 			>

@@ -85,8 +85,8 @@ function StageSheet({
 		<BottomSheetModal
 			ref={modalRef}
 			index={0}
-			snapPoints={snapPoints?.length > 0 ? snapPoints : undefined}
 			enableDynamicSizing={snapPoints?.length === 0}
+			snapPoints={snapPoints?.length > 0 ? snapPoints : undefined}
 			enablePanDownToClose={panDownToClose}
 			onDismiss={() => onDismiss(stage)}
 			backgroundStyle={{ backgroundColor: THEME[colorScheme].card }}
