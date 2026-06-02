@@ -3,6 +3,11 @@
  * aprovação de bolsistas pelo gestor, e toggle de disponibilidade.
  */
 
+import {
+	CreateScholarSchema,
+	CreateStudentSchema,
+	UpdateStudentSchema,
+} from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
@@ -412,6 +417,54 @@ export const profilesRouter = router({
 			);
 
 			return profile;
+		}),
+
+	/**
+	 * Atualiza o perfil do estudante autenticado.
+	 */
+	updateStudent: protectedProcedure
+		.meta({ openapi: { method: "PATCH", path: "/profiles/student" } })
+		.input(UpdateStudentSchema)
+		.output(z.any())
+		.mutation(async ({ ctx, input }) => {
+			const profile = await db.query.studentProfile.findFirst({
+				where: eq(schema.studentProfile.userId, ctx.session.user.id),
+			});
+
+			if (!profile) throw new TRPCError({ code: "NOT_FOUND" });
+
+			const { disabilityTypes, ...updateData } = input;
+
+			// 1. Atualiza campos básicos do perfil
+			await db
+				.update(schema.studentProfile)
+				.set({
+					...updateData,
+					updatedAt: new Date(),
+				})
+				.where(eq(schema.studentProfile.id, profile.id));
+
+			// 2. Atualiza deficiências (se fornecidas)
+			if (disabilityTypes) {
+				await db
+					.delete(schema.studentDisability)
+					.where(eq(schema.studentDisability.studentProfileId, profile.id));
+
+				if (disabilityTypes.length > 0) {
+					await db.insert(schema.studentDisability).values(
+						disabilityTypes.map((dt) => ({
+							id: uuidv7(),
+							studentProfileId: profile.id,
+							disabilityType: dt,
+						})),
+					);
+				}
+			}
+
+			return db.query.studentProfile.findFirst({
+				where: eq(schema.studentProfile.id, profile.id),
+				with: { disabilities: true },
+			});
 		}),
 
 	/**
