@@ -1,5 +1,6 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
+import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import {
 	CircleX,
 	MapPin,
@@ -26,6 +27,7 @@ import { cn } from "@/lib/utils";
 
 import { ufalPoints } from "@/constants/locations";
 
+import { AddressRouteInput } from "./address-route-input";
 import { SheetFrame, StageSheet } from "./components";
 import { DestinationSelector } from "./destination-selector";
 import { SearchIndicator } from "./seach-indicator";
@@ -42,6 +44,7 @@ function RequestFlowSheet() {
 		dismissAndExit,
 		handleDismiss,
 		message,
+		setOrigin,
 		origin,
 		searchingRef,
 		setDestination,
@@ -66,7 +69,22 @@ function RequestFlowSheet() {
 		[setDestination],
 	);
 
-	console.log("destination", destination);
+	const data = useMemo(
+		() =>
+			Array(50)
+				.fill(0)
+				.map((_, index) => `index-${index}`),
+		[],
+	);
+
+	const renderItem = useCallback(
+		({ item }) => (
+			<View className="p-6 m-6">
+				<Text>{item}</Text>
+			</View>
+		),
+		[],
+	);
 
 	return (
 		<View className="absolute inset-0" pointerEvents="box-none">
@@ -122,13 +140,13 @@ function RequestFlowSheet() {
 				stage="destination-selection"
 				modalRef={destinationSelectionRef}
 				onDismiss={handleDismiss}
-				// snapPoints={["85%"]}
+				snapPoints={["78%"]}
 				colorScheme={isDark ? "dark" : "light"}
 				panDownToClose
 			>
 				<SheetFrame
 					title="Selecione seu destino"
-					// scrollable={false}
+					hasList
 					footer={
 						<>
 							<Button
@@ -143,35 +161,36 @@ function RequestFlowSheet() {
 						</>
 					}
 				>
-					<AddressRoute
-						className="bg-input p-4 rounded-lg"
-						from={{
-							label: `${
-								origin?.abbreviation ?? origin?.name ?? ""
-							} - ${origin?.name ?? ""}`,
+					<AddressRouteInput
+						origin={origin}
+						destination={destination}
+						onSelectOrigin={(name, isCurrent) => {
+							if (isCurrent) return; // origin já vem do GPS via useRequestFlow
+							const point = ufalPoints.find(
+								(p) => p.name === name,
+							);
+							if (point) {
+								setOrigin({
+									name: point.name,
+									abbreviation: point.abbrev,
+									latitude: point.latitude,
+									longitude: point.longitude,
+								});
+							}
 						}}
-						to={{
-							label: destination?.name ?? "",
-							children: destination !== null && (
-								<Pressable
-									className="text-secondary-foreground"
-									onPress={() => setDestination(null)}
-								>
-									<Icon
-										icon={CircleX}
-										size={20}
-										color="--secondary-foreground"
-									/>
-								</Pressable>
-							),
+						onSelectDestination={(name) => {
+							const point = ufalPoints.find(
+								(p) => p.name === name,
+							);
+							if (point) {
+								setDestination({
+									name: point.name,
+									abbreviation: point.abbrev,
+									latitude: point.latitude,
+									longitude: point.longitude,
+								});
+							}
 						}}
-						shouldShowRoute
-						size="md"
-					/>
-
-					<DestinationSelector
-						selectedDestination={destination?.name}
-						onSelectDestination={handleSelectDestination}
 					/>
 				</SheetFrame>
 			</StageSheet>

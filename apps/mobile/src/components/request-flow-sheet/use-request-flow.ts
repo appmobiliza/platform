@@ -200,6 +200,7 @@ function useRequestFlow() {
 		handleDismiss,
 		message,
 		origin,
+		setOrigin,
 		refs,
 		searchingRef,
 		setDestination,
