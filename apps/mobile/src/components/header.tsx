@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { ArrowLeftToLine } from "lucide-react-native";
-import { TouchableOpacity, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
@@ -25,13 +25,13 @@ export function Header({
 	return (
 		<View className="gap-4 pt-12 px-4">
 			{allowBack && (
-				<TouchableOpacity onPress={() => router.back()}>
+				<Pressable onPress={() => router.back()}>
 					<Icon
 						icon={ArrowLeftToLine}
 						size={32}
 						color="--foreground"
 					/>
-				</TouchableOpacity>
+				</Pressable>
 			)}
 			<View className="gap-1">
 				{title ? (

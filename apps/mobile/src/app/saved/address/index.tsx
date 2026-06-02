@@ -2,10 +2,10 @@ import { useRouter } from "expo-router";
 import { ArrowLeft, MapPin, X } from "lucide-react-native";
 import {
 	Platform,
+	Pressable,
 	ScrollView,
 	Text,
 	TextInput,
-	TouchableOpacity,
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -53,13 +53,13 @@ export default function AddressSearch() {
 					),
 				}}
 			>
-				<TouchableOpacity
+				<Pressable
 					onPress={() => router.back()}
-					activeOpacity={0.7}
+					style={({ pressed }) => pressed && { opacity: 0.7 }}
 					className="p-2"
 				>
 					<ArrowLeft size={24} color="white" />
-				</TouchableOpacity>
+				</Pressable>
 
 				<View className="flex-1 flex-row items-center rounded-xl px-3 py-2">
 					<TextInput
@@ -67,17 +67,17 @@ export default function AddressSearch() {
 						defaultValue="Banquinho de Meteorol"
 						autoFocus
 					/>
-					<TouchableOpacity className="p-1">
+					<Pressable className="p-1">
 						<X size={18} color="#9CA3AF" />
-					</TouchableOpacity>
+					</Pressable>
 				</View>
 			</View>
 
 			<ScrollView className="flex-1">
 				{results.map((item) => (
-					<TouchableOpacity
+					<Pressable
 						key={item.id}
-						activeOpacity={0.7}
+						style={({ pressed }) => pressed && { opacity: 0.7 }}
 						className="flex-row items-center px-6 py-4 border-b border-gray-100"
 					>
 						<View className="items-center justify-center mr-4 w-10">
@@ -94,11 +94,11 @@ export default function AddressSearch() {
 								{item.subtitle}
 							</Text>
 						</View>
-					</TouchableOpacity>
+					</Pressable>
 				))}
 
-				<TouchableOpacity
-					activeOpacity={0.7}
+				<Pressable
+					style={({ pressed }) => pressed && { opacity: 0.7 }}
 					onPress={() => router.push("/saved/address/map")}
 					className="flex-row items-center px-6 py-5 border-b border-gray-100"
 				>
@@ -110,7 +110,7 @@ export default function AddressSearch() {
 					<Text className="text-gray-900 font-semibold text-base">
 						Defina a localização no mapa
 					</Text>
-				</TouchableOpacity>
+				</Pressable>
 			</ScrollView>
 		</View>
 	);

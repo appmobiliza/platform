@@ -1,7 +1,7 @@
 import type React from "react";
 
 import { Accessibility, Ear, Ellipsis, Eye } from "lucide-react-native";
-import { TouchableOpacity, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Field } from "@/components/ui/field";
 import { Text } from "@/components/ui/text";
@@ -49,9 +49,8 @@ export function AccessibilityOptions({
 					const isSelected = selectedIds.includes(option.id);
 
 					return (
-						<TouchableOpacity
+						<Pressable
 							key={option.id}
-							activeOpacity={0.8}
 							onPress={() => {
 								const nextValue = isSelected
 									? selectedIds.filter(
@@ -63,6 +62,7 @@ export function AccessibilityOptions({
 							}}
 							accessibilityRole="checkbox"
 							accessibilityState={{ checked: isSelected }}
+							style={({ pressed }) => pressed && { opacity: 0.8 }}
 							className={cn(
 								"mb-4 min-h-[120px] w-[48%] items-center justify-center rounded-xl border-2 p-4 border-border bg-background",
 								{
@@ -89,7 +89,7 @@ export function AccessibilityOptions({
 							>
 								{option.label}
 							</Text>
-						</TouchableOpacity>
+						</Pressable>
 					);
 				})}
 			</View>

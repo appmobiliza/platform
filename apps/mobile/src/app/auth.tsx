@@ -10,6 +10,12 @@ import { setIsLoggedIn, setUserRole } from "@/lib/auth-store";
 import GoogleIcon from "@/assets/google";
 import { Logo } from "@/assets/logo";
 
+const openURL = (url: string) => {
+	Linking.openURL(url).catch((err) => {
+		console.error("Failed to open URL:", err);
+	});
+};
+
 export default function Auth() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
@@ -18,12 +24,6 @@ export default function Auth() {
 		setUserRole(role);
 		setIsLoggedIn(true);
 		router.replace("/(tabs)");
-	};
-
-	const openURL = (url: string) => {
-		Linking.openURL(url).catch((err) => {
-			console.error("Failed to open URL:", err);
-		});
 	};
 
 	return (
@@ -56,7 +56,7 @@ export default function Auth() {
 						<GoogleIcon />
 						<Text>Entrar como Aluno</Text>
 					</Button>
-					
+
 					<Button
 						className="relative"
 						onPress={() => handleLogin("scholar")}

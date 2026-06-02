@@ -16,7 +16,6 @@ import {
 	Pressable,
 	ScrollView,
 	Text,
-	TouchableOpacity,
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -74,13 +73,13 @@ export default function SavedPlaces() {
 					),
 				}}
 			>
-				<TouchableOpacity
+				<Pressable
 					onPress={() => router.back()}
-					activeOpacity={0.7}
+					style={({ pressed }) => pressed && { opacity: 0.7 }}
 					className="p-2 -ml-2 self-start"
 				>
 					<ArrowLeft size={24} color="#111827" />
-				</TouchableOpacity>
+				</Pressable>
 				<Text className="text-gray-900 font-bold text-3xl">
 					Locais salvos
 				</Text>
@@ -106,19 +105,19 @@ export default function SavedPlaces() {
 								)}
 							</View>
 							{place.showMenu && (
-								<TouchableOpacity
+								<Pressable
 									onPress={() => handleOpenOptions(place)}
 									className="p-2 -mr-2"
 								>
 									<MoreVertical size={20} color="#4B5563" />
-								</TouchableOpacity>
+								</Pressable>
 							)}
 						</View>
 					);
 				})}
 
-				<TouchableOpacity
-					activeOpacity={0.7}
+				<Pressable
+					style={({ pressed }) => pressed && { opacity: 0.7 }}
 					onPress={() => router.push("/saved/address")}
 					className="flex-row items-center py-4 gap-4"
 				>
@@ -126,7 +125,7 @@ export default function SavedPlaces() {
 					<Text className="text-gray-900 font-medium text-base">
 						Adicionar um novo local
 					</Text>
-				</TouchableOpacity>
+				</Pressable>
 			</ScrollView>
 
 			{/* Options Menu Modal */}
@@ -139,22 +138,19 @@ export default function SavedPlaces() {
 						className="bg-white rounded-xl w-48 shadow-lg py-2 absolute right-6"
 						style={{ top: "40%" }}
 					>
-						<TouchableOpacity
-							onPress={handleEdit}
-							className="px-5 py-3"
-						>
+						<Pressable onPress={handleEdit} className="px-5 py-3">
 							<Text className="text-gray-800 text-base">
 								Editar
 							</Text>
-						</TouchableOpacity>
-						<TouchableOpacity
+						</Pressable>
+						<Pressable
 							onPress={handleDeleteClick}
 							className="px-5 py-3"
 						>
 							<Text className="text-gray-800 text-base">
 								Excluir
 							</Text>
-						</TouchableOpacity>
+						</Pressable>
 					</View>
 				</Pressable>
 			</Modal>
@@ -175,24 +171,28 @@ export default function SavedPlaces() {
 							locais salvos?
 						</Text>
 						<View className="gap-3">
-							<TouchableOpacity
-								activeOpacity={0.8}
+							<Pressable
+								style={({ pressed }) =>
+									pressed && { opacity: 0.8 }
+								}
 								onPress={confirmDelete}
 								className="bg-[#EF4444] py-3.5 rounded-xl items-center"
 							>
 								<Text className="text-white font-semibold text-base">
 									Excluir
 								</Text>
-							</TouchableOpacity>
-							<TouchableOpacity
-								activeOpacity={0.8}
+							</Pressable>
+							<Pressable
+								style={({ pressed }) =>
+									pressed && { opacity: 0.8 }
+								}
 								onPress={() => setShowDeleteModal(false)}
 								className="py-3.5 rounded-xl items-center"
 							>
 								<Text className="text-gray-600 font-semibold text-base">
 									Cancelar
 								</Text>
-							</TouchableOpacity>
+							</Pressable>
 						</View>
 					</Pressable>
 				</Pressable>

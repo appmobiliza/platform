@@ -3,17 +3,16 @@ import { useState } from "react";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { CircleAlert } from "lucide-react-native";
-import {
-	ActivityIndicator,
-	Linking,
-	TouchableOpacity,
-	View,
-} from "react-native";
+import { ActivityIndicator, Linking, Pressable, View } from "react-native";
 
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
+
+function handleOpenSettings() {
+	Linking.openSettings();
+}
 
 export default function LocationPermission() {
 	const router = useRouter();
@@ -21,26 +20,21 @@ export default function LocationPermission() {
 	const [canAskAgain, setCanAskAgain] = useState(true);
 	const [isLoading, setIsLoading] = useState(false);
 
-	async function handleRequestLocation() {
+	function handleRequestLocation() {
 		setIsLoading(true);
-		try {
-			const { granted, canAskAgain: canAsk } =
-				await Location.requestForegroundPermissionsAsync();
+		Location.requestForegroundPermissionsAsync()
+			.then(({ granted, canAskAgain: canAsk }) => {
+				if (granted) {
+					router.push("/");
+					return;
+				}
 
-			if (granted) {
-				router.push("/");
-				return;
-			}
-
-			setHasDenied(true);
-			setCanAskAgain(canAsk);
-		} finally {
-			setIsLoading(false);
-		}
-	}
-
-	function handleOpenSettings() {
-		Linking.openSettings();
+				setHasDenied(true);
+				setCanAskAgain(canAsk);
+			})
+			.finally(() => {
+				setIsLoading(false);
+			});
 	}
 
 	const showSettingsFallback = hasDenied && !canAskAgain;
@@ -120,11 +114,11 @@ export default function LocationPermission() {
 					<Text className="text-sm text-neutral-400">
 						Precisando de ajuda?
 					</Text>
-					<TouchableOpacity className="mt-1">
+					<Pressable className="mt-1">
 						<Text className="text-sm text-muted-foreground underline font-medium">
 							Entre em contato com o NAC
 						</Text>
-					</TouchableOpacity>
+					</Pressable>
 				</View>
 			</View>
 		</View>

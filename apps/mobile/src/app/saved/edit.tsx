@@ -3,9 +3,9 @@ import { ArrowLeft, ChevronRight, XCircle } from "lucide-react-native";
 import {
 	KeyboardAvoidingView,
 	Platform,
+	Pressable,
 	Text,
 	TextInput,
-	TouchableOpacity,
 	View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -28,13 +28,13 @@ export default function EditSavedPlace() {
 					),
 				}}
 			>
-				<TouchableOpacity
+				<Pressable
 					onPress={() => router.back()}
-					activeOpacity={0.7}
+					style={({ pressed }) => pressed && { opacity: 0.7 }}
 					className="p-2 -ml-2 self-start"
 				>
 					<ArrowLeft size={24} color="#111827" />
-				</TouchableOpacity>
+				</Pressable>
 				<Text className="text-gray-900 font-bold text-3xl">
 					Editar local salvo
 				</Text>
@@ -50,9 +50,9 @@ export default function EditSavedPlace() {
 							className="flex-1 text-gray-500 text-base p-0"
 							defaultValue="Banquinho da Meteorologia"
 						/>
-						<TouchableOpacity className="p-1">
+						<Pressable className="p-1">
 							<XCircle size={18} color="#9CA3AF" />
-						</TouchableOpacity>
+						</Pressable>
 					</View>
 				</View>
 
@@ -60,8 +60,8 @@ export default function EditSavedPlace() {
 					<Text className="text-gray-900 font-semibold text-base mb-2">
 						Endereço
 					</Text>
-					<TouchableOpacity
-						activeOpacity={0.7}
+					<Pressable
+						style={({ pressed }) => pressed && { opacity: 0.7 }}
 						onPress={() => router.push("/saved/address")}
 						className="flex-row items-center justify-between py-1"
 					>
@@ -72,7 +72,7 @@ export default function EditSavedPlace() {
 							Instituto de Jornalismo, UFAL
 						</Text>
 						<ChevronRight size={20} color="#111827" />
-					</TouchableOpacity>
+					</Pressable>
 				</View>
 			</View>
 
@@ -80,15 +80,15 @@ export default function EditSavedPlace() {
 				className="px-6 pt-4"
 				style={{ paddingBottom: Math.max(insets.bottom + 16, 24) }}
 			>
-				<TouchableOpacity
-					activeOpacity={0.8}
+				<Pressable
+					style={({ pressed }) => pressed && { opacity: 0.8 }}
 					className="bg-[#2D2D2D] w-full py-4 rounded-xl items-center justify-center"
 					onPress={() => router.back()}
 				>
 					<Text className="text-white font-bold text-base">
 						Salvar local
 					</Text>
-				</TouchableOpacity>
+				</Pressable>
 			</View>
 		</KeyboardAvoidingView>
 	);

@@ -1,5 +1,5 @@
 import { Clock, MapPin, Star } from "lucide-react-native";
-import { TouchableOpacity, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
@@ -34,8 +34,7 @@ export const PlaceCard = ({
 		name === "clock" ? Clock : name === "star" ? Star : MapPin;
 
 	return (
-		<TouchableOpacity
-			activeOpacity={0.7}
+		<Pressable
 			onPress={onPress}
 			accessibilityLabel={`${title}: ${description}`}
 			accessibilityHint="Duplo toque para ver detalhes"
@@ -45,6 +44,7 @@ export const PlaceCard = ({
 				variant === "bordered" && "border border-border",
 				className,
 			)}
+			style={({ pressed }) => pressed && { opacity: 0.7 }}
 		>
 			<View className="flex-1 gap-4 flex-row items-center justify-start">
 				<View
@@ -71,6 +71,6 @@ export const PlaceCard = ({
 				</View>
 			</View>
 			{children}
-		</TouchableOpacity>
+		</Pressable>
 	);
 };

@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 
 import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import { MapPin, Search } from "lucide-react-native";
-import { TextInput, TouchableOpacity, View } from "react-native";
+import { Pressable, TextInput, View } from "react-native";
 
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
@@ -39,9 +39,9 @@ function DestinationSelector({
 
 	const renderItem = useCallback(
 		({ item }: { item: (typeof ufalPoints)[number] }) => (
-			<TouchableOpacity
-				activeOpacity={0.7}
+			<Pressable
 				onPress={() => onSelectDestination(item.name)}
+				style={({ pressed }) => pressed && { opacity: 0.7 }}
 				className={cn(
 					"flex-row items-center gap-4 rounded-lg p-3",
 					selectedDestination === item.name
@@ -62,7 +62,7 @@ function DestinationSelector({
 						</Text>
 					)}
 				</View>
-			</TouchableOpacity>
+			</Pressable>
 		),
 		[onSelectDestination, selectedDestination],
 	);
@@ -81,18 +81,24 @@ function DestinationSelector({
 			data={filteredLocations}
 			keyExtractor={keyExtractor}
 			renderItem={renderItem}
-			ListHeaderComponent={<View className="relative">
-				<TextInput
-					placeholder="Buscar local..."
-					value={searchQuery}
-					onChangeText={setSearchQuery}
-					className="dark:bg-input/50 border-border dark:border-input bg-background text-foreground flex h-11 w-full min-w-0 flex-row items-center rounded-md border py-1 pl-10 pr-3 text-base leading-5 shadow-sm shadow-black/5 placeholder:text-muted-foreground/50"
-					placeholderTextColor="hsl(var(--muted-foreground) / 0.5)"
-				/>
-				<View className="absolute left-3 top-1/2 -translate-y-1/2">
-					<Icon icon={Search} size={20} color="--muted-foreground" />
+			ListHeaderComponent={
+				<View className="relative">
+					<TextInput
+						placeholder="Buscar local..."
+						value={searchQuery}
+						onChangeText={setSearchQuery}
+						className="dark:bg-input/50 border-border dark:border-input bg-background text-foreground flex h-11 w-full min-w-0 flex-row items-center rounded-md border py-1 pl-10 pr-3 text-base leading-5 shadow-sm shadow-black/5 placeholder:text-muted-foreground/50"
+						placeholderTextColor="hsl(var(--muted-foreground) / 0.5)"
+					/>
+					<View className="absolute left-3 top-1/2 -translate-y-1/2">
+						<Icon
+							icon={Search}
+							size={20}
+							color="--muted-foreground"
+						/>
+					</View>
 				</View>
-			</View>}
+			}
 			ListEmptyComponent={
 				<Text className="py-4 text-center text-muted-foreground">
 					{emptyMessage}
