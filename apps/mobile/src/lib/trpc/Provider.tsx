@@ -1,7 +1,6 @@
-import { useState } from "react";
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createWSClient, httpBatchLink, splitLink, wsLink } from "@trpc/client";
+import { useState } from "react";
 import { Platform } from "react-native";
 
 import { trpc } from "./client";
