@@ -5,6 +5,7 @@
  * procedures protegidas.
  */
 
+import { jest } from '@jest/globals'
 import type { TRPCContext, Session } from '../../trpc/context'
 
 export function createMockTRPCContext(overrides: Partial<TRPCContext> = {}): TRPCContext {
