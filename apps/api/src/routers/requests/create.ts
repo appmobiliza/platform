@@ -23,12 +23,16 @@ export const create = protectedProcedure
 				}
 
 				// Notifica bolsistas disponíveis via realtime
-				await ctx.realtime.publish("requests:available", "request:new", {
-				requestId: request.id,
-				studentId: ctx.session.user.id,
-				originLocationId: input.originLocationId,
-				destinationLocationId: input.destinationLocationId,
-			});
+				try {
+					await ctx.realtime.publish("requests:available", "request:new", {
+						requestId: request.id,
+						studentId: ctx.session.user.id,
+						originLocationId: input.originLocationId,
+						destinationLocationId: input.destinationLocationId,
+					});
+				} catch (publishError) {
+					console.error("[Realtime] Failed to publish request:new event:", publishError);
+				}
 
 			return request;
 		} catch (error) {

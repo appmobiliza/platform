@@ -51,11 +51,15 @@ export const start = scholarProcedure
 				.where(eq(schema.serviceAttendance.id, attendance.id));
 		});
 
-		await ctx.realtime.publish(
-			`request:${input.requestId}`,
-			"request:started",
-			{ requestId: input.requestId },
-		);
+		try {
+			await ctx.realtime.publish(
+				`request:${input.requestId}`,
+				"request:started",
+				{ requestId: input.requestId },
+			);
+		} catch (error) {
+			console.error("[Realtime] Failed to publish request:started event:", error);
+		}
 
 		return { success: true };
 	});

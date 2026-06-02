@@ -54,11 +54,15 @@ export const complete = scholarProcedure
 				.where(eq(schema.serviceAttendance.id, attendance.id));
 		});
 
-		await ctx.realtime.publish(
-			`request:${input.requestId}`,
-			"request:completed",
-			{ requestId: input.requestId, durationSeconds },
-		);
+		try {
+			await ctx.realtime.publish(
+				`request:${input.requestId}`,
+				"request:completed",
+				{ requestId: input.requestId, durationSeconds },
+			);
+		} catch (error) {
+			console.error("[Realtime] Failed to publish request:completed event:", error);
+		}
 
 		return { durationSeconds };
 	});

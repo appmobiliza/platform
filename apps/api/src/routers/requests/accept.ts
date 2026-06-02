@@ -75,15 +75,19 @@ export const accept = scholarProcedure
 				.returning();
 
 			// Notifica o estudante via realtime
-			await ctx.realtime.publish(
-				`request:${input.requestId}`,
-				"request:accepted",
-				{
-					requestId: input.requestId,
-					scholarId: ctx.session.user.id,
-					scholarName: ctx.session.user.name,
-				},
-			);
+			try {
+				await ctx.realtime.publish(
+					`request:${input.requestId}`,
+					"request:accepted",
+					{
+						requestId: input.requestId,
+						scholarId: ctx.session.user.id,
+						scholarName: ctx.session.user.name,
+					},
+				);
+			} catch (publishError) {
+				console.error("[Realtime] Failed to publish request:accepted event:", publishError);
+			}
 
 			return { request: { ...request, status: "accepted" }, attendance };
 		});

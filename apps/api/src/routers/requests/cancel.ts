@@ -52,11 +52,15 @@ export const cancel = protectedProcedure
 			.where(eq(schema.serviceRequest.id, input.requestId))
 			.returning();
 
-		await ctx.realtime.publish(
-			`request:${input.requestId}`,
-			"request:cancelled",
-			{ requestId: input.requestId },
-		);
+		try {
+			await ctx.realtime.publish(
+				`request:${input.requestId}`,
+				"request:cancelled",
+				{ requestId: input.requestId },
+			);
+		} catch (error) {
+			console.error("[Realtime] Failed to publish request:cancelled event:", error);
+		}
 
 		return updated;
 	});
