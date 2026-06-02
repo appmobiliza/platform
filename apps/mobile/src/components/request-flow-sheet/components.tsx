@@ -8,22 +8,11 @@ import {
 } from "@gorhom/bottom-sheet";
 import { View } from "react-native";
 
-import { THEME, useThemeVariables } from "@/lib/theme";
+import { THEME } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
 import { SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "../ui/sheet";
 import type { Stage } from "./types";
-import { VariableContextProvider } from "nativewind";
-
-function PortalThemeProvider({ children }: { children: React.ReactNode }) {
-  const variables = useThemeVariables();
-  return (
-    <VariableContextProvider value={variables}>
-      {children}
-    </VariableContextProvider>
-  );
-}
-
 
 interface SheetFrameProps {
 	title: string;
@@ -94,28 +83,16 @@ function StageSheet({
 		<BottomSheetModal
 			ref={modalRef}
 			index={0}
-			backdropComponent={(props) => (
-				<BottomSheetBackdrop
-					{...props}
-					appearsOnIndex={0}
-					disappearsOnIndex={-1}
-					style={[props.style, { backgroundColor: "rgba(0,0,0,0.5)" }]}
-				/>
-			)}
 			snapPoints={["90%"]}
 			enableDynamicSizing={false}
 			enablePanDownToClose={panDownToClose}
 			onDismiss={() => onDismiss(stage)}
-			backgroundStyle={{ backgroundColor: "red" }}
+			backgroundStyle={{ backgroundColor: THEME[colorScheme].card }}
 			handleIndicatorStyle={{
-				backgroundColor: "red",
+				backgroundColor: THEME[colorScheme].muted,
 			}}
 		>
-			<BottomSheetView>
-				<PortalThemeProvider>
-					{children}
-				</PortalThemeProvider>
-			</BottomSheetView>
+			<BottomSheetView>{children}</BottomSheetView>
 		</BottomSheetModal>
 	);
 }
