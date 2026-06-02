@@ -14,7 +14,16 @@ export const available = scholarProcedure
 		with: {
 			originLocation: true,
 			destinationLocation: true,
-			studentProfile: { with: { user: true } },
+			studentProfile: {
+				with: {
+					user: {
+						columns: {
+							id: true,
+							image: true,
+						},
+					},
+				},
+			},
 		},
 		orderBy: [desc(schema.serviceRequest.createdAt)],
 		limit: 50,
