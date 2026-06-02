@@ -43,7 +43,7 @@ export const PlaceCard = ({
 		>
 			<View
 				className={cn(
-					"p-2 rounded-md bg-primary items-center w-12 justify-center gap-1",
+					"p-2 rounded-md bg-primary items-center justify-center gap-1",
 					iconClassName,
 				)}
 			>
