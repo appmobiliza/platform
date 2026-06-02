@@ -1,12 +1,11 @@
-import * as React from "react";
-
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
+import * as React from "react";
 
 import { getNearestPoint } from "@/lib/location-store";
+import { trpc } from "@/lib/trpc/client";
 
 import type { Place, Stage } from "./types";
-
 
 function useRequestFlow() {
 	const router = useRouter();
@@ -42,6 +41,15 @@ function useRequestFlow() {
 	const [destination, setDestination] = React.useState<Place | null>(null);
 	const [message, setMessage] = React.useState("");
 
+	// Estado real da requisição
+	const [activeRequestId, setActiveRequestId] = React.useState<string | null>(
+		null,
+	);
+
+	// Mutação para criar a solicitação no backend
+	const { mutateAsync: createRequest, isPending: isCreating } =
+		trpc.requests.create.useMutation();
+
 	const openStage = React.useCallback(
 		(stage: Stage) => {
 			activeStageRef.current = stage;
@@ -59,6 +67,44 @@ function useRequestFlow() {
 			refs[activeStageRef.current].current?.dismiss();
 		},
 		[refs],
+	);
+
+	const confirmRequest = React.useCallback(
+		async (originId: string, destinationId: string) => {
+			try {
+				const result = await createRequest({
+					originLocationId: originId,
+					destinationLocationId: destinationId,
+					notes: message,
+				});
+				setActiveRequestId(result.id);
+				transitionTo("searching");
+			} catch (error) {
+				console.error("Erro ao criar solicitação", error);
+				// Idealmente mostrar um Toast de erro aqui
+			}
+		},
+		[createRequest, message, transitionTo],
+	);
+
+	// Escuta atualizações de status via WebSockets
+	trpc.requests.onStatusChange.useSubscription(
+		{ requestId: activeRequestId! },
+		{
+			enabled: activeRequestId !== null,
+			onData(data) {
+				if (data.status === "accepted") {
+					transitionTo("trip");
+				}
+				if (
+					data.status === "completed" ||
+					data.status === "cancelled"
+				) {
+					setActiveRequestId(null);
+					exitFlow();
+				}
+			},
+		},
 	);
 
 	const exitFlow = React.useCallback(() => {
@@ -113,20 +159,11 @@ function useRequestFlow() {
 		openStage("destination-selection");
 	}, [openStage]);
 
-	React.useEffect(() => {
-		if (activeStage !== "searching") {
-			return undefined;
-		}
-
-		const timer = setTimeout(() => {
-			transitionTo("trip");
-		}, 1800);
-
-		return () => clearTimeout(timer);
-	}, [activeStage, transitionTo]);
-
 	return {
 		activeStage,
+		activeRequestId,
+		confirmRequest,
+		isCreating,
 		destinationRef,
 		destinationSelectionRef,
 		destination,
