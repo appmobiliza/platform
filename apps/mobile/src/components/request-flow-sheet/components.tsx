@@ -81,14 +81,14 @@ function StageSheet({
 	children,
 	colorScheme,
 }: StageSheetProps) {
-	const hasSnapPoints = snapPoints?.length > 0;
+	const isDynamic = snapPoints.length === 0;
 
 	return (
 		<BottomSheetModal
 			ref={modalRef}
 			index={0}
-			enableDynamicSizing={!hasSnapPoints}
-			snapPoints={hasSnapPoints ? snapPoints : undefined}
+			enableDynamicSizing={isDynamic}
+   			snapPoints={isDynamic ? undefined : snapPoints}
 			enablePanDownToClose={panDownToClose}
 			onDismiss={() => onDismiss(stage)}
 			backgroundStyle={{ backgroundColor: THEME[colorScheme].card }}
@@ -96,7 +96,7 @@ function StageSheet({
 				backgroundColor: THEME[colorScheme].muted,
 			}}
 		>
-			{!hasSnapPoints ? <BottomSheetView>{children}</BottomSheetView> : children}
+			{isDynamic ? <BottomSheetView>{children}</BottomSheetView> : children}
 		</BottomSheetModal>
 	);
 }

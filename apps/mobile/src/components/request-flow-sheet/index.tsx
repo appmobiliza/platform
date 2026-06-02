@@ -1,22 +1,13 @@
-import { useCallback, useMemo } from "react";
-
-import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
-import {
-	CircleX,
-	MapPin,
-	MessageSquareText,
-	Search,
-} from "lucide-react-native";
+import { MapPin, MessageSquareText, Search } from "lucide-react-native";
 import {
 	ActivityIndicator,
-	Platform,
 	Pressable,
 	TextInput,
 	useColorScheme,
 	View,
 } from "react-native";
 
-import { Address, AddressRoute } from "@/components/address";
+import { AddressRoute } from "@/components/address";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -82,7 +73,7 @@ function RequestFlowSheet() {
 				>
 					<Pressable
 						className={cn(
-							"justify-between px-3 dark:bg-input/50 border-border dark:border-input bg-red-500 flex h-11 w-full min-w-0 flex-row items-center rounded-md border py-1 text-base text-foreground shadow-sm shadow-black/5 sm:h-9 pl-3",
+							"justify-between px-3 dark:bg-input/50 border-border dark:border-input flex h-11 w-full min-w-0 flex-row items-center rounded-md border py-1 text-base text-foreground shadow-sm shadow-black/5 sm:h-9 pl-3",
 						)}
 						onPress={() => transitionTo("destination-selection")}
 					>
