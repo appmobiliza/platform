@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
+import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import { MapPin, Search } from "lucide-react-native";
 import { TextInput, TouchableOpacity, View } from "react-native";
 
@@ -36,9 +37,51 @@ function DestinationSelector({
 		);
 	}, [searchQuery]);
 
+	const renderItem = useCallback(
+		({ item }: { item: (typeof ufalPoints)[number] }) => (
+			<TouchableOpacity
+				activeOpacity={0.7}
+				onPress={() => onSelectDestination(item.name)}
+				className={cn(
+					"flex-row items-center gap-4 rounded-lg p-3",
+					selectedDestination === item.name
+						? "bg-input"
+						: "border-border bg-card border",
+				)}
+			>
+				<View className="w-12 items-center justify-center rounded-md bg-primary p-2">
+					<Icon icon={MapPin} size={18} color="--foreground" />
+				</View>
+				<View className="flex-1">
+					<Text className="text-base font-bold" numberOfLines={1}>
+						{item.name}
+					</Text>
+					{item.abbrev && (
+						<Text className="mt-0.5 text-xs" numberOfLines={1}>
+							{item.abbrev}
+						</Text>
+					)}
+				</View>
+			</TouchableOpacity>
+		),
+		[onSelectDestination, selectedDestination],
+	);
+
+	const keyExtractor = useCallback(
+		(item: (typeof ufalPoints)[number]) => item.name,
+		[],
+	);
+
+	const emptyMessage = !searchQuery.trim()
+		? "Digite para buscar locais no campus"
+		: "Nenhum local encontrado";
+
 	return (
-		<View className={cn("gap-4", className)}>
-			<View className="relative">
+		<BottomSheetFlatList
+			data={filteredLocations}
+			keyExtractor={keyExtractor}
+			renderItem={renderItem}
+			ListHeaderComponent={<View className="relative">
 				<TextInput
 					placeholder="Buscar local..."
 					value={searchQuery}
@@ -49,58 +92,16 @@ function DestinationSelector({
 				<View className="absolute left-3 top-1/2 -translate-y-1/2">
 					<Icon icon={Search} size={20} color="--muted-foreground" />
 				</View>
-			</View>
-
-			{!searchQuery.trim() ? (
+			</View>}
+			ListEmptyComponent={
 				<Text className="py-4 text-center text-muted-foreground">
-					Digite para buscar locais no campus
+					{emptyMessage}
 				</Text>
-			) : filteredLocations.length === 0 ? (
-				<Text className="py-4 text-center text-muted-foreground">
-					Nenhum local encontrado
-				</Text>
-			) : (
-				<View className="gap-2">
-					{filteredLocations.map((point) => (
-						<TouchableOpacity
-							key={point.name}
-							activeOpacity={0.7}
-							onPress={() => onSelectDestination(point.name)}
-							className={cn(
-								"flex-row items-center gap-4 rounded-lg p-3",
-								selectedDestination === point.name
-									? "bg-input"
-									: "border-border bg-card border",
-							)}
-						>
-							<View className="w-12 items-center justify-center rounded-md bg-primary p-2">
-								<Icon
-									icon={MapPin}
-									size={18}
-									color="--foreground"
-								/>
-							</View>
-							<View className="flex-1">
-								<Text
-									className="text-base font-bold"
-									numberOfLines={1}
-								>
-									{point.name}
-								</Text>
-								{point.abbrev && (
-									<Text
-										className="mt-0.5 text-xs"
-										numberOfLines={1}
-									>
-										{point.abbrev}
-									</Text>
-								)}
-							</View>
-						</TouchableOpacity>
-					))}
-				</View>
-			)}
-		</View>
+			}
+			contentContainerStyle={{ gap: 8 }}
+			keyboardShouldPersistTaps="handled"
+			showsVerticalScrollIndicator={false}
+		/>
 	);
 }
 

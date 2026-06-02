@@ -4,13 +4,14 @@ import { View } from "react-native";
 
 import { Text } from "@/components/ui/text";
 
+import { useUnstableNativeVariable } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
 import { FromMarker, ToMarker } from "@/assets/route";
 
 interface AddressProps {
 	className?: string;
-	label: string;
+	label?: string;
 	description?: string;
 	marker: "from" | "to";
 	children?: React.ReactNode;
@@ -27,7 +28,8 @@ function Address({
 	children,
 	maxLines,
 }: AddressProps) {
-	const sizePx = size === "sm" ? 12 : size === "md" ? 24 : 36;
+	const sizePx = size === "sm" ? 12 : size === "md" ? 28 : 32;
+	const primaryColor = useUnstableNativeVariable("--primary");
 
 	return (
 		<View className={cn("w-full flex-row items-center gap-4", className)}>
@@ -38,9 +40,17 @@ function Address({
 				})}
 			>
 				{marker === "from" ? (
-					<FromMarker width={sizePx} />
+					<FromMarker
+						width={sizePx}
+						height={sizePx}
+						fill={primaryColor}
+					/>
 				) : (
-					<ToMarker width={sizePx} />
+					<ToMarker
+						width={sizePx}
+						height={sizePx}
+						fill={primaryColor}
+					/>
 				)}
 			</View>
 			<View className="min-w-0 flex-1 flex-row items-center justify-between gap-4">
@@ -74,13 +84,13 @@ export type AddressRouteProps = {
 	className?: string;
 	shouldShowRoute?: boolean;
 	from: {
-		label: string;
+		label?: string;
 		description?: string;
 		children?: React.ReactNode;
 		className?: string;
 	};
 	to: {
-		label: string;
+		label?: string;
 		description?: string;
 		children?: React.ReactNode;
 		className?: string;
@@ -94,7 +104,7 @@ function AddressRoute({
 	shouldShowRoute,
 	from,
 	to,
-	maxLines,
+	maxLines = 2,
 	size,
 }: AddressRouteProps) {
 	return (

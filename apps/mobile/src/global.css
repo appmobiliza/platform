@@ -81,6 +81,8 @@
 	/* spacing */
 	--spacing: calc(var(--rem) / 4);
 
+	--font-sans: "Atkinson Hyperlegible Next";
+
 	/* font sizes */
 	--text-xs: calc(var(--rem) * 0.75);
 	--text-sm: calc(var(--rem) * 0.875);

@@ -1,5 +1,6 @@
 import { Stack } from "expo-router";
-// import * as SplashScreen from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import "../global.css";
 
@@ -13,10 +14,10 @@ import { THEME } from "@/lib/theme";
 import { ThemeProvider } from "@/providers/theme-provider";
 
 // Set the animation options. This is optional.
-/* SplashScreen.setOptions({
+SplashScreen.setOptions({
 	duration: 1000,
 	fade: true,
-}); */
+});
 
 export default function RootLayout() {
 	const isLoggedIn = useIsLoggedIn();
@@ -31,21 +32,23 @@ export default function RootLayout() {
 		<GestureHandlerRootView style={{ flex: 1, backgroundColor: bgColor }}>
 			<ThemeProvider>
 				<BottomSheetModalProvider>
-					<Stack
-						screenOptions={{
-							headerShown: false,
-							contentStyle: { backgroundColor: bgColor },
-						}}
-					>
-						<Stack.Protected guard={isLoggedIn}>
-							<Stack.Screen name="(tabs)" />
-						</Stack.Protected>
+					<KeyboardProvider>
+						<Stack
+							screenOptions={{
+								headerShown: false,
+								contentStyle: { backgroundColor: bgColor },
+							}}
+						>
+							<Stack.Protected guard={isLoggedIn}>
+								<Stack.Screen name="(tabs)" />
+							</Stack.Protected>
 
-						<Stack.Protected guard={!isLoggedIn}>
-							<Stack.Screen name="auth" />
-							<Stack.Screen name="onboarding" />
-						</Stack.Protected>
-					</Stack>
+							<Stack.Protected guard={!isLoggedIn}>
+								<Stack.Screen name="auth" />
+								<Stack.Screen name="onboarding" />
+							</Stack.Protected>
+						</Stack>
+					</KeyboardProvider>
 				</BottomSheetModalProvider>
 			</ThemeProvider>
 		</GestureHandlerRootView>

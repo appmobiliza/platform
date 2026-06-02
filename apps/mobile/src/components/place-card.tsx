@@ -10,7 +10,7 @@ interface PlaceCardProps {
 	title: string;
 	subtitle: string;
 	icon: {
-		name: string;
+		name: "clock" | "star" | "map";
 		className?: string;
 		label?: string;
 	};
@@ -26,10 +26,8 @@ export const PlaceCard = ({
 	onPress,
 }: PlaceCardProps) => {
 	const { name, className: iconClassName, label } = icon;
-	const iconType =
-		name === "clock" ? "clock" : name === "star" ? "star" : "map";
 	const iconComponent =
-		iconType === "clock" ? Clock : iconType === "star" ? Star : MapPin;
+		name === "clock" ? Clock : name === "star" ? Star : MapPin;
 
 	return (
 		<TouchableOpacity

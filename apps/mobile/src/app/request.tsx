@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { Pressable, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import MapView from "@/components/map/map-view";
 import { RequestFlowSheet } from "@/components/request-flow-sheet";
@@ -14,11 +15,17 @@ const scholar = {
 
 export default function RequestScreen() {
 	const router = useRouter();
+	const insets = useSafeAreaInsets();
 
 	return (
 		<View className="flex-1 bg-background overflow-hidden">
 			<MapView scholar={scholar} />
-			<View className="relative z-10 flex-row items-start gap-4 px-4 pt-4">
+			<View
+				className="absolute top-0 left-0 z-10 flex-row items-start gap-4 px-4 pt-4"
+				style={{
+					paddingTop: insets.top + 24,
+				}}
+			>
 				<Pressable
 					className="shrink-0 p-3 bg-secondary rounded-full shadow-sm shadow-secondary/20 mt-4"
 					onPress={() => router.back()}
@@ -29,7 +36,7 @@ export default function RequestScreen() {
 					<Text
 						variant={"h1"}
 						className="text-foreground text-left"
-						numberOfLines={1}
+						numberOfLines={2}
 					>
 						Campus A.C Simões
 					</Text>

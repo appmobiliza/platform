@@ -31,12 +31,12 @@ function useRequestFlow() {
 		"destination-selection",
 	);
 
-	const [destination, setDestination] =
+	const [destinationValue, setDestinationValue] =
 		React.useState("Biblioteca Central");
-	const [originAbbreviation, setOriginAbbreviation] = React.useState(
+	const [originLabel, setOriginLabel] = React.useState(
 		"Instituto de Computação",
 	);
-	const [origin, setOrigin] = React.useState(
+	const [originSummary, setOriginSummary] = React.useState(
 		"Instituto de Computação, UFAL",
 	);
 	const [message, setMessage] = React.useState("");
@@ -61,7 +61,7 @@ function useRequestFlow() {
 	);
 
 	const exitFlow = React.useCallback(() => {
-		router.replace("/");
+		router.back();
 	}, [router]);
 
 	const dismissAndExit = React.useCallback(() => {
@@ -111,7 +111,7 @@ function useRequestFlow() {
 
 		const timer = setTimeout(() => {
 			transitionTo("trip");
-		}, 500);
+		}, 1800);
 
 		return () => clearTimeout(timer);
 	}, [activeStage, transitionTo]);
@@ -120,18 +120,18 @@ function useRequestFlow() {
 		activeStage,
 		destinationRef,
 		destinationSelectionRef,
-		destinationValue: destination,
+		destinationValue,
 		dismissAndExit,
 		handleDismiss,
 		message,
-		originLabel: originAbbreviation,
-		originSummary: origin,
+		originLabel,
+		originSummary,
 		refs,
 		searchingRef,
-		setDestinationValue: setDestination,
+		setDestinationValue,
 		setMessage,
-		setOriginLabel: setOriginAbbreviation,
-		setOriginSummary: setOrigin,
+		setOriginLabel,
+		setOriginSummary,
 		startConfirmRef,
 		transitionTo,
 		tripRef,
