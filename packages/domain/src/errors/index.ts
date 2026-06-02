@@ -2,7 +2,7 @@ export class AppError extends Error {
 	constructor(
 		message: string,
 		public code: string,
-		public statusCode: number = 500
+		public statusCode: number = 500,
 	) {
 		super(message);
 		this.name = "AppError";
@@ -10,7 +10,10 @@ export class AppError extends Error {
 }
 
 export class ValidationError extends AppError {
-	constructor(message: string, public details?: unknown) {
+	constructor(
+		message: string,
+		public details?: unknown,
+	) {
 		super(message, "VALIDATION_ERROR", 400);
 	}
 }

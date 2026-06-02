@@ -21,12 +21,12 @@ import { requestsRouter } from "./routers/requests";
 import { router } from "./trpc/context";
 
 export const appRouter = router({
-  requests: requestsRouter,
-  profiles: profilesRouter,
-  locations: locationsRouter,
-  notifications: notificationsRouter,
-  metrics: metricsRouter,
-  favorites: favoritesRouter,
+	requests: requestsRouter,
+	profiles: profilesRouter,
+	locations: locationsRouter,
+	notifications: notificationsRouter,
+	metrics: metricsRouter,
+	favorites: favoritesRouter,
 });
 
 export type AppRouter = typeof appRouter;

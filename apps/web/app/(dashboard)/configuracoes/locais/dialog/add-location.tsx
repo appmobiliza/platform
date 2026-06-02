@@ -63,8 +63,8 @@ export function AddLocationDialog({ children, className }: Props) {
 					<DialogHeader>
 						<DialogTitle>Adicionar local</DialogTitle>
 						<DialogDescription>
-							Cadastre um ponto de referência usado nas solicitações
-							de deslocamento.
+							Cadastre um ponto de referência usado nas
+							solicitações de deslocamento.
 						</DialogDescription>
 					</DialogHeader>
 					<FieldGroup>
@@ -137,7 +137,10 @@ export function AddLocationDialog({ children, className }: Props) {
 								Cancelar
 							</Button>
 						</DialogClose>
-						<Button type="submit" disabled={createLocation.isPending}>
+						<Button
+							type="submit"
+							disabled={createLocation.isPending}
+						>
 							{createLocation.isPending
 								? "Salvando..."
 								: "Salvar local"}

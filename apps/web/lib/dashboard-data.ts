@@ -40,7 +40,15 @@ export type ManagerRequest = {
 export function getCurrentMonthRange() {
 	const now = new Date();
 	const from = new Date(now.getFullYear(), now.getMonth(), 1);
-	const to = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+	const to = new Date(
+		now.getFullYear(),
+		now.getMonth() + 1,
+		0,
+		23,
+		59,
+		59,
+		999,
+	);
 
 	return {
 		from: from.toISOString(),
@@ -65,10 +73,14 @@ export function toDate(value: ApiDate) {
 	return value instanceof Date ? value : new Date(value);
 }
 
-export function getRouteLabel(request: Pick<ManagerRequest, "originLocation" | "destinationLocation">) {
-	const origin = request.originLocation.abbreviation || request.originLocation.name;
+export function getRouteLabel(
+	request: Pick<ManagerRequest, "originLocation" | "destinationLocation">,
+) {
+	const origin =
+		request.originLocation.abbreviation || request.originLocation.name;
 	const destination =
-		request.destinationLocation.abbreviation || request.destinationLocation.name;
+		request.destinationLocation.abbreviation ||
+		request.destinationLocation.name;
 
 	return `${origin} → ${destination}`;
 }
@@ -107,7 +119,9 @@ export function formatDurationShort(seconds: number | null | undefined) {
 	return `${minutes}m`;
 }
 
-export function getServiceStatus(status: ManagerRequest["status"]): ServiceStatus {
+export function getServiceStatus(
+	status: ManagerRequest["status"],
+): ServiceStatus {
 	if (status === "completed") {
 		return "concluded";
 	}
@@ -119,7 +133,9 @@ export function getServiceStatus(status: ManagerRequest["status"]): ServiceStatu
 	return "in_progress";
 }
 
-export function mapRequestToServiceEntry(request: ManagerRequest): ServiceEntry {
+export function mapRequestToServiceEntry(
+	request: ManagerRequest,
+): ServiceEntry {
 	const attendance = request.attendance;
 
 	return {

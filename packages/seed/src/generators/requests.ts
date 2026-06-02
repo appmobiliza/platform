@@ -30,7 +30,13 @@ import type { SeedContext, SeedGenerator } from "../lib/types";
 
 // ─── Tipos dos Status ─────────────────────────────────────────────────────────
 
-type RequestStatus = "pending" | "accepted" | "ongoing" | "completed" | "cancelled" | "unattended";
+type RequestStatus =
+	| "pending"
+	| "accepted"
+	| "ongoing"
+	| "completed"
+	| "cancelled"
+	| "unattended";
 
 interface StatusDistribution {
 	status: RequestStatus;
@@ -43,7 +49,7 @@ const STATUS_DISTRIBUTION: StatusDistribution[] = [
 	{ status: "accepted", percentage: 0.14, hasAttendance: true },
 	{ status: "ongoing", percentage: 0.18, hasAttendance: true },
 	{ status: "completed", percentage: 0.22, hasAttendance: true },
-	{ status: "cancelled", percentage: 0.10, hasAttendance: false },
+	{ status: "cancelled", percentage: 0.1, hasAttendance: false },
 	{ status: "unattended", percentage: 0.08, hasAttendance: false },
 ];
 
@@ -97,7 +103,12 @@ export const requestGenerator: SeedGenerator = {
 			const locationIds = locations.map((l) => l.id);
 			const scholarIds = scholars.map((s) => s.id);
 
-			const requests = generateRequests(count, status, studentIds, locationIds);
+			const requests = generateRequests(
+				count,
+				status,
+				studentIds,
+				locationIds,
+			);
 			await db.insert(serviceRequest).values(requests);
 
 			requestCount += requests.length;
@@ -177,12 +188,16 @@ function generateRequests(
 		const studentProfileId = faker.helpers.arrayElement(studentIds);
 		const [originId, destinationId] = pickTwoDistinct(locationIds);
 		const daysAgo = faker.number.int({ min: 1, max: 30 });
-		const createdAt = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+		const createdAt = new Date(
+			now.getTime() - daysAgo * 24 * 60 * 60 * 1000,
+		);
 
 		let respondedAt: Date | null = null;
 		if (status !== "pending") {
 			const responseDelay = faker.number.int({ min: 1, max: 120 }); // minutos
-			respondedAt = new Date(createdAt.getTime() + responseDelay * 60 * 1000);
+			respondedAt = new Date(
+				createdAt.getTime() + responseDelay * 60 * 1000,
+			);
 		}
 
 		const notes = faker.datatype.boolean(0.3)
@@ -233,7 +248,8 @@ function generateAttendances(
 
 	return requests.map((req) => {
 		const scholarProfileId = faker.helpers.arrayElement(scholarIds);
-		const acceptedAt = req.respondedAt ?? new Date(now.getTime() - 60 * 1000);
+		const acceptedAt =
+			req.respondedAt ?? new Date(now.getTime() - 60 * 1000);
 
 		let startedAt: Date | null = null;
 		let completedAt: Date | null = null;
@@ -249,25 +265,27 @@ function generateAttendances(
 		if (req.status === "completed") {
 			const completionDelay = faker.number.int({ min: 5, max: 60 }); // minutos
 			completedAt = new Date(
-				(startedAt ?? acceptedAt).getTime() + completionDelay * 60 * 1000,
+				(startedAt ?? acceptedAt).getTime() +
+					completionDelay * 60 * 1000,
 			);
 			durationSeconds = completionDelay * 60;
 
 			// Avaliação (80% dos concluídos têm avaliação)
 			if (faker.datatype.boolean(0.8)) {
 				rating = faker.number.int({ min: 3, max: 5 });
-				ratingComment = rating >= 4
-					? faker.helpers.arrayElement([
-							"Atendimento excelente, muito atencioso",
-							"Ótimo, chegou rápido e foi muito prestativo",
-							"Perfeito, me ajudou muito como sempre",
-							"Muito bom, obrigado pelo apoio",
-						])
-					: faker.helpers.arrayElement([
-							"Bom, mas demorou um pouco para chegar",
-							"Atendimento adequado, poderia ser mais ágil",
-							"Foi ok, mas já tive atendimentos melhores",
-						]);
+				ratingComment =
+					rating >= 4
+						? faker.helpers.arrayElement([
+								"Atendimento excelente, muito atencioso",
+								"Ótimo, chegou rápido e foi muito prestativo",
+								"Perfeito, me ajudou muito como sempre",
+								"Muito bom, obrigado pelo apoio",
+							])
+						: faker.helpers.arrayElement([
+								"Bom, mas demorou um pouco para chegar",
+								"Atendimento adequado, poderia ser mais ágil",
+								"Foi ok, mas já tive atendimentos melhores",
+							]);
 			}
 		}
 
@@ -286,5 +304,3 @@ function generateAttendances(
 		};
 	});
 }
-
-

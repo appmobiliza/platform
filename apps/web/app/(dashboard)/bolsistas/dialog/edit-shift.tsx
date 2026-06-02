@@ -1,27 +1,17 @@
 "use client";
 
-import type * as React from "react";
-
 import {
 	campusValues,
 	courseValues,
 	scholarShiftLabels,
 	scholarShiftValues,
 } from "@mobiliza/contracts";
+
 import { InfoIcon } from "lucide-react";
+import type * as React from "react";
 
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-	Combobox,
-	ComboboxContent,
-	ComboboxEmpty,
-	ComboboxInput,
-	ComboboxItem,
-	ComboboxList,
-	ComboboxTrigger,
-	ComboboxValue,
-} from "@/components/ui/combobox";
 import {
 	Dialog,
 	DialogClose,
@@ -32,8 +22,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Field, FieldGroup } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import {
 	Select,

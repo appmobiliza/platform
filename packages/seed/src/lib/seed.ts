@@ -12,7 +12,12 @@ import { sql } from "drizzle-orm";
 
 import { db } from "./db";
 import { setFakerSeed } from "./faker";
-import type { SeedConfig, SeedContext, SeedCounters, SeedGenerator } from "./types";
+import type {
+	SeedConfig,
+	SeedContext,
+	SeedCounters,
+	SeedGenerator,
+} from "./types";
 
 // ─── Configuração Padrão ──────────────────────────────────────────────────────
 
@@ -221,11 +226,17 @@ export class SeedRunner {
 					const elapsed = ((Date.now() - genStart) / 1000).toFixed(2);
 
 					const genCounters = Object.entries(this.counters)
-						.filter(([key]) => key.startsWith(`${gen.name}.`) || key === gen.name)
+						.filter(
+							([key]) =>
+								key.startsWith(`${gen.name}.`) ||
+								key === gen.name,
+						)
 						.map(([key, val]) => `${key}=${val}`)
 						.join(", ");
 
-					logSuccess(`${gen.name} concluído (${elapsed}s) — ${genCounters}`);
+					logSuccess(
+						`${gen.name} concluído (${elapsed}s) — ${genCounters}`,
+					);
 				} catch (err) {
 					logError(`Falha no generator "${gen.name}"`, err);
 					throw err;
@@ -268,10 +279,14 @@ export class SeedRunner {
 
 		for (const table of tables) {
 			try {
-				await db.execute(sql`TRUNCATE TABLE ${sql.identifier(table)} CASCADE`);
+				await db.execute(
+					sql`TRUNCATE TABLE ${sql.identifier(table)} CASCADE`,
+				);
 				log(`  ↳ ${table}: limpa`);
 			} catch (err) {
-				logWarn(`  ↳ ${table}: erro ao limpar (pode não existir) — ${err}`);
+				logWarn(
+					`  ↳ ${table}: erro ao limpar (pode não existir) — ${err}`,
+				);
 			}
 		}
 

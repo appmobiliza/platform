@@ -14,7 +14,7 @@ import { user } from "@mobiliza/db/schema";
 import { uuidv7 } from "uuidv7";
 
 import { db } from "../lib/db";
-import { faker, } from "../lib/faker";
+import { faker } from "../lib/faker";
 import type { SeedContext, SeedGenerator } from "../lib/types";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -77,17 +77,20 @@ function generateRoleUsers(
 
 		// Timestamps ligeiramente diferentes para parecer real
 		const createdAt = new Date(
-			now.getTime() - faker.number.int({ min: 0, max: 90 * 24 * 60 * 60 * 1000 }),
+			now.getTime() -
+				faker.number.int({ min: 0, max: 90 * 24 * 60 * 60 * 1000 }),
 		);
 		const updatedAt = new Date(
-			createdAt.getTime() + faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }),
+			createdAt.getTime() +
+				faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }),
 		);
 
 		return {
 			id: uuidv7(),
 			name: fullName,
 			email,
-			emailVerified: role === "manager" ? true : faker.datatype.boolean(0.7),
+			emailVerified:
+				role === "manager" ? true : faker.datatype.boolean(0.7),
 			role,
 			createdAt,
 			updatedAt,

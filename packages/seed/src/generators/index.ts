@@ -34,7 +34,6 @@ export const generators: SeedGenerator[] = [
 	requestGenerator,
 ];
 
-
 export { locationGenerator } from "./locations";
 export { requestGenerator } from "./requests";
 export { scholarGenerator } from "./scholars";

@@ -1,10 +1,5 @@
 import { relations } from "drizzle-orm";
-import {
-	integer,
-	pgTable,
-	text,
-	timestamp
-} from "drizzle-orm/pg-core";
+import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 import { requestStatusEnum } from "./enums";
 import { campusLocation } from "./locations";
@@ -132,14 +127,17 @@ export const serviceRequestRelations = relations(serviceRequest, ({ one }) => ({
 	}),
 }));
 
-export const serviceAttendanceRelations = relations(serviceAttendance, ({ one }) => ({
-	request: one(serviceRequest, {
-		fields: [serviceAttendance.requestId],
-		references: [serviceRequest.id],
-		relationName: "serviceAttendance",
+export const serviceAttendanceRelations = relations(
+	serviceAttendance,
+	({ one }) => ({
+		request: one(serviceRequest, {
+			fields: [serviceAttendance.requestId],
+			references: [serviceRequest.id],
+			relationName: "serviceAttendance",
+		}),
+		scholarProfile: one(scholarProfile, {
+			fields: [serviceAttendance.scholarProfileId],
+			references: [scholarProfile.id],
+		}),
 	}),
-	scholarProfile: one(scholarProfile, {
-		fields: [serviceAttendance.scholarProfileId],
-		references: [scholarProfile.id],
-	}),
-}));
+);

@@ -1,6 +1,5 @@
 import { useRouter } from "expo-router";
 import {
-	CirclePlay,
 	Clock,
 	MapPin,
 	Palmtree,
@@ -297,7 +296,7 @@ export function ScholarHome() {
 				).getTime() - currentDate.getTime();
 	const hours = Math.floor(remainingTime / (1000 * 60 * 60));
 
-	const shiftStarted = shiftState === "during";
+	const _shiftStarted = shiftState === "during";
 
 	return (
 		<ScrollView contentContainerClassName="flex-1 bg-background gap-4">
