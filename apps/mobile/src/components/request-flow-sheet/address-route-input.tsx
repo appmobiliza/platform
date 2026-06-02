@@ -1,8 +1,8 @@
 // address-route-input.tsx
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
-import { CircleX, MapPin, Navigation, Route, X } from "lucide-react-native";
+import { CircleX, MapPin, Navigation, Route } from "lucide-react-native";
 import { Pressable, TextInput, View } from "react-native";
 
 import { Icon } from "@/components/ui/icon";
@@ -164,6 +164,14 @@ function AddressRouteInput({
 		() => setDestinationQuery(""),
 		[],
 	);
+
+	// Auto-focus the destination input when the sheet opens
+	useEffect(() => {
+		setActiveField("destination");
+		requestAnimationFrame(() => {
+			destinationInputRef.current?.focus();
+		});
+	}, []);
 
 	const suggestions = useMemo<SuggestionItem[]>(() => {
 		const query = (

@@ -1,30 +1,12 @@
-import * as Location from "expo-location";
 import * as React from "react";
 
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 
-import { ufalPoints } from "@/constants/locations";
+import { getNearestPoint } from "@/lib/location-store";
 
 import type { Place, Stage } from "./types";
-import { useEffect } from "react";
 
-function calculateDistance(
-	lat1: number,
-	lon1: number,
-	lat2: number,
-	lon2: number,
-): number {
-	const R = 6371e3;
-	const φ1 = (lat1 * Math.PI) / 180;
-	const φ2 = (lat2 * Math.PI) / 180;
-	const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-	const Δλ = ((lon2 - lon1) * Math.PI) / 180;
-	const x =
-		Math.sin(Δφ / 2) ** 2 +
-		Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
-	return 2 * R * Math.asin(Math.sqrt(x));
-}
 
 function useRequestFlow() {
 	const router = useRouter();
@@ -115,67 +97,15 @@ function useRequestFlow() {
 		[exitFlow, openStage, refs],
 	);
 
+	// Initialize origin from the nearest point calculated on the Home screen
 	React.useEffect(() => {
-		async function setOriginFromLocation() {
-			try {
-				const { status } =
-					await Location.getForegroundPermissionsAsync();
-				if (status !== "granted") {
-					return;
-				}
-
-				if (ufalPoints.length === 0) {
-					return;
-				}
-
-				const position = await Location.getCurrentPositionAsync({
-					accuracy: Location.Accuracy.Balanced,
-				});
-
-				const userLat = position.coords.latitude;
-				const userLng = position.coords.longitude;
-
-				let closestPoint = ufalPoints[0]!;
-				let minDistance = calculateDistance(
-					userLat,
-					userLng,
-					closestPoint.latitude,
-					closestPoint.longitude,
-				);
-
-				for (let i = 1; i < ufalPoints.length; i++) {
-					const point = ufalPoints[i];
-					if (!point) continue;
-					const dist = calculateDistance(
-						userLat,
-						userLng,
-						point.latitude,
-						point.longitude,
-					);
-					if (dist < minDistance) {
-						minDistance = dist;
-						closestPoint = point;
-					}
-				}
-
-				setOrigin({
-					name: closestPoint.name,
-					abbreviation: closestPoint.abbrev,
-					latitude: closestPoint.latitude,
-					longitude: closestPoint.longitude,
-				});
-			} catch (error) {
-				console.warn(
-					"Failed to get current location for origin:",
-					error,
-				);
-			}
+		const stored = getNearestPoint();
+		if (stored) {
+			setOrigin(stored);
 		}
-
-		setOriginFromLocation();
 	}, []);
 
-	useEffect(() => {
+	React.useEffect(() => {
 		openStage("destination-selection");
 	}, []);
 
