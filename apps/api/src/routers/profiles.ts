@@ -6,6 +6,7 @@
 import {
 	CreateScholarSchema,
 	CreateStudentSchema,
+	UpdateScholarSchema,
 	UpdateStudentSchema,
 } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
@@ -508,6 +509,32 @@ export const profilesRouter = router({
 				.returning();
 
 			return profile;
+		}),
+
+	/**
+	 * Atualiza o perfil do bolsista autenticado.
+	 */
+	updateScholar: scholarProcedure
+		.meta({ openapi: { method: "PATCH", path: "/profiles/scholar" } })
+		.input(UpdateScholarSchema)
+		.output(z.any())
+		.mutation(async ({ ctx, input }) => {
+			const profile = await db.query.scholarProfile.findFirst({
+				where: eq(schema.scholarProfile.userId, ctx.session.user.id),
+			});
+
+			if (!profile) throw new TRPCError({ code: "NOT_FOUND" });
+
+			const [updated] = await db
+				.update(schema.scholarProfile)
+				.set({
+					...input,
+					updatedAt: new Date(),
+				})
+				.where(eq(schema.scholarProfile.id, profile.id))
+				.returning();
+
+			return updated;
 		}),
 
 	/**
