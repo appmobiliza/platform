@@ -4,6 +4,7 @@ import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 
 import { trpc } from "@/lib/trpc/client";
+
 import type { Stage } from "./types";
 
 function useRequestFlow() {
@@ -15,16 +16,20 @@ function useRequestFlow() {
 	const searchingRef = React.useRef<BottomSheetModal>(null);
 	const tripRef = React.useRef<BottomSheetModal>(null);
 
-	const refs = React.useMemo(() => ({
-		destination: destinationRef,
-		"destination-selection": destinationSelectionRef,
-		"start-confirm": startConfirmRef,
-		searching: searchingRef,
-		trip: tripRef,
-	} as const satisfies Record<
-		Stage,
-		React.RefObject<BottomSheetModal | null>
-	>), []);
+	const refs = React.useMemo(
+		() =>
+			({
+				destination: destinationRef,
+				"destination-selection": destinationSelectionRef,
+				"start-confirm": startConfirmRef,
+				searching: searchingRef,
+				trip: tripRef,
+			}) as const satisfies Record<
+				Stage,
+				React.RefObject<BottomSheetModal | null>
+			>,
+		[],
+	);
 
 	const activeStageRef = React.useRef<Stage>("destination-selection");
 	const queuedStageRef = React.useRef<Stage | null>(null);
@@ -43,10 +48,13 @@ function useRequestFlow() {
 	const [message, setMessage] = React.useState("");
 
 	// Estado real da requisição
-	const [activeRequestId, setActiveRequestId] = React.useState<string | null>(null);
+	const [activeRequestId, setActiveRequestId] = React.useState<string | null>(
+		null,
+	);
 
 	// Mutação para criar a solicitação no backend
-	const { mutateAsync: createRequest, isPending: isCreating } = trpc.requests.create.useMutation();
+	const { mutateAsync: createRequest, isPending: isCreating } =
+		trpc.requests.create.useMutation();
 
 	const openStage = React.useCallback(
 		(stage: Stage) => {
@@ -67,20 +75,23 @@ function useRequestFlow() {
 		[refs],
 	);
 
-	const confirmRequest = React.useCallback(async (originId: string, destinationId: string) => {
-		try {
-			const result = await createRequest({
-				originLocationId: originId,
-				destinationLocationId: destinationId,
-				notes: message,
-			});
-			setActiveRequestId(result.id);
-			transitionTo("searching");
-		} catch (error) {
-			console.error("Erro ao criar solicitação", error);
-			// Idealmente mostrar um Toast de erro aqui
-		}
-	}, [createRequest, message, transitionTo]);
+	const confirmRequest = React.useCallback(
+		async (originId: string, destinationId: string) => {
+			try {
+				const result = await createRequest({
+					originLocationId: originId,
+					destinationLocationId: destinationId,
+					notes: message,
+				});
+				setActiveRequestId(result.id);
+				transitionTo("searching");
+			} catch (error) {
+				console.error("Erro ao criar solicitação", error);
+				// Idealmente mostrar um Toast de erro aqui
+			}
+		},
+		[createRequest, message, transitionTo],
+	);
 
 	// Escuta atualizações de status via WebSockets
 	trpc.requests.onStatusChange.useSubscription(
@@ -91,12 +102,15 @@ function useRequestFlow() {
 				if (data.status === "accepted") {
 					transitionTo("trip");
 				}
-				if (data.status === "completed" || data.status === "cancelled") {
+				if (
+					data.status === "completed" ||
+					data.status === "cancelled"
+				) {
 					setActiveRequestId(null);
 					exitFlow();
 				}
 			},
-		}
+		},
 	);
 
 	const exitFlow = React.useCallback(() => {

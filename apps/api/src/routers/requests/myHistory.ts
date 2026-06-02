@@ -4,7 +4,6 @@ import * as schema from "@mobiliza/db/schema";
 import { z } from "zod";
 
 import { protectedProcedure } from "../../trpc/context";
-
 import { paginationInput } from "./shared";
 
 export const myHistory = protectedProcedure

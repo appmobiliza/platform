@@ -1,12 +1,12 @@
 /** @type {import('jest').Config} */
 const config = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  roots: ['<rootDir>/src'],
-  testMatch: ['**/__tests__/**/*.test.ts'],
-  moduleNameMapper: {
-    '^@mobiliza/realtime$': '<rootDir>/src/index.ts',
-  },
+	preset: "ts-jest",
+	testEnvironment: "node",
+	roots: ["<rootDir>/src"],
+	testMatch: ["**/__tests__/**/*.test.ts"],
+	moduleNameMapper: {
+		"^@mobiliza/realtime$": "<rootDir>/src/index.ts",
+	},
 };
 
 export default config;

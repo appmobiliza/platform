@@ -51,4 +51,3 @@ export function useUserRole() {
 		() => UserRole.Student,
 	);
 }
-

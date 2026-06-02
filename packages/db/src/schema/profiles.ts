@@ -124,34 +124,43 @@ export type NewStudentDisability = typeof studentDisability.$inferInsert;
 
 // ─── Relations ───────────────────────────────────────────────────────────────
 
-export const studentProfileRelations = relations(studentProfile, ({ one, many }) => ({
-  user: one(user, {
-    fields: [studentProfile.userId],
-    references: [user.id],
-  }),
-  disabilities: many(studentDisability),
-  requests: many(serviceRequest),
-}));
+export const studentProfileRelations = relations(
+	studentProfile,
+	({ one, many }) => ({
+		user: one(user, {
+			fields: [studentProfile.userId],
+			references: [user.id],
+		}),
+		disabilities: many(studentDisability),
+		requests: many(serviceRequest),
+	}),
+);
 
-export const scholarProfileRelations = relations(scholarProfile, ({ one, many }) => ({
-  user: one(user, {
-    fields: [scholarProfile.userId],
-    references: [user.id],
-  }),
-  approvedByUser: one(user, {
-    fields: [scholarProfile.approvedBy],
-    references: [user.id],
-    relationName: "approvedBy",
-  }),
-  attendances: many(serviceAttendance),
-}));
+export const scholarProfileRelations = relations(
+	scholarProfile,
+	({ one, many }) => ({
+		user: one(user, {
+			fields: [scholarProfile.userId],
+			references: [user.id],
+		}),
+		approvedByUser: one(user, {
+			fields: [scholarProfile.approvedBy],
+			references: [user.id],
+			relationName: "approvedBy",
+		}),
+		attendances: many(serviceAttendance),
+	}),
+);
 
-export const studentDisabilityRelations = relations(studentDisability, ({ one }) => ({
-  studentProfile: one(studentProfile, {
-    fields: [studentDisability.studentProfileId],
-    references: [studentProfile.id],
-  }),
-}));
+export const studentDisabilityRelations = relations(
+	studentDisability,
+	({ one }) => ({
+		studentProfile: one(studentProfile, {
+			fields: [studentDisability.studentProfileId],
+			references: [studentProfile.id],
+		}),
+	}),
+);
 
 // ─── Import serviceRequest here for relations ─────────────────────────────────
 import { serviceAttendance, serviceRequest } from "./requests";

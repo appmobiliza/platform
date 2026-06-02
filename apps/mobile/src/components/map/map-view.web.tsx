@@ -1,9 +1,6 @@
 import MapGL, {
 	GeolocateControl,
 	type GeolocateControlInstance,
-	Layer,
-	Marker,
-	Source,
 	type StyleSpecification,
 } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";

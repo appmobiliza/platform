@@ -7,10 +7,10 @@
 import { afterAll, afterEach, beforeAll } from "@jest/globals";
 import * as schema from "@mobiliza/db/schema";
 import { neon } from "@neondatabase/serverless";
-import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
-import * as fs from "fs";
-import * as path from "path";
+
+import * as fs from "node:fs";
+import * as path from "node:path";
 
 // ─── Load .env BEFORE any checks ─────────────────────────────────────────────
 

@@ -1,58 +1,62 @@
-import { renderHook, act, waitFor } from "@testing-library/react-native";
-import { useRequestFlow } from "../use-request-flow";
+import { act, renderHook, waitFor } from "@testing-library/react-native";
+
 import { trpc } from "@/lib/trpc/client";
 
+import { useRequestFlow } from "../use-request-flow";
+
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ back: jest.fn() }),
+	useRouter: () => ({ back: jest.fn() }),
 }));
 
 jest.mock("@/lib/trpc/client", () => ({
-  trpc: {
-    requests: {
-      create: {
-        useMutation: jest.fn(),
-      },
-      onStatusChange: {
-        useSubscription: jest.fn(),
-      }
-    },
-  },
+	trpc: {
+		requests: {
+			create: {
+				useMutation: jest.fn(),
+			},
+			onStatusChange: {
+				useSubscription: jest.fn(),
+			},
+		},
+	},
 }));
 
 describe("useRequestFlow Logic Integration", () => {
-  it("should call trpc.requests.create when transitioning to searching", async () => {
-    const mockMutateAsync = jest.fn().mockResolvedValue({ id: "real-req" });
-    
-    (trpc.requests.create.useMutation as jest.Mock).mockReturnValue({
-      mutateAsync: mockMutateAsync,
-      isPending: false,
-    });
+	it("should call trpc.requests.create when transitioning to searching", async () => {
+		const mockMutateAsync = jest.fn().mockResolvedValue({ id: "real-req" });
 
-    (trpc.requests.onStatusChange.useSubscription as jest.Mock).mockImplementation(() => {});
+		(trpc.requests.create.useMutation as jest.Mock).mockReturnValue({
+			mutateAsync: mockMutateAsync,
+			isPending: false,
+		});
 
-    const { result } = renderHook(() => useRequestFlow());
+		(
+			trpc.requests.onStatusChange.useSubscription as jest.Mock
+		).mockImplementation(() => {});
 
-    await act(async () => {
-      await result.current.confirmRequest("origem_id", "destino_id");
-    });
+		const { result } = renderHook(() => useRequestFlow());
 
-    expect(mockMutateAsync).toHaveBeenCalledWith({
-      originLocationId: "origem_id",
-      destinationLocationId: "destino_id",
-      notes: "",
-    });
+		await act(async () => {
+			await result.current.confirmRequest("origem_id", "destino_id");
+		});
 
-    // O state não atualiza imediatamente após `confirmRequest` porque 
-    // ele depende da re-renderização (isPending/mutateAsync). Em testes de hook, 
-    // force uma re-renderização ou espere pelo próximo frame caso haja batched updates.
-    await act(async () => {
-      result.current.handleDismiss("destination-selection");
-    });
+		expect(mockMutateAsync).toHaveBeenCalledWith({
+			originLocationId: "origem_id",
+			destinationLocationId: "destino_id",
+			notes: "",
+		});
 
-    // Agora o state visual "activeStage" deve estar refletindo a fila
-    await waitFor(() => {
-      expect(result.current.activeRequestId).toBe("real-req");
-      expect(result.current.activeStage).toBe("searching");
-    });
-  });
+		// O state não atualiza imediatamente após `confirmRequest` porque
+		// ele depende da re-renderização (isPending/mutateAsync). Em testes de hook,
+		// force uma re-renderização ou espere pelo próximo frame caso haja batched updates.
+		await act(async () => {
+			result.current.handleDismiss("destination-selection");
+		});
+
+		// Agora o state visual "activeStage" deve estar refletindo a fila
+		await waitFor(() => {
+			expect(result.current.activeRequestId).toBe("real-req");
+			expect(result.current.activeStage).toBe("searching");
+		});
+	});
 });

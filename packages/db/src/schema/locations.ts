@@ -1,11 +1,12 @@
-import {
-  pgTable,
-  text,
-  timestamp,
-  boolean,
-  doublePrecision,
-} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import {
+	boolean,
+	doublePrecision,
+	pgTable,
+	text,
+	timestamp,
+} from "drizzle-orm/pg-core";
+
 import { studentProfile } from "./profiles";
 
 /**
@@ -19,60 +20,60 @@ import { studentProfile } from "./profiles";
  * referência espacial — sem geolocalização em tempo real.
  */
 export const campusLocation = pgTable("campus_location", {
-  id: text("id").primaryKey(),
+	id: text("id").primaryKey(),
 
-  /*
-   * Nome completo exibido na interface e lido pelo leitor de tela.
-   * Ex: "Instituto de Computação", "Restaurante Universitário"
-   */
-  name: text("name").notNull(),
+	/*
+	 * Nome completo exibido na interface e lido pelo leitor de tela.
+	 * Ex: "Instituto de Computação", "Restaurante Universitário"
+	 */
+	name: text("name").notNull(),
 
-  /*
-   * Abreviação usada em listagens compactas e no histórico de atendimentos.
-   * Ex: "IC", "RU", "Biblioteca"
-   */
-  abbreviation: text("abbreviation").notNull(),
+	/*
+	 * Abreviação usada em listagens compactas e no histórico de atendimentos.
+	 * Ex: "IC", "RU", "Biblioteca"
+	 */
+	abbreviation: text("abbreviation").notNull(),
 
-  /*
-   * Descrição de como chegar ao local ou referências úteis para
-   * áudio descrição. Opcional — pode ser preenchida conforme o NAC
-   * for mapeando os pontos.
-   */
-  description: text("description"),
+	/*
+	 * Descrição de como chegar ao local ou referências úteis para
+	 * áudio descrição. Opcional — pode ser preenchida conforme o NAC
+	 * for mapeando os pontos.
+	 */
+	description: text("description"),
 
-  /*
-   * Coordenadas geográficas do local no campus.
-   */
-  latitude: doublePrecision("latitude").notNull(),
-  longitude: doublePrecision("longitude").notNull(),
+	/*
+	 * Coordenadas geográficas do local no campus.
+	 */
+	latitude: doublePrecision("latitude").notNull(),
+	longitude: doublePrecision("longitude").notNull(),
 
-  isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+	isActive: boolean("is_active").notNull().default(true),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+	updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 /**
  * Rotas frequentes salvas pelo estudante para agilizar solicitações.
  */
 export const favoriteRoute = pgTable("favorite_route", {
-  id: text("id").primaryKey(),
-  
-  studentProfileId: text("student_profile_id")
-    .notNull()
-    .references(() => studentProfile.id, { onDelete: "cascade" }),
-    
-  originLocationId: text("origin_location_id")
-    .notNull()
-    .references(() => campusLocation.id, { onDelete: "restrict" }),
-    
-  destinationLocationId: text("destination_location_id")
-    .notNull()
-    .references(() => campusLocation.id, { onDelete: "restrict" }),
-    
-  name: text("name").notNull(),
-  
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+	id: text("id").primaryKey(),
+
+	studentProfileId: text("student_profile_id")
+		.notNull()
+		.references(() => studentProfile.id, { onDelete: "cascade" }),
+
+	originLocationId: text("origin_location_id")
+		.notNull()
+		.references(() => campusLocation.id, { onDelete: "restrict" }),
+
+	destinationLocationId: text("destination_location_id")
+		.notNull()
+		.references(() => campusLocation.id, { onDelete: "restrict" }),
+
+	name: text("name").notNull(),
+
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+	updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export type CampusLocation = typeof campusLocation.$inferSelect;
@@ -81,18 +82,18 @@ export type FavoriteRoute = typeof favoriteRoute.$inferSelect;
 export type NewFavoriteRoute = typeof favoriteRoute.$inferInsert;
 
 export const favoriteRouteRelations = relations(favoriteRoute, ({ one }) => ({
-  studentProfile: one(studentProfile, {
-    fields: [favoriteRoute.studentProfileId],
-    references: [studentProfile.id],
-  }),
-  originLocation: one(campusLocation, {
-    fields: [favoriteRoute.originLocationId],
-    references: [campusLocation.id],
-    relationName: "favoriteOrigin",
-  }),
-  destinationLocation: one(campusLocation, {
-    fields: [favoriteRoute.destinationLocationId],
-    references: [campusLocation.id],
-    relationName: "favoriteDestination",
-  }),
+	studentProfile: one(studentProfile, {
+		fields: [favoriteRoute.studentProfileId],
+		references: [studentProfile.id],
+	}),
+	originLocation: one(campusLocation, {
+		fields: [favoriteRoute.originLocationId],
+		references: [campusLocation.id],
+		relationName: "favoriteOrigin",
+	}),
+	destinationLocation: one(campusLocation, {
+		fields: [favoriteRoute.destinationLocationId],
+		references: [campusLocation.id],
+		relationName: "favoriteDestination",
+	}),
 }));

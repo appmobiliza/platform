@@ -56,7 +56,7 @@ export default function Auth() {
 						<GoogleIcon />
 						<Text>Entrar como Aluno</Text>
 					</Button>
-					
+
 					<Button
 						className="relative"
 						onPress={() => handleLogin("scholar")}

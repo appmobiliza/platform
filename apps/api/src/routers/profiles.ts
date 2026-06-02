@@ -3,12 +3,7 @@
  * aprovação de bolsistas pelo gestor, e toggle de disponibilidade.
  */
 
-import {
-	CreateScholarSchema,
-	CreateStudentSchema,
-	UpdateScholarSchema,
-	UpdateStudentSchema,
-} from "@mobiliza/contracts";
+import { UpdateScholarSchema, UpdateStudentSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
@@ -449,7 +444,12 @@ export const profilesRouter = router({
 			if (disabilityTypes) {
 				await db
 					.delete(schema.studentDisability)
-					.where(eq(schema.studentDisability.studentProfileId, profile.id));
+					.where(
+						eq(
+							schema.studentDisability.studentProfileId,
+							profile.id,
+						),
+					);
 
 				if (disabilityTypes.length > 0) {
 					await db.insert(schema.studentDisability).values(

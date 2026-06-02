@@ -3,7 +3,6 @@ import { RotateCcw, Star } from "lucide-react-native";
 import { Text, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/ui/icon";
 
 // import MapView from "@/components/ui/map";
 

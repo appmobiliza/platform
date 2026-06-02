@@ -25,7 +25,9 @@ export function GoogleSignInButton({ googleLogo }: GoogleSignInButtonProps) {
 			});
 		} catch (error) {
 			console.error("Erro ao fazer login com Google:", error);
-			toast.error("Ocorreu um erro ao tentar entrar com o Google. Por favor, tente novamente.");
+			toast.error(
+				"Ocorreu um erro ao tentar entrar com o Google. Por favor, tente novamente.",
+			);
 			setIsSigningIn(false);
 		}
 	}

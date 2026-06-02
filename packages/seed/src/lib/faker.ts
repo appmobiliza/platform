@@ -59,10 +59,7 @@ export function generateCPF(): string {
  * @returns dígito verificador (0-9)
  */
 function computeCheckDigit(digits: number[], startWeight: number): number {
-	const sum = digits.reduce(
-		(acc, d, i) => acc + d * (startWeight - i),
-		0,
-	);
+	const sum = digits.reduce((acc, d, i) => acc + d * (startWeight - i), 0);
 	const remainder = sum % 11;
 	return remainder < 2 ? 0 : 11 - remainder;
 }
@@ -72,7 +69,10 @@ function computeCheckDigit(digits: number[], startWeight: number): number {
  */
 export function generateEnrollment(): string {
 	const year = faker.number.int({ min: 2020, max: 2025 });
-	const sequential = faker.string.numeric({ length: 5, allowLeadingZeros: true });
+	const sequential = faker.string.numeric({
+		length: 5,
+		allowLeadingZeros: true,
+	});
 	return `${year}${sequential}`;
 }
 
@@ -82,7 +82,10 @@ export function generateEnrollment(): string {
 export function generatePhone(): string {
 	const ddd = faker.string.numeric({ length: 2, allowLeadingZeros: true });
 	const prefix = faker.string.numeric({ length: 1, allowLeadingZeros: true });
-	const suffix = faker.string.numeric({ length: 7, allowLeadingZeros: false });
+	const suffix = faker.string.numeric({
+		length: 7,
+		allowLeadingZeros: false,
+	});
 
 	// Celular brasileiro: (DDD) 9XXXX-XXXX
 	return `(${ddd}) 9${prefix}${suffix.slice(0, 4)}-${suffix.slice(4)}`;

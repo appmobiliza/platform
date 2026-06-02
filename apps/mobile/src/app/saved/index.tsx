@@ -87,7 +87,7 @@ export default function SavedPlaces() {
 			</View>
 
 			<ScrollView className="flex-1 px-6">
-				{savedPlaces.map((place, index) => {
+				{savedPlaces.map((place, _index) => {
 					const Icon = place.icon;
 					return (
 						<View

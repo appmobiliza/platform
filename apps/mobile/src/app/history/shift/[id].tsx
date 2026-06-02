@@ -1,10 +1,9 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft, Clock } from "lucide-react-native";
+import { Clock } from "lucide-react-native";
 import { Pressable, ScrollView, View } from "react-native";
 
 import { Header } from "@/components/header";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
 import { cn } from "@/lib/utils";

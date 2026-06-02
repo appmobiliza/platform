@@ -14,5 +14,3 @@ export const execTx: <T>(cb: (tx: typeof db) => Promise<T>) => Promise<T> = (
 ).mockTransaction
 	? (globalThis as any).mockTransaction
 	: (cb: any) => db.transaction(cb);
-
-

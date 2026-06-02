@@ -86,17 +86,19 @@ export const notificationsRouter = router({
 	 * Contagem de não lidas — útil para o badge no app.
 	 */
 	unreadCount: protectedProcedure
-		.meta({ openapi: { method: "GET", path: "/notifications/unread-count" } })
+		.meta({
+			openapi: { method: "GET", path: "/notifications/unread-count" },
+		})
 		.output(z.any())
 		.query(async ({ ctx }) => {
-		const items = await db.query.notification.findMany({
-			where: and(
-				eq(schema.notification.userId, ctx.session.user.id),
-				isNull(schema.notification.readAt),
-			),
-			columns: { id: true },
-		});
+			const items = await db.query.notification.findMany({
+				where: and(
+					eq(schema.notification.userId, ctx.session.user.id),
+					isNull(schema.notification.readAt),
+				),
+				columns: { id: true },
+			});
 
-		return { count: items.length };
-	}),
+			return { count: items.length };
+		}),
 });

@@ -3,17 +3,10 @@
 import { getCurrentShift } from "@mobiliza/db/schema";
 
 import { DetailsSidebar } from "@/components/details/details-sidebar";
-import { HorizontalBarsChart } from "@/components/horizontal-bars-chart";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ChartConfig } from "@/components/ui/chart";
 import { Separator } from "@/components/ui/separator";
 import { VerticalBarsChart } from "@/components/vertical-bars-chart";
