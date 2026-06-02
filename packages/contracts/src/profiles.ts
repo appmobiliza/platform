@@ -24,3 +24,7 @@ export const ReviewScholarSchema = z.object({
   scholarProfileId: z.string(),
   approved: z.boolean(),
 });
+
+export const UpdateStudentSchema = CreateStudentSchema.partial();
+
+export const UpdateScholarSchema = CreateScholarSchema.partial();
