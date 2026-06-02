@@ -6,22 +6,25 @@ import { ScrollView, View } from "react-native";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
-import { MaskedInput } from "@/components/ui/masked-input";
+import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 
-import { type ProfileCpfInput, ProfileCpfSchema } from "@/schemas";
+import {
+	type ProfileEnrollmentInput,
+	ProfileEnrollmentSchema,
+} from "@/schemas";
 
-export default function BasicProfileCpf() {
+export default function BasicProfileEnrollment() {
 	const router = useRouter();
 
 	const {
 		control,
 		handleSubmit,
 		formState: { errors },
-	} = useForm<ProfileCpfInput>({
-		resolver: zodResolver(ProfileCpfSchema),
+	} = useForm<ProfileEnrollmentInput>({
+		resolver: zodResolver(ProfileEnrollmentSchema),
 		defaultValues: {
-			cpf: "",
+			enrollment: "",
 		},
 		mode: "onTouched",
 	});
@@ -33,8 +36,8 @@ export default function BasicProfileCpf() {
 	return (
 		<View className="flex-1">
 			<Header
-				title="Número do CPF"
-				description="Este é seu número de CPF, usado para identificação e registro."
+				title="Número da Matrícula"
+				description="Este é seu número de matrícula, usado para identificação e registro."
 			/>
 
 			<ScrollView
@@ -48,22 +51,21 @@ export default function BasicProfileCpf() {
 			>
 				<Controller
 					control={control}
-					name="cpf"
+					name="enrollment"
 					render={({ field }) => (
 						<Field
-							label="CPF"
+							label="Matrícula"
 							description="Use o número cadastrado no documento oficial."
-							error={errors.cpf?.message}
+							error={errors.enrollment?.message}
 						>
-							<MaskedInput
-								mask="cpf"
-								placeholder="000.000.000-00"
+							<Input
+								placeholder="XXXXXXXX"
 								value={field.value}
 								onBlur={field.onBlur}
 								onChangeText={field.onChange}
 								autoComplete="off"
-								accessibilityLabel="CPF"
-								aria-invalid={Boolean(errors.cpf)}
+								accessibilityLabel="Matrícula"
+								aria-invalid={Boolean(errors.enrollment)}
 							/>
 						</Field>
 					)}

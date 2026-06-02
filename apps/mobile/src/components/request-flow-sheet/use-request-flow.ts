@@ -17,16 +17,20 @@ function useRequestFlow() {
 	const searchingRef = React.useRef<BottomSheetModal>(null);
 	const tripRef = React.useRef<BottomSheetModal>(null);
 
-	const refs = {
-		destination: destinationRef,
-		"destination-selection": destinationSelectionRef,
-		"start-confirm": startConfirmRef,
-		searching: searchingRef,
-		trip: tripRef,
-	} as const satisfies Record<
-		Stage,
-		React.RefObject<BottomSheetModal | null>
-	>;
+	const refs = React.useMemo(
+		() =>
+			({
+				destination: destinationRef,
+				"destination-selection": destinationSelectionRef,
+				"start-confirm": startConfirmRef,
+				searching: searchingRef,
+				trip: tripRef,
+			}) as const satisfies Record<
+				Stage,
+				React.RefObject<BottomSheetModal | null>
+			>,
+		[],
+	);
 
 	const activeStageRef = React.useRef<Stage>("destination-selection");
 	const queuedStageRef = React.useRef<Stage | null>(null);
@@ -107,7 +111,7 @@ function useRequestFlow() {
 
 	React.useEffect(() => {
 		openStage("destination-selection");
-	}, []);
+	}, [openStage]);
 
 	React.useEffect(() => {
 		if (activeStage !== "searching") {

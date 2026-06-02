@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
 
@@ -10,29 +11,22 @@ import { Switch } from "@/components/ui/switch";
 import { Text } from "@/components/ui/text";
 
 import { setIsLoggedIn } from "@/lib/auth-store";
-import { zodResolver } from "@/lib/zod-resolver";
 
-import { type AccessibilityInput, AccessibilitySchema } from "@/schemas";
+import { onboardingSteps } from "@/constants/onboarding";
+import {
+	type ProfileAccessibilityInput,
+	ProfileAccessibilitySchema,
+} from "@/schemas";
 
 export default function AccessibilityInfo() {
-	const {
-		control,
-		handleSubmit,
-		formState: { errors },
-	} = useForm<AccessibilityInput>({
-		resolver: zodResolver(AccessibilitySchema),
+	const { control, handleSubmit } = useForm<ProfileAccessibilityInput>({
+		resolver: zodResolver(ProfileAccessibilitySchema),
 		defaultValues: {
-			disabilityType: [],
-			needsAudioDescription: false,
+			disabilities: [],
+			simplifiedInterface: false,
 		},
 		mode: "onTouched",
 	});
-
-	const steps = [
-		{ id: "basic", title: "Dados Básicos" },
-		{ id: "course", title: "Universidade" },
-		{ id: "accessibility", title: "Acessibilidade" },
-	];
 
 	const handleFinish = handleSubmit(() => {
 		// TODO: Integrar com API quando backend estiver pronto
@@ -53,13 +47,16 @@ export default function AccessibilityInfo() {
 					de acessibilidade
 				</Text>
 
-				<StepIndicator steps={steps} currentStepId="accessibility" />
+				<StepIndicator
+					steps={onboardingSteps}
+					currentStepId="accessibility"
+				/>
 
 				<FieldSet className="mt-6">
 					<FieldGroup>
 						<Controller
 							control={control}
-							name="disabilityType"
+							name="disabilities"
 							render={({ field, fieldState }) => (
 								<AccessibilityOptions
 									value={field.value}
@@ -75,12 +72,13 @@ export default function AccessibilityInfo() {
 						>
 							<Controller
 								control={control}
-								name="needsAudioDescription"
+								name="simplifiedInterface"
 								render={({ field }) => (
 									<Switch
 										checked={field.value}
 										onCheckedChange={field.onChange}
 										accessibilityLabel="Ativar interface adaptada para leitores de tela"
+										disabled={field.disabled}
 									/>
 								)}
 							/>

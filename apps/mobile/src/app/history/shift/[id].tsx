@@ -1,10 +1,9 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft, Clock } from "lucide-react-native";
-import { Pressable, ScrollView, View } from "react-native";
+import { Clock } from "lucide-react-native";
+import { FlatList, Pressable, ScrollView, View } from "react-native";
 
 import { Header } from "@/components/header";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
 import { cn } from "@/lib/utils";
@@ -53,14 +52,12 @@ export default function ScholarShiftDetails() {
 				4 deslocamentos
 			</Text>
 
-			<ScrollView
-				className="flex-1 pt-6"
-				showsVerticalScrollIndicator={false}
-			>
-				{services.map((service, index) => (
+			<FlatList
+				data={services}
+				keyExtractor={(item) => item.id}
+				renderItem={({ item, index }) => (
 					<Pressable
-						key={service.id}
-						onPress={() => router.push(`/history/${service.id}`)}
+						onPress={() => router.push(`/history/${item.id}`)}
 						className={cn(
 							"flex-row items-center p-5 gap-4 border-b border-border",
 							index === services.length - 1 &&
@@ -76,31 +73,34 @@ export default function ScholarShiftDetails() {
 									className="font-bold text-foreground text-lg"
 									numberOfLines={2}
 								>
-									{service.title}
+									{item.title}
 								</Text>
 								<Text className="text-muted-foreground text-sm font-medium">
-									{service.time}
+									{item.time}
 								</Text>
 							</View>
 						</View>
 						<View className="flex-row items-center justify-start min-w-1/3">
 							<Avatar
-								alt={`Avatar de ${service.studentName}`}
+								alt={`Avatar de ${item.studentName}`}
 								className="mr-2"
 							>
 								<AvatarFallback>
 									<Text className="text-xs font-bold">
-										{service.studentInitials}
+										{item.studentInitials}
 									</Text>
 								</AvatarFallback>
 							</Avatar>
 							<Text className="font-medium text-sm text-foreground">
-								{service.studentName}
+								{item.studentName}
 							</Text>
 						</View>
 					</Pressable>
-				))}
-			</ScrollView>
+				)}
+				className="flex-1"
+				contentContainerStyle={{ paddingTop: 24 }}
+				showsVerticalScrollIndicator={false}
+			/>
 		</View>
 	);
 }

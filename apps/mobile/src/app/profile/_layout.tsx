@@ -32,9 +32,53 @@ export default function ProfileLayout() {
 	return (
 		<Stack
 			screenOptions={{
-				headerShown: false,
 				contentStyle: { backgroundColor: theme.background },
+				headerShown: false,
 			}}
-		/>
+		>
+			<Stack.Screen name="index" options={{ headerShown: false }} />
+
+			{/* Básico */}
+			<Stack.Screen
+				name="basic/index"
+				options={{
+					headerShown: true,
+					headerTitle: "Dados pessoais",
+					...HEADER_CONFIG(),
+				}}
+			/>
+			<Stack.Screen name="basic/name" />
+			<Stack.Screen name="basic/gender" />
+			<Stack.Screen name="basic/phone" />
+			<Stack.Screen name="basic/email" />
+			<Stack.Screen name="basic/cpf" />
+
+			{/* Acadêmico */}
+			<Stack.Screen
+				name="academic/index"
+				options={{
+					headerShown: true,
+					headerTitle: "Acadêmico",
+					...HEADER_CONFIG(),
+				}}
+			/>
+			<Stack.Screen name="academic/course" />
+			<Stack.Screen name="academic/shift" />
+			<Stack.Screen name="academic/campus" />
+			<Stack.Screen name="academic/enrollment" />
+
+			{/* Acessibilidade */}
+			<Stack.Screen
+				name="accessibility/index"
+				options={{
+					headerShown: true,
+					headerTitle: "Acessibilidade",
+					...HEADER_CONFIG(),
+				}}
+			/>
+			<Stack.Screen name="accessibility/disabilities" />
+			<Stack.Screen name="accessibility/observation" />
+			<Stack.Screen name="accessibility/simplified-interface" />
+		</Stack>
 	);
 }

@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
@@ -6,8 +7,6 @@ import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { SelectField } from "@/components/ui/select-field";
 import { Text } from "@/components/ui/text";
-
-import { zodResolver } from "@/lib/zod-resolver";
 
 import { type ProfilePhoneInput, ProfilePhoneSchema } from "@/schemas";
 

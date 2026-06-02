@@ -1,3 +1,5 @@
+import { useCallback } from "react";
+
 import { FlatList, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -39,6 +41,28 @@ const historyItems = [
 
 function StudentHistory() {
 	const insets = useSafeAreaInsets();
+
+	const renderItem = useCallback(
+		({
+			item,
+			index,
+		}: {
+			item: (typeof historyItems)[number];
+			index: number;
+		}) => {
+			return (
+				<SimpleHistoryItem
+					className={cn({
+						"border-b": index < historyItems.length - 1,
+					})}
+					title={item.title}
+					subtitle={item.subtitle}
+					href={item.href}
+				/>
+			);
+		},
+		[],
+	);
 
 	return (
 		<View className="flex-1">
@@ -82,16 +106,7 @@ function StudentHistory() {
 						description="Faça sua primeira solicitação para que ela apareça aqui!"
 					/>
 				}
-				renderItem={({ item, index }) => (
-					<SimpleHistoryItem
-						className={cn({
-							"border-b": index < historyItems.length - 1,
-						})}
-						title={item.title}
-						subtitle={item.subtitle}
-						href={item.href}
-					/>
-				)}
+				renderItem={renderItem}
 			/>
 		</View>
 	);

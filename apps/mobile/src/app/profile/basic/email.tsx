@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
@@ -7,8 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
-
-import { zodResolver } from "@/lib/zod-resolver";
 
 import { type ProfileEmailInput, ProfileEmailSchema } from "@/schemas";
 

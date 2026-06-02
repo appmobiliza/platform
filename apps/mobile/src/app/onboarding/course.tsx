@@ -1,3 +1,5 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { campusValues, courseValues, studentShiftValues } from "@mobiliza/db";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
@@ -10,9 +12,7 @@ import { Input } from "@/components/ui/input";
 import { SelectField } from "@/components/ui/select-field";
 import { Text } from "@/components/ui/text";
 
-import { zodResolver } from "@/lib/zod-resolver";
-
-import { campusOptions, courseOptions, shiftOptions } from "@/constants";
+import { onboardingSteps } from "@/constants/onboarding";
 import { type CourseInfoInput, CourseInfoSchema } from "@/schemas";
 
 export default function CourseInfo() {
@@ -25,19 +25,13 @@ export default function CourseInfo() {
 	} = useForm<CourseInfoInput>({
 		resolver: zodResolver(CourseInfoSchema),
 		defaultValues: {
-			course: "",
-			shift: "",
-			campus: "",
-			matricula: "",
+			course: undefined,
+			studentShift: undefined,
+			campus: undefined,
+			enrollment: "",
 		},
 		mode: "onTouched",
 	});
-
-	const steps = [
-		{ id: "basic", title: "Dados Básicos" },
-		{ id: "course", title: "Universidade" },
-		{ id: "accessibility", title: "Acessibilidade" },
-	];
 
 	const handleContinue = handleSubmit(() => {
 		router.push("/onboarding/accessibility");
@@ -60,7 +54,7 @@ export default function CourseInfo() {
 					relação com a universidade
 				</Text>
 
-				<StepIndicator steps={steps} currentStepId="course" />
+				<StepIndicator steps={onboardingSteps} currentStepId="course" />
 
 				<View className="mt-8 gap-4">
 					<Controller
@@ -72,7 +66,10 @@ export default function CourseInfo() {
 								description="Selecione o curso em que você está matriculado."
 								value={field.value}
 								placeholder="Selecione o curso"
-								options={courseOptions}
+								options={courseValues.map((value) => ({
+									value,
+									label: value,
+								}))}
 								onValueChange={field.onChange}
 								error={errors.course?.message}
 							/>
@@ -81,16 +78,19 @@ export default function CourseInfo() {
 
 					<Controller
 						control={control}
-						name="shift"
+						name="studentShift"
 						render={({ field }) => (
 							<SelectField
 								label="Turno"
 								description="Escolha o turno principal das suas aulas."
 								value={field.value}
 								placeholder="Selecione o turno"
-								options={shiftOptions}
+								options={studentShiftValues.map((value) => ({
+									value,
+									label: value,
+								}))}
 								onValueChange={field.onChange}
-								error={errors.shift?.message}
+								error={errors.studentShift?.message}
 							/>
 						)}
 					/>
@@ -104,7 +104,10 @@ export default function CourseInfo() {
 								description="Selecione o campus onde você estuda."
 								value={field.value}
 								placeholder="Selecione o campus"
-								options={campusOptions}
+								options={campusValues.map((value) => ({
+									value,
+									label: value,
+								}))}
 								onValueChange={field.onChange}
 								error={errors.campus?.message}
 							/>
@@ -113,12 +116,12 @@ export default function CourseInfo() {
 
 					<Controller
 						control={control}
-						name="matricula"
+						name="enrollment"
 						render={({ field }) => (
 							<Field
 								label="Matrícula"
 								description="Digite a matrícula usada pela universidade."
-								error={errors.matricula?.message}
+								error={errors.enrollment?.message}
 							>
 								<Input
 									placeholder="23415364"
@@ -131,7 +134,7 @@ export default function CourseInfo() {
 									maxLength={20}
 									autoCorrect={false}
 									accessibilityLabel="Matrícula"
-									aria-invalid={Boolean(errors.matricula)}
+									aria-invalid={Boolean(errors.enrollment)}
 								/>
 							</Field>
 						)}

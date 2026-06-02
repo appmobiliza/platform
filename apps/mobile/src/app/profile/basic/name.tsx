@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
@@ -7,8 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
-
-import { zodResolver } from "@/lib/zod-resolver";
 
 import { type ProfileNameInput, ProfileNameSchema } from "@/schemas";
 
@@ -22,8 +21,8 @@ export default function BasicProfileName() {
 	} = useForm<ProfileNameInput>({
 		resolver: zodResolver(ProfileNameSchema),
 		defaultValues: {
-			firstName: "",
-			lastName: "",
+			name: "",
+			nickname: "",
 		},
 		mode: "onTouched",
 	});
@@ -35,8 +34,8 @@ export default function BasicProfileName() {
 	return (
 		<View className="flex-1">
 			<Header
-				title="Nome"
-				description="Este é o nome que você quer que outras pessoas usem quando se referirem a você"
+				title="Nome e apelido"
+				description="Defina seu nome e como quer que outras pessoas se referiram a você"
 			/>
 
 			<ScrollView
@@ -51,12 +50,12 @@ export default function BasicProfileName() {
 				<View className="gap-4">
 					<Controller
 						control={control}
-						name="firstName"
+						name="name"
 						render={({ field }) => (
 							<Field
 								label="Nome"
 								description="Digite apenas o primeiro nome."
-								error={errors.firstName?.message}
+								error={errors.name?.message}
 							>
 								<Input
 									placeholder="Fulano"
@@ -66,7 +65,7 @@ export default function BasicProfileName() {
 									autoCapitalize="words"
 									autoComplete="name-given"
 									accessibilityLabel="Nome"
-									aria-invalid={Boolean(errors.firstName)}
+									aria-invalid={Boolean(errors.name)}
 								/>
 							</Field>
 						)}
@@ -74,22 +73,22 @@ export default function BasicProfileName() {
 
 					<Controller
 						control={control}
-						name="lastName"
+						name="nickname"
 						render={({ field }) => (
 							<Field
-								label="Sobrenome"
-								description="Digite o sobrenome principal."
-								error={errors.lastName?.message}
+								label="Apelido"
+								description="Digite um apelido"
+								error={errors.nickname?.message}
 							>
 								<Input
-									placeholder="da Silva"
+									placeholder="Apelido (opcional)"
 									value={field.value}
 									onBlur={field.onBlur}
 									onChangeText={field.onChange}
 									autoCapitalize="words"
 									autoComplete="name-family"
-									accessibilityLabel="Sobrenome"
-									aria-invalid={Boolean(errors.lastName)}
+									accessibilityLabel="Apelido"
+									aria-invalid={Boolean(errors.nickname)}
 								/>
 							</Field>
 						)}

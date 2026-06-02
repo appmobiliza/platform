@@ -57,19 +57,21 @@ export function PendingRequestCard({
 	const opacity = useSharedValue(0.4);
 
 	useEffect(() => {
-		opacity.value = withRepeat(
-			withSequence(
-				withTiming(1, {
-					duration: 1000,
-					easing: Easing.inOut(Easing.ease),
-				}),
-				withTiming(0.4, {
-					duration: 1000,
-					easing: Easing.inOut(Easing.ease),
-				}),
+		opacity.set(() =>
+			withRepeat(
+				withSequence(
+					withTiming(1, {
+						duration: 1000,
+						easing: Easing.inOut(Easing.ease),
+					}),
+					withTiming(0.4, {
+						duration: 1000,
+						easing: Easing.inOut(Easing.ease),
+					}),
+				),
+				-1,
+				true,
 			),
-			-1,
-			true,
 		);
 	}, [opacity]);
 

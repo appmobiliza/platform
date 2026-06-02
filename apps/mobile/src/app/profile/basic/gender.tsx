@@ -1,3 +1,5 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { genderValues } from "@mobiliza/db";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
@@ -7,19 +9,7 @@ import { Button } from "@/components/ui/button";
 import { SelectField } from "@/components/ui/select-field";
 import { Text } from "@/components/ui/text";
 
-import { zodResolver } from "@/lib/zod-resolver";
-
 import { type ProfileGenderInput, ProfileGenderSchema } from "@/schemas";
-import type { SelectOption } from "@/types";
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-const GENDER_OPTIONS: SelectOption[] = [
-	{ label: "Masculino", value: "Masculino" },
-	{ label: "Feminino", value: "Feminino" },
-	{ label: "Não binário", value: "Não binário" },
-	{ label: "Prefiro não dizer", value: "Prefiro não dizer" },
-];
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -67,7 +57,10 @@ export default function BasicProfileGender() {
 							description="Selecione o gênero com o qual você se identifica."
 							value={field.value}
 							placeholder="Selecionar gênero"
-							options={GENDER_OPTIONS}
+							options={genderValues.map((value) => ({
+								value,
+								label: value,
+							}))}
 							onValueChange={field.onChange}
 							error={errors.gender?.message}
 						/>

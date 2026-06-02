@@ -57,27 +57,37 @@ const SheetBackdrop = React.memo(function SheetBackdrop(
 
 // ─── Context ─────────────────────────────────────────────────────────────────
 
-type SheetContextValue = {
+// Stable ref context — never read .current during render
+type SheetRefContextValue = {
 	modalRef: React.RefObject<BottomSheetModal | null>;
+};
+
+// Callbacks + config context — safe for render
+type SheetStateContextValue = {
 	closeOnSelect: boolean;
 	openSheet: () => void;
 	closeSheet: () => void;
 };
 
-const SheetStateContext = React.createContext<SheetContextValue | null>(null);
+const SheetRefContext = React.createContext<SheetRefContextValue | null>(null);
+const SheetStateContext = React.createContext<SheetStateContextValue | null>(
+	null,
+);
+
+function useSheetRef() {
+	const ctx = React.useContext(SheetRefContext);
+	if (!ctx) throw new Error("Sheet components must be used within <Sheet>.");
+	return ctx;
+}
 
 function useOptionalSheetState() {
 	return React.useContext(SheetStateContext);
 }
 
 function useSheetState() {
-	const context = React.useContext(SheetStateContext);
-
-	if (!context) {
-		throw new Error("Sheet components must be used within <Sheet>.");
-	}
-
-	return context;
+	const ctx = React.useContext(SheetStateContext);
+	if (!ctx) throw new Error("Sheet components must be used within <Sheet>.");
+	return ctx;
 }
 
 // ─── Sheet (Root) ─────────────────────────────────────────────────────────────
@@ -110,15 +120,19 @@ function Sheet({
 		}
 	}, [defaultOpen]);
 
-	const contextValue = React.useMemo(
-		() => ({ modalRef, closeOnSelect, openSheet, closeSheet }),
-		[closeOnSelect, closeSheet, openSheet],
+	// Separate memos: ref object is stable, state/callbacks are separate
+	const refValue = React.useMemo(() => ({ modalRef }), []);
+	const stateValue = React.useMemo(
+		() => ({ closeOnSelect, openSheet, closeSheet }),
+		[closeOnSelect, openSheet, closeSheet],
 	);
 
 	return (
-		<SheetStateContext.Provider value={contextValue}>
-			{children}
-		</SheetStateContext.Provider>
+		<SheetRefContext.Provider value={refValue}>
+			<SheetStateContext.Provider value={stateValue}>
+				{children}
+			</SheetStateContext.Provider>
+		</SheetRefContext.Provider>
 	);
 }
 
@@ -195,11 +209,12 @@ function SheetContent({
 	// useSheetState() funciona aqui pois SheetContent ainda está fora do portal.
 	// O contextValue é então re-provido DENTRO do portal via Provider aninhado,
 	// garantindo que SheetClose e SheetItem consigam acessar o contexto.
-	const contextValue = useSheetState();
+	const { modalRef } = useSheetRef(); // ref comes from its own context
+	const stateValue = useSheetState(); // callbacks + config separate
 
 	return (
 		<BottomSheetModal
-			ref={contextValue.modalRef}
+			ref={modalRef}
 			index={index}
 			snapPoints={enableDynamicSizing ? undefined : DEFAULT_SNAP_POINTS}
 			enablePanDownToClose={panDownToClose}
@@ -222,11 +237,17 @@ function SheetContent({
 			 * useContext() retorne null para componentes filhos como SheetClose.
 			 * Envolver o conteúdo com o Provider corrige isso sem custo adicional.
 			 */}
-			<SheetStateContext.Provider value={contextValue}>
-				<BottomSheetView className={className} style={style} {...props}>
-					{children}
-				</BottomSheetView>
-			</SheetStateContext.Provider>
+			<SheetRefContext.Provider value={{ modalRef }}>
+				<SheetStateContext.Provider value={stateValue}>
+					<BottomSheetView
+						className={className}
+						style={style}
+						{...props}
+					>
+						{children}
+					</BottomSheetView>
+				</SheetStateContext.Provider>
+			</SheetRefContext.Provider>
 		</BottomSheetModal>
 	);
 }

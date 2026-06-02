@@ -1,3 +1,5 @@
+import { useCallback } from "react";
+
 import { Image } from "expo-image";
 import { Link } from "expo-router";
 import {
@@ -57,6 +59,47 @@ export default function Profile() {
 	const insets = useSafeAreaInsets();
 	const role = useUserRole();
 
+	const renderItem = useCallback(
+		({
+			item,
+			index,
+		}: {
+			item: (typeof options)[number];
+			index: number;
+		}) => {
+			return item.studentExclusive && role !== "student" ? null : (
+				<Link href={item.href} asChild>
+					<Pressable
+						android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
+						className={cn(
+							"w-full flex-row items-center justify-center px-8 py-6 border-border active:bg-accent/50 transition-colors",
+							{
+								"border-b": index < options.length - 1,
+							},
+						)}
+					>
+						<View className="w-16 h-16 rounded-full flex items-center justify-center">
+							<Icon
+								icon={item.icon}
+								size={32}
+								color="--foreground"
+							/>
+						</View>
+						<View className="ml-4 flex-1">
+							<Text className="font-medium text-lg">
+								{item.title}
+							</Text>
+							<Text className="text-sm text-muted-foreground">
+								{item.description}
+							</Text>
+						</View>
+					</Pressable>
+				</Link>
+			);
+		},
+		[role],
+	);
+
 	return (
 		<View className="flex-1 items-center justify-start">
 			<FlatList
@@ -91,37 +134,7 @@ export default function Profile() {
 						</Text>
 					</View>
 				}
-				renderItem={({ item, index }) =>
-					item.studentExclusive && role !== "student" ? null : (
-						<Link href={item.href} asChild>
-							<Pressable
-								android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
-								className={cn(
-									"w-full flex-row items-center justify-center px-8 py-6 border-border active:bg-accent/50 transition-colors",
-									{
-										"border-b": index < options.length - 1,
-									},
-								)}
-							>
-								<View className="w-16 h-16 rounded-full flex items-center justify-center">
-									<Icon
-										icon={item.icon}
-										size={32}
-										color="--foreground"
-									/>
-								</View>
-								<View className="ml-4 flex-1">
-									<Text className="font-medium text-lg">
-										{item.title}
-									</Text>
-									<Text className="text-sm text-muted-foreground">
-										{item.description}
-									</Text>
-								</View>
-							</Pressable>
-						</Link>
-					)
-				}
+				renderItem={renderItem}
 			/>
 		</View>
 	);

@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 
 import { FromMarker, ToMarker } from "@/assets/route";
 import { ufalPoints } from "@/constants/locations";
+import { useUpdateRef } from "@/hooks/use-update-ref";
 
 import { StatusMessage } from "../status-message";
 
@@ -147,23 +148,10 @@ function AddressRouteInput({
 	const originInputRef = useRef<TextInput>(null);
 	const destinationInputRef = useRef<TextInput>(null);
 
-	const activeFieldRef = useRef(activeField);
-	activeFieldRef.current = activeField;
-	const onSelectOriginRef = useRef(onSelectOrigin);
-	onSelectOriginRef.current = onSelectOrigin;
-	const onSelectDestinationRef = useRef(onSelectDestination);
-	onSelectDestinationRef.current = onSelectDestination;
-
-	const activateOrigin = useCallback(() => setActiveField("origin"), []);
-	const activateDestination = useCallback(
-		() => setActiveField("destination"),
-		[],
-	);
-	const clearOriginQuery = useCallback(() => setOriginQuery(""), []);
-	const clearDestinationQuery = useCallback(
-		() => setDestinationQuery(""),
-		[],
-	);
+	const activateOrigin = () => setActiveField("origin");
+	const activateDestination = () => setActiveField("destination");
+	const clearOriginQuery = () => setOriginQuery("");
+	const clearDestinationQuery = () => setDestinationQuery("");
 
 	// Auto-focus the destination input when the sheet opens
 	useEffect(() => {
@@ -195,19 +183,21 @@ function AddressRouteInput({
 		return points;
 	}, [activeField, originQuery, destinationQuery]);
 
-	const handleSelectSuggestion = useCallback((item: SuggestionItem) => {
-		const field = activeFieldRef.current;
-		if (field === "origin") {
-			onSelectOriginRef.current(item.name, item.id === CURRENT_LOCATION);
-			setOriginQuery("");
-			originInputRef.current?.blur();
-		} else {
-			onSelectDestinationRef.current(item.name);
-			setDestinationQuery("");
-			destinationInputRef.current?.blur();
-		}
-		setActiveField(null);
-	}, []);
+	const handleSelectSuggestion = useCallback(
+		(item: SuggestionItem) => {
+			if (activeField === "origin") {
+				onSelectOrigin(item.name, item.id === CURRENT_LOCATION);
+				setOriginQuery("");
+				originInputRef.current?.blur();
+			} else {
+				onSelectDestination(item.name);
+				setDestinationQuery("");
+				destinationInputRef.current?.blur();
+			}
+			setActiveField(null);
+		},
+		[activeField, onSelectOrigin, onSelectDestination],
+	);
 
 	const renderSuggestion = useCallback(
 		({ item }: { item: SuggestionItem }) => {

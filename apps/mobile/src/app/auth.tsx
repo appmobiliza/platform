@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
-import { setIsLoggedIn, setUserRole } from "@/lib/auth-store";
+import { setIsLoggedIn, setUserRole, UserRole } from "@/lib/auth-store";
 
 import GoogleIcon from "@/assets/google";
 import { Logo } from "@/assets/logo";
@@ -20,7 +20,7 @@ export default function Auth() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
 
-	const handleLogin = (role: "student" | "scholar") => {
+	const handleLogin = (role: UserRole) => {
 		setUserRole(role);
 		setIsLoggedIn(true);
 		router.replace("/(tabs)");
@@ -49,7 +49,7 @@ export default function Auth() {
 
 					<Button
 						className="relative mb-3"
-						onPress={() => handleLogin("student")}
+						onPress={() => handleLogin(UserRole.Student)}
 						variant={"inverted"}
 						size={"lg"}
 					>
@@ -59,7 +59,7 @@ export default function Auth() {
 
 					<Button
 						className="relative"
-						onPress={() => handleLogin("scholar")}
+						onPress={() => handleLogin(UserRole.Scholar)}
 						variant={"outline"}
 						size={"lg"}
 					>

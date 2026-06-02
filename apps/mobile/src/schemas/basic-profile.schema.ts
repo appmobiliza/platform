@@ -3,16 +3,15 @@ import { z } from "zod";
 import { validateCpf, validatePhone } from "@/utils";
 
 export const ProfileNameSchema = z.object({
-	firstName: z
+	name: z
 		.string()
 		.trim()
 		.min(2, "Nome deve ter pelo menos 2 caracteres")
 		.max(50),
-	lastName: z
+	nickname: z
 		.string()
 		.trim()
-		.min(2, "Sobrenome deve ter pelo menos 2 caracteres")
-		.max(80),
+		.optional(),
 });
 
 export const ProfileGenderSchema = z.object({
@@ -36,8 +35,13 @@ export const ProfileEmailSchema = z.object({
 	email: z.string().trim().email("E-mail inválido"),
 });
 
+export const BasicInfoSchema = ProfileNameSchema
+	.merge(ProfilePhoneSchema)
+	.merge(ProfileGenderSchema);
+
 export type ProfileNameInput = z.infer<typeof ProfileNameSchema>;
 export type ProfileGenderInput = z.infer<typeof ProfileGenderSchema>;
 export type ProfilePhoneInput = z.infer<typeof ProfilePhoneSchema>;
 export type ProfileCpfInput = z.infer<typeof ProfileCpfSchema>;
 export type ProfileEmailInput = z.infer<typeof ProfileEmailSchema>;
+export type BasicInfoInput = z.infer<typeof BasicInfoSchema>;

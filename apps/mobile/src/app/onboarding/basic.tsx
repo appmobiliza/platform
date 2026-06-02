@@ -1,7 +1,17 @@
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
+
 // import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+
+// import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+
+// import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+
+// import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { genderValues } from "@mobiliza/db";
 
 import { Header } from "@/components/header";
 import { StepIndicator } from "@/components/step-indicator";
@@ -12,9 +22,7 @@ import { MaskedInput } from "@/components/ui/masked-input";
 import { SelectField } from "@/components/ui/select-field";
 import { Text } from "@/components/ui/text";
 
-import { zodResolver } from "@/lib/zod-resolver";
-
-import { genderOptions } from "@/constants";
+import { onboardingSteps } from "@/constants/onboarding";
 import { type BasicInfoInput, BasicInfoSchema } from "@/schemas";
 
 export default function BasicInfo() {
@@ -29,16 +37,10 @@ export default function BasicInfo() {
 		defaultValues: {
 			name: "",
 			phone: "",
-			gender: "",
+			gender: undefined,
 		},
 		mode: "onTouched",
 	});
-
-	const steps = [
-		{ id: "basic", title: "Dados Básicos" },
-		{ id: "course", title: "Universidade" },
-		{ id: "accessibility", title: "Acessibilidade" },
-	];
 
 	const handleContinue = handleSubmit(() => {
 		router.push("/onboarding/course");
@@ -61,7 +63,7 @@ export default function BasicInfo() {
 					os atendimentos do MobiUFAL
 				</Text>
 
-				<StepIndicator steps={steps} currentStepId="basic" />
+				<StepIndicator steps={onboardingSteps} currentStepId="basic" />
 
 				<View className="mt-8 gap-4">
 					<Controller
@@ -119,7 +121,10 @@ export default function BasicInfo() {
 								description="Selecione a opção que melhor representa você."
 								value={field.value}
 								placeholder="Selecionar gênero"
-								options={genderOptions}
+								options={genderValues.map((value) => ({
+									value,
+									label: value,
+								}))}
 								onValueChange={field.onChange}
 								error={errors.gender?.message}
 							/>
