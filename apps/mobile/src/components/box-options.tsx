@@ -68,7 +68,7 @@ export function BoxOptions({
 							accessibilityState={{ checked: isSelected }}
 							style={({ pressed }) => pressed && { opacity: 0.8 }}
 							className={cn(
-								"mb-4 min-h-[120px] w-[48%] items-center justify-center rounded-xl border-2 p-4 border-border bg-background",
+								"mb-4 min-h-[120px] w-[48%] items-center justify-center rounded-xl border-2 p-4 border-border bg-background active:bg-accent/25 transition-colors",
 								{
 									"border-primary bg-primary": isSelected,
 								},

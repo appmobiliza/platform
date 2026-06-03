@@ -7,7 +7,10 @@ export const ProfileNameSchema = z.object({
 		.string()
 		.trim()
 		.min(2, "Nome deve ter pelo menos 2 caracteres")
-		.max(50),
+		.max(50)
+		.refine((val) => val.split(/\s+/).filter(Boolean).length >= 2, {
+			message: "Nome deve ser completo"
+		}),
 	nickname: insertStudentSchema.shape.nickname
 });
 

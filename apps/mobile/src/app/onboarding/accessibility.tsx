@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
 
@@ -22,16 +23,20 @@ export default function AccessibilityInfo() {
 	const { control, handleSubmit } = useForm<ProfileAccessibilityInput>({
 		resolver: zodResolver(ProfileAccessibilitySchema),
 		defaultValues: {
-			disabilities: [],
+			disabilityTypes: [],
 			simplifiedInterface: false,
 		},
 		mode: "onTouched",
 	});
 
-	const handleFinish = handleSubmit(() => {
-		// TODO: Integrar com API quando backend estiver pronto
+	// const handleFinish = handleSubmit(() => {
+	// 	// TODO: Integrar com API quando backend estiver pronto
+	// 	setIsLoggedIn(true);
+	// });
+
+	const handleFinish = () => {
 		setIsLoggedIn(true);
-	});
+	};
 
 	return (
 		<View className="flex-1">
@@ -56,7 +61,7 @@ export default function AccessibilityInfo() {
 					<FieldGroup>
 						<Controller
 							control={control}
-							name="disabilities"
+							name="disabilityTypes"
 							render={({ field, fieldState }) => (
 								<BoxOptions
 									value={field.value}
@@ -75,7 +80,7 @@ export default function AccessibilityInfo() {
 								name="simplifiedInterface"
 								render={({ field }) => (
 									<Switch
-										checked={field.value}
+										checked={field.value ?? false}
 										onCheckedChange={field.onChange}
 										accessibilityLabel="Ativar interface adaptada para leitores de tela"
 										disabled={field.disabled}

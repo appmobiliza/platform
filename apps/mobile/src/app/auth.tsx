@@ -23,7 +23,6 @@ export default function Auth() {
 	const handleLogin = (role: UserRole) => {
 		setUserRole(role);
 		setIsLoggedIn(true);
-		router.replace("/(tabs)");
 	};
 
 	return (

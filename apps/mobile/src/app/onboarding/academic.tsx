@@ -1,9 +1,11 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	campusValues,
 	courseValues,
+	studentShiftLabels,
 	studentShiftValues,
 } from "@mobiliza/contracts";
+
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
@@ -30,7 +32,7 @@ export default function CourseInfo() {
 		resolver: zodResolver(CourseInfoSchema),
 		defaultValues: {
 			course: undefined,
-			studentShift: undefined,
+			shift: undefined,
 			campus: undefined,
 			enrollment: "",
 		},
@@ -67,7 +69,7 @@ export default function CourseInfo() {
 						render={({ field }) => (
 							<SelectField
 								label="Curso"
-								description="Selecione o curso em que você está matriculado."
+								description="Selecione o curso em que você está matriculado"
 								value={field.value}
 								placeholder="Selecione o curso"
 								options={courseValues.map((value) => ({
@@ -76,25 +78,26 @@ export default function CourseInfo() {
 								}))}
 								onValueChange={field.onChange}
 								error={errors.course?.message}
+								searchable
 							/>
 						)}
 					/>
 
 					<Controller
 						control={control}
-						name="studentShift"
+						name="shift"
 						render={({ field }) => (
 							<SelectField
 								label="Turno"
-								description="Escolha o turno principal das suas aulas."
+								description="Escolha o turno principal das suas aulas"
 								value={field.value}
 								placeholder="Selecione o turno"
 								options={studentShiftValues.map((value) => ({
 									value,
-									label: value,
+									label: studentShiftLabels[value],
 								}))}
 								onValueChange={field.onChange}
-								error={errors.studentShift?.message}
+								error={errors.shift?.message}
 							/>
 						)}
 					/>
@@ -105,7 +108,7 @@ export default function CourseInfo() {
 						render={({ field }) => (
 							<SelectField
 								label="Campus"
-								description="Selecione o campus onde você estuda."
+								description="Selecione o campus onde você estuda"
 								value={field.value}
 								placeholder="Selecione o campus"
 								options={campusValues.map((value) => ({
@@ -124,7 +127,7 @@ export default function CourseInfo() {
 						render={({ field }) => (
 							<Field
 								label="Matrícula"
-								description="Digite a matrícula usada pela universidade."
+								description="Digite a matrícula usada pela universidade"
 								error={errors.enrollment?.message}
 							>
 								<Input

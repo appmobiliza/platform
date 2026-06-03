@@ -1,10 +1,11 @@
+import { useRouter } from "expo-router";
 import { LogOut } from "lucide-react-native";
 import { Platform, View } from "react-native";
 
 import { SettingsButton } from "@/components/settings-button";
 import { Icon } from "@/components/ui/icon";
 
-import { setIsLoggedIn } from "@/lib/auth-store";
+import { setIsLoggedIn, useIsLoggedIn } from "@/lib/auth-store";
 import { useThemePreference } from "@/lib/theme-store";
 
 const THEME_LABELS: Record<string, string> = {
@@ -14,7 +15,9 @@ const THEME_LABELS: Record<string, string> = {
 };
 
 export default function SettingsProfile() {
+	const router = useRouter();
 	const theme = useThemePreference();
+	const isLoggedIn = useIsLoggedIn();
 
 	return (
 		<View>
@@ -42,6 +45,8 @@ export default function SettingsProfile() {
 				variant="destructive"
 				onPress={() => {
 					setIsLoggedIn(false);
+					router.replace("/auth");
+					console.log("Logged out", isLoggedIn);
 				}}
 			>
 				<Icon icon={LogOut} size={24} color="--destructive" />
