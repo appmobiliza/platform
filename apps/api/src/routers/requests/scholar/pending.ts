@@ -15,7 +15,21 @@ export const pending = scholarProcedure
 			with: {
 				originLocation: true,
 				destinationLocation: true,
-				studentProfile: { with: { user: true } },
+				studentProfile: {
+					with: {
+						user: {
+							columns: {
+								id: true,
+								image: true,
+							},
+						},
+						disabilities: {
+							columns: {
+								disabilityType: true,
+							},
+						},
+					},
+				},
 			},
 			orderBy: [desc(schema.serviceRequest.createdAt)],
 			limit: 50,

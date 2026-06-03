@@ -5,6 +5,7 @@
  * Todos os métodos são no-ops — não tenta conexão real.
  */
 
+import { jest } from '@jest/globals'
 import type { RealtimeAdapter, RealtimeClientAdapter } from '@mobiliza/realtime'
 
 /**
@@ -38,6 +39,13 @@ export function createMockRealtimeAdapter(): RealtimeAdapter {
 		adapterInstance = new MockRealtimeAdapter()
 	}
 	return adapterInstance
+}
+
+/**
+ * Mock da factory real do @mobiliza/realtime
+ */
+export async function createRealtimeAdapter(): Promise<RealtimeAdapter> {
+  return createMockRealtimeAdapter()
 }
 
 export function resetMockRealtimeAdapter(): void {

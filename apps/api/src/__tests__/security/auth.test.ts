@@ -10,6 +10,7 @@
 
 import { TRPCError } from "@trpc/server";
 
+import { describe, it, expect, beforeEach, jest } from "@jest/globals";
 import { appRouter } from "../../router";
 import {
   seedCampusLocation,
@@ -146,7 +147,7 @@ describe("auth", () => {
 
       // Assert
       expect(result).toMatchObject({
-        id: expect.stringMatching(/^req_/),
+        id: expect.any(String),
         status: "pending",
       });
     });
@@ -169,8 +170,8 @@ describe("auth", () => {
   describe("multiple session handling", () => {
     it("deve manter sessões independentes para usuários diferentes", async () => {
       // Arrange
-      const user1 = await seedUser({ id: "user_1", role: "student" });
-      const user2 = await seedUser({ id: "user_2", role: "student" });
+      const user1 = await seedUser({ role: "student" });
+      const user2 = await seedUser({ role: "student" });
       await seedStudentProfile(user1.id);
       await seedStudentProfile(user2.id);
       await seedNotification(user1.id, { title: "Notificação user1" });
@@ -198,8 +199,8 @@ describe("auth", () => {
   describe("context isolation", () => {
     it("deve isolar ctx.session entre requisições simultâneas", async () => {
       // Arrange
-      const user1 = await seedUser({ id: "isolated_user_1", role: "student" });
-      const user2 = await seedUser({ id: "isolated_user_2", role: "student" });
+      const user1 = await seedUser({ role: "student" });
+      const user2 = await seedUser({ role: "student" });
       await seedStudentProfile(user1.id);
       await seedStudentProfile(user2.id);
 

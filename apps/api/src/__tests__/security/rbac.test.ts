@@ -7,6 +7,7 @@
  * - Unauthenticated tenta create → UNAUTHORIZED
  */
 
+import { describe, it, expect, beforeEach, jest } from "@jest/globals";
 import { TRPCError } from "@trpc/server";
 
 import { appRouter } from "../../router";

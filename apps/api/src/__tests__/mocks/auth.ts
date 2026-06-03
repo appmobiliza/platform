@@ -5,6 +5,7 @@
  * Não faz chamadas reais ao banco ou serviços externos.
  */
 
+import { jest } from "@jest/globals";
 import { uuidv7 } from "uuidv7";
 
 /**

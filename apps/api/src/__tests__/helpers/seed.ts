@@ -45,13 +45,14 @@ import { uuidv7 } from "uuidv7";
 export async function seedUser(
   overrides: Partial<NewUser> = {},
 ): Promise<User> {
-  const uniqueSuffix = uuidv7().slice(0, 8);
+  const uniqueId = uuidv7();
+  const randomSuffix = Math.floor(Math.random() * 1000000);
   const [created] = await db
     .insert(user)
     .values({
-      id: uuidv7(),
+      id: uniqueId,
       name: "Test User",
-      email: `test_${uniqueSuffix}@example.com`,
+      email: `test_${uniqueId}_${randomSuffix}@example.com`,
       emailVerified: true,
       role: "student",
       ...overrides,
@@ -66,13 +67,13 @@ export async function seedStudentProfile(
   userId: string,
   overrides: Partial<NewStudentProfile> = {},
 ): Promise<StudentProfile> {
-  const uniqueSuffix = uuidv7().slice(0, 8);
+  const uniqueId = uuidv7();
   const [created] = await db
     .insert(studentProfile)
     .values({
-      id: uuidv7(),
+      id: uniqueId,
       userId,
-      enrollment: `2024${uniqueSuffix}`,
+      enrollment: `ENROLL_${uniqueId}`,
       course: "Ciência da Computação",
       campus: "Campus A.C. Simões",
       phone: "82111113333",
@@ -94,17 +95,18 @@ export async function seedScholarProfile(
   userId: string,
   overrides: Partial<NewScholarProfile> = {},
 ): Promise<ScholarProfile> {
-  const uniqueSuffix = uuidv7().slice(0, 8);
+  const uniqueId = uuidv7();
+  const cpfSuffix = Math.floor(Math.random() * 10000000000).toString().padStart(11, "0");
   const [created] = await db
     .insert(scholarProfile)
     .values({
-      id: uuidv7(),
+      id: uniqueId,
       userId,
-      enrollment: `2024${uniqueSuffix}`,
+      enrollment: `SCHOLAR_${uniqueId}`,
       course: "Ciência da Computação",
       campus: "Campus A.C. Simões",
       phone: "82111112222",
-      cpf: `${uniqueSuffix}`.padEnd(11, "0").slice(0, 11),
+      cpf: cpfSuffix,
       shift: "morning",
       isApproved: false,
       approvedAt: null,
@@ -144,13 +146,25 @@ export async function seedServiceRequest(
   studentProfileId: string,
   overrides: Partial<NewServiceRequest> = {},
 ): Promise<ServiceRequest> {
+  let originId = overrides.originLocationId;
+  let destinationId = overrides.destinationLocationId;
+
+  if (!originId) {
+    const loc = await seedCampusLocation({ name: "Default Origin" });
+    originId = loc.id;
+  }
+  if (!destinationId) {
+    const loc = await seedCampusLocation({ name: "Default Destination" });
+    destinationId = loc.id;
+  }
+
   const [created] = await db
     .insert(serviceRequest)
     .values({
       id: uuidv7(),
       studentProfileId,
-      originLocationId: "default-origin",
-      destinationLocationId: "default-dest",
+      originLocationId: originId,
+      destinationLocationId: destinationId,
       status: "pending",
       notes: null,
       respondedAt: null,
