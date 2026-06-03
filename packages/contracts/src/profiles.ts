@@ -9,7 +9,7 @@ import {
 	studentShiftValues,
 } from "./enums";
 
-const sharedProfileSchema = {
+const SharedProfileSchema = {
 	enrollment: z.string().refine(
 		(val) => {
 			const digitsOnly = val.replace(/\D/g, "");
@@ -24,8 +24,8 @@ const sharedProfileSchema = {
 	gender: z.enum(genderValues, { error: "Gênero deve ser selecionado" }),
 };
 
-export const insertScholarSchema = z.object({
-	...sharedProfileSchema,
+export const InsertScholarSchema = z.object({
+	...SharedProfileSchema,
 	course: z.string(),
 	shift: z.enum(scholarShiftValues),
 	cpf: z
@@ -33,10 +33,10 @@ export const insertScholarSchema = z.object({
 		.regex(/^(?:\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11})$/, "CPF inválido"),
 });
 
-export const updateScholarSchema = insertScholarSchema.partial();
+export const UpdateScholarSchema = InsertScholarSchema.partial();
 
-export const insertStudentSchema = z.object({
-	...sharedProfileSchema,
+export const InsertStudentSchema = z.object({
+	...SharedProfileSchema,
 	course: z.enum(courseValues),
 	shift: z.enum(studentShiftValues),
 	nickname: z.string().optional(),
@@ -49,4 +49,4 @@ export const insertStudentSchema = z.object({
 		.min(1, { message: "Tipo de deficiência deve ser selecionado" }),
 });
 
-export const updateStudentSchema = insertStudentSchema.partial();
+export const UpdateStudentSchema = InsertStudentSchema.partial();
