@@ -44,28 +44,15 @@ export function setUserRole(role: UserRole) {
 	emitChange();
 }
 
+const subscribe = (listener: () => void) => {
+	listeners.add(listener);
+	return () => listeners.delete(listener);
+};
+
 export function useIsLoggedIn() {
-	return useSyncExternalStore(
-		(subscribe) => {
-			listeners.add(subscribe);
-			return () => {
-				listeners.delete(subscribe);
-			};
-		},
-		() => isLoggedIn,
-		() => false,
-	);
+	return useSyncExternalStore(subscribe, () => isLoggedIn, () => false);
 }
 
 export function useUserRole() {
-	return useSyncExternalStore(
-		(subscribe) => {
-			listeners.add(subscribe);
-			return () => {
-				listeners.delete(subscribe);
-			};
-		},
-		() => userRole,
-		() => UserRole.Student,
-	);
+	return useSyncExternalStore(subscribe, () => userRole, () => UserRole.Student);
 }
