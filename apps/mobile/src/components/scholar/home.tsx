@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 
 import { useRouter } from "expo-router";
 import {
@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
+import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 
 import { Logo } from "@/assets/logo";
@@ -195,21 +196,8 @@ function PreviousServicesList({ services }: { services?: Service[] }) {
 	);
 }
 
-const services: Service[] = [
-	{
-		id: "1",
-		student: {
-			name: "Maria Aparecida",
-			disability: "Deficiência visual",
-			observation:
-				"Prefere áudio descrição contínua durante todo o percurso",
-		},
-		route: {
-			origin: "Instituto de Computação",
-			destination: "Biblioteca Central",
-		},
-		status: ServiceStatus.Pending,
-	},
+// Mantemos o mock apenas para o histórico por enquanto, até implementarmos a query de histórico
+const historicalServicesMock: Service[] = [
 	{
 		id: "2",
 		student: {
@@ -248,9 +236,45 @@ export function ScholarHome() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
 	const [shiftState, setShiftState] = useState<ShiftState>("off-duty");
-	const firstPendingService = services.find(
-		(service) => service.status === ServiceStatus.Pending,
+
+	// Dados reais do backend
+	const { data: availableRequests = [] } = trpc.requests.available.useQuery(
+		undefined,
+		{
+			enabled: shiftState === "during",
+		},
 	);
+
+	// Subscription para atualizações em tempo real
+	const utils = trpc.useUtils();
+	trpc.requests.onAvailable.useSubscription(undefined, {
+		enabled: shiftState === "during",
+		onData() {
+			// Quando um evento chega, invalidamos a query para forçar o refetch
+			utils.requests.available.invalidate();
+		},
+	});
+
+	// Transformação de dados do tRPC para o formato esperado pelo componente UI
+	const pendingServices: Service[] = useMemo(() => {
+		return availableRequests.map((req) => ({
+			id: req.id,
+			student: {
+				// Usa o nickname ou fallback, já que o PII foi ocultado
+				name:
+					req.studentProfile.nickname ??
+					`Estudante ${req.studentProfile.id.slice(0, 4)}`,
+				disability: req.studentProfile.attendanceNotes ?? "PcD", // Fallback enquanto não temos o campo de deficiência real no perfil
+				observation: req.notes ?? "",
+			},
+			route: {
+				origin: req.originLocation.name,
+				destination: req.destinationLocation.name,
+			},
+			status: ServiceStatus.Pending,
+			createdAt: new Date(req.createdAt),
+		}));
+	}, [availableRequests]);
 
 	const currentDate = new Date();
 	const isInShift =
@@ -275,8 +299,7 @@ export function ScholarHome() {
 				).getTime() - currentDate.getTime();
 	const hours = Math.floor(remainingTime / (1000 * 60 * 60));
 
-	const [pendingServices, setPendingServices] = useState<Service[]>([]);
-	const shiftStarted = pendingServices.length > 0;
+	const shiftStarted = shiftState === "during";
 
 	return (
 		<ScrollView contentContainerClassName="flex-1 bg-background gap-4">
@@ -339,55 +362,35 @@ export function ScholarHome() {
 					</>
 				) : (
 					<>
-						{shiftStarted ? (
-							<Button
-								variant="secondary"
-								onPress={() => {
-									setPendingServices([]);
-									setShiftState("off-duty");
-								}}
-								size="lg"
-								className="rounded-full gap-3"
-							>
-								<Power
-									size={20}
-									color="currentColor"
-									className="text-foreground"
-								/>
-								<Text className="mb-0.5 text-base font-medium">
-									Encerrar turno
-								</Text>
-							</Button>
-						) : (
-							<Button
-								onPress={() => {
-									if (!firstPendingService) {
-										return;
-									}
+						<Button
+							variant="secondary"
+							onPress={() => {
+								setShiftState("off-duty");
+							}}
+							size="lg"
+							className="rounded-full gap-3"
+						>
+							<Power
+								size={20}
+								color="currentColor"
+								className="text-foreground"
+							/>
+							<Text className="mb-0.5 text-base font-medium">
+								Encerrar turno
+							</Text>
+						</Button>
 
-									setPendingServices([firstPendingService]);
-								}}
-								size="lg"
-								className="rounded-full gap-2"
-							>
-								<CirclePlay size={20} color="#FFFFFF" />
-								<Text className="mb-0.5 font-medium">
-									Iniciar turno
-								</Text>
-							</Button>
-						)}
+						<View className="gap-4">
+							<SectionTitle label="Aguardando resposta">
+								<Badge variant="warning">
+									<Text>
+										{pendingServices.length}
+										{" pendente"}
+									</Text>
+								</Badge>
+							</SectionTitle>
 
-						{shiftStarted ? (
-							<View className="gap-4">
-								<SectionTitle label="Aguardando resposta">
-									<Badge variant="warning">
-										<Text>
-											{pendingServices.length}
-											{" pendente"}
-										</Text>
-									</Badge>
-								</SectionTitle>
-
+							{pendingServices.length > 0 ? (
 								<FlatList
 									data={pendingServices}
 									renderItem={({ item }) => (
@@ -402,33 +405,29 @@ export function ScholarHome() {
 									)}
 									keyExtractor={(item) => item.id}
 								/>
+							) : (
+								<EmptyStateCard>
+									<View className="items-center">
+										<Icon
+											icon={Palmtree}
+											color="--foreground"
+											size={56}
+										/>
+										<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
+											Nenhuma solicitação no momento
+										</Text>
+										<Text className="text-center text-base leading-tight text-muted-foreground">
+											Relaxe! Avisaremos você quando
+											alguém precisar de ajuda.
+										</Text>
+									</View>
+								</EmptyStateCard>
+							)}
 
-								<PreviousServicesList
-									services={services.filter(
-										(service) =>
-											service.status ===
-											ServiceStatus.Concluded,
-									)}
-								/>
-							</View>
-						) : (
-							<EmptyStateCard>
-								<View className="items-center">
-									<Icon
-										icon={Palmtree}
-										color="--foreground"
-										size={56}
-									/>
-									<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
-										Seu turno está pronto para começar
-									</Text>
-									<Text className="text-center text-base leading-tight text-muted-foreground">
-										Pressione o botão para iniciar o turno e
-										carregar as solicitações
-									</Text>
-								</View>
-							</EmptyStateCard>
-						)}
+							<PreviousServicesList
+								services={historicalServicesMock}
+							/>
+						</View>
 					</>
 				)}
 			</MainContentWrapper>
