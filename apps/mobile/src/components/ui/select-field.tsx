@@ -4,8 +4,8 @@ import {
 	BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { ChevronDown } from "lucide-react-native";
-import { useMemo, useState } from "react";
-import { View } from "react-native";
+import { useMemo, useRef, useState } from "react";
+import { type FlatList, View } from "react-native";
 
 import { cn } from "@/lib/utils";
 
@@ -36,6 +36,8 @@ interface SelectFieldProps {
 	searchable?: boolean;
 }
 
+const ITEM_HEIGHT = 48;
+
 function SelectField({
 	label,
 	value,
@@ -65,6 +67,22 @@ function SelectField({
 
 	const handleSearchReset = () => {
 		setSearchQuery("");
+	};
+
+	const listRef = useRef<FlatList>(null);
+
+	const selectedIndex = useMemo(() => {
+		return filteredOptions.findIndex((o) => o.value === value);
+	}, [filteredOptions, value]);
+
+	const handleScrollToSelected = () => {
+		if (selectedIndex > 0) {
+			listRef.current?.scrollToIndex({
+				index: selectedIndex,
+				viewPosition: 0.5, // 0 = top, 0.5 = center, 1 = bottom
+				animated: false,
+			});
+		}
 	};
 
 	return (
@@ -130,6 +148,12 @@ function SelectField({
 							data={filteredOptions}
 							contentContainerClassName="pb-4"
 							keyExtractor={(item) => item.value}
+							onLayout={handleScrollToSelected}
+							getItemLayout={(_, index) => ({
+								length: ITEM_HEIGHT,
+								offset: ITEM_HEIGHT * index,
+								index,
+							})}
 							renderItem={({ item: option }) => (
 								<SheetItem
 									label={option.label}
