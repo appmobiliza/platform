@@ -9,6 +9,7 @@
 		"noImplicitAny": false,
 		"strictNullChecks": false,
 		"strictFunctionTypes": false,
+		"isolatedModules": true,
 		"esModuleInterop": true,
 		"skipLibCheck": true,
 		"moduleResolution": "bundler",

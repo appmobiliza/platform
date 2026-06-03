@@ -22,7 +22,6 @@ const config = {
 	},
 	setupFilesAfterEnv: ["<rootDir>/src/__tests__/setup.ts"],
 	moduleNameMapper: {
-		"^@mobiliza/auth$": "<rootDir>/src/__tests__/mocks/auth.ts",
 		"^@mobiliza/realtime$": "<rootDir>/src/__tests__/mocks/realtime.ts",
 		"^(\\.{1,2}/.*)\\.js$": "$1",
 	},
@@ -32,7 +31,6 @@ const config = {
 			"ts-jest",
 			{
 				tsconfig: "<rootDir>/tsconfig.test.json",
-				isolatedModules: true,
 				useESM: true,
 			},
 		],

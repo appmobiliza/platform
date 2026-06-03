@@ -13,7 +13,6 @@ import {
 	seedStudentProfile,
 	seedUser,
 } from "../helpers/seed";
-import { clearAuthMock } from "../mocks/auth";
 import { createMockTRPCContext, createStudentSession } from "../mocks/context";
 import { rollbackTransaction } from "../setup";
 
@@ -23,7 +22,6 @@ describe("favoritesRouter", () => {
 	beforeEach(async () => {
 		await rollbackTransaction();
 		jest.clearAllMocks();
-		clearAuthMock();
 		caller = appRouter.createCaller(() => createMockTRPCContext());
 	});
 

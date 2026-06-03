@@ -17,7 +17,7 @@ import {
 	seedStudentProfile,
 	seedUser,
 } from "../helpers/seed";
-import { clearAuthMock, createMockSession } from "../mocks/auth";
+import { auth } from "@mobiliza/auth";
 import {
 	createMockTRPCContext,
 	createNullSessionContext,
@@ -32,7 +32,6 @@ describe("auth", () => {
 	beforeEach(async () => {
 		await rollbackTransaction();
 		jest.clearAllMocks();
-		clearAuthMock();
 		caller = appRouter.createCaller(() => createMockTRPCContext());
 	});
 
@@ -56,12 +55,16 @@ describe("auth", () => {
 
 		it("deve usar session ID único para cada sessão", async () => {
 			// Arrange
-			const session1 = createMockSession({ id: "user_1" });
-			const session2 = createMockSession({ id: "user_2" });
+			const user1 = await seedUser({ role: "student" });
+			const user2 = await seedUser({ role: "student" });
+
+			const ctx = await auth.$context;
+			const result1 = await ctx.test.login({ userId: user1.id });
+			const result2 = await ctx.test.login({ userId: user2.id });
 
 			// Assert
-			expect(session1.session.id).not.toBe(session2.session.id);
-			expect(session1.user.id).not.toBe(session2.user.id);
+			expect(result1.session.id).not.toBe(result2.session.id);
+			expect(result1.user.id).not.toBe(result2.user.id);
 		});
 	});
 
