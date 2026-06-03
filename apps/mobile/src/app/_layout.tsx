@@ -22,20 +22,21 @@ SplashScreen.setOptions({
 export default function RootLayout() {
 	const isLoggedIn = useIsLoggedIn();
 
-	const colorScheme = useAppColorScheme();
 	// For background we can rely on NativeWind, but if we need the RN style,
 	// we should probably derive it from the scheme.
 	// For now we keep using the THEME constant for the base background.
+	const colorScheme = useAppColorScheme();
 	const bgColor = THEME[colorScheme ?? "light"].background;
 
 	return (
-		<GestureHandlerRootView style={{ flex: 1, backgroundColor: "red" }}>
+		<GestureHandlerRootView style={{ flex: 1 }}>
 			<ThemeProvider>
 				{/*<KeyboardProvider>*/}
 				<BottomSheetModalProvider>
 					<Stack
 						screenOptions={{
 							headerShown: false,
+							contentStyle: { backgroundColor: bgColor },
 						}}
 					>
 						<Stack.Protected guard={isLoggedIn}>

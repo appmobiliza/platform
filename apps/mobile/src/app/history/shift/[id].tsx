@@ -1,11 +1,12 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Clock } from "lucide-react-native";
-import { FlatList, Pressable, ScrollView, View } from "react-native";
+import { FlatList, Pressable, View } from "react-native";
 
 import { Header } from "@/components/header";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Text } from "@/components/ui/text";
 
+import { useLightStatusBar } from "@/hooks/use-light-status-bar";
 import { cn } from "@/lib/utils";
 
 // Mocking services in the shift
@@ -41,6 +42,8 @@ const services = [
 ];
 
 export default function ScholarShiftDetails() {
+	useLightStatusBar();
+
 	const { id } = useLocalSearchParams();
 	const router = useRouter();
 

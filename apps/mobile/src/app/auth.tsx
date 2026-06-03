@@ -67,6 +67,15 @@ export default function Auth() {
 						<Text>Entrar como Bolsista</Text>
 					</Button>
 
+					<Button
+						className="relative"
+						onPress={() => router.push("/onboarding")}
+						variant={"ghost"}
+						size={"sm"}
+					>
+						<Text>Testar onboarding</Text>
+					</Button>
+
 					<Text className="text-center text-sm text-muted-foreground mt-8">
 						Ao continuar, você concorda com nossos{"\n"}
 						<Text

@@ -1,6 +1,6 @@
 import { VariableContextProvider } from "nativewind";
 import { useEffect } from "react";
-import { Appearance, View } from "react-native";
+import { Appearance, type ColorSchemeName, Platform, View } from "react-native";
 
 import { THEME, useThemeVariables } from "@/lib/theme";
 import { useThemePreference } from "@/lib/theme-store";
@@ -20,7 +20,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 	//   2. Passing null ("reset") crashes on Android — the Kotlin
 	//      parameter is declared non-null.
 	useEffect(() => {
-		if (preference !== "system") {
+		if (preference === "system") {
+			// iOS supports null to reset to system; Android crashes with null,
+			// so we read the real system color scheme and apply it instead.
+			const systemScheme = Appearance.getColorScheme() ?? "light";
+			Appearance.setColorScheme(
+				(Platform.OS === "ios"
+					? null
+					: systemScheme) as ColorSchemeName,
+			);
+		} else {
 			Appearance.setColorScheme(preference);
 		}
 	}, [preference]);

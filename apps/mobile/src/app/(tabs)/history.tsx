@@ -1,5 +1,4 @@
 import { useCallback } from "react";
-
 import { FlatList, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -9,6 +8,7 @@ import { SimpleHistoryItem } from "@/components/simple-history-item";
 import { StatusMessage } from "@/components/status-message";
 import { Text } from "@/components/ui/text";
 
+import { useLightStatusBar } from "@/hooks/use-light-status-bar";
 import { UserRole, useUserRole } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +40,8 @@ const historyItems = [
 ];
 
 function StudentHistory() {
+	useLightStatusBar();
+
 	const insets = useSafeAreaInsets();
 
 	const renderItem = useCallback(

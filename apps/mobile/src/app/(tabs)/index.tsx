@@ -1,7 +1,6 @@
-import { useCallback } from "react";
-
 import * as Location from "expo-location";
 import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
