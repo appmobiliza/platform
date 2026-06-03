@@ -52,9 +52,7 @@ describe("metricsRouter", () => {
 				email: "scholar_export@test.com",
 			});
 			const studentProfile = await seedStudentProfile(student.id);
-			const scholarProfile = await seedScholarProfile(scholar.id, {
-				isApproved: true,
-			});
+			const scholarProfile = await seedScholarProfile(scholar.id);
 			const loc1 = await seedCampusLocation();
 			const loc2 = await seedCampusLocation();
 
@@ -99,9 +97,7 @@ describe("metricsRouter", () => {
 			const student = await seedUser({ role: "student" });
 			const scholar = await seedUser({ role: "scholar" });
 			const studentProfile = await seedStudentProfile(student.id);
-			const scholarProfile = await seedScholarProfile(scholar.id, {
-				isApproved: true,
-			});
+			const scholarProfile = await seedScholarProfile(scholar.id);
 			const _loc1 = await seedCampusLocation();
 			const _loc2 = await seedCampusLocation();
 
@@ -233,12 +229,8 @@ describe("metricsRouter", () => {
 				email: "scholar2@test.com",
 			});
 			const studentProfile = await seedStudentProfile(student.id);
-			const scholarProfile1 = await seedScholarProfile(scholar1.id, {
-				isApproved: true,
-			});
-			const scholarProfile2 = await seedScholarProfile(scholar2.id, {
-				isApproved: true,
-			});
+			const scholarProfile1 = await seedScholarProfile(scholar1.id);
+			const scholarProfile2 = await seedScholarProfile(scholar2.id);
 			await seedCampusLocation();
 			await seedCampusLocation();
 

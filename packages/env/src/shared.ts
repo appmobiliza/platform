@@ -1,4 +1,7 @@
+import * as dotenv from "dotenv";
 import { z } from "zod";
+
+dotenv.config({ path: "../../.env" });
 
 export const commaSeparatedOrigins = z
 	.string()
@@ -20,10 +23,14 @@ export const nodeEnvSchema = z
 	.enum(["development", "test", "production"])
 	.default("development");
 
-export function requireEnv(value: string | undefined, name: string): string {
+export function requireEnvVar<
+	T extends Record<string, string | undefined>,
+	K extends string & keyof T,
+>(env: T, key: K): NonNullable<T[K]> {
+	const value = env[key];
 	if (!value) {
 		throw new Error(
-			`Variável de ambiente obrigatória não definida: ${name}`,
+			`Variável de ambiente obrigatória não definida: ${key}`,
 		);
 	}
 

@@ -1,6 +1,5 @@
-import "dotenv/config";
-
 import { apiEnv } from "@mobiliza/env/api";
+
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 

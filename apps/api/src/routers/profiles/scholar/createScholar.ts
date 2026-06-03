@@ -1,4 +1,4 @@
-import { insertScholarSchema } from "@mobiliza/contracts";
+import { InsertScholarSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
@@ -10,7 +10,7 @@ import { protectedProcedure } from "@/trpc/context";
 
 export const createScholar = protectedProcedure
 	.meta({ openapi: { method: "POST", path: "/profiles/scholar" } })
-	.input(insertScholarSchema)
+	.input(InsertScholarSchema)
 	.output(z.any())
 	.mutation(async ({ ctx, input }) => {
 		const existing = await db.query.scholarProfile.findFirst({

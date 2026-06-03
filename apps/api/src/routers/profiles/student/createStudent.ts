@@ -1,4 +1,4 @@
-import { insertStudentSchema } from "@mobiliza/contracts";
+import { InsertStudentSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
@@ -11,7 +11,7 @@ import { protectedProcedure } from "@/trpc/context";
 
 export const createStudent = protectedProcedure
 	.meta({ openapi: { method: "POST", path: "/profiles/student" } })
-	.input(insertStudentSchema)
+	.input(InsertStudentSchema)
 	.output(z.any())
 	.mutation(async ({ ctx, input }) => {
 		const existing = await db.query.studentProfile.findFirst({

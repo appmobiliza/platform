@@ -1,4 +1,4 @@
-import { updateScholarSchema } from "@mobiliza/contracts";
+import { UpdateScholarSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
@@ -9,7 +9,7 @@ import { protectedProcedure } from "@/trpc/context";
 
 export const updateScholar = protectedProcedure
 	.meta({ openapi: { method: "PATCH", path: "/profiles/scholar" } })
-	.input(updateScholarSchema)
+	.input(UpdateScholarSchema)
 	.output(z.any())
 	.mutation(async ({ ctx, input }) => {
 		const [profile] = await db

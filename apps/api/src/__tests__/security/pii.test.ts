@@ -1,4 +1,3 @@
-import { describe, expect, test } from "@jest/globals";
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import {
@@ -8,6 +7,8 @@ import {
 	studentProfile,
 	user,
 } from "@mobiliza/db/schema";
+
+import { describe, expect, test } from "@jest/globals";
 
 import { appRouter } from "../../router";
 
@@ -57,7 +58,6 @@ describe("Security: PII Leak in requests.available", () => {
 			course: "Matemática",
 			campus: "Campus A.C. Simões",
 			shift: "morning",
-			isApproved: true,
 			isAvailable: true,
 			enrollment: "654321",
 			phone: "82888888888",

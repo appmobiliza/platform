@@ -247,10 +247,7 @@ describe("requestsRouter", () => {
 			const student = await seedUser({ role: "student" });
 			const scholar = await seedUser({ role: "scholar" });
 			const studentProfile = await seedStudentProfile(student.id);
-			await seedScholarProfile(scholar.id, {
-				isApproved: false,
-				isAvailable: false,
-			});
+			await seedScholarProfile(scholar.id, { isAvailable: false });
 			const loc1 = await seedCampusLocation();
 			const loc2 = await seedCampusLocation();
 			const request = await seedServiceRequest(studentProfile.id, {
@@ -277,10 +274,7 @@ describe("requestsRouter", () => {
 			const student = await seedUser({ role: "student" });
 			const scholar = await seedUser({ role: "scholar" });
 			const studentProfile = await seedStudentProfile(student.id);
-			await seedScholarProfile(scholar.id, {
-				isApproved: true,
-				isAvailable: false,
-			});
+			await seedScholarProfile(scholar.id, { isAvailable: false });
 			const loc1 = await seedCampusLocation();
 			const loc2 = await seedCampusLocation();
 			const request = await seedServiceRequest(studentProfile.id, {
@@ -314,14 +308,8 @@ describe("requestsRouter", () => {
 				email: "scholar2@test.com",
 			});
 			const studentProfile = await seedStudentProfile(student.id);
-			await seedScholarProfile(scholar1.id, {
-				isApproved: true,
-				isAvailable: true,
-			});
-			await seedScholarProfile(scholar2.id, {
-				isApproved: true,
-				isAvailable: true,
-			});
+			await seedScholarProfile(scholar1.id, { isAvailable: true });
+			await seedScholarProfile(scholar2.id, { isAvailable: true });
 			const loc1 = await seedCampusLocation();
 			const loc2 = await seedCampusLocation();
 			const request = await seedServiceRequest(studentProfile.id, {
@@ -356,7 +344,6 @@ describe("requestsRouter", () => {
 			const scholar = await seedUser({ role: "scholar" });
 			const studentProfile = await seedStudentProfile(student.id);
 			const _scholarProfile = await seedScholarProfile(scholar.id, {
-				isApproved: true,
 				isAvailable: true,
 			});
 			const loc1 = await seedCampusLocation();
@@ -390,7 +377,7 @@ describe("requestsRouter", () => {
 			const student = await seedUser({ role: "student" });
 			const scholar = await seedUser({ role: "scholar" });
 			const studentProfile = await seedStudentProfile(student.id);
-			await seedScholarProfile(scholar.id, { isApproved: true });
+			await seedScholarProfile(scholar.id);
 			const loc1 = await seedCampusLocation();
 			const loc2 = await seedCampusLocation();
 			const request = await seedServiceRequest(studentProfile.id, {
@@ -415,7 +402,6 @@ describe("requestsRouter", () => {
 			const scholar = await seedUser({ role: "scholar" });
 			const studentProfile = await seedStudentProfile(student.id);
 			const scholarProfile = await seedScholarProfile(scholar.id, {
-				isApproved: true,
 				isAvailable: true,
 			});
 			const loc1 = await seedCampusLocation();
@@ -450,7 +436,6 @@ describe("requestsRouter", () => {
 			const scholar = await seedUser({ role: "scholar" });
 			const studentProfile = await seedStudentProfile(student.id);
 			const scholarProfile = await seedScholarProfile(scholar.id, {
-				isApproved: true,
 				isAvailable: true,
 			});
 			const loc1 = await seedCampusLocation();
@@ -484,7 +469,6 @@ describe("requestsRouter", () => {
 			const scholar = await seedUser({ role: "scholar" });
 			const studentProfile = await seedStudentProfile(student.id);
 			const scholarProfile = await seedScholarProfile(scholar.id, {
-				isApproved: true,
 				isAvailable: true,
 			});
 			const loc1 = await seedCampusLocation();
@@ -531,7 +515,6 @@ describe("requestsRouter", () => {
 			const profile1 = await seedStudentProfile(student1.id);
 			await seedStudentProfile(student2.id);
 			const scholarProfile = await seedScholarProfile(scholar.id, {
-				isApproved: true,
 				isAvailable: true,
 			});
 			const loc1 = await seedCampusLocation();
@@ -564,7 +547,6 @@ describe("requestsRouter", () => {
 			const scholar = await seedUser({ role: "scholar" });
 			const profile = await seedStudentProfile(student.id);
 			const scholarProfile = await seedScholarProfile(scholar.id, {
-				isApproved: true,
 				isAvailable: true,
 			});
 			const loc1 = await seedCampusLocation();
@@ -618,7 +600,6 @@ describe("requestsRouter", () => {
 			const scholar = await seedUser({ role: "scholar" });
 			const profile = await seedStudentProfile(student.id);
 			const scholarProfile = await seedScholarProfile(scholar.id, {
-				isApproved: true,
 				isAvailable: true,
 			});
 			const loc1 = await seedCampusLocation();
@@ -655,10 +636,7 @@ describe("requestsRouter", () => {
 			const student = await seedUser({ role: "student" });
 			const scholar = await seedUser({ role: "scholar" });
 			const studentProfile = await seedStudentProfile(student.id);
-			await seedScholarProfile(scholar.id, {
-				isApproved: true,
-				isAvailable: true,
-			});
+			await seedScholarProfile(scholar.id, { isAvailable: true });
 			const loc1 = await seedCampusLocation();
 			const loc2 = await seedCampusLocation();
 			const request = await seedServiceRequest(studentProfile.id, {
@@ -687,9 +665,7 @@ describe("requestsRouter", () => {
 		it("deve retornar o histórico do bolsista com duração total", async () => {
 			// Arrange
 			const scholar = await seedUser({ role: "scholar" });
-			const scholarProfile = await seedScholarProfile(scholar.id, {
-				isApproved: true,
-			});
+			const scholarProfile = await seedScholarProfile(scholar.id, {});
 			const student = await seedUser({ role: "student" });
 			const studentProfile = await seedStudentProfile(student.id);
 

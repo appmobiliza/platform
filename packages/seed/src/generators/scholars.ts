@@ -8,12 +8,15 @@
  * e destes, ~60% estão marcados como disponíveis.
  */
 
-import { campusValues, courseValues, scholarShiftValues } from "@mobiliza/contracts";
-import type { NewScholarProfile } from "@mobiliza/db/schema";
 import {
-	scholarProfile,
-	user,
-} from "@mobiliza/db/schema";
+	campusValues,
+	courseValues,
+	genderValues,
+	scholarShiftValues,
+} from "@mobiliza/contracts";
+import type { NewScholarProfile } from "@mobiliza/db/schema";
+import { scholarProfile, user } from "@mobiliza/db/schema";
+
 import { eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 
@@ -61,23 +64,14 @@ export const scholarGenerator: SeedGenerator = {
 		// 3. Inserir em batch
 		await db.insert(scholarProfile).values(profiles);
 
-		const approved = profiles.filter((p) => p.isApproved).length;
 		ctx.counters[this.name] = profiles.length;
-		ctx.counters[`${this.name}.approved`] = approved;
 	},
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function generateScholarProfile(userId: string): NewScholarProfile {
-	const now = new Date();
-	const isApproved = faker.datatype.boolean(0.7);
-	const isAvailable = isApproved ? faker.datatype.boolean(0.6) : false;
-
-	const createdAt = new Date(
-		now.getTime() -
-			faker.number.int({ min: 1, max: 60 }) * 24 * 60 * 60 * 1000,
-	);
+	const isAvailable = faker.datatype.boolean(0.6);
 
 	return {
 		id: uuidv7(),
@@ -88,18 +82,7 @@ function generateScholarProfile(userId: string): NewScholarProfile {
 		phone: generatePhone(),
 		cpf: generateCPF(),
 		shift: faker.helpers.arrayElement([...scholarShiftValues]),
-		isApproved,
-		approvedAt: isApproved
-			? new Date(
-					createdAt.getTime() +
-						faker.number.int({ min: 1, max: 5 }) *
-							24 *
-							60 *
-							60 *
-							1000,
-				)
-			: null,
-		approvedBy: null, // será vinculado a um manager quando o generator de managers existir
+		gender: faker.helpers.arrayElement([...genderValues]),
 		isAvailable,
 		isActive: faker.datatype.boolean(0.9),
 	};

@@ -23,7 +23,6 @@
 	},
 	"devDependencies": {
 		"@mobiliza/typescript-config": "workspace:*",
-		"dotenv": "^17.4.2",
 		"drizzle-kit": "^0.31.10"
 	}
 }

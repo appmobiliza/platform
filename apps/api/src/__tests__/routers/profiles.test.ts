@@ -6,8 +6,6 @@
  * - createStudent: idempotente, criação, validação
  * - createScholar: criação pendente
  * - toggleAvailability: alternar, não aprovado
- * - pendingScholars: lista vazia/com dados
- * - reviewScholar: aprovação/rejeição
  */
 
 import { appRouter } from "../../router";
@@ -18,7 +16,6 @@ import {
 	seedUser,
 } from "../helpers/seed";
 import {
-	createManagerSession,
 	createMockTRPCContext,
 	createScholarSession,
 	createStudentSession,
@@ -63,7 +60,7 @@ describe("profilesRouter", () => {
 		it("deve retornar usuário com perfil de bolsista", async () => {
 			// Arrange
 			const user = await seedUser({ role: "scholar" });
-			await seedScholarProfile(user.id, { isApproved: true });
+			await seedScholarProfile(user.id);
 			const session = createScholarSession({
 				id: user.id,
 				role: "scholar",
@@ -228,13 +225,13 @@ describe("profilesRouter", () => {
 				shift: "morning",
 				phone: "82111117777",
 				cpf: "12345678901",
+				gender: "male",
 			});
 
 			// Assert
 			expect(result).toMatchObject({
 				userId: user.id,
 				enrollment: "2024007",
-				isApproved: false,
 				isAvailable: false,
 			});
 		});
@@ -242,9 +239,7 @@ describe("profilesRouter", () => {
 		it("deve ser idempotente retornando perfil existente", async () => {
 			// Arrange
 			const user = await seedUser({ role: "scholar" });
-			const existingProfile = await seedScholarProfile(user.id, {
-				isApproved: false,
-			});
+			const existingProfile = await seedScholarProfile(user.id);
 			const session = createScholarSession({
 				id: user.id,
 				role: "scholar",
@@ -259,6 +254,7 @@ describe("profilesRouter", () => {
 				shift: "morning",
 				phone: "82111118888",
 				cpf: "98765432109",
+				gender: "male",
 			});
 
 			// Assert
@@ -273,7 +269,6 @@ describe("profilesRouter", () => {
 			// Arrange
 			const user = await seedUser({ role: "scholar" });
 			await seedScholarProfile(user.id, {
-				isApproved: true,
 				isAvailable: false,
 			});
 			const session = createScholarSession({
@@ -298,10 +293,7 @@ describe("profilesRouter", () => {
 		it("deve falhar quando bolsista não está aprovado", async () => {
 			// Arrange
 			const user = await seedUser({ role: "scholar" });
-			await seedScholarProfile(user.id, {
-				isApproved: false,
-				isAvailable: false,
-			});
+			await seedScholarProfile(user.id, { isAvailable: false });
 			const session = createScholarSession({
 				id: user.id,
 				role: "scholar",
@@ -315,108 +307,6 @@ describe("profilesRouter", () => {
 				code: "FORBIDDEN",
 				message: expect.stringContaining("aprovado"),
 			});
-		});
-	});
-
-	// ─── pendingScholars ─────────────────────────────────────────────────────────
-
-	describe("pendingScholars", () => {
-		it("deve retornar lista vazia quando não há pendências", async () => {
-			// Arrange
-			await seedUser({ role: "manager" });
-			const session = createManagerSession();
-			caller = appRouter.createCaller(() => session);
-
-			// Act
-			const result = await caller.profiles.pendingScholars();
-
-			// Assert
-			expect(result).toEqual([]);
-		});
-
-		it("deve retornar lista de bolsistas pendentes", async () => {
-			// Arrange
-			await seedUser({ role: "manager" });
-			const scholar = await seedUser({ role: "scholar" });
-			await seedScholarProfile(scholar.id, { isApproved: false });
-			const session = createManagerSession();
-			caller = appRouter.createCaller(() => session);
-
-			// Act
-			const result = await caller.profiles.pendingScholars();
-
-			// Assert
-			expect(result).toHaveLength(1);
-			expect(result[0]).toMatchObject({
-				id: expect.any(String),
-				isApproved: false,
-			});
-		});
-	});
-
-	// ─── reviewScholar ──────────────────────────────────────────────────────────
-
-	describe("reviewScholar", () => {
-		it("deve aprovar bolsista com sucesso", async () => {
-			// Arrange
-			await seedUser({ id: "manager-user-id", role: "manager" });
-			const scholar = await seedUser({ role: "scholar" });
-			const scholarProfile = await seedScholarProfile(scholar.id, {
-				isApproved: false,
-			});
-			const session = createManagerSession();
-			caller = appRouter.createCaller(() => session);
-
-			// Act
-			const result = await caller.profiles.reviewScholar({
-				scholarProfileId: scholarProfile.id,
-				approved: true,
-			});
-
-			// Assert
-			expect(result).toMatchObject({
-				isApproved: true,
-				isActive: true,
-				approvedAt: expect.any(Date),
-			});
-		});
-
-		it("deve rejeitar bolsista com sucesso", async () => {
-			// Arrange
-			await seedUser({ role: "manager" });
-			const scholar = await seedUser({ role: "scholar" });
-			const scholarProfile = await seedScholarProfile(scholar.id, {
-				isApproved: false,
-			});
-			const session = createManagerSession();
-			caller = appRouter.createCaller(() => session);
-
-			// Act
-			const result = await caller.profiles.reviewScholar({
-				scholarProfileId: scholarProfile.id,
-				approved: false,
-			});
-
-			// Assert
-			expect(result).toMatchObject({
-				isApproved: false,
-				isActive: false,
-			});
-		});
-
-		it("deve falhar quando perfil não existe", async () => {
-			// Arrange
-			await seedUser({ role: "manager" });
-			const session = createManagerSession();
-			caller = appRouter.createCaller(() => session);
-
-			// Act & Assert
-			await expect(
-				caller.profiles.reviewScholar({
-					scholarProfileId: "non-existent-id",
-					approved: true,
-				}),
-			).rejects.toMatchObject({ code: "NOT_FOUND" });
 		});
 	});
 });

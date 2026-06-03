@@ -1,7 +1,8 @@
-import { describe, expect, test } from "@jest/globals";
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import { scholarProfile, studentProfile, user } from "@mobiliza/db/schema";
+
+import { describe, expect, test } from "@jest/globals";
 import { uuidv7 } from "uuidv7";
 
 import { appRouter } from "../../router";
@@ -89,7 +90,6 @@ describe("Profiles: Update Mutations", () => {
 				cpf: Math.floor(Math.random() * 10000000000)
 					.toString()
 					.padStart(11, "0"),
-				isApproved: true,
 				isAvailable: false,
 			})
 			.returning()

@@ -1,6 +1,6 @@
-import { describe, expect, test } from "@jest/globals";
-// @ts-expect-error
 import { UpdateScholarSchema, UpdateStudentSchema } from "@mobiliza/contracts";
+
+import { describe, expect, test } from "@jest/globals";
 
 describe("Contracts: Profile Updates", () => {
 	test("UpdateStudentSchema should allow partial updates and validate phone", () => {

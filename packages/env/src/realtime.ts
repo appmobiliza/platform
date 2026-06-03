@@ -1,7 +1,7 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
-import { optionalString, requireEnv } from "./shared";
+import { optionalString, requireEnvVar } from "./shared";
 
 export const realtimeEnv = createEnv({
 	server: {
@@ -22,28 +22,28 @@ export const realtimeEnv = createEnv({
 
 export function requireSupabaseEnv() {
 	return {
-		url: requireEnv(realtimeEnv.SUPABASE_URL, "SUPABASE_URL"),
-		anonKey: requireEnv(realtimeEnv.SUPABASE_ANON_KEY, "SUPABASE_ANON_KEY"),
+		url: requireEnvVar(realtimeEnv, "SUPABASE_URL"),
+		anonKey: requireEnvVar(realtimeEnv, "SUPABASE_ANON_KEY"),
 	};
 }
 
 export function requireWebSocketEnv() {
 	return {
-		url: requireEnv(realtimeEnv.WS_URL, "WS_URL"),
+		url: requireEnvVar(realtimeEnv, "WS_URL"),
 	};
 }
 
 export function requireAblyEnv() {
 	return {
-		apiKey: requireEnv(realtimeEnv.ABLY_API_KEY, "ABLY_API_KEY"),
+		apiKey: requireEnvVar(realtimeEnv, "ABLY_API_KEY"),
 	};
 }
 
 export function requirePusherEnv() {
 	return {
-		appId: requireEnv(realtimeEnv.PUSHER_APP_ID, "PUSHER_APP_ID"),
-		key: requireEnv(realtimeEnv.PUSHER_KEY, "PUSHER_KEY"),
-		secret: requireEnv(realtimeEnv.PUSHER_SECRET, "PUSHER_SECRET"),
-		cluster: requireEnv(realtimeEnv.PUSHER_CLUSTER, "PUSHER_CLUSTER"),
+		appId: requireEnvVar(realtimeEnv, "PUSHER_APP_ID"),
+		key: requireEnvVar(realtimeEnv, "PUSHER_KEY"),
+		secret: requireEnvVar(realtimeEnv, "PUSHER_SECRET"),
+		cluster: requireEnvVar(realtimeEnv, "PUSHER_CLUSTER"),
 	};
 }

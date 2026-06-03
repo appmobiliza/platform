@@ -1,8 +1,6 @@
 import { router } from "@/trpc/context";
 import { me } from "./me";
 import { createScholar } from "./scholar/createScholar";
-import { pendingScholars } from "./scholar/pendingScholars";
-import { reviewScholar } from "./scholar/reviewScholar";
 import { scholarDashboard } from "./scholar/scholarDashboard";
 import { toggleAvailability } from "./scholar/toggleAvailability";
 import { createStudent } from "./student/createStudent";
@@ -19,6 +17,4 @@ export const profilesRouter = router({
 	toggleAvailability,
 	scholarDashboard,
 	studentDashboard,
-	pendingScholars,
-	reviewScholar,
 });
