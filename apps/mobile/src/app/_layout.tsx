@@ -31,25 +31,25 @@ export default function RootLayout() {
 	return (
 		<GestureHandlerRootView style={{ flex: 1, backgroundColor: bgColor }}>
 			<ThemeProvider>
+				{/*<KeyboardProvider>*/}
 				<BottomSheetModalProvider>
-					<KeyboardProvider>
-						<Stack
-							screenOptions={{
-								headerShown: false,
-								contentStyle: { backgroundColor: bgColor },
-							}}
-						>
-							<Stack.Protected guard={isLoggedIn}>
-								<Stack.Screen name="(tabs)" />
-							</Stack.Protected>
+					<Stack
+						screenOptions={{
+							headerShown: false,
+							contentStyle: { backgroundColor: bgColor },
+						}}
+					>
+						<Stack.Protected guard={isLoggedIn}>
+							<Stack.Screen name="(tabs)" />
+						</Stack.Protected>
 
-							<Stack.Protected guard={!isLoggedIn}>
-								<Stack.Screen name="auth" />
-								<Stack.Screen name="onboarding" />
-							</Stack.Protected>
-						</Stack>
-					</KeyboardProvider>
+						<Stack.Protected guard={!isLoggedIn}>
+							<Stack.Screen name="auth" />
+							<Stack.Screen name="onboarding" />
+						</Stack.Protected>
+					</Stack>
 				</BottomSheetModalProvider>
+				{/*</KeyboardProvider>*/}
 			</ThemeProvider>
 		</GestureHandlerRootView>
 	);

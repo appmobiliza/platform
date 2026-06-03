@@ -190,6 +190,7 @@ type SheetContentProps = React.PropsWithChildren<{
 	enableDynamicSizing?: boolean;
 	wrapWithView?: boolean;
 	onDismiss?: () => void;
+	onChange?: (index: number) => void;
 }> &
 	React.ComponentPropsWithoutRef<typeof BottomSheetView>;
 
@@ -201,6 +202,7 @@ function SheetContent({
 	enableDynamicSizing = false,
 	wrapWithView = true,
 	onDismiss,
+	onChange,
 	className,
 	style,
 	...props
@@ -225,6 +227,7 @@ function SheetContent({
 		<BottomSheetModal
 			ref={modalRef}
 			index={index}
+			onChange={onChange}
 			snapPoints={
 				enableDynamicSizing
 					? undefined

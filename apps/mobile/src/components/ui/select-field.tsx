@@ -1,11 +1,13 @@
 import {
 	BottomSheetFlatList,
+	type BottomSheetFlatListMethods,
 	BottomSheetScrollView,
+	BottomSheetTextInput,
 	BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { ChevronDown } from "lucide-react-native";
-import { useMemo, useRef, useState } from "react";
-import { type FlatList, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { type FlatList, InteractionManager, View } from "react-native";
 
 import { cn } from "@/lib/utils";
 
@@ -13,7 +15,7 @@ import type { SelectOption } from "@/types";
 import { Button } from "./button";
 import { Field } from "./field";
 import { Icon } from "./icon";
-import { Input } from "./input";
+import { Input, inputClassName, inputNativeClassName } from "./input";
 import {
 	Sheet,
 	SheetContent,
@@ -36,7 +38,7 @@ interface SelectFieldProps {
 	searchable?: boolean;
 }
 
-const ITEM_HEIGHT = 48;
+const ITEM_HEIGHT = 54;
 
 function SelectField({
 	label,
@@ -65,24 +67,26 @@ function SelectField({
 		);
 	}, [options, searchable, searchQuery]);
 
+	const selectedIndex = filteredOptions.findIndex((o) => o.value === value);
+
 	const handleSearchReset = () => {
 		setSearchQuery("");
 	};
 
-	const listRef = useRef<FlatList>(null);
+	const listRef = useRef<BottomSheetFlatListMethods>(null);
 
-	const selectedIndex = useMemo(() => {
-		return filteredOptions.findIndex((o) => o.value === value);
-	}, [filteredOptions, value]);
+	const handleSheetChange = (index: number) => {
+		if (index < 0) return;
 
-	const handleScrollToSelected = () => {
-		if (selectedIndex > 0) {
-			listRef.current?.scrollToIndex({
-				index: selectedIndex,
-				viewPosition: 0.5, // 0 = top, 0.5 = center, 1 = bottom
-				animated: false,
+		requestAnimationFrame(() => {
+			requestAnimationFrame(() => {
+				listRef.current?.scrollToIndex({
+					index: selectedIndex,
+					viewPosition: 0.5,
+					animated: false,
+				});
 			});
-		}
+		});
 	};
 
 	return (
@@ -119,6 +123,7 @@ function SelectField({
 				</SheetTrigger>
 
 				<SheetContent
+					onChange={handleSheetChange}
 					enableDynamicSizing={!searchable}
 					wrapWithView={!searchable}
 					snapPoints={searchable ? ["50%"] : undefined}
@@ -133,11 +138,14 @@ function SelectField({
 
 					{searchable ? (
 						<View className="px-4 pt-3 pb-3 border-b border-border">
-							<Input
+							<BottomSheetTextInput
 								placeholder="Pesquisar"
 								value={searchQuery}
 								onChangeText={setSearchQuery}
-								className="h-10"
+								className={cn(
+									inputClassName,
+									inputNativeClassName,
+								)}
 								aria-label="Pesquisar opções"
 							/>
 						</View>
@@ -145,10 +153,11 @@ function SelectField({
 
 					{searchable ? (
 						<BottomSheetFlatList
+							ref={listRef}
 							data={filteredOptions}
 							contentContainerClassName="pb-4"
 							keyExtractor={(item) => item.value}
-							onLayout={handleScrollToSelected}
+							initialScrollIndex={Math.max(0, selectedIndex)}
 							getItemLayout={(_, index) => ({
 								length: ITEM_HEIGHT,
 								offset: ITEM_HEIGHT * index,
