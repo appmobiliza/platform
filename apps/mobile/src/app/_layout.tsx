@@ -1,13 +1,12 @@
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import "../global.css";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import { useIsLoggedIn } from "@/lib/auth-store";
+import { useHasProfile, useIsLoggedIn } from "@/lib/auth-store";
 import { THEME } from "@/lib/theme";
 import { useAppColorScheme } from "@/lib/use-app-color-scheme";
 
@@ -21,6 +20,7 @@ SplashScreen.setOptions({
 
 export default function RootLayout() {
 	const isLoggedIn = useIsLoggedIn();
+	const hasProfile = useHasProfile();
 
 	// For background we can rely on NativeWind, but if we need the RN style,
 	// we should probably derive it from the scheme.
@@ -31,7 +31,6 @@ export default function RootLayout() {
 	return (
 		<GestureHandlerRootView style={{ flex: 1 }}>
 			<ThemeProvider>
-				{/*<KeyboardProvider>*/}
 				<BottomSheetModalProvider>
 					<Stack
 						screenOptions={{
@@ -39,17 +38,22 @@ export default function RootLayout() {
 							contentStyle: { backgroundColor: bgColor },
 						}}
 					>
-						<Stack.Protected guard={isLoggedIn}>
+						{/* Main app — requires autenticação E perfil completo */}
+						<Stack.Protected guard={isLoggedIn && hasProfile}>
 							<Stack.Screen name="(tabs)" />
 						</Stack.Protected>
 
+						{/* Onboarding — requer autenticação, mas ainda sem perfil */}
+						<Stack.Protected guard={isLoggedIn && !hasProfile}>
+							<Stack.Screen name="onboarding" />
+						</Stack.Protected>
+
+						{/* Tela de login — apenas quando deslogado */}
 						<Stack.Protected guard={!isLoggedIn}>
 							<Stack.Screen name="auth" />
-							<Stack.Screen name="onboarding" />
 						</Stack.Protected>
 					</Stack>
 				</BottomSheetModalProvider>
-				{/*</KeyboardProvider>*/}
 			</ThemeProvider>
 		</GestureHandlerRootView>
 	);

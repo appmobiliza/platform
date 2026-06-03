@@ -36,10 +36,8 @@
 				"expo-splash-screen",
 				{
 					"backgroundColor": "#005E65",
-					"android": {
-						"image": "./assets/images/splash-icon.png",
-						"imageWidth": 40
-					}
+					"image": "./assets/images/splash-icon.png",
+					"imageWidth": 1024
 				}
 			],
 			[
@@ -178,7 +176,8 @@
 			"expo-image",
 			"expo-web-browser",
 			"@maplibre/maplibre-react-native",
-			"expo-secure-store"
+			"expo-secure-store",
+			"expo-sqlite"
 		],
 		"experiments": {
 			"typedRoutes": true,

@@ -5,7 +5,8 @@ import { Platform, View } from "react-native";
 import { SettingsButton } from "@/components/settings-button";
 import { Icon } from "@/components/ui/icon";
 
-import { setIsLoggedIn, useIsLoggedIn } from "@/lib/auth-store";
+import { authClient } from "@/lib/auth-client";
+import { clearUserCache } from "@/lib/auth-store";
 import { useThemePreference } from "@/lib/theme-store";
 
 const THEME_LABELS: Record<string, string> = {
@@ -17,8 +18,6 @@ const THEME_LABELS: Record<string, string> = {
 export default function SettingsProfile() {
 	const router = useRouter();
 	const theme = useThemePreference();
-	const isLoggedIn = useIsLoggedIn();
-
 	return (
 		<View>
 			<SettingsButton
@@ -43,10 +42,10 @@ export default function SettingsProfile() {
 				label="Encerra sua sessão e desloga sua conta"
 				className="text-destructive"
 				variant="destructive"
-				onPress={() => {
-					setIsLoggedIn(false);
+				onPress={async () => {
+					await authClient.signOut();
+					clearUserCache();
 					router.replace("/auth");
-					console.log("Logged out", isLoggedIn);
 				}}
 			>
 				<Icon icon={LogOut} size={24} color="--destructive" />

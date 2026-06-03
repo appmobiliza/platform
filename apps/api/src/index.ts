@@ -100,11 +100,11 @@ app.use(
 		onError:
 			apiEnv.NODE_ENV === "development"
 				? ({ path, error }) => {
-					console.error(
-						`[tRPC error] ${path ?? "unknown"}:`,
-						error,
-					);
-				}
+						console.error(
+							`[tRPC error] ${path ?? "unknown"}:`,
+							error,
+						);
+					}
 				: undefined,
 	}),
 );
