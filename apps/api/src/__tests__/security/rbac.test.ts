@@ -18,19 +18,19 @@ import {
 	createStudentSession,
 } from "../mocks/context";
 import {
-	resetDB,
 	seedCampusLocation,
 	seedScholarProfile,
 	seedServiceRequest,
 	seedStudentProfile,
 	seedUser,
-} from "../mocks/db";
+} from "../helpers/seed";
+import { rollbackTransaction } from "../setup";
 
 let caller: ReturnType<typeof appRouter.createCaller>;
 
 describe("rbac", () => {
-	beforeEach(() => {
-		resetDB();
+	beforeEach(async () => {
+		await rollbackTransaction();
 		jest.clearAllMocks();
 		caller = appRouter.createCaller(() => createMockTRPCContext());
 	});
@@ -40,17 +40,17 @@ describe("rbac", () => {
 	describe("student accessing scholar procedures", () => {
 		it("deve negar student ao tentar accept (requests)", async () => {
 			// Arrange
-			const student = seedUser({ role: "student" });
-			const scholar = seedUser({ role: "scholar" });
-			seedStudentProfile(student.id);
-			seedScholarProfile(scholar.id, {
+			const student = await seedUser({ role: "student" });
+			const scholar = await seedUser({ role: "scholar" });
+			const studentProfile = await seedStudentProfile(student.id);
+			await seedScholarProfile(scholar.id, {
 				isApproved: true,
 				isAvailable: true,
 			});
-			seedCampusLocation({ id: "1" });
-			seedCampusLocation({ id: "2" });
-			const request = seedServiceRequest(
-				seedStudentProfile(student.id).id,
+			await seedCampusLocation({ id: "1" });
+			await seedCampusLocation({ id: "2" });
+			const request = await seedServiceRequest(
+				studentProfile.id,
 				{
 					status: "pending",
 				},
@@ -69,16 +69,16 @@ describe("rbac", () => {
 
 		it("deve negar student ao tentar start (requests)", async () => {
 			// Arrange
-			const student = seedUser({ role: "student" });
-			const scholar = seedUser({ role: "scholar" });
-			seedStudentProfile(student.id);
-			const _scholarProfile = seedScholarProfile(scholar.id, {
+			const student = await seedUser({ role: "student" });
+			const scholar = await seedUser({ role: "scholar" });
+			const studentProfile = await seedStudentProfile(student.id);
+			const _scholarProfile = await seedScholarProfile(scholar.id, {
 				isApproved: true,
 			});
-			seedCampusLocation({ id: "1" });
-			seedCampusLocation({ id: "2" });
-			const request = seedServiceRequest(
-				seedStudentProfile(student.id).id,
+			await seedCampusLocation({ id: "1" });
+			await seedCampusLocation({ id: "2" });
+			const request = await seedServiceRequest(
+				studentProfile.id,
 				{
 					status: "accepted",
 				},
@@ -97,16 +97,16 @@ describe("rbac", () => {
 
 		it("deve negar student ao tentar complete (requests)", async () => {
 			// Arrange
-			const student = seedUser({ role: "student" });
-			const scholar = seedUser({ role: "scholar" });
-			seedStudentProfile(student.id);
-			const _scholarProfile = seedScholarProfile(scholar.id, {
+			const student = await seedUser({ role: "student" });
+			const scholar = await seedUser({ role: "scholar" });
+			const studentProfile = await seedStudentProfile(student.id);
+			const _scholarProfile = await seedScholarProfile(scholar.id, {
 				isApproved: true,
 			});
-			seedCampusLocation({ id: "1" });
-			seedCampusLocation({ id: "2" });
-			const request = seedServiceRequest(
-				seedStudentProfile(student.id).id,
+			await seedCampusLocation({ id: "1" });
+			await seedCampusLocation({ id: "2" });
+			const request = await seedServiceRequest(
+				studentProfile.id,
 				{
 					status: "ongoing",
 				},
@@ -125,8 +125,8 @@ describe("rbac", () => {
 
 		it("deve negar student ao tentar toggleAvailability (profiles)", async () => {
 			// Arrange
-			const student = seedUser({ role: "student" });
-			seedStudentProfile(student.id);
+			const student = await seedUser({ role: "student" });
+			await seedStudentProfile(student.id);
 			const session = createStudentSession({
 				id: student.id,
 				role: "student",
@@ -145,8 +145,8 @@ describe("rbac", () => {
 	describe("scholar accessing manager procedures", () => {
 		it("deve negar scholar ao tentar create (locations)", async () => {
 			// Arrange
-			const scholar = seedUser({ role: "scholar" });
-			seedScholarProfile(scholar.id, { isApproved: true });
+			const scholar = await seedUser({ role: "scholar" });
+			await seedScholarProfile(scholar.id, { isApproved: true });
 			const session = createScholarSession({
 				id: scholar.id,
 				role: "scholar",
@@ -166,9 +166,9 @@ describe("rbac", () => {
 
 		it("deve negar scholar ao tentar listAll (locations)", async () => {
 			// Arrange
-			const scholar = seedUser({ role: "scholar" });
-			seedScholarProfile(scholar.id, { isApproved: true });
-			seedCampusLocation({ id: "1" });
+			const scholar = await seedUser({ role: "scholar" });
+			await seedScholarProfile(scholar.id, { isApproved: true });
+			await seedCampusLocation({ id: "1" });
 			const session = createScholarSession({
 				id: scholar.id,
 				role: "scholar",
@@ -183,8 +183,8 @@ describe("rbac", () => {
 
 		it("deve negar scholar ao tentar pendingScholars (profiles)", async () => {
 			// Arrange
-			const scholar = seedUser({ role: "scholar" });
-			seedScholarProfile(scholar.id, { isApproved: true });
+			const scholar = await seedUser({ role: "scholar" });
+			await seedScholarProfile(scholar.id, { isApproved: true });
 			const session = createScholarSession({
 				id: scholar.id,
 				role: "scholar",
@@ -199,8 +199,8 @@ describe("rbac", () => {
 
 		it("deve negar scholar ao tentar reviewScholar (profiles)", async () => {
 			// Arrange
-			const scholar = seedUser({ role: "scholar" });
-			seedScholarProfile(scholar.id, { isApproved: true });
+			const scholar = await seedUser({ role: "scholar" });
+			await seedScholarProfile(scholar.id, { isApproved: true });
 			const session = createScholarSession({
 				id: scholar.id,
 				role: "scholar",
@@ -218,8 +218,8 @@ describe("rbac", () => {
 
 		it("deve negar scholar ao tentar metrics (all)", async () => {
 			// Arrange
-			const scholar = seedUser({ role: "scholar" });
-			seedScholarProfile(scholar.id, { isApproved: true });
+			const scholar = await seedUser({ role: "scholar" });
+			await seedScholarProfile(scholar.id, { isApproved: true });
 			const session = createScholarSession({
 				id: scholar.id,
 				role: "scholar",
@@ -252,8 +252,8 @@ describe("rbac", () => {
 	describe("unauthenticated access", () => {
 		it("deve negar create (requests) sem autenticação", async () => {
 			// Arrange
-			seedCampusLocation({ id: "1" });
-			seedCampusLocation({ id: "2" });
+			await seedCampusLocation({ id: "1" });
+			await seedCampusLocation({ id: "2" });
 			const session = createNullSessionContext();
 			caller = appRouter.createCaller(() => session);
 
@@ -305,8 +305,8 @@ describe("rbac", () => {
 	describe("student accessing manager procedures", () => {
 		it("deve negar student ao tentar acessar metrics", async () => {
 			// Arrange
-			const student = seedUser({ role: "student" });
-			seedStudentProfile(student.id);
+			const student = await seedUser({ role: "student" });
+			await seedStudentProfile(student.id);
 			const session = createStudentSession({
 				id: student.id,
 				role: "student",
@@ -331,7 +331,7 @@ describe("rbac", () => {
 	describe("manager accessing own procedures", () => {
 		it("deve permitir manager acessar pendingScholars", async () => {
 			// Arrange
-			const _manager = seedUser({ role: "manager" });
+			const _manager = await seedUser({ role: "manager" });
 			const session = createManagerSession();
 			caller = appRouter.createCaller(() => session);
 
@@ -344,7 +344,7 @@ describe("rbac", () => {
 
 		it("deve permitir manager criar locations", async () => {
 			// Arrange
-			const _manager = seedUser({ role: "manager" });
+			const _manager = await seedUser({ role: "manager" });
 			const session = createManagerSession();
 			caller = appRouter.createCaller(() => session);
 
@@ -362,7 +362,7 @@ describe("rbac", () => {
 
 		it("deve permitir manager acessar metrics", async () => {
 			// Arrange
-			const _manager = seedUser({ role: "manager" });
+			const _manager = await seedUser({ role: "manager" });
 			const session = createManagerSession();
 			caller = appRouter.createCaller(() => session);
 			const dateRange = {
