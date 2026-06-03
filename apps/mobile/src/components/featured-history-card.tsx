@@ -50,11 +50,11 @@ export const FeaturedHistoryCard = ({
 					</Text>
 
 					<View className="flex-row gap-3 mt-4">
-						<Button className="bg-white text-black hover:bg-muted active:bg-muted dark:active:bg-muted rounded-full">
+						<Button className="bg-white text-black hover:bg-foreground active:bg-foreground dark:active:bg-foreground rounded-full">
 							<Star size={16} color="black" />
 							<Text className="font-medium">Avaliar</Text>
 						</Button>
-						<Button className="bg-white text-black hover:bg-muted active:bg-muted dark:active:bg-muted rounded-full">
+						<Button className="bg-white text-black hover:bg-foreground active:bg-foreground dark:active:bg-foreground rounded-full">
 							<RotateCcw size={16} color="black" />
 							<Text className="font-medium">Reagendar</Text>
 						</Button>

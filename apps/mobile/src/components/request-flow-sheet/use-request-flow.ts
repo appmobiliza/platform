@@ -3,7 +3,10 @@ import * as React from "react";
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 
-import type { Stage } from "./types";
+import { getNearestPoint } from "@/lib/location-store";
+
+import type { Place, Stage } from "./types";
+
 
 function useRequestFlow() {
 	const router = useRouter();
@@ -14,16 +17,20 @@ function useRequestFlow() {
 	const searchingRef = React.useRef<BottomSheetModal>(null);
 	const tripRef = React.useRef<BottomSheetModal>(null);
 
-	const refs = {
-		destination: destinationRef,
-		"destination-selection": destinationSelectionRef,
-		"start-confirm": startConfirmRef,
-		searching: searchingRef,
-		trip: tripRef,
-	} as const satisfies Record<
-		Stage,
-		React.RefObject<BottomSheetModal | null>
-	>;
+	const refs = React.useMemo(
+		() =>
+			({
+				destination: destinationRef,
+				"destination-selection": destinationSelectionRef,
+				"start-confirm": startConfirmRef,
+				searching: searchingRef,
+				trip: tripRef,
+			}) as const satisfies Record<
+				Stage,
+				React.RefObject<BottomSheetModal | null>
+			>,
+		[],
+	);
 
 	const activeStageRef = React.useRef<Stage>("destination-selection");
 	const queuedStageRef = React.useRef<Stage | null>(null);
@@ -31,14 +38,8 @@ function useRequestFlow() {
 		"destination-selection",
 	);
 
-	const [destinationValue, setDestinationValue] =
-		React.useState("Biblioteca Central");
-	const [originLabel, setOriginLabel] = React.useState(
-		"Instituto de Computação",
-	);
-	const [originSummary, setOriginSummary] = React.useState(
-		"Instituto de Computação, UFAL",
-	);
+	const [origin, setOrigin] = React.useState<Place | null>(null);
+	const [destination, setDestination] = React.useState<Place | null>(null);
 	const [message, setMessage] = React.useState("");
 
 	const openStage = React.useCallback(
@@ -100,6 +101,14 @@ function useRequestFlow() {
 		[exitFlow, openStage, refs],
 	);
 
+	// Initialize origin from the nearest point calculated on the Home screen
+	React.useEffect(() => {
+		const stored = getNearestPoint();
+		if (stored) {
+			setOrigin(stored);
+		}
+	}, []);
+
 	React.useEffect(() => {
 		openStage("destination-selection");
 	}, [openStage]);
@@ -120,18 +129,16 @@ function useRequestFlow() {
 		activeStage,
 		destinationRef,
 		destinationSelectionRef,
-		destinationValue,
+		destination,
 		dismissAndExit,
 		handleDismiss,
 		message,
-		originLabel,
-		originSummary,
+		origin,
+		setOrigin,
 		refs,
 		searchingRef,
-		setDestinationValue,
+		setDestination,
 		setMessage,
-		setOriginLabel,
-		setOriginSummary,
 		startConfirmRef,
 		transitionTo,
 		tripRef,

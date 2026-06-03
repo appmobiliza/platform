@@ -17,32 +17,62 @@ interface SearchBarProps {
 	onPress?: () => void;
 }
 
-export function SearchBar({ examples, placeholder, onPress }: SearchBarProps) {
-	const activeExamples = examples?.length ? examples : [];
-	const fixedPlaceholder = placeholder ?? DEFAULT_PLACEHOLDER;
-	const accessibilityLabel = "Abrir busca";
-	const accessibilityHint = activeExamples.length
-		? `Abre a tela de busca. Exemplos: ${activeExamples.join(", ")}.`
-		: "Abre a tela de busca.";
-	const { reduceMotionEnabled, screenReaderEnabled } =
-		useAccessibilityPreferences();
-	const useStaticPlaceholder =
-		reduceMotionEnabled ||
-		screenReaderEnabled ||
-		activeExamples.length === 0;
+interface SearchBarContentProps {
+	text: string;
+	onPress?: () => void;
+	accessibilityHint: string;
+}
+
+function SearchBarContent({
+	text,
+	onPress,
+	accessibilityHint,
+}: SearchBarContentProps) {
+	return (
+		<Pressable
+			onPress={onPress}
+			accessibilityRole="button"
+			accessibilityLabel="Abrir busca"
+			accessibilityHint={accessibilityHint}
+			className="w-full"
+		>
+			<View className="relative h-14 w-full flex-row items-center rounded-full border border-border bg-input px-4 shadow-sm shadow-black/5 dark:border-transparent dark:bg-input/50">
+				<Icon
+					icon={Search}
+					size={20}
+					color="--foreground"
+					style={{ marginRight: 12 }}
+				/>
+
+				<Text
+					className="flex-1 text-lg font-medium text-foreground"
+					numberOfLines={1}
+					ellipsizeMode="tail"
+				>
+					{text}
+				</Text>
+			</View>
+		</Pressable>
+	);
+}
+
+interface AnimatedSearchBarProps {
+	examples: string[];
+	onPress?: () => void;
+	accessibilityHint: string;
+}
+
+function AnimatedSearchBar({
+	examples,
+	onPress,
+	accessibilityHint,
+}: AnimatedSearchBarProps) {
 	const [exampleIndex, setExampleIndex] = useState(0);
 	const [displayedText, setDisplayedText] = useState("");
 	const [phase, setPhase] = useState<AnimationPhase>("typing");
 
 	useEffect(() => {
-		if (useStaticPlaceholder) {
-			setDisplayedText("");
-			setExampleIndex(0);
-			setPhase("typing");
-			return;
-		}
-
-		const currentExample = activeExamples[exampleIndex] || "";
+		const currentExample = examples[exampleIndex] ?? "";
 		let timeout: ReturnType<typeof setTimeout>;
 
 		if (phase === "typing") {
@@ -71,8 +101,7 @@ export function SearchBar({ examples, placeholder, onPress }: SearchBarProps) {
 			} else {
 				timeout = setTimeout(() => {
 					setExampleIndex(
-						(currentIndex) =>
-							(currentIndex + 1) % activeExamples.length,
+						(currentIndex) => (currentIndex + 1) % examples.length,
 					);
 					setPhase("typing");
 				}, 160);
@@ -80,39 +109,46 @@ export function SearchBar({ examples, placeholder, onPress }: SearchBarProps) {
 		}
 
 		return () => clearTimeout(timeout);
-	}, [
-		activeExamples,
-		displayedText,
-		exampleIndex,
-		phase,
-		useStaticPlaceholder,
-	]);
-
-	const visibleText = useStaticPlaceholder ? fixedPlaceholder : displayedText;
+	}, [displayedText, exampleIndex, phase, examples]);
 
 	return (
-		<Pressable
+		<SearchBarContent
+			text={displayedText}
 			onPress={onPress}
-			accessibilityRole="button"
-			accessibilityLabel={accessibilityLabel}
 			accessibilityHint={accessibilityHint}
-			className="w-full"
-		>
-			<View className="w-full flex-row items-center relative rounded-full border dark:border-transparent bg-input border-border dark:bg-input/50 h-14 px-4 shadow-sm shadow-black/5 text-foreground">
-				<Icon
-					icon={Search}
-					size={20}
-					color="--foreground"
-					style={{ marginRight: 12 }}
-				/>
-				<Text
-					className="flex-1 text-foreground text-lg font-medium"
-					numberOfLines={1}
-					ellipsizeMode="tail"
-				>
-					{visibleText}
-				</Text>
-			</View>
-		</Pressable>
+		/>
+	);
+}
+
+export function SearchBar({ examples, placeholder, onPress }: SearchBarProps) {
+	const activeExamples = examples?.length ? examples : [];
+
+	const { reduceMotionEnabled, screenReaderEnabled } =
+		useAccessibilityPreferences();
+
+	const useStaticPlaceholder =
+		reduceMotionEnabled ||
+		screenReaderEnabled ||
+		activeExamples.length === 0;
+
+	const accessibilityHint = "Abre a tela de solicitação";
+
+	if (useStaticPlaceholder) {
+		return (
+			<SearchBarContent
+				text={placeholder ?? DEFAULT_PLACEHOLDER}
+				onPress={onPress}
+				accessibilityHint={accessibilityHint}
+			/>
+		);
+	}
+
+	return (
+		<AnimatedSearchBar
+			key={activeExamples.join("|")}
+			examples={activeExamples}
+			onPress={onPress}
+			accessibilityHint={accessibilityHint}
+		/>
 	);
 }

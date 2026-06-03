@@ -1,6 +1,6 @@
 "use client";
 
-import { getCurrentShift } from "@mobiliza/db/schema";
+import { getCurrentShift } from "@mobiliza/contracts";
 
 import { DetailsSidebar } from "@/components/details/details-sidebar";
 import { HorizontalBarsChart } from "@/components/horizontal-bars-chart";

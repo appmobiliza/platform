@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import {
 	disabilityTypeLabels,
 	disabilityTypeValues,
-} from "@mobiliza/db/schema";
+} from "@mobiliza/contracts";
 import { Frown } from "lucide-react";
 
 import { ComboboxMultiple } from "@/components/combobox-multiple";

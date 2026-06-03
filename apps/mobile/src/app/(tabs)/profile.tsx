@@ -7,6 +7,7 @@ import {
 	Settings,
 	Star,
 } from "lucide-react-native";
+import { useCallback } from "react";
 import { FlatList, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -31,13 +32,14 @@ const options = [
 		icon: GraduationCap,
 		href: "/profile/academic",
 	},
-	{
-		title: "Locais Salvos",
-		description: "Atualize suas informações de locais salvos.",
-		icon: Star,
-		href: "/profile/saved-locations",
-		studentExclusive: true,
-	},
+	// {
+	// 	title: "Locais Salvos",
+	// 	description: "Atualize suas informações de locais salvos.",
+	// 	icon: Star,
+	// 	href: "/profile/saved-locations",
+	// 	studentExclusive: true,
+	// 	disabled: true,
+	// },
 	{
 		title: "Acessibilidade",
 		description: "Atualize suas informações de acessibilidade.",
@@ -56,6 +58,48 @@ const options = [
 export default function Profile() {
 	const insets = useSafeAreaInsets();
 	const role = useUserRole();
+
+	const renderItem = useCallback(
+		({
+			item,
+			index,
+		}: {
+			item: (typeof options)[number];
+			index: number;
+		}) => {
+			return item.studentExclusive && role !== "student" ? null : (
+				<Link href={item.href} disabled={item.disabled} asChild>
+					<Pressable
+						android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
+						className={cn(
+							"w-full flex-row items-center justify-center px-8 py-6 border-border web:active:bg-accent/50 transition-colors",
+							{
+								"border-b": index < options.length - 1,
+								"opacity-50": item.disabled,
+							},
+						)}
+					>
+						<View className="w-16 h-16 rounded-full flex items-center justify-center">
+							<Icon
+								icon={item.icon}
+								size={32}
+								color="--foreground"
+							/>
+						</View>
+						<View className="ml-4 flex-1">
+							<Text className="font-medium text-lg">
+								{item.title}
+							</Text>
+							<Text className="text-sm text-muted-foreground">
+								{item.description}
+							</Text>
+						</View>
+					</Pressable>
+				</Link>
+			);
+		},
+		[role],
+	);
 
 	return (
 		<View className="flex-1 items-center justify-start">
@@ -91,37 +135,7 @@ export default function Profile() {
 						</Text>
 					</View>
 				}
-				renderItem={({ item, index }) =>
-					item.studentExclusive && role !== "student" ? null : (
-						<Link href={item.href} asChild>
-							<Pressable
-								android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
-								className={cn(
-									"w-full flex-row items-center justify-center px-8 py-6 border-border active:bg-accent/50 transition-colors",
-									{
-										"border-b": index < options.length - 1,
-									},
-								)}
-							>
-								<View className="w-16 h-16 rounded-full flex items-center justify-center">
-									<Icon
-										icon={item.icon}
-										size={32}
-										color="--foreground"
-									/>
-								</View>
-								<View className="ml-4 flex-1">
-									<Text className="font-medium text-lg">
-										{item.title}
-									</Text>
-									<Text className="text-sm text-muted-foreground">
-										{item.description}
-									</Text>
-								</View>
-							</Pressable>
-						</Link>
-					)
-				}
+				renderItem={renderItem}
 			/>
 		</View>
 	);

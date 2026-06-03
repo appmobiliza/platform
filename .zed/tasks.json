@@ -1,0 +1,7 @@
+[
+	{
+		"label": "Open Git Bash",
+		"command": "wt",
+		"args": ["-d", "${ZED_WORKTREE_ROOT}"]
+	}
+]

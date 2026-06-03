@@ -7,7 +7,7 @@ import {
 	courseValues,
 	scholarShiftLabels,
 	scholarShiftValues,
-} from "@mobiliza/db/schema";
+} from "@mobiliza/contracts";
 import { InfoIcon } from "lucide-react";
 
 import { Alert } from "@/components/ui/alert";

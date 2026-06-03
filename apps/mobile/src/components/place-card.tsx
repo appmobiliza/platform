@@ -1,5 +1,5 @@
 import { Clock, MapPin, Star } from "lucide-react-native";
-import { TouchableOpacity, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Text } from "@/components/ui/text";
 
@@ -7,47 +7,68 @@ import { cn } from "@/lib/utils";
 
 interface PlaceCardProps {
 	title: string;
-	subtitle: string;
-	iconType: "clock" | "star" | "map";
-	iconClassName?: string;
+	description: string;
+	icon?: {
+		name: "clock" | "star" | "map";
+		className?: string;
+		label?: string;
+	};
+	variant?: "default" | "bordered";
 	className?: string;
 	onPress?: () => void;
+	children?: React.ReactNode;
 }
 
 export const PlaceCard = ({
 	title,
-	subtitle,
-	iconType,
-	iconClassName,
+	description,
+	icon = { name: "map" },
+	variant = "bordered",
 	className,
 	onPress,
+	children,
 }: PlaceCardProps) => {
-	const Icon =
-		iconType === "clock" ? Clock : iconType === "star" ? Star : MapPin;
+	const { name, className: iconClassName, label } = icon;
+	const IconComponent =
+		name === "clock" ? Clock : name === "star" ? Star : MapPin;
 
 	return (
-		<TouchableOpacity
-			activeOpacity={0.7}
+		<Pressable
 			onPress={onPress}
-			accessibilityLabel={`${title}: ${subtitle}`}
+			accessibilityLabel={`${title}: ${description}`}
 			accessibilityHint="Duplo toque para ver detalhes"
 			accessibilityRole="button"
 			className={cn(
-				"bg-card rounded-lg p-3 border border-border flex-row items-center gap-3",
+				"bg-card rounded-lg p-3 flex-row items-center justify-between gap-4 active:opacity-70",
+				variant === "bordered" && "border border-border",
 				className,
 			)}
 		>
-			<View className={cn("p-2 rounded-md bg-primary", iconClassName)}>
-				<Icon size={18} color="--primary-foreground" />
+			<View className="flex-1 gap-4 flex-row items-center justify-start">
+				<View
+					className={cn(
+						"items-center justify-center gap-1",
+						iconClassName,
+						variant === "bordered" && "p-2 rounded-md bg-primary",
+					)}
+				>
+					<IconComponent color="white" size={18} />
+					{label && (
+						<Text className="text-xs" numberOfLines={1}>
+							{label}
+						</Text>
+					)}
+				</View>
+				<View className="flex-1">
+					<Text className="font-bold text-base" numberOfLines={1}>
+						{title}
+					</Text>
+					<Text className="text-xs mt-0.5" numberOfLines={1}>
+						{description}
+					</Text>
+				</View>
 			</View>
-			<View className="flex-1">
-				<Text className="font-bold text-base" numberOfLines={1}>
-					{title}
-				</Text>
-				<Text className="text-xs mt-0.5" numberOfLines={1}>
-					{subtitle}
-				</Text>
-			</View>
-		</TouchableOpacity>
+			{children}
+		</Pressable>
 	);
 };

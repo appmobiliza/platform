@@ -4,16 +4,18 @@ import { View } from "react-native";
 
 import { Text } from "@/components/ui/text";
 
+import { useUnstableNativeVariable } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
 import { FromMarker, ToMarker } from "@/assets/route";
 
 interface AddressProps {
 	className?: string;
-	label: string;
+	label?: string;
 	description?: string;
 	marker: "from" | "to";
 	children?: React.ReactNode;
+	maxLines?: number;
 	size?: "sm" | "md" | "lg";
 }
 
@@ -24,8 +26,10 @@ function Address({
 	marker = "from",
 	size = "md",
 	children,
+	maxLines,
 }: AddressProps) {
-	const sizePx = size === "sm" ? 12 : size === "md" ? 24 : 36;
+	const sizePx = size === "sm" ? 12 : size === "md" ? 28 : 32;
+	const primaryColor = useUnstableNativeVariable("--primary");
 
 	return (
 		<View className={cn("w-full flex-row items-center gap-4", className)}>
@@ -36,9 +40,17 @@ function Address({
 				})}
 			>
 				{marker === "from" ? (
-					<FromMarker width={sizePx} />
+					<FromMarker
+						width={sizePx}
+						height={sizePx}
+						fill={primaryColor}
+					/>
 				) : (
-					<ToMarker width={sizePx} />
+					<ToMarker
+						width={sizePx}
+						height={sizePx}
+						fill={primaryColor}
+					/>
 				)}
 			</View>
 			<View className="min-w-0 flex-1 flex-row items-center justify-between gap-4">
@@ -47,7 +59,7 @@ function Address({
 						className={
 							"min-w-0 flex-1 text-lg font-normal leading-none text-foreground"
 						}
-						numberOfLines={1}
+						numberOfLines={maxLines ?? 1}
 					>
 						{label}
 					</Text>
@@ -72,17 +84,18 @@ export type AddressRouteProps = {
 	className?: string;
 	shouldShowRoute?: boolean;
 	from: {
-		label: string;
+		label?: string;
 		description?: string;
 		children?: React.ReactNode;
 		className?: string;
 	};
 	to: {
-		label: string;
+		label?: string;
 		description?: string;
 		children?: React.ReactNode;
 		className?: string;
 	};
+	maxLines?: number;
 	size?: AddressProps["size"];
 };
 
@@ -91,6 +104,7 @@ function AddressRoute({
 	shouldShowRoute,
 	from,
 	to,
+	maxLines = 2,
 	size,
 }: AddressRouteProps) {
 	return (
@@ -101,6 +115,7 @@ function AddressRoute({
 				marker="from"
 				className={from.className}
 				size={size}
+				maxLines={maxLines}
 			>
 				{from.children}
 			</Address>
@@ -116,7 +131,7 @@ function AddressRoute({
 						<View className="h-6 w-0.5 bg-primary" />
 					</View>
 				)}
-				<View className="flex-1 h-px bg-border" />
+				<View className="flex-1 h-px bg-foreground/50" />
 			</View>
 
 			<Address
@@ -125,6 +140,7 @@ function AddressRoute({
 				marker="to"
 				className={to.className}
 				size={size}
+				maxLines={maxLines}
 			>
 				{to.children}
 			</Address>

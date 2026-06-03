@@ -67,7 +67,7 @@ export function cleanCpf(cpf: string): string {
  * Matrícula validation (UFAL format)
  * Expected: 5-20 digits
  */
-export function validateMatricula(matricula: string): boolean {
+export function validateEnrollment(matricula: string): boolean {
 	const digitsOnly = matricula.replace(/\D/g, "");
 	return digitsOnly.length >= 5 && digitsOnly.length <= 20;
 }
@@ -93,20 +93,6 @@ export function validateGender(gender: string): boolean {
 		"Prefiro não informar",
 	];
 	return validGenders.includes(gender);
-}
-
-/**
- * Course validation
- */
-export function validateCourse(course: string): boolean {
-	const validCourses = [
-		"Pedagogia",
-		"Ciência da Computação",
-		"Engenharia Civil",
-		"Direito",
-		"Medicina",
-	];
-	return validCourses.includes(course);
 }
 
 /**

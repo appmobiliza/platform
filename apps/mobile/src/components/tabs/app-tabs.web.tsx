@@ -1,18 +1,19 @@
 import { usePathname } from "expo-router";
 import { TabList, TabSlot, Tabs, TabTrigger } from "expo-router/ui";
 import { Home, Map as MapIcon, User } from "lucide-react-native";
-import { useColorScheme, View } from "react-native";
+import { View } from "react-native";
 
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
 import { useUserRole } from "@/lib/auth-store";
 import { SCHOLAR_THEME, THEME } from "@/lib/theme";
+import { useAppColorScheme } from "@/lib/use-app-color-scheme";
 import { cn } from "@/lib/utils";
 
 function DefaultAppTabs() {
 	const pathname = usePathname();
-	const colorScheme = useColorScheme();
+	const colorScheme = useAppColorScheme();
 	const role = useUserRole();
 	const isScholar = role === "scholar";
 	const theme = isScholar

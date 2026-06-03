@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import {
 	BottomSheetBackdrop,
 	BottomSheetModal,
@@ -7,12 +5,14 @@ import {
 } from "@gorhom/bottom-sheet";
 import { cva } from "class-variance-authority";
 import { CheckIcon } from "lucide-react-native";
+import * as React from "react";
 import type { PressableProps, ViewProps } from "react-native";
-import { Pressable, useColorScheme, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Text } from "@/components/ui/text";
 
 import { THEME } from "@/lib/theme";
+import { useAppColorScheme } from "@/lib/use-app-color-scheme";
 import { cn } from "@/lib/utils";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -57,27 +57,37 @@ const SheetBackdrop = React.memo(function SheetBackdrop(
 
 // ─── Context ─────────────────────────────────────────────────────────────────
 
-type SheetContextValue = {
+// Stable ref context — never read .current during render
+type SheetRefContextValue = {
 	modalRef: React.RefObject<BottomSheetModal | null>;
+};
+
+// Callbacks + config context — safe for render
+type SheetStateContextValue = {
 	closeOnSelect: boolean;
 	openSheet: () => void;
 	closeSheet: () => void;
 };
 
-const SheetStateContext = React.createContext<SheetContextValue | null>(null);
+const SheetRefContext = React.createContext<SheetRefContextValue | null>(null);
+const SheetStateContext = React.createContext<SheetStateContextValue | null>(
+	null,
+);
+
+function useSheetRef() {
+	const ctx = React.useContext(SheetRefContext);
+	if (!ctx) throw new Error("Sheet components must be used within <Sheet>.");
+	return ctx;
+}
 
 function useOptionalSheetState() {
 	return React.useContext(SheetStateContext);
 }
 
 function useSheetState() {
-	const context = React.useContext(SheetStateContext);
-
-	if (!context) {
-		throw new Error("Sheet components must be used within <Sheet>.");
-	}
-
-	return context;
+	const ctx = React.useContext(SheetStateContext);
+	if (!ctx) throw new Error("Sheet components must be used within <Sheet>.");
+	return ctx;
 }
 
 // ─── Sheet (Root) ─────────────────────────────────────────────────────────────
@@ -110,15 +120,19 @@ function Sheet({
 		}
 	}, [defaultOpen]);
 
-	const contextValue = React.useMemo(
-		() => ({ modalRef, closeOnSelect, openSheet, closeSheet }),
-		[closeOnSelect, closeSheet, openSheet],
+	// Separate memos: ref object is stable, state/callbacks are separate
+	const refValue = React.useMemo(() => ({ modalRef }), []);
+	const stateValue = React.useMemo(
+		() => ({ closeOnSelect, openSheet, closeSheet }),
+		[closeOnSelect, openSheet, closeSheet],
 	);
 
 	return (
-		<SheetStateContext.Provider value={contextValue}>
-			{children}
-		</SheetStateContext.Provider>
+		<SheetRefContext.Provider value={refValue}>
+			<SheetStateContext.Provider value={stateValue}>
+				{children}
+			</SheetStateContext.Provider>
+		</SheetRefContext.Provider>
 	);
 }
 
@@ -175,7 +189,9 @@ type SheetContentProps = React.PropsWithChildren<{
 	index?: number;
 	panDownToClose?: boolean;
 	enableDynamicSizing?: boolean;
+	wrapWithView?: boolean;
 	onDismiss?: () => void;
+	onChange?: (index: number) => void;
 }> &
 	React.ComponentPropsWithoutRef<typeof BottomSheetView>;
 
@@ -185,23 +201,39 @@ function SheetContent({
 	index = 0,
 	panDownToClose = false,
 	enableDynamicSizing = false,
+	wrapWithView = true,
 	onDismiss,
+	onChange,
 	className,
 	style,
 	...props
 }: SheetContentProps) {
-	const colorScheme = useColorScheme();
+	const colorScheme = useAppColorScheme();
 
 	// useSheetState() funciona aqui pois SheetContent ainda está fora do portal.
 	// O contextValue é então re-provido DENTRO do portal via Provider aninhado,
 	// garantindo que SheetClose e SheetItem consigam acessar o contexto.
-	const contextValue = useSheetState();
+	const { modalRef } = useSheetRef(); // ref comes from its own context
+	const stateValue = useSheetState(); // callbacks + config separate
+
+	const content = wrapWithView ? (
+		<BottomSheetView className={className} style={style} {...props}>
+			{children}
+		</BottomSheetView>
+	) : (
+		children
+	);
 
 	return (
 		<BottomSheetModal
-			ref={contextValue.modalRef}
+			ref={modalRef}
 			index={index}
-			snapPoints={enableDynamicSizing ? undefined : DEFAULT_SNAP_POINTS}
+			onChange={onChange}
+			snapPoints={
+				enableDynamicSizing
+					? undefined
+					: (snapPoints ?? DEFAULT_SNAP_POINTS)
+			}
 			enablePanDownToClose={panDownToClose}
 			enableDynamicSizing={enableDynamicSizing}
 			backdropComponent={(backdropProps) => (
@@ -222,11 +254,11 @@ function SheetContent({
 			 * useContext() retorne null para componentes filhos como SheetClose.
 			 * Envolver o conteúdo com o Provider corrige isso sem custo adicional.
 			 */}
-			<SheetStateContext.Provider value={contextValue}>
-				<BottomSheetView className={className} style={style} {...props}>
-					{children}
-				</BottomSheetView>
-			</SheetStateContext.Provider>
+			<SheetRefContext.Provider value={{ modalRef }}>
+				<SheetStateContext.Provider value={stateValue}>
+					{content}
+				</SheetStateContext.Provider>
+			</SheetRefContext.Provider>
 		</BottomSheetModal>
 	);
 }
@@ -265,7 +297,7 @@ function SheetDescription({
 	return (
 		<Text
 			variant="muted"
-			className={cn("text-muted-foreground text-left", className)}
+			className={cn("text-muted-foreground text-sm text-left", className)}
 			{...props}
 		/>
 	);
@@ -274,7 +306,7 @@ function SheetDescription({
 // ─── SheetItem ────────────────────────────────────────────────────────────────
 
 const sheetItemVariants = cva(
-	"flex-row items-center justify-between px-4 py-4 active:bg-primary/10",
+	"flex-row items-center justify-between px-4 h-[56px] active:bg-primary/10",
 	{
 		variants: {
 			selected: {

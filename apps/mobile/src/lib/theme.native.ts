@@ -1,6 +1,8 @@
 import { useUnstableNativeVariable as _useUnstableNativeVariable } from "nativewind";
 import type { ColorSchemeName } from "react-native";
 
+import { useUserRole } from "./auth-store";
+
 export type ThemeColors = {
 	primary: string;
 	background: string;
@@ -88,3 +90,14 @@ export const SCHOLAR_THEME: ThemeColors = {
 export const useUnstableNativeVariable = (name: string) =>
 	// @ts-expect-error - nativewind web stub returns never, but native works correctly
 	_useUnstableNativeVariable(name);
+
+export function useThemeVariables() {
+	const role = useUserRole();
+	return role === "scholar"
+		? {
+			"--primary": "#0A2540",
+			"--accent": "#29567B",
+			"--accent-foreground": "#4B799F",
+		}
+		: {};
+}

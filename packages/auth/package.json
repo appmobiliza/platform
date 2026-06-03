@@ -24,6 +24,7 @@
 		}
 	},
 	"dependencies": {
+		"@mobiliza/contracts": "workspace:*",
 		"@mobiliza/db": "workspace:*",
 		"@mobiliza/env": "workspace:*",
 		"better-auth": "^1.6.11"
