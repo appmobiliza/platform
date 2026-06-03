@@ -7,6 +7,7 @@
  */
 
 import type { AppRouter } from "@mobiliza/api/src/router";
+
 import { createTRPCReact } from "@trpc/react-query";
 
 export const trpc = createTRPCReact<AppRouter>();

@@ -10,16 +10,15 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 import { useRef } from "react";
 
-import { type ColorSchemeName, useColorScheme } from "react-native";
+import { useMapLogic } from "@/hooks/use-map-logic";
+import { useAppColorScheme } from "@/lib/use-app-color-scheme";
 
 import dark from "@/assets/map-styles/dark.json";
-import { useMapLogic } from "@/hooks/use-map-logic";
 
-const STYLES = {
+const STYLES: Record<string, string | StyleSpecification> = {
 	light: "https://tiles.openfreemap.org/styles/liberty",
-	dark: dark, // "https://tiles.openfreemap.org/styles/dark", // ou "positron" para cinza suave
-	unspecified: "",
-} as Record<ColorSchemeName, string | StyleSpecification>;
+	dark: dark,
+};
 
 interface Props {
 	scholar: {
@@ -29,7 +28,7 @@ interface Props {
 }
 
 export default function MapView({ scholar }: Props) {
-	const scheme = useColorScheme(); // 'light' | 'dark' | null
+	const scheme = useAppColorScheme();
 	const { currentPosition, route, distance } = useMapLogic({
 		destinationCoords: [scholar.longitude, scholar.latitude],
 	});

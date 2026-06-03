@@ -1,10 +1,10 @@
 import { Stack } from "expo-router";
-import { useColorScheme } from "react-native";
 
 import { THEME } from "@/lib/theme";
+import { useAppColorScheme } from "@/lib/use-app-color-scheme";
 
 export default function OnboardingLayout() {
-	const colorScheme = useColorScheme();
+	const colorScheme = useAppColorScheme();
 	const bgColor = THEME[colorScheme].background;
 
 	return (

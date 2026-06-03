@@ -5,11 +5,11 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import "../global.css";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { useIsLoggedIn } from "@/lib/auth-store";
 import { THEME } from "@/lib/theme";
+import { useAppColorScheme } from "@/lib/use-app-color-scheme";
 
 import { ThemeProvider } from "@/providers/theme-provider";
 
@@ -22,21 +22,20 @@ SplashScreen.setOptions({
 export default function RootLayout() {
 	const isLoggedIn = useIsLoggedIn();
 
-	const colorScheme = useColorScheme();
+	const colorScheme = useAppColorScheme();
 	// For background we can rely on NativeWind, but if we need the RN style,
 	// we should probably derive it from the scheme.
 	// For now we keep using the THEME constant for the base background.
 	const bgColor = THEME[colorScheme ?? "light"].background;
 
 	return (
-		<GestureHandlerRootView style={{ flex: 1, backgroundColor: bgColor }}>
+		<GestureHandlerRootView style={{ flex: 1, backgroundColor: "red" }}>
 			<ThemeProvider>
 				{/*<KeyboardProvider>*/}
 				<BottomSheetModalProvider>
 					<Stack
 						screenOptions={{
 							headerShown: false,
-							contentStyle: { backgroundColor: bgColor },
 						}}
 					>
 						<Stack.Protected guard={isLoggedIn}>

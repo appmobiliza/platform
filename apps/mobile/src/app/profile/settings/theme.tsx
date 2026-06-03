@@ -1,16 +1,17 @@
 import { MoonIcon, SmartphoneIcon, SunIcon } from "lucide-react-native";
-import { useState } from "react";
 
 import ProfileLayout from "@/layout/profile";
 
 import BoxOptions from "@/components/box-options";
 
+import { setThemePreference, useThemePreference } from "@/lib/theme-store";
+
 export default function SettingsProfileTheme() {
-	const [themes, setThemes] = useState<string[]>([]);
+	const theme = useThemePreference();
 
 	const onSelect = (selected: string[]) => {
-		console.log("Tema selecionado:", selected);
-		setThemes(selected);
+		const value = (selected[0] ?? "system") as "light" | "dark" | "system";
+		setThemePreference(value);
 	};
 
 	return (
@@ -24,7 +25,7 @@ export default function SettingsProfileTheme() {
 					{ id: "dark", label: "Escuro", icon: MoonIcon },
 					{ id: "system", label: "Sistema", icon: SmartphoneIcon },
 				]}
-				value={themes}
+				value={[theme]}
 				onChange={onSelect}
 				maxSelections={1}
 			/>

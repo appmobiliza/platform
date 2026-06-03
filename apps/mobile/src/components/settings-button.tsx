@@ -32,11 +32,11 @@ export function SettingsButton({
 
 	return (
 		<Pressable
-			android_ripple={href ? { color: "rgba(0, 0, 0, 0.1)" } : undefined}
+			android_ripple={href ? { color: "rgba(0, 0, 0, 0.25)" } : undefined}
 			className={cn(
 				"flex flex-row items-center justify-between p-6 border-b border-border active:bg-primary/50 transition-colors android:active:bg-transparent w-full gap-6",
 				{
-					"active:bg-destructive/15": variant === "destructive",
+					"web:active:bg-destructive/15": variant === "destructive",
 					"opacity-50": disabled,
 				},
 				className,

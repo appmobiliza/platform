@@ -30,7 +30,7 @@ export const PlaceCard = ({
 	children,
 }: PlaceCardProps) => {
 	const { name, className: iconClassName, label } = icon;
-	const iconComponent =
+	const IconComponent =
 		name === "clock" ? Clock : name === "star" ? Star : MapPin;
 
 	return (
@@ -54,7 +54,7 @@ export const PlaceCard = ({
 						variant === "bordered" && "p-2 rounded-md bg-primary",
 					)}
 				>
-					<Icon icon={iconComponent} size={18} color="--foreground" />
+					<IconComponent color="white" size={18} />
 					{label && (
 						<Text className="text-xs" numberOfLines={1}>
 							{label}

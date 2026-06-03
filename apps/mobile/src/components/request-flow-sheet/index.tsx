@@ -1,11 +1,5 @@
 import { MapPin, MessageSquareText, Search } from "lucide-react-native";
-import {
-	ActivityIndicator,
-	Pressable,
-	TextInput,
-	useColorScheme,
-	View,
-} from "react-native";
+import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
 
 import { AddressRoute } from "@/components/address";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,10 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
+import { useAppColorScheme } from "@/lib/use-app-color-scheme";
 import { cn } from "@/lib/utils";
 
 import { ufalPoints } from "@/constants/locations";
-
 import { PlaceCard } from "../place-card";
 import { AddressRouteInput } from "./address-route-input";
 import { SheetFrame, StageSheet } from "./components";
@@ -25,7 +19,7 @@ import { SearchIndicator } from "./seach-indicator";
 import { useRequestFlow } from "./use-request-flow";
 
 function RequestFlowSheet() {
-	const colorScheme = useColorScheme();
+	const colorScheme = useAppColorScheme();
 	const isDark = colorScheme === "dark";
 
 	const {

@@ -5,13 +5,22 @@ import { SettingsButton } from "@/components/settings-button";
 import { Icon } from "@/components/ui/icon";
 
 import { setIsLoggedIn } from "@/lib/auth-store";
+import { useThemePreference } from "@/lib/theme-store";
+
+const THEME_LABELS: Record<string, string> = {
+	light: "Claro",
+	dark: "Escuro",
+	system: "Sistema",
+};
 
 export default function SettingsProfile() {
+	const theme = useThemePreference();
+
 	return (
 		<View>
 			<SettingsButton
 				title="Tema"
-				label="Sistema"
+				label={THEME_LABELS[theme] ?? "Sistema"}
 				href="/profile/settings/theme"
 			/>
 			<SettingsButton

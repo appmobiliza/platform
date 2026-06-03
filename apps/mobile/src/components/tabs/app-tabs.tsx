@@ -1,11 +1,11 @@
 import { NativeTabs } from "expo-router/unstable-native-tabs";
-import { useColorScheme } from "react-native";
 
 import { useUserRole } from "@/lib/auth-store";
 import { SCHOLAR_THEME, THEME } from "@/lib/theme";
+import { useAppColorScheme } from "@/lib/use-app-color-scheme";
 
 export default function AppTabs() {
-	const colorScheme = useColorScheme();
+	const colorScheme = useAppColorScheme();
 	const role = useUserRole();
 
 	const bgColor =

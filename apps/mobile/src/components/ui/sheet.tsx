@@ -7,11 +7,12 @@ import { cva } from "class-variance-authority";
 import { CheckIcon } from "lucide-react-native";
 import * as React from "react";
 import type { PressableProps, ViewProps } from "react-native";
-import { Pressable, useColorScheme, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Text } from "@/components/ui/text";
 
 import { THEME } from "@/lib/theme";
+import { useAppColorScheme } from "@/lib/use-app-color-scheme";
 import { cn } from "@/lib/utils";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -207,7 +208,7 @@ function SheetContent({
 	style,
 	...props
 }: SheetContentProps) {
-	const colorScheme = useColorScheme();
+	const colorScheme = useAppColorScheme();
 
 	// useSheetState() funciona aqui pois SheetContent ainda está fora do portal.
 	// O contextValue é então re-provido DENTRO do portal via Provider aninhado,
