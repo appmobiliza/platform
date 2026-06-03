@@ -8,6 +8,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { useHasProfile, useIsLoggedIn } from "@/lib/auth-store";
 import { THEME } from "@/lib/theme";
+import { TRPCProvider } from "@/lib/trpc/Provider";
 import { useAppColorScheme } from "@/lib/use-app-color-scheme";
 
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -30,31 +31,33 @@ export default function RootLayout() {
 
 	return (
 		<GestureHandlerRootView style={{ flex: 1 }}>
-			<ThemeProvider>
-				<BottomSheetModalProvider>
-					<Stack
-						screenOptions={{
-							headerShown: false,
-							contentStyle: { backgroundColor: bgColor },
-						}}
-					>
-						{/* Main app — requires autenticação E perfil completo */}
-						<Stack.Protected guard={isLoggedIn && hasProfile}>
-							<Stack.Screen name="(tabs)" />
-						</Stack.Protected>
+			<TRPCProvider>
+				<ThemeProvider>
+					<BottomSheetModalProvider>
+						<Stack
+							screenOptions={{
+								headerShown: false,
+								contentStyle: { backgroundColor: bgColor },
+							}}
+						>
+							{/* Main app — requires autenticação E perfil completo */}
+							<Stack.Protected guard={isLoggedIn && hasProfile}>
+								<Stack.Screen name="(tabs)" />
+							</Stack.Protected>
 
-						{/* Onboarding — requer autenticação, mas ainda sem perfil */}
-						<Stack.Protected guard={isLoggedIn && !hasProfile}>
-							<Stack.Screen name="onboarding" />
-						</Stack.Protected>
+							{/* Onboarding — requer autenticação, mas ainda sem perfil */}
+							<Stack.Protected guard={isLoggedIn && !hasProfile}>
+								<Stack.Screen name="onboarding" />
+							</Stack.Protected>
 
-						{/* Tela de login — apenas quando deslogado */}
-						<Stack.Protected guard={!isLoggedIn}>
-							<Stack.Screen name="auth" />
-						</Stack.Protected>
-					</Stack>
-				</BottomSheetModalProvider>
-			</ThemeProvider>
+							{/* Tela de login — apenas quando deslogado */}
+							<Stack.Protected guard={!isLoggedIn}>
+								<Stack.Screen name="auth" />
+							</Stack.Protected>
+						</Stack>
+					</BottomSheetModalProvider>
+				</ThemeProvider>
+			</TRPCProvider>
 		</GestureHandlerRootView>
 	);
 }

@@ -37,57 +37,73 @@ export default function AccessibilityInfo() {
 	const router = useRouter();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const handleFinish = handleSubmit(async (data) => {
-		setIsSubmitting(true);
+	const createStudent = trpc.profiles.createStudent.useMutation();
 
-		try {
-			// Recupera dados da sessão atual
-			const session = await authClient.getSession();
-			const user = toSessionUser(
-				session.data?.user as Record<string, unknown>,
-			);
+	const handleFinish = handleSubmit(
+		async (data) => {
+			setIsSubmitting(true);
+			console.log(data);
 
-			// Recupera dados coletados nas etapas anteriores
-			const onboardingData = getOnboardingData();
+			try {
+				// Recupera dados da sessão atual
+				const session = await authClient.getSession();
+				const user = toSessionUser(
+					session.data?.user as Record<string, unknown>,
+				);
 
-			// Cria o perfil do estudante via tRPC
-			await trpc.profiles.createStudent.mutate({
-				enrollment: onboardingData.enrollment,
-				course: onboardingData.course as never,
-				shift: onboardingData.shift as never,
-				campus: onboardingData.campus as never,
-				phone: onboardingData.phone,
-				gender: onboardingData.gender as never,
-				simplifiedInterface: data.simplifiedInterface,
-				disabilityTypes: data.disabilityTypes as never,
-			});
+				console.log(user);
 
-			// Atualiza cache local indicando que o onboarding foi concluído
-			setHasProfile(true);
+				// Recupera dados coletados nas etapas anteriores
+				const onboardingData = getOnboardingData();
 
-			cacheUserInfo({
-				id: user?.id ?? "",
-				name: user?.name ?? "",
-				email: user?.email ?? "",
-				image: user?.image ?? null,
-				role: user?.role ?? "student",
-			});
+				// Cria o perfil do estudante via tRPC
+				await createStudent.mutateAsync({
+					enrollment: onboardingData.enrollment,
+					course: onboardingData.course as never,
+					shift: onboardingData.shift as never,
+					campus: onboardingData.campus as never,
+					phone: onboardingData.phone,
+					gender: onboardingData.gender as never,
+					simplifiedInterface: data.simplifiedInterface,
+					disabilityTypes: data.disabilityTypes as never,
+				});
 
-			// Limpa dados temporários do onboarding
-			clearOnboardingData();
+				console.log("Perfil do estudante criado com sucesso");
 
-			// Redireciona para o app principal
-			router.replace("/(tabs)");
-		} catch (error) {
-			console.error("Erro ao finalizar onboarding:", error);
+				// Atualiza cache local indicando que o onboarding foi concluído
+				setHasProfile(true);
+
+				cacheUserInfo({
+					id: user?.id ?? "",
+					name: user?.name ?? "",
+					email: user?.email ?? "",
+					image: user?.image ?? null,
+					role: user?.role ?? "student",
+				});
+
+				// Limpa dados temporários do onboarding
+				clearOnboardingData();
+
+				// Redireciona para o app principal
+				router.replace("/(tabs)");
+			} catch (error) {
+				console.error("Erro ao finalizar onboarding:", error);
+				Alert.alert(
+					"Erro",
+					"Não foi possível finalizar seu cadastro. Tente novamente.",
+				);
+			} finally {
+				setIsSubmitting(false);
+			}
+		},
+		(errors) => {
 			Alert.alert(
 				"Erro",
-				"Não foi possível finalizar seu cadastro. Tente novamente.",
+				"Por favor, corrija os erros no formulário antes de continuar.",
 			);
-		} finally {
-			setIsSubmitting(false);
-		}
-	});
+			console.log("ERRORS", errors);
+		},
+	);
 
 	// const handleFinish = () => {
 	// 	setIsLoggedIn(true);
