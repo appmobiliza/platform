@@ -6,7 +6,6 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { scholarProcedure } from "../../trpc/context";
-
 import { execTx } from "./shared";
 
 export const complete = scholarProcedure
@@ -61,7 +60,10 @@ export const complete = scholarProcedure
 				{ requestId: input.requestId, durationSeconds },
 			);
 		} catch (error) {
-			console.error("[Realtime] Failed to publish request:completed event:", error);
+			console.error(
+				"[Realtime] Failed to publish request:completed event:",
+				error,
+			);
 		}
 
 		return { durationSeconds };

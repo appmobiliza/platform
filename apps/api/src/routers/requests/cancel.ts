@@ -59,7 +59,10 @@ export const cancel = protectedProcedure
 				{ requestId: input.requestId },
 			);
 		} catch (error) {
-			console.error("[Realtime] Failed to publish request:cancelled event:", error);
+			console.error(
+				"[Realtime] Failed to publish request:cancelled event:",
+				error,
+			);
 		}
 
 		return updated;

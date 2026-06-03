@@ -7,7 +7,6 @@ import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
 import { scholarProcedure } from "../../trpc/context";
-
 import { execTx } from "./shared";
 
 export const accept = scholarProcedure
@@ -86,7 +85,10 @@ export const accept = scholarProcedure
 					},
 				);
 			} catch (publishError) {
-				console.error("[Realtime] Failed to publish request:accepted event:", publishError);
+				console.error(
+					"[Realtime] Failed to publish request:accepted event:",
+					publishError,
+				);
 			}
 
 			return { request: { ...request, status: "accepted" }, attendance };

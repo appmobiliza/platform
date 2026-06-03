@@ -9,23 +9,28 @@ export const available = scholarProcedure
 	.meta({ openapi: { method: "GET", path: "/requests/available" } })
 	.output(z.any())
 	.query(async () => {
-	return db.query.serviceRequest.findMany({
-		where: eq(schema.serviceRequest.status, "pending"),
-		with: {
-			originLocation: true,
-			destinationLocation: true,
-			studentProfile: {
-				with: {
-					user: {
-						columns: {
-							id: true,
-							image: true,
+		return db.query.serviceRequest.findMany({
+			where: eq(schema.serviceRequest.status, "pending"),
+			with: {
+				originLocation: true,
+				destinationLocation: true,
+				studentProfile: {
+					with: {
+						user: {
+							columns: {
+								id: true,
+								image: true,
+							},
+						},
+						disabilities: {
+							columns: {
+								disabilityType: true,
+							},
 						},
 					},
 				},
 			},
-		},
-		orderBy: [desc(schema.serviceRequest.createdAt)],
-		limit: 50,
+			orderBy: [desc(schema.serviceRequest.createdAt)],
+			limit: 50,
+		});
 	});
-});

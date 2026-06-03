@@ -1,10 +1,9 @@
 import { useState } from "react";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink, splitLink, wsLink, createWSClient } from "@trpc/client";
+import { createWSClient, httpBatchLink, splitLink, wsLink } from "@trpc/client";
 import { Platform } from "react-native";
 
-import { getAuthToken } from "../auth-store";
 import { trpc } from "./client";
 
 // URL do Backend: localhost no iOS, 10.0.2.2 no Android (Emulador)
