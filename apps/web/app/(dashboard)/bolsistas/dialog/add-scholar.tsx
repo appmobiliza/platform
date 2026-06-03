@@ -7,7 +7,7 @@ import {
 	courseValues,
 	scholarShiftLabels,
 	scholarShiftValues,
-} from "@mobiliza/db/schema";
+} from "@mobiliza/contracts";
 
 import { Button } from "@/components/ui/button";
 import {

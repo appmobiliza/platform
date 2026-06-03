@@ -154,10 +154,13 @@ function Field({
 	const errorId = error ? `${reactId}-error` : undefined;
 	const hasError = Boolean(error) || Boolean(invalid);
 
+	const contextValue = React.useMemo(
+		() => ({ labelId, descriptionId, errorId, invalid: hasError }),
+		[labelId, descriptionId, errorId, hasError],
+	);
+
 	return (
-		<FieldContext.Provider
-			value={{ labelId, descriptionId, errorId, invalid: hasError }}
-		>
+		<FieldContext.Provider value={contextValue}>
 			<View
 				accessibilityRole="group"
 				accessibilityState={{ invalid: hasError }}

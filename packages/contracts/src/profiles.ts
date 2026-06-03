@@ -1,26 +1,49 @@
 import { z } from "zod";
 
-export const CreateStudentSchema = z.object({
-  enrollment: z.string().min(5),
-  course: z.string().min(1),
-  campus: z.string().min(1),
-  phone: z.string().min(10).max(11),
-  shift: z.enum(["morning", "afternoon", "night"]),
-  gender: z.enum(["male", "female", "non_binary", "prefer_not_to_say"]),
-  disabilityTypes: z.array(z.string()).min(1),
-  needsAudioDescription: z.boolean().default(false),
+import {
+	campusValues,
+	courseValues,
+	disabilityTypeValues,
+	genderValues,
+	scholarShiftValues,
+	studentShiftValues,
+} from "./enums";
+
+const sharedProfileSchema = {
+	enrollment: z.string().refine(
+		(val) => {
+			const digitsOnly = val.replace(/\D/g, "");
+			return digitsOnly.length >= 5 && digitsOnly.length <= 20;
+		},
+		{ message: "Matrícula inválida" }
+	),
+	campus: z.enum(campusValues),
+	phone: z.string().regex(
+		/^\(?\d{2}\)?[\s]?\d{4,5}[\s-]?\d{4}$/,
+		"Telefone inválido"
+	),
+	gender: z.enum(genderValues, { error: "Gênero deve ser selecionado" }),
+};
+
+export const insertScholarSchema = z.object({
+	...sharedProfileSchema,
+	course: z.string(),
+	shift: z.enum(scholarShiftValues),
+	cpf: z
+		.string()
+		.regex(/^(?:\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11})$/, "CPF inválido"),
 });
 
-export const CreateScholarSchema = z.object({
-  enrollment: z.string().min(5),
-  course: z.string().min(1),
-  campus: z.string().min(1),
-  phone: z.string().min(10).max(11),
-  cpf: z.string().length(11),
-  shift: z.enum(["morning", "afternoon", "night"]),
+export const updateScholarSchema = insertScholarSchema.partial();
+
+export const insertStudentSchema = z.object({
+	...sharedProfileSchema,
+	course: z.enum(courseValues),
+	shift: z.enum(studentShiftValues),
+	nickname: z.string().optional(),
+	attendanceNotes: z.string().optional(),
+	simplifiedInterface: z.boolean().optional(),
+	disabilityTypes: z.array(z.enum(disabilityTypeValues), { error: "Tipo de deficiência deve ser selecionado" }).min(1, { message: "Tipo de deficiência deve ser selecionado" }),
 });
 
-export const ReviewScholarSchema = z.object({
-  scholarProfileId: z.string(),
-  approved: z.boolean(),
-});
+export const updateStudentSchema = insertStudentSchema.partial();

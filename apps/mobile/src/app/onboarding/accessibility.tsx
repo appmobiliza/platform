@@ -1,7 +1,9 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
 
-import AccessibilityOptions from "@/components/accessibility-options";
+import BoxOptions from "@/components/box-options";
 import { Header } from "@/components/header";
 import { StepIndicator } from "@/components/step-indicator";
 import { Button } from "@/components/ui/button";
@@ -10,34 +12,31 @@ import { Switch } from "@/components/ui/switch";
 import { Text } from "@/components/ui/text";
 
 import { setIsLoggedIn } from "@/lib/auth-store";
-import { zodResolver } from "@/lib/zod-resolver";
 
-import { type AccessibilityInput, AccessibilitySchema } from "@/schemas";
+import { onboardingSteps } from "@/constants/onboarding";
+import {
+	type ProfileAccessibilityInput,
+	ProfileAccessibilitySchema,
+} from "@/schemas";
 
 export default function AccessibilityInfo() {
-	const {
-		control,
-		handleSubmit,
-		formState: { errors },
-	} = useForm<AccessibilityInput>({
-		resolver: zodResolver(AccessibilitySchema),
+	const { control, handleSubmit } = useForm<ProfileAccessibilityInput>({
+		resolver: zodResolver(ProfileAccessibilitySchema),
 		defaultValues: {
-			disabilityType: [],
-			needsAudioDescription: false,
+			disabilityTypes: [],
+			simplifiedInterface: false,
 		},
 		mode: "onTouched",
 	});
 
-	const steps = [
-		{ id: "basic", title: "Dados Básicos" },
-		{ id: "course", title: "Universidade" },
-		{ id: "accessibility", title: "Acessibilidade" },
-	];
+	// const handleFinish = handleSubmit(() => {
+	// 	// TODO: Integrar com API quando backend estiver pronto
+	// 	setIsLoggedIn(true);
+	// });
 
-	const handleFinish = handleSubmit(() => {
-		// TODO: Integrar com API quando backend estiver pronto
+	const handleFinish = () => {
 		setIsLoggedIn(true);
-	});
+	};
 
 	return (
 		<View className="flex-1">
@@ -53,15 +52,18 @@ export default function AccessibilityInfo() {
 					de acessibilidade
 				</Text>
 
-				<StepIndicator steps={steps} currentStepId="accessibility" />
+				<StepIndicator
+					steps={onboardingSteps}
+					currentStepId="accessibility"
+				/>
 
 				<FieldSet className="mt-6">
 					<FieldGroup>
 						<Controller
 							control={control}
-							name="disabilityType"
+							name="disabilityTypes"
 							render={({ field, fieldState }) => (
-								<AccessibilityOptions
+								<BoxOptions
 									value={field.value}
 									onChange={field.onChange}
 									error={fieldState.error?.message}
@@ -75,12 +77,13 @@ export default function AccessibilityInfo() {
 						>
 							<Controller
 								control={control}
-								name="needsAudioDescription"
+								name="simplifiedInterface"
 								render={({ field }) => (
 									<Switch
-										checked={field.value}
+										checked={field.value ?? false}
 										onCheckedChange={field.onChange}
 										accessibilityLabel="Ativar interface adaptada para leitores de tela"
+										disabled={field.disabled}
 									/>
 								)}
 							/>

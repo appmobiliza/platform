@@ -10,9 +10,11 @@ import { db } from "@mobiliza/db/client";
 import { and, avg, count, desc, eq, gte, lte, sql } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { AppError, generateAttendanceReportCSV } from "@mobiliza/domain";
+
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import { toTRPCCode } from "@/utils/error";
 import { managerProcedure, router } from "../trpc/context";
 
 const dateRangeInput = z.object({
@@ -101,7 +103,7 @@ export const metricsRouter = router({
 			} catch (error) {
 				if (error instanceof AppError) {
 					throw new TRPCError({
-						code: error.code as any,
+						code: toTRPCCode(error),
 						message: error.message,
 					});
 				}

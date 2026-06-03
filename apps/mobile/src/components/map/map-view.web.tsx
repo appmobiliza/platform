@@ -10,16 +10,15 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 import { useRef } from "react";
 
-import { type ColorSchemeName, useColorScheme } from "react-native";
+import { useMapLogic } from "@/hooks/use-map-logic";
+import { useAppColorScheme } from "@/lib/use-app-color-scheme";
 
 import dark from "@/assets/map-styles/dark.json";
-import { useMapLogic } from "@/hooks/use-map-logic";
 
-const STYLES = {
+const STYLES: Record<string, string | StyleSpecification> = {
 	light: "https://tiles.openfreemap.org/styles/liberty",
-	dark: dark, // "https://tiles.openfreemap.org/styles/dark", // ou "positron" para cinza suave
-	unspecified: "",
-} as Record<ColorSchemeName, string | StyleSpecification>;
+	dark: dark,
+};
 
 interface Props {
 	scholar: {
@@ -29,14 +28,17 @@ interface Props {
 }
 
 export default function MapView({ scholar }: Props) {
-	const scheme = useColorScheme(); // 'light' | 'dark' | null
+	const scheme = useAppColorScheme();
 	const { currentPosition, route, distance } = useMapLogic({
 		destinationCoords: [scholar.longitude, scholar.latitude],
 	});
+
+	const mapRef = useRef<MapRef>(null);
 	const geolocateRef = useRef<GeolocateControlInstance | null>(null);
 
 	return (
 		<MapGL
+			ref={mapRef}
 			mapStyle={STYLES[scheme ?? "light"]}
 			initialViewState={{ longitude: -35.7, latitude: -9.6, zoom: 14 }}
 			style={{
@@ -52,9 +54,22 @@ export default function MapView({ scholar }: Props) {
 				ref={geolocateRef}
 				// style={{ display: "none" }}
 				positionOptions={{ enableHighAccuracy: true }}
-				trackUserLocation={true} // mantém rastreamento contínuo
-				showUserLocation={true} // exibe o ícone de localização
-				showAccuracyCircle={true} // exibe o círculo de precisão
+				showUserLocation
+				showAccuracyCircle
+				trackUserLocation={false}
+				onGeolocate={(event) => {
+					mapRef.current?.easeTo({
+						center: [event.coords.longitude, event.coords.latitude],
+						zoom: 16,
+						duration: 1000,
+						padding: {
+							top: 0,
+							right: 0,
+							left: 0,
+							bottom: window.innerHeight * 0.4,
+						},
+					});
+				}}
 			/>
 
 			{/* {route && (

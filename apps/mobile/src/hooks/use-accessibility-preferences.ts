@@ -1,102 +1,47 @@
 import { useEffect, useState } from "react";
 
-import { AccessibilityInfo, Platform } from "react-native";
+import { AccessibilityInfo } from "react-native";
 
 export function useAccessibilityPreferences() {
-	const [reduceMotionEnabled, setReduceMotionEnabled] = useState(() => {
-		if (Platform.OS !== "web") {
-			return false;
-		}
-
-		if (
-			typeof window === "undefined" ||
-			typeof window.matchMedia !== "function"
-		) {
-			return false;
-		}
-
-		return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-	});
+	const [reduceMotionEnabled, setReduceMotionEnabled] = useState(false);
 	const [screenReaderEnabled, setScreenReaderEnabled] = useState(false);
 
 	useEffect(() => {
 		let mounted = true;
 
-		if (Platform.OS === "web") {
-			if (
-				typeof window === "undefined" ||
-				typeof window.matchMedia !== "function"
-			) {
-				return;
-			}
-
-			const mediaQuery = window.matchMedia(
-				"(prefers-reduced-motion: reduce)",
-			);
-			const handleChange = (event: MediaQueryListEvent) => {
-				if (mounted) {
-					setReduceMotionEnabled(event.matches);
-				}
-			};
-
-			setReduceMotionEnabled(mediaQuery.matches);
-			mediaQuery.addEventListener?.("change", handleChange);
-
-			return () => {
-				mounted = false;
-				mediaQuery.removeEventListener?.("change", handleChange);
-			};
-		}
-
 		AccessibilityInfo.isReduceMotionEnabled()
-			.then((v) => mounted && setReduceMotionEnabled(v))
-			.catch(() => mounted && setReduceMotionEnabled(false));
+			.then((v) => {
+				if (mounted) setReduceMotionEnabled(v);
+			})
+			.catch(() => {
+				if (mounted) setReduceMotionEnabled(false);
+			});
 
 		AccessibilityInfo.isScreenReaderEnabled()
-			.then((v) => mounted && setScreenReaderEnabled(v))
-			.catch(() => mounted && setScreenReaderEnabled(false));
+			.then((v) => {
+				if (mounted) setScreenReaderEnabled(v);
+			})
+			.catch(() => {
+				if (mounted) setScreenReaderEnabled(false);
+			});
 
-		const subReduce = AccessibilityInfo.addEventListener?.(
+		const subReduce = AccessibilityInfo.addEventListener(
 			"reduceMotionChanged",
-			(v: boolean) => mounted && setReduceMotionEnabled(v),
+			(v: boolean) => {
+				if (mounted) setReduceMotionEnabled(v);
+			},
 		);
-
-		const subSR = AccessibilityInfo.addEventListener?.(
+		const subSR = AccessibilityInfo.addEventListener(
 			"screenReaderChanged",
-			(v: boolean) => mounted && setScreenReaderEnabled(v),
+			(v: boolean) => {
+				if (mounted) setScreenReaderEnabled(v);
+			},
 		);
 
 		return () => {
 			mounted = false;
-			try {
-				if (subReduce) {
-					const s = subReduce as
-						| { remove?: () => void }
-						| (() => void);
-					if (
-						typeof (s as { remove?: () => void }).remove ===
-						"function"
-					) {
-						(s as { remove: () => void }).remove();
-					} else if (typeof s === "function") {
-						(s as () => void)();
-					}
-				}
-
-				if (subSR) {
-					const s2 = subSR as { remove?: () => void } | (() => void);
-					if (
-						typeof (s2 as { remove?: () => void }).remove ===
-						"function"
-					) {
-						(s2 as { remove: () => void }).remove();
-					} else if (typeof s2 === "function") {
-						(s2 as () => void)();
-					}
-				}
-			} catch {
-				// ignore
-			}
+			subReduce.remove();
+			subSR.remove();
 		};
 	}, []);
 

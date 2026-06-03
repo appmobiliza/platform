@@ -1,6 +1,6 @@
 "use client";
 
-import { scholarShiftLabels } from "@mobiliza/db/schema";
+import { scholarShiftLabels } from "@mobiliza/contracts";
 
 import { DetailsSidebar } from "@/components/details/details-sidebar";
 import { RoutePreview } from "@/components/route-preview";

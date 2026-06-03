@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { CircleAlert } from "lucide-react-native";
-import { TouchableOpacity, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
@@ -45,11 +45,11 @@ export default function Unregistered() {
 					<Text className="text-sm text-neutral-400">
 						Precisando de ajuda?
 					</Text>
-					<TouchableOpacity className="mt-1">
+					<Pressable className="mt-1">
 						<Text className="text-sm text-muted-foreground underline font-medium">
 							Entre em contato com o NAC
 						</Text>
-					</TouchableOpacity>
+					</Pressable>
 				</View>
 			</View>
 		</View>
