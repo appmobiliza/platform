@@ -52,27 +52,6 @@ export async function createRealtimeAdapter(): Promise<RealtimeAdapter> {
 	return createMockRealtimeAdapter();
 }
 
-/**
- * Mock da factory real do @mobiliza/realtime
- */
-export async function createRealtimeAdapter(): Promise<RealtimeAdapter> {
-	return createMockRealtimeAdapter();
-}
-
-/**
- * Mock da factory real do @mobiliza/realtime
- */
-export async function createRealtimeAdapter(): Promise<RealtimeAdapter> {
-	return createMockRealtimeAdapter();
-}
-
-/**
- * Mock da factory real do @mobiliza/realtime
- */
-export async function createRealtimeAdapter(): Promise<RealtimeAdapter> {
-	return createMockRealtimeAdapter();
-}
-
 export function resetMockRealtimeAdapter(): void {
 	adapterInstance = null;
 }
