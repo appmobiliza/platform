@@ -1,6 +1,5 @@
-import type React from "react";
-
 import { Accessibility, Ear, Ellipsis, Eye } from "lucide-react-native";
+import type React from "react";
 import { Pressable, View } from "react-native";
 
 import { Field } from "@/components/ui/field";
@@ -16,11 +15,12 @@ type Option = {
 	icon: React.ComponentType<{ size?: number; color?: string }>;
 };
 
-interface AccessibilityOptionsProps {
+interface BoxOptionsProps {
 	value?: string[];
 	onChange: (nextValue: string[]) => void;
 	error?: string | null;
 	options?: Option[];
+	maxSelections?: number;
 }
 
 const DEFAULT_OPTIONS: Option[] = [
@@ -34,12 +34,13 @@ const DEFAULT_OPTIONS: Option[] = [
 	{ id: "other", label: "Outro tipo", icon: Ellipsis },
 ];
 
-export function AccessibilityOptions({
+export function BoxOptions({
 	value,
 	onChange,
 	error,
 	options = DEFAULT_OPTIONS,
-}: AccessibilityOptionsProps) {
+	maxSelections,
+}: BoxOptionsProps) {
 	const selectedIds = value ?? [];
 
 	return (
@@ -56,7 +57,10 @@ export function AccessibilityOptions({
 									? selectedIds.filter(
 											(item) => item !== option.id,
 										)
-									: [...selectedIds, option.id];
+									: maxSelections !== undefined &&
+											selectedIds.length >= maxSelections
+										? [...selectedIds.slice(1), option.id]
+										: [...selectedIds, option.id];
 
 								onChange(nextValue);
 							}}
@@ -97,4 +101,4 @@ export function AccessibilityOptions({
 	);
 }
 
-export default AccessibilityOptions;
+export default BoxOptions;

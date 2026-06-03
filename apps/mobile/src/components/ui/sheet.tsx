@@ -305,7 +305,7 @@ function SheetDescription({
 // ─── SheetItem ────────────────────────────────────────────────────────────────
 
 const sheetItemVariants = cva(
-	"flex-row items-center justify-between px-4 py-4 active:bg-primary/10",
+	"flex-row items-center justify-between px-4 h-[56px] active:bg-primary/10",
 	{
 		variants: {
 			selected: {

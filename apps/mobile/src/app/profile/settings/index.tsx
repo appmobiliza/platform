@@ -1,23 +1,39 @@
 import { LogOut } from "lucide-react-native";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 
 import { SettingsButton } from "@/components/settings-button";
 import { Icon } from "@/components/ui/icon";
 
-export default function AccessibilityProfile() {
+import { setIsLoggedIn } from "@/lib/auth-store";
+
+export default function SettingsProfile() {
 	return (
-		<View className="flex-1">
-			<SettingsButton title="Tema" label="Sistema" />
-			<SettingsButton title="Cor de destaque" label="Azul oceano" />
+		<View>
 			<SettingsButton
-				title="Estilo de barra de navegação"
-				label="Padrão"
+				title="Tema"
+				label="Sistema"
+				href="/profile/settings/theme"
 			/>
+			<SettingsButton
+				title="Cor de destaque"
+				label="Azul oceano"
+				disabled
+			/>
+			{Platform.OS === "web" && (
+				<SettingsButton
+					title="Estilo de barra de navegação"
+					label="Padrão"
+					href="/profile/settings/app-bar"
+				/>
+			)}
 			<SettingsButton
 				title="Sair do aplicativo"
 				label="Encerra sua sessão e desloga sua conta"
 				className="text-destructive"
 				variant="destructive"
+				onPress={() => {
+					setIsLoggedIn(false);
+				}}
 			>
 				<Icon icon={LogOut} size={24} color="--destructive" />
 			</SettingsButton>

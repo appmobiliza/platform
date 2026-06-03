@@ -55,6 +55,7 @@ export default function AcademicProfileCourse() {
 							autoCapitalize="sentences"
 							autoComplete="name-given"
 							accessibilityLabel="Nome"
+							maxLength={255}
 							aria-invalid={Boolean(errors.attendanceNotes)}
 						/>
 					</Field>

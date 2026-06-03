@@ -4,7 +4,7 @@ import { Controller, useForm } from "react-hook-form";
 
 import ProfileLayout from "@/layout/profile";
 
-import AccessibilityOptions from "@/components/accessibility-options";
+import BoxOptions from "@/components/box-options";
 
 import {
 	type ProfileDisabilitiesInput,
@@ -42,7 +42,7 @@ export default function AcademicProfileCourse() {
 				control={control}
 				name="disabilityTypes"
 				render={({ field }) => (
-					<AccessibilityOptions
+					<BoxOptions
 						value={field.value}
 						onChange={field.onChange}
 						error={errors.disabilityTypes?.message}

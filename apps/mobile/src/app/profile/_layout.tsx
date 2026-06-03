@@ -78,7 +78,18 @@ export default function ProfileLayout() {
 			/>
 			<Stack.Screen name="accessibility/disabilities" />
 			<Stack.Screen name="accessibility/observation" />
-			<Stack.Screen name="accessibility/simplified-interface" />
+
+			{/* Configurações */}
+			<Stack.Screen
+				name="settings/index"
+				options={{
+					headerShown: true,
+					headerTitle: "Configurações",
+					...HEADER_CONFIG(),
+				}}
+			/>
+			<Stack.Screen name="settings/theme" />
+			<Stack.Screen name="settings/app-bar" />
 		</Stack>
 	);
 }

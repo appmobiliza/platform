@@ -8,7 +8,7 @@ interface Props {
 	title: string;
 	description: string;
 	children: React.ReactNode;
-	handleSave: () => void;
+	handleSave?: () => void;
 }
 
 export default function ProfileLayout({
@@ -32,9 +32,11 @@ export default function ProfileLayout({
 			>
 				{children}
 
-				<Button className="mt-8" onPress={handleSave}>
-					<Text>Salvar alterações</Text>
-				</Button>
+				{handleSave && (
+					<Button className="mt-8" onPress={handleSave}>
+						<Text>Salvar alterações</Text>
+					</Button>
+				)}
 			</ScrollView>
 		</View>
 	);

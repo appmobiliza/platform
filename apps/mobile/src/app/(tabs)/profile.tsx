@@ -1,5 +1,3 @@
-import { useCallback } from "react";
-
 import { Image } from "expo-image";
 import { Link } from "expo-router";
 import {
@@ -9,6 +7,7 @@ import {
 	Settings,
 	Star,
 } from "lucide-react-native";
+import { useCallback } from "react";
 import { FlatList, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -33,13 +32,14 @@ const options = [
 		icon: GraduationCap,
 		href: "/profile/academic",
 	},
-	{
-		title: "Locais Salvos",
-		description: "Atualize suas informações de locais salvos.",
-		icon: Star,
-		href: "/profile/saved-locations",
-		studentExclusive: true,
-	},
+	// {
+	// 	title: "Locais Salvos",
+	// 	description: "Atualize suas informações de locais salvos.",
+	// 	icon: Star,
+	// 	href: "/profile/saved-locations",
+	// 	studentExclusive: true,
+	// 	disabled: true,
+	// },
 	{
 		title: "Acessibilidade",
 		description: "Atualize suas informações de acessibilidade.",
@@ -68,13 +68,14 @@ export default function Profile() {
 			index: number;
 		}) => {
 			return item.studentExclusive && role !== "student" ? null : (
-				<Link href={item.href} asChild>
+				<Link href={item.href} disabled={item.disabled} asChild>
 					<Pressable
 						android_ripple={{ color: "rgba(0, 0, 0, 0.1)" }}
 						className={cn(
 							"w-full flex-row items-center justify-center px-8 py-6 border-border active:bg-accent/50 transition-colors",
 							{
 								"border-b": index < options.length - 1,
+								"opacity-50": item.disabled,
 							},
 						)}
 					>

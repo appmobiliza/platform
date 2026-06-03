@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
 
-import AccessibilityOptions from "@/components/accessibility-options";
+import BoxOptions from "@/components/box-options";
 import { Header } from "@/components/header";
 import { StepIndicator } from "@/components/step-indicator";
 import { Button } from "@/components/ui/button";
@@ -58,7 +58,7 @@ export default function AccessibilityInfo() {
 							control={control}
 							name="disabilities"
 							render={({ field, fieldState }) => (
-								<AccessibilityOptions
+								<BoxOptions
 									value={field.value}
 									onChange={field.onChange}
 									error={fieldState.error?.message}

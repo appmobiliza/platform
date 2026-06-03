@@ -76,15 +76,12 @@ function SelectField({
 	const listRef = useRef<BottomSheetFlatListMethods>(null);
 
 	const handleSheetChange = (index: number) => {
-		if (index < 0) return;
+		if (index < 0 || selectedIndex <= 0) return;
 
 		requestAnimationFrame(() => {
-			requestAnimationFrame(() => {
-				listRef.current?.scrollToIndex({
-					index: selectedIndex,
-					viewPosition: 0.5,
-					animated: false,
-				});
+			listRef.current?.scrollToOffset({
+				offset: selectedIndex * ITEM_HEIGHT,
+				animated: false,
 			});
 		});
 	};

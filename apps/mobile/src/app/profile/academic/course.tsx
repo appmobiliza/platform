@@ -2,6 +2,7 @@ import { courseValues } from "@mobiliza/contracts";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
+import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import ProfileLayout from "@/layout/profile";
@@ -9,8 +10,6 @@ import ProfileLayout from "@/layout/profile";
 import { SelectField } from "@/components/ui/select-field";
 
 import { type ProfileCourseInput, ProfileCourseSchema } from "@/schemas";
-
-// ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function AcademicProfileCourse() {
 	const router = useRouter();
@@ -31,10 +30,18 @@ export default function AcademicProfileCourse() {
 		router.back();
 	});
 
+	// ⚡️ PERFORMANCE FIX: Memoize the data conversion so it never runs during form re-renders
+	const courseOptions = useMemo(() => {
+		return courseValues.map((value) => ({
+			label: value,
+			value,
+		}));
+	}, []);
+
 	return (
 		<ProfileLayout
 			title="Curso"
-			description="Selecione seu atual curso de graduação."
+			description="Selecione o curso de graduação que você está cursando no momento"
 			handleSave={handleSave}
 		>
 			<Controller
@@ -43,13 +50,9 @@ export default function AcademicProfileCourse() {
 				render={({ field }) => (
 					<SelectField
 						label="Curso"
-						description="Selecione o curso de graduação que você está cursando."
 						value={field.value}
 						placeholder="Selecionar curso"
-						options={courseValues.map((value) => ({
-							label: value,
-							value,
-						}))}
+						options={courseOptions}
 						onValueChange={field.onChange}
 						error={errors.course?.message}
 						searchable
