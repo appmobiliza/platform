@@ -23,6 +23,7 @@ const config = {
 	setupFilesAfterEnv: ["<rootDir>/src/__tests__/setup.ts"],
 	moduleNameMapper: {
 		"^@mobiliza/realtime$": "<rootDir>/src/__tests__/mocks/realtime.ts",
+		"^@/(.*)$": "<rootDir>/src/$1",
 		"^(\\.{1,2}/.*)\\.js$": "$1",
 	},
 	testPathIgnorePatterns: ["/node_modules/", "/dist/"],
