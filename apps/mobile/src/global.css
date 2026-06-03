@@ -81,6 +81,8 @@
 	/* spacing */
 	--spacing: calc(var(--rem) / 4);
 
+	--font-sans: "Atkinson Hyperlegible Next";
+
 	/* font sizes */
 	--text-xs: calc(var(--rem) * 0.75);
 	--text-sm: calc(var(--rem) * 0.875);
@@ -267,7 +269,7 @@
 
 		/* ── Bordas e inputs ─────────────────────────────────────────── */
 		--border: oklch(0.303 0.008 196.9); /* Gray-700 #2A3030 */
-		--input: oklch(0.384 0.009 197); /* Gray-600 #3E4545 */
+		--input: oklch(0.3034 0.0084 196.72); /* Gray-600 #3E4545 */
 		--ring: oklch(0.724 0.098 202.1); /* primary-dark-fg #4DB8C0 */
 
 		/* ── Charts — mesma ramp, legível sobre fundo escuro ─────────── */

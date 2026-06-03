@@ -1,14 +1,12 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
 
-import { Header } from "@/components/header";
-import { Button } from "@/components/ui/button";
+import ProfileLayout from "@/layout/profile";
+
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Text } from "@/components/ui/text";
-
-import { zodResolver } from "@/lib/zod-resolver";
 
 import { type ProfileNameInput, ProfileNameSchema } from "@/schemas";
 
@@ -22,8 +20,8 @@ export default function BasicProfileName() {
 	} = useForm<ProfileNameInput>({
 		resolver: zodResolver(ProfileNameSchema),
 		defaultValues: {
-			firstName: "",
-			lastName: "",
+			name: "",
+			nickname: "",
 		},
 		mode: "onTouched",
 	});
@@ -33,73 +31,50 @@ export default function BasicProfileName() {
 	});
 
 	return (
-		<View className="flex-1">
-			<Header
-				title="Nome"
-				description="Este é o nome que você quer que outras pessoas usem quando se referirem a você"
-			/>
+		<ProfileLayout
+			title="Nome e apelido"
+			description="Defina seu nome e como quer que outras pessoas se referiram a você"
+			handleSave={handleSave}
+		>
+			<View className="gap-4">
+				<Controller
+					control={control}
+					name="name"
+					render={({ field }) => (
+						<Field label="Nome" error={errors.name?.message}>
+							<Input
+								placeholder="Fulano"
+								value={field.value}
+								onBlur={field.onBlur}
+								onChangeText={field.onChange}
+								autoCapitalize="words"
+								autoComplete="name-given"
+								accessibilityLabel="Nome"
+								aria-invalid={Boolean(errors.name)}
+							/>
+						</Field>
+					)}
+				/>
 
-			<ScrollView
-				className="flex-1"
-				keyboardShouldPersistTaps="handled"
-				contentContainerStyle={{
-					paddingHorizontal: 16,
-					paddingTop: 24,
-					paddingBottom: 32,
-				}}
-			>
-				<View className="gap-4">
-					<Controller
-						control={control}
-						name="firstName"
-						render={({ field }) => (
-							<Field
-								label="Nome"
-								description="Digite apenas o primeiro nome."
-								error={errors.firstName?.message}
-							>
-								<Input
-									placeholder="Fulano"
-									value={field.value}
-									onBlur={field.onBlur}
-									onChangeText={field.onChange}
-									autoCapitalize="words"
-									autoComplete="name-given"
-									accessibilityLabel="Nome"
-									aria-invalid={Boolean(errors.firstName)}
-								/>
-							</Field>
-						)}
-					/>
-
-					<Controller
-						control={control}
-						name="lastName"
-						render={({ field }) => (
-							<Field
-								label="Sobrenome"
-								description="Digite o sobrenome principal."
-								error={errors.lastName?.message}
-							>
-								<Input
-									placeholder="da Silva"
-									value={field.value}
-									onBlur={field.onBlur}
-									onChangeText={field.onChange}
-									autoCapitalize="words"
-									autoComplete="name-family"
-									accessibilityLabel="Sobrenome"
-									aria-invalid={Boolean(errors.lastName)}
-								/>
-							</Field>
-						)}
-					/>
-				</View>
-
-				<Button className="mt-8" onPress={handleSave}>
-					<Text>Salvar alterações</Text>
-				</Button>
-			</ScrollView>
-		</View>
+				<Controller
+					control={control}
+					name="nickname"
+					render={({ field }) => (
+						<Field label="Apelido" error={errors.nickname?.message}>
+							<Input
+								placeholder="Apelido (opcional)"
+								value={field.value}
+								onBlur={field.onBlur}
+								onChangeText={field.onChange}
+								autoCapitalize="words"
+								autoComplete="name-family"
+								accessibilityLabel="Apelido"
+								aria-invalid={Boolean(errors.nickname)}
+							/>
+						</Field>
+					)}
+				/>
+			</View>
+		</ProfileLayout>
 	);
 }

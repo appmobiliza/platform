@@ -1,54 +1,39 @@
+import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import type * as React from "react";
-
-import {
-	BottomSheetBackdrop,
-	BottomSheetModal,
-	BottomSheetScrollView,
-	BottomSheetView,
-} from "@gorhom/bottom-sheet";
-import { useColorScheme, View } from "react-native";
+import { View } from "react-native";
 
 import { THEME } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
-import { SheetDescription, SheetHeader, SheetTitle } from "../ui/sheet";
+import {
+	SheetDescription,
+	SheetFooter,
+	SheetHeader,
+	SheetTitle,
+} from "../ui/sheet";
 import type { Stage } from "./types";
 
-function SheetBackdrop(
-	props: React.ComponentProps<typeof BottomSheetBackdrop> & {
-		panDownToClose?: boolean;
-	},
-) {
-	const { panDownToClose, ...backdropProps } = props;
-	const pressBehavior = panDownToClose ? "close" : "none";
-
-	return (
-		<BottomSheetBackdrop
-			{...backdropProps}
-			appearsOnIndex={0}
-			disappearsOnIndex={-1}
-			pressBehavior={pressBehavior}
-		/>
-	);
-}
-
-function SheetFrame({
-	title,
-	subtitle,
-	accessory,
-	headerPosition = "start",
-	children,
-	footer,
-}: {
+interface SheetFrameProps {
 	title: string;
-	subtitle?: string;
+	description?: string;
 	headerPosition?: "start" | "center";
 	accessory?: React.ReactNode;
 	children: React.ReactNode;
 	footer: React.ReactNode;
-}) {
+	shouldWrapChildren?: boolean;
+}
+
+function SheetFrame({
+	title,
+	description,
+	accessory,
+	headerPosition = "start",
+	children,
+	footer,
+	shouldWrapChildren = false,
+}: SheetFrameProps) {
 	return (
-		<View className="flex-1">
+		<>
 			<SheetHeader
 				className={cn("border-b border-border py-4 gap-1 items-start", {
 					"items-center": headerPosition === "center",
@@ -64,23 +49,32 @@ function SheetFrame({
 					)}
 				>
 					<SheetTitle>{title}</SheetTitle>
-					{accessory}
+					{accessory ? accessory : null}
 				</View>
-				<SheetDescription>{subtitle}</SheetDescription>
+				{description ? (
+					<SheetDescription>{description}</SheetDescription>
+				) : null}
 			</SheetHeader>
-			<BottomSheetScrollView
-				className="flex-1"
-				contentContainerClassName="gap-4 px-4 pb-4 pt-4"
-				keyboardShouldPersistTaps="handled"
-				showsVerticalScrollIndicator={false}
-			>
-				{children}
-			</BottomSheetScrollView>
-			<View className="gap-3 border-t border-border px-4 pb-4 pt-3">
+			{shouldWrapChildren ? (
+				<View className="p-4 gap-4">{children}</View>
+			) : (
+				children
+			)}
+			<SheetFooter className="gap-3 border-t border-border px-4 pb-6 pt-3">
 				{footer}
-			</View>
-		</View>
+			</SheetFooter>
+		</>
 	);
+}
+
+interface StageSheetProps {
+	stage: Stage;
+	modalRef: React.RefObject<BottomSheetModal | null>;
+	onDismiss: (stage: Stage) => void;
+	panDownToClose?: boolean;
+	snapPoints?: string[];
+	children: React.ReactNode;
+	colorScheme: "light" | "dark";
 }
 
 function StageSheet({
@@ -88,30 +82,18 @@ function StageSheet({
 	modalRef,
 	onDismiss,
 	panDownToClose = false,
+	snapPoints = [],
 	children,
-}: {
-	stage: Stage;
-	modalRef: React.RefObject<BottomSheetModal | null>;
-	onDismiss: (stage: Stage) => void;
-	panDownToClose?: boolean;
-	children: React.ReactNode;
-}) {
-	const colorScheme = useColorScheme();
+	colorScheme,
+}: StageSheetProps) {
+	const isDynamic = snapPoints.length === 0;
 
 	return (
 		<BottomSheetModal
 			ref={modalRef}
 			index={0}
-			// snapPoints={["94%"]}
-			/* backdropComponent={(backdropProps) => (
-				<SheetBackdrop
-					{...backdropProps}
-					opacity={0}
-					panDownToClose={panDownToClose}
-					enableTouchThrough
-				/>
-			)} */
-			enableDynamicSizing={true}
+			enableDynamicSizing={isDynamic}
+			snapPoints={isDynamic ? undefined : snapPoints}
 			enablePanDownToClose={panDownToClose}
 			onDismiss={() => onDismiss(stage)}
 			backgroundStyle={{ backgroundColor: THEME[colorScheme].card }}
@@ -119,9 +101,13 @@ function StageSheet({
 				backgroundColor: THEME[colorScheme].muted,
 			}}
 		>
-			<BottomSheetView className="flex-1">{children}</BottomSheetView>
+			{isDynamic ? (
+				<BottomSheetView>{children}</BottomSheetView>
+			) : (
+				children
+			)}
 		</BottomSheetModal>
 	);
 }
 
-export { SheetBackdrop, SheetFrame, StageSheet };
+export { SheetFrame, StageSheet };

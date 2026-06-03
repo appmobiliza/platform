@@ -1,0 +1,23 @@
+import { insertStudentSchema } from "@mobiliza/contracts";
+
+import { z } from "zod";
+
+export const ProfileDisabilitiesSchema = z.object({
+	disabilities: insertStudentSchema.shape.disabilityTypes,
+});
+
+export const ProfileObservationSchema = z.object({
+	observation: z.string(),
+});
+
+export const ProfileSimplifiedInterfaceSchema = z.object({
+	simplifiedInterface: z.boolean(),
+});
+
+export type ProfileDisabilitiesInput = z.infer<
+	typeof ProfileDisabilitiesSchema
+>;
+export type ProfileObservationInput = z.infer<typeof ProfileObservationSchema>;
+export type ProfileSimplifiedInterfaceInput = z.infer<
+	typeof ProfileSimplifiedInterfaceSchema
+>;

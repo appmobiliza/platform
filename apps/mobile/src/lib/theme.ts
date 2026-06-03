@@ -1,4 +1,5 @@
 import type { ColorSchemeName } from "react-native";
+import { useUserRole } from "./auth-store";
 
 export type ThemeColors = {
 	primary: string;
@@ -85,3 +86,16 @@ export const SCHOLAR_THEME: ThemeColors = {
 };
 
 export const useUnstableNativeVariable = (name: string) => `var(${name})`;
+
+const scholarTheme = {
+	"--primary": "#0A2540",
+	"--accent": "#29567B",
+	"--accent-foreground": "#4B799F",
+};
+
+export function useThemeVariables() {
+	const role = useUserRole();
+	return role === "scholar"
+		? scholarTheme
+		: {};
+}

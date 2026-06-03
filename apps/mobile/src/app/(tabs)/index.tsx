@@ -1,4 +1,6 @@
-import { useRouter } from "expo-router";
+import * as Location from "expo-location";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -9,8 +11,10 @@ import { SearchBar } from "@/components/search-bar";
 import { Text } from "@/components/ui/text";
 
 import { useUserRole } from "@/lib/auth-store";
+import { setNearestPoint } from "@/lib/location-store";
 
 import { Logo } from "@/assets/logo";
+import { ufalPoints } from "@/constants/locations";
 
 const newsItems = [
 	{
@@ -30,9 +34,88 @@ const newsItems = [
 	},
 ];
 
+function calculateDistance(
+	lat1: number,
+	lon1: number,
+	lat2: number,
+	lon2: number,
+): number {
+	const R = 6371e3;
+	const φ1 = (lat1 * Math.PI) / 180;
+	const φ2 = (lat2 * Math.PI) / 180;
+	const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+	const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+	const x =
+		Math.sin(Δφ / 2) ** 2 +
+		Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+	return 2 * R * Math.asin(Math.sqrt(x));
+}
+
 function StudentHome() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
+
+	useFocusEffect(
+		useCallback(() => {
+			const setupLocation = async () => {
+				const { status } =
+					await Location.getForegroundPermissionsAsync();
+
+				if (status !== "granted") {
+					router.replace("/location-permission");
+					return;
+				}
+
+				// Permissão concedida — calcula o ponto UFAL mais próximo
+				try {
+					const position = await Location.getCurrentPositionAsync({
+						accuracy: Location.Accuracy.Balanced,
+					});
+
+					const userLat = position.coords.latitude;
+					const userLng = position.coords.longitude;
+
+					if (ufalPoints.length === 0) return;
+
+					let closestPoint = ufalPoints[0];
+					if (!closestPoint) return;
+
+					let minDistance = calculateDistance(
+						userLat,
+						userLng,
+						closestPoint.latitude,
+						closestPoint.longitude,
+					);
+
+					for (let i = 1; i < ufalPoints.length; i++) {
+						const point = ufalPoints[i];
+						if (!point) continue;
+						const dist = calculateDistance(
+							userLat,
+							userLng,
+							point.latitude,
+							point.longitude,
+						);
+						if (dist < minDistance) {
+							minDistance = dist;
+							closestPoint = point;
+						}
+					}
+
+					setNearestPoint({
+						name: closestPoint.name,
+						abbreviation: closestPoint.abbrev,
+						latitude: closestPoint.latitude,
+						longitude: closestPoint.longitude,
+					});
+				} catch (error) {
+					console.warn("Failed to get current location:", error);
+				}
+			};
+
+			setupLocation();
+		}, [router]),
+	);
 
 	return (
 		<ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -70,22 +153,22 @@ function StudentHome() {
 				<View className="px-4">
 					<PlaceCard
 						title="Restaurante Universitário"
-						subtitle="Hoje, 12h35"
-						iconType="star"
+						description="Hoje, 12h35"
+						icon={{ name: "star" }}
 						className="mb-3"
 					/>
 					<View className="flex-row gap-3">
 						<PlaceCard
 							className="flex-1"
 							title="CECA"
-							subtitle="Ontem, 16h12"
-							iconType="clock"
+							description="Ontem, 16h12"
+							icon={{ name: "clock" }}
 						/>
 						<PlaceCard
 							className="flex-1"
 							title="IQB"
-							subtitle="Há 2 dias, 16h24"
-							iconType="clock"
+							description="Há 2 dias, 16h24"
+							icon={{ name: "clock" }}
 						/>
 					</View>
 				</View>
@@ -106,23 +189,23 @@ function StudentHome() {
 					<View className="flex-col gap-3">
 						<PlaceCard
 							title="Restaurante Universitário"
-							subtitle="Último deslocamento há 2 dias"
-							iconType="map"
+							description="Último deslocamento há 2 dias"
+							icon={{ name: "map" }}
 						/>
 						<PlaceCard
 							title="Reitoria"
-							subtitle="Último deslocamento há 6 dias"
-							iconType="map"
+							description="Último deslocamento há 6 dias"
+							icon={{ name: "map" }}
 						/>
 						<PlaceCard
 							title="Biblioteca Central"
-							subtitle="Último deslocamento há 10 dias"
-							iconType="map"
+							description="Último deslocamento há 10 dias"
+							icon={{ name: "map" }}
 						/>
 						<PlaceCard
 							title="Instituto de Computação"
-							subtitle="Último deslocamento há 12 dias"
-							iconType="map"
+							description="Último deslocamento há 12 dias"
+							icon={{ name: "map" }}
 						/>
 					</View>
 				</View>

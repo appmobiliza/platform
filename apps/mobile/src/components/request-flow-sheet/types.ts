@@ -1,3 +1,10 @@
+export type Place = {
+	name: string;
+	abbreviation?: string;
+	latitude: number;
+	longitude: number;
+};
+
 export type Stage =
 	| "destination"
 	| "destination-selection"

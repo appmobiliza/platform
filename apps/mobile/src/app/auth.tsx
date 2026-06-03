@@ -5,25 +5,24 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
-import { setIsLoggedIn, setUserRole } from "@/lib/auth-store";
+import { setIsLoggedIn, setUserRole, UserRole } from "@/lib/auth-store";
 
 import GoogleIcon from "@/assets/google";
 import { Logo } from "@/assets/logo";
+
+const openURL = (url: string) => {
+	Linking.openURL(url).catch((err) => {
+		console.error("Failed to open URL:", err);
+	});
+};
 
 export default function Auth() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
 
-	const handleLogin = (role: "student" | "scholar") => {
+	const handleLogin = (role: UserRole) => {
 		setUserRole(role);
 		setIsLoggedIn(true);
-		router.replace("/(tabs)");
-	};
-
-	const openURL = (url: string) => {
-		Linking.openURL(url).catch((err) => {
-			console.error("Failed to open URL:", err);
-		});
 	};
 
 	return (
@@ -49,22 +48,31 @@ export default function Auth() {
 
 					<Button
 						className="relative mb-3"
-						onPress={() => handleLogin("student")}
+						onPress={() => handleLogin(UserRole.Student)}
 						variant={"inverted"}
 						size={"lg"}
 					>
 						<GoogleIcon />
 						<Text>Entrar como Aluno</Text>
 					</Button>
-					
+
 					<Button
 						className="relative"
-						onPress={() => handleLogin("scholar")}
+						onPress={() => handleLogin(UserRole.Scholar)}
 						variant={"outline"}
 						size={"lg"}
 					>
 						<GoogleIcon />
 						<Text>Entrar como Bolsista</Text>
+					</Button>
+
+					<Button
+						className="relative"
+						onPress={() => router.push("/onboarding")}
+						variant={"ghost"}
+						size={"sm"}
+					>
+						<Text>Testar onboarding</Text>
 					</Button>
 
 					<Text className="text-center text-sm text-muted-foreground mt-8">

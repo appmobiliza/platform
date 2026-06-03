@@ -16,6 +16,7 @@
 import { getSession } from "@mobiliza/auth/server";
 import type { RealtimeAdapter } from "@mobiliza/realtime";
 import { createRealtimeAdapter } from "@mobiliza/realtime";
+
 import { initTRPC, TRPCError } from "@trpc/server";
 import type { Context } from "hono";
 import type { OpenApiMeta } from "trpc-to-openapi";

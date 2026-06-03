@@ -7,6 +7,13 @@
  * - favorite_route (rotas frequentes, 0-2 por estudante)
  */
 
+import {
+	campusValues,
+	courseValues,
+	disabilityTypeValues,
+	genderValues,
+	studentShiftValues,
+} from "@mobiliza/contracts";
 import type {
 	NewFavoriteRoute,
 	NewStudentDisability,
@@ -14,14 +21,9 @@ import type {
 } from "@mobiliza/db/schema";
 import {
 	campusLocation,
-	campusValues,
-	courseValues,
-	disabilityTypeValues,
 	favoriteRoute,
-	genderValues,
 	studentDisability,
 	studentProfile,
-	studentShiftValues,
 	user,
 } from "@mobiliza/db/schema";
 import { eq, } from "drizzle-orm";
@@ -122,15 +124,15 @@ function generateStudentProfile(userId: string): NewStudentProfile {
 			: null,
 		attendanceNotes: faker.datatype.boolean(0.4)
 			? faker.helpers.arrayElement([
-					"Prefere acompanhamento pelo lado direito",
-					"Usa cadeira de rodas elétrica",
-					"Precisa de apoio para subir rampas",
-					"Comunicação por Libras",
-					"Sensibilidade a luz forte — usar óculos escuros",
-					"Cão-guida acompanha",
-					"Prefere esperar em local coberto",
-					"Tem mobilidade reduzida no lado esquerdo",
-				])
+				"Prefere acompanhamento pelo lado direito",
+				"Usa cadeira de rodas elétrica",
+				"Precisa de apoio para subir rampas",
+				"Comunicação por Libras",
+				"Sensibilidade a luz forte — usar óculos escuros",
+				"Cão-guida acompanha",
+				"Prefere esperar em local coberto",
+				"Tem mobilidade reduzida no lado esquerdo",
+			])
 			: null,
 		simplifiedInterface: faker.datatype.boolean(0.2),
 		isActive: faker.datatype.boolean(0.9),
@@ -184,5 +186,3 @@ function generateFavoriteRoutes(
 
 	return routes;
 }
-
-
