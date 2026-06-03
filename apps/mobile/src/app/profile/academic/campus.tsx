@@ -34,7 +34,7 @@ export default function AcademicProfileCampus() {
 	return (
 		<ProfileLayout
 			title="Campus"
-			description="Selecione seu atual campus de graduação."
+			description="Selecione o campus da atual graduação que você está cursando"
 			handleSave={handleSave}
 		>
 			<Controller
@@ -43,7 +43,6 @@ export default function AcademicProfileCampus() {
 				render={({ field }) => (
 					<SelectField
 						label="Campus"
-						description="Selecione o campus de graduação que você está cursando."
 						value={field.value}
 						placeholder="Selecionar campus"
 						options={campusValues.map((value) => ({

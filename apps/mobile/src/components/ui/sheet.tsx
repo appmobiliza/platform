@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import {
 	BottomSheetBackdrop,
 	BottomSheetModal,
@@ -7,6 +5,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { cva } from "class-variance-authority";
 import { CheckIcon } from "lucide-react-native";
+import * as React from "react";
 import type { PressableProps, ViewProps } from "react-native";
 import { Pressable, useColorScheme, View } from "react-native";
 
@@ -189,6 +188,7 @@ type SheetContentProps = React.PropsWithChildren<{
 	index?: number;
 	panDownToClose?: boolean;
 	enableDynamicSizing?: boolean;
+	wrapWithView?: boolean;
 	onDismiss?: () => void;
 }> &
 	React.ComponentPropsWithoutRef<typeof BottomSheetView>;
@@ -199,6 +199,7 @@ function SheetContent({
 	index = 0,
 	panDownToClose = false,
 	enableDynamicSizing = false,
+	wrapWithView = true,
 	onDismiss,
 	className,
 	style,
@@ -212,11 +213,23 @@ function SheetContent({
 	const { modalRef } = useSheetRef(); // ref comes from its own context
 	const stateValue = useSheetState(); // callbacks + config separate
 
+	const content = wrapWithView ? (
+		<BottomSheetView className={className} style={style} {...props}>
+			{children}
+		</BottomSheetView>
+	) : (
+		children
+	);
+
 	return (
 		<BottomSheetModal
 			ref={modalRef}
 			index={index}
-			snapPoints={enableDynamicSizing ? undefined : DEFAULT_SNAP_POINTS}
+			snapPoints={
+				enableDynamicSizing
+					? undefined
+					: (snapPoints ?? DEFAULT_SNAP_POINTS)
+			}
 			enablePanDownToClose={panDownToClose}
 			enableDynamicSizing={enableDynamicSizing}
 			backdropComponent={(backdropProps) => (
@@ -239,13 +252,7 @@ function SheetContent({
 			 */}
 			<SheetRefContext.Provider value={{ modalRef }}>
 				<SheetStateContext.Provider value={stateValue}>
-					<BottomSheetView
-						className={className}
-						style={style}
-						{...props}
-					>
-						{children}
-					</BottomSheetView>
+					{content}
 				</SheetStateContext.Provider>
 			</SheetRefContext.Provider>
 		</BottomSheetModal>

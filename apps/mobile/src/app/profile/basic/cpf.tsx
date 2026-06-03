@@ -38,11 +38,7 @@ export default function BasicProfileCpf() {
 				control={control}
 				name="cpf"
 				render={({ field }) => (
-					<Field
-						label="CPF"
-						description="Use o número cadastrado no documento oficial."
-						error={errors.cpf?.message}
-					>
+					<Field label="CPF" error={errors.cpf?.message}>
 						<MaskedInput
 							mask="cpf"
 							placeholder="000.000.000-00"

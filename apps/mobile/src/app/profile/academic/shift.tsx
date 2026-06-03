@@ -1,4 +1,4 @@
-import { studentShiftValues } from "@mobiliza/contracts";
+import { studentShiftLabels, studentShiftValues } from "@mobiliza/contracts";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
@@ -50,7 +50,7 @@ export default function AcademicProfileShift() {
 						value={field.value}
 						placeholder="Selecionar turma"
 						options={studentShiftValues.map((value) => ({
-							label: value,
+							label: studentShiftLabels[value],
 							value,
 						}))}
 						onValueChange={field.onChange}

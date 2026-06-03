@@ -52,6 +52,7 @@ export default function AcademicProfileCourse() {
 						}))}
 						onValueChange={field.onChange}
 						error={errors.course?.message}
+						searchable
 					/>
 				)}
 			/>

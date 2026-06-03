@@ -41,11 +41,7 @@ export default function BasicProfileName() {
 					control={control}
 					name="name"
 					render={({ field }) => (
-						<Field
-							label="Nome"
-							description="Digite apenas o primeiro nome."
-							error={errors.name?.message}
-						>
+						<Field label="Nome" error={errors.name?.message}>
 							<Input
 								placeholder="Fulano"
 								value={field.value}
@@ -64,11 +60,7 @@ export default function BasicProfileName() {
 					control={control}
 					name="nickname"
 					render={({ field }) => (
-						<Field
-							label="Apelido"
-							description="Digite um apelido"
-							error={errors.nickname?.message}
-						>
+						<Field label="Apelido" error={errors.nickname?.message}>
 							<Input
 								placeholder="Apelido (opcional)"
 								value={field.value}

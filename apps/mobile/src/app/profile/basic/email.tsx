@@ -38,11 +38,7 @@ export default function BasicProfileEmail() {
 				control={control}
 				name="email"
 				render={({ field }) => (
-					<Field
-						label="E-mail"
-						description="Esse endereço será usado para contato e recuperação de conta."
-						error={errors.email?.message}
-					>
+					<Field label="E-mail" error={errors.email?.message}>
 						<Input
 							placeholder="seu.email@exemplo.com"
 							value={field.value}

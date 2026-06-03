@@ -1,13 +1,19 @@
+import {
+	BottomSheetFlatList,
+	BottomSheetScrollView,
+	BottomSheetView,
+} from "@gorhom/bottom-sheet";
 import { ChevronDown } from "lucide-react-native";
+import { useMemo, useState } from "react";
 import { View } from "react-native";
 
 import { cn } from "@/lib/utils";
 
 import type { SelectOption } from "@/types";
-
 import { Button } from "./button";
 import { Field } from "./field";
 import { Icon } from "./icon";
+import { Input } from "./input";
 import {
 	Sheet,
 	SheetContent,
@@ -27,6 +33,7 @@ interface SelectFieldProps {
 	onValueChange: (value: string) => void;
 	description?: string;
 	error?: string;
+	searchable?: boolean;
 }
 
 function SelectField({
@@ -37,7 +44,29 @@ function SelectField({
 	onValueChange,
 	description,
 	error,
+	searchable = false,
 }: SelectFieldProps) {
+	const [searchQuery, setSearchQuery] = useState("");
+
+	const selectedLabel = options.find((o) => o.value === value)?.label;
+
+	const filteredOptions = useMemo(() => {
+		if (!searchable || !searchQuery.trim()) {
+			return options;
+		}
+
+		const query = searchQuery.toLowerCase().trim();
+		return options.filter(
+			(option) =>
+				option.label.toLowerCase().includes(query) ||
+				option.value.toLowerCase().includes(query),
+		);
+	}, [options, searchable, searchQuery]);
+
+	const handleSearchReset = () => {
+		setSearchQuery("");
+	};
+
 	return (
 		<Field label={label} description={description} error={error}>
 			<Sheet closeOnSelect>
@@ -61,7 +90,7 @@ function SelectField({
 									: "text-muted-foreground",
 							)}
 						>
-							{value || placeholder}
+							{selectedLabel || placeholder}
 						</Text>
 						<Icon
 							icon={ChevronDown}
@@ -71,24 +100,63 @@ function SelectField({
 					</Button>
 				</SheetTrigger>
 
-				<SheetContent enableDynamicSizing>
-					<SheetHeader>
+				<SheetContent
+					enableDynamicSizing={!searchable}
+					wrapWithView={!searchable}
+					snapPoints={searchable ? ["50%"] : undefined}
+					panDownToClose
+				>
+					<SheetHeader className="pb-0">
 						<SheetTitle>{label}</SheetTitle>
 						{description ? (
 							<SheetDescription>{description}</SheetDescription>
 						) : null}
 					</SheetHeader>
 
-					<View className="pt-4 pb-2">
-						{options.map((option) => (
-							<SheetItem
-								key={option.value}
-								label={option.label}
-								selected={value === option.value}
-								onPress={() => onValueChange(option.value)}
+					{searchable ? (
+						<View className="px-4 pt-3 pb-3 border-b border-border">
+							<Input
+								placeholder="Pesquisar"
+								value={searchQuery}
+								onChangeText={setSearchQuery}
+								className="h-10"
+								aria-label="Pesquisar opções"
 							/>
-						))}
-					</View>
+						</View>
+					) : null}
+
+					{searchable ? (
+						<BottomSheetFlatList
+							data={filteredOptions}
+							contentContainerClassName="pb-4"
+							keyExtractor={(item) => item.value}
+							renderItem={({ item: option }) => (
+								<SheetItem
+									label={option.label}
+									selected={value === option.value}
+									onPress={() => {
+										onValueChange(option.value);
+										handleSearchReset();
+									}}
+								/>
+							)}
+							showsVerticalScrollIndicator={false}
+						/>
+					) : (
+						<View className="pt-2 pb-4">
+							{filteredOptions.map((option) => (
+								<SheetItem
+									key={option.value}
+									label={option.label}
+									selected={value === option.value}
+									onPress={() => {
+										onValueChange(option.value);
+										handleSearchReset();
+									}}
+								/>
+							))}
+						</View>
+					)}
 				</SheetContent>
 			</Sheet>
 		</Field>

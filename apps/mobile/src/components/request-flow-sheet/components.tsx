@@ -1,17 +1,16 @@
+import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import type * as React from "react";
-
-import {
-	BottomSheetBackdrop,
-	BottomSheetModal,
-	BottomSheetScrollView,
-	BottomSheetView,
-} from "@gorhom/bottom-sheet";
 import { View } from "react-native";
 
 import { THEME } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
-import { SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "../ui/sheet";
+import {
+	SheetDescription,
+	SheetFooter,
+	SheetHeader,
+	SheetTitle,
+} from "../ui/sheet";
 import type { Stage } from "./types";
 
 interface SheetFrameProps {
@@ -52,14 +51,20 @@ function SheetFrame({
 					<SheetTitle>{title}</SheetTitle>
 					{accessory ? accessory : null}
 				</View>
-				{description ? <SheetDescription>{description}</SheetDescription> : null}
+				{description ? (
+					<SheetDescription>{description}</SheetDescription>
+				) : null}
 			</SheetHeader>
-			{shouldWrapChildren ? <View className="p-4 gap-4">{children}</View> : children}
+			{shouldWrapChildren ? (
+				<View className="p-4 gap-4">{children}</View>
+			) : (
+				children
+			)}
 			<SheetFooter className="gap-3 border-t border-border px-4 pb-6 pt-3">
 				{footer}
 			</SheetFooter>
 		</>
-	)
+	);
 }
 
 interface StageSheetProps {
@@ -88,7 +93,7 @@ function StageSheet({
 			ref={modalRef}
 			index={0}
 			enableDynamicSizing={isDynamic}
-   			snapPoints={isDynamic ? undefined : snapPoints}
+			snapPoints={isDynamic ? undefined : snapPoints}
 			enablePanDownToClose={panDownToClose}
 			onDismiss={() => onDismiss(stage)}
 			backgroundStyle={{ backgroundColor: THEME[colorScheme].card }}
@@ -96,7 +101,11 @@ function StageSheet({
 				backgroundColor: THEME[colorScheme].muted,
 			}}
 		>
-			{isDynamic ? <BottomSheetView>{children}</BottomSheetView> : children}
+			{isDynamic ? (
+				<BottomSheetView>{children}</BottomSheetView>
+			) : (
+				children
+			)}
 		</BottomSheetModal>
 	);
 }

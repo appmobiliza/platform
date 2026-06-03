@@ -52,6 +52,7 @@ export default function BasicProfileEnrollment() {
 							onBlur={field.onBlur}
 							onChangeText={field.onChange}
 							autoComplete="off"
+							keyboardType="numeric"
 							accessibilityLabel="Matrícula"
 							aria-invalid={Boolean(errors.enrollment)}
 						/>
