@@ -8,12 +8,15 @@
  * e destes, ~60% estão marcados como disponíveis.
  */
 
-import { campusValues, courseValues, scholarShiftValues } from "@mobiliza/contracts";
-import type { NewScholarProfile } from "@mobiliza/db/schema";
 import {
-	scholarProfile,
-	user,
-} from "@mobiliza/db/schema";
+	campusValues,
+	courseValues,
+	genderValues,
+	scholarShiftValues,
+} from "@mobiliza/contracts";
+import type { NewScholarProfile } from "@mobiliza/db/schema";
+import { scholarProfile, user } from "@mobiliza/db/schema";
+
 import { eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 
@@ -88,6 +91,7 @@ function generateScholarProfile(userId: string): NewScholarProfile {
 		phone: generatePhone(),
 		cpf: generateCPF(),
 		shift: faker.helpers.arrayElement([...scholarShiftValues]),
+		gender: faker.helpers.arrayElement([...genderValues]),
 		isApproved,
 		approvedAt: isApproved
 			? new Date(

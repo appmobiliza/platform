@@ -110,6 +110,7 @@ export async function seedScholarProfile(
 			phone: "82111112222",
 			cpf: cpfSuffix,
 			shift: "morning",
+			gender: "male",
 			isApproved: false,
 			approvedAt: null,
 			approvedBy: null,

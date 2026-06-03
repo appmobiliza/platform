@@ -228,6 +228,7 @@ describe("profilesRouter", () => {
 				shift: "morning",
 				phone: "82111117777",
 				cpf: "12345678901",
+				gender: "male",
 			});
 
 			// Assert
@@ -259,6 +260,7 @@ describe("profilesRouter", () => {
 				shift: "morning",
 				phone: "82111118888",
 				cpf: "98765432109",
+				gender: "male",
 			});
 
 			// Assert
