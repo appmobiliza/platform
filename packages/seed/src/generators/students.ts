@@ -26,7 +26,7 @@ import {
 	studentProfile,
 	user,
 } from "@mobiliza/db/schema";
-import { eq, } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 
 import { db } from "../lib/db";
@@ -119,9 +119,7 @@ function generateStudentProfile(userId: string): NewStudentProfile {
 		phone: generatePhone(),
 		shift: faker.helpers.arrayElement([...studentShiftValues]),
 		gender: faker.helpers.arrayElement([...genderValues]),
-		nickname: faker.datatype.boolean(0.3)
-			? faker.person.firstName()
-			: null,
+		nickname: faker.datatype.boolean(0.3) ? faker.person.firstName() : null,
 		attendanceNotes: faker.datatype.boolean(0.4)
 			? faker.helpers.arrayElement([
 				"Prefere acompanhamento pelo lado direito",

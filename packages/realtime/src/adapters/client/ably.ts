@@ -1,16 +1,16 @@
 import type {
-  RealtimeClientAdapter,
-  RealtimePayload,
-  AblyClientAdapterOptions,
-  Unsubscribe,
-} from '../../types'
+	AblyClientAdapterOptions,
+	RealtimeClientAdapter,
+	RealtimePayload,
+	Unsubscribe,
+} from "../../types";
 
 // Tipos lazy — o pacote `ably` só é carregado se este adaptador for usado
-type AblyRealtimeInstance = import('ably').Realtime
-type AblyChannel = import('ably').RealtimeChannel
-type AblyMessage = import('ably').Message
+type AblyRealtimeInstance = import("ably").Realtime;
+type AblyChannel = import("ably").RealtimeChannel;
+type AblyMessage = import("ably").Message;
 
-type Handler = (data: RealtimePayload) => void
+type Handler = (data: RealtimePayload) => void;
 
 /**
  * Adaptador **client-side** para o **Ably Realtime**.
@@ -74,135 +74,136 @@ type Handler = (data: RealtimePayload) => void
  * @see https://ably.com/docs/getting-started/react
  */
 export class AblyClientAdapter implements RealtimeClientAdapter {
-  private client: AblyRealtimeInstance
+	private client: AblyRealtimeInstance;
 
-  /**
-   * Canal → evento → Set de handlers registrados.
-   * Mantido separado do objeto de canal do Ably para permitir
-   * cancelamento granular por handler (o Ably cancela por referência).
-   */
-  private subscriptions = new Map<string, Map<string, Set<Handler>>>()
+	/**
+	 * Canal → evento → Set de handlers registrados.
+	 * Mantido separado do objeto de canal do Ably para permitir
+	 * cancelamento granular por handler (o Ably cancela por referência).
+	 */
+	private subscriptions = new Map<string, Map<string, Set<Handler>>>();
 
-  /** Cache de canais abertos para evitar `.get()` redundante */
-  private channels = new Map<string, AblyChannel>()
+	/** Cache de canais abertos para evitar `.get()` redundante */
+	private channels = new Map<string, AblyChannel>();
 
-  constructor(options: AblyClientAdapterOptions) {
-    const Ably = require('ably') as typeof import('ably')
+	constructor(options: AblyClientAdapterOptions) {
+		const Ably = require("ably") as typeof import("ably");
 
-    if (options.clientToken) {
-      this.client = new Ably.Realtime({
-        token: options.clientToken,
-        clientId: options.clientId,
-        environment: options.environment,
-      })
-    } else {
-      this.client = new Ably.Realtime({
-        authUrl: options.authUrl,
-        clientId: options.clientId,
-        environment: options.environment,
-        // O SDK tentará renovar o token automaticamente antes da expiração
-        autoConnect: true,
-      })
-    }
+		if (options.clientToken) {
+			this.client = new Ably.Realtime({
+				token: options.clientToken,
+				clientId: options.clientId,
+				environment: options.environment,
+			});
+		} else {
+			this.client = new Ably.Realtime({
+				authUrl: options.authUrl,
+				clientId: options.clientId,
+				environment: options.environment,
+				// O SDK tentará renovar o token automaticamente antes da expiração
+				autoConnect: true,
+			});
+		}
 
-    this.client.connection.on('failed', (stateChange) => {
-      console.error('[AblyClientAdapter] conexão falhou:', stateChange.reason)
-    })
-  }
+		this.client.connection.on("failed", (stateChange) => {
+			console.error(
+				"[AblyClientAdapter] conexão falhou:",
+				stateChange.reason,
+			);
+		});
+	}
 
-  subscribe(channel: string, event: string, handler: Handler): Unsubscribe {
-    const ch = this.getOrCreateChannel(channel)
+	subscribe(channel: string, event: string, handler: Handler): Unsubscribe {
+		const ch = this.getOrCreateChannel(channel);
 
-    // Handler wrapper que extrai apenas o payload — a assinatura do Ably
-    // entrega um objeto Message completo; o contrato do adaptador entrega
-    // apenas os dados brutos.
-    const ablyHandler = (message: AblyMessage) => {
-      handler(message.data as RealtimePayload)
-    }
+		// Handler wrapper que extrai apenas o payload — a assinatura do Ably
+		// entrega um objeto Message completo; o contrato do adaptador entrega
+		// apenas os dados brutos.
+		const ablyHandler = (message: AblyMessage) => {
+			handler(message.data as RealtimePayload);
+		};
 
-    ch.subscribe(event, ablyHandler)
+		ch.subscribe(event, ablyHandler);
 
-    // Registra no mapa interno para rastreamento
-    if (!this.subscriptions.has(channel)) {
-      this.subscriptions.set(channel, new Map())
-    }
-    const byChannel = this.subscriptions.get(channel)!
-    if (!byChannel.has(event)) {
-      byChannel.set(event, new Set())
-    }
-    byChannel.get(event)!.add(handler)
+		// Registra no mapa interno para rastreamento
+		if (!this.subscriptions.has(channel)) {
+			this.subscriptions.set(channel, new Map());
+		}
+		const byChannel = this.subscriptions.get(channel)!;
+		if (!byChannel.has(event)) {
+			byChannel.set(event, new Set());
+		}
+		byChannel.get(event)?.add(handler);
 
-    return () => {
-      // Cancela apenas este handler específico no Ably
-      ch.unsubscribe(event, ablyHandler)
+		return () => {
+			// Cancela apenas este handler específico no Ably
+			ch.unsubscribe(event, ablyHandler);
 
-      // Remove do mapa interno
-      byChannel.get(event)?.delete(handler)
+			// Remove do mapa interno
+			byChannel.get(event)?.delete(handler);
 
-      // Se não há mais handlers neste evento, limpa a entrada
-      if (byChannel.get(event)?.size === 0) {
-        byChannel.delete(event)
-      }
+			// Se não há mais handlers neste evento, limpa a entrada
+			if (byChannel.get(event)?.size === 0) {
+				byChannel.delete(event);
+			}
 
-      // Se não há mais eventos neste canal, desanexa o canal do Ably
-      if (byChannel.size === 0) {
-        this.subscriptions.delete(channel)
-        ch.detach()
-        this.channels.delete(channel)
-      }
-    }
-  }
+			// Se não há mais eventos neste canal, desanexa o canal do Ably
+			if (byChannel.size === 0) {
+				this.subscriptions.delete(channel);
+				ch.detach();
+				this.channels.delete(channel);
+			}
+		};
+	}
 
-  disconnect(): void {
-    // Desanexa todos os canais antes de fechar a conexão
-    this.channels.forEach((ch) => {
-      ch.unsubscribe()
-      ch.detach()
-    })
-    this.channels.clear()
-    this.subscriptions.clear()
-    this.client.close()
-  }
+	disconnect(): void {
+		// Desanexa todos os canais antes de fechar a conexão
+		this.channels.forEach((ch) => {
+			ch.unsubscribe();
+			ch.detach();
+		});
+		this.channels.clear();
+		this.subscriptions.clear();
+		this.client.close();
+	}
 
-  /**
-   * Estado atual da conexão com o Ably.
-   * Útil para exibir indicadores de conectividade na UI.
-   *
-   * Valores possíveis: `'initialized'` | `'connecting'` | `'connected'` |
-   * `'disconnected'` | `'suspended'` | `'closing'` | `'closed'` | `'failed'`
-   */
-  get connectionState(): string {
-    return this.client.connection.state
-  }
+	/**
+	 * Estado atual da conexão com o Ably.
+	 * Útil para exibir indicadores de conectividade na UI.
+	 *
+	 * Valores possíveis: `'initialized'` | `'connecting'` | `'connected'` |
+	 * `'disconnected'` | `'suspended'` | `'closing'` | `'closed'` | `'failed'`
+	 */
+	get connectionState(): string {
+		return this.client.connection.state;
+	}
 
-  /**
-   * Registra um callback para mudanças de estado da conexão.
-   * Útil para mostrar banners de "sem conexão" na UI.
-   *
-   * @returns Função de cancelamento
-   *
-   * @example
-   * ```ts
-   * const unsub = adapter.onConnectionStateChange((state) => {
-   *   setIsConnected(state === 'connected')
-   * })
-   * return unsub // no cleanup do useEffect
-   * ```
-   */
-  onConnectionStateChange(
-    callback: (state: string) => void,
-  ): Unsubscribe {
-    const listener = (stateChange: { current: string }) => {
-      callback(stateChange.current)
-    }
-    this.client.connection.on(listener)
-    return () => this.client.connection.off(listener)
-  }
+	/**
+	 * Registra um callback para mudanças de estado da conexão.
+	 * Útil para mostrar banners de "sem conexão" na UI.
+	 *
+	 * @returns Função de cancelamento
+	 *
+	 * @example
+	 * ```ts
+	 * const unsub = adapter.onConnectionStateChange((state) => {
+	 *   setIsConnected(state === 'connected')
+	 * })
+	 * return unsub // no cleanup do useEffect
+	 * ```
+	 */
+	onConnectionStateChange(callback: (state: string) => void): Unsubscribe {
+		const listener = (stateChange: { current: string }) => {
+			callback(stateChange.current);
+		};
+		this.client.connection.on(listener);
+		return () => this.client.connection.off(listener);
+	}
 
-  private getOrCreateChannel(channel: string): AblyChannel {
-    if (!this.channels.has(channel)) {
-      this.channels.set(channel, this.client.channels.get(channel))
-    }
-    return this.channels.get(channel)!
-  }
+	private getOrCreateChannel(channel: string): AblyChannel {
+		if (!this.channels.has(channel)) {
+			this.channels.set(channel, this.client.channels.get(channel));
+		}
+		return this.channels.get(channel)!;
+	}
 }

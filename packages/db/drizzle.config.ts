@@ -1,10 +1,10 @@
-import { defineConfig } from "drizzle-kit";
 import * as dotenv from "dotenv";
+import { defineConfig } from "drizzle-kit";
 
-dotenv.config({ path: '../../.env' });
+dotenv.config({ path: "../../.env" });
 
 if (!process.env.DATABASE_URL) {
-  throw new Error("A variável DATABASE_URL está faltando no arquivo .env");
+	throw new Error("A variável DATABASE_URL está faltando no arquivo .env");
 }
 
 export default defineConfig({

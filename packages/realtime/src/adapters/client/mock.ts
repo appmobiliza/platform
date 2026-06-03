@@ -1,10 +1,10 @@
 import type {
-  RealtimeClientAdapter,
-  RealtimePayload,
-  Unsubscribe,
-} from '../../types'
+	RealtimeClientAdapter,
+	RealtimePayload,
+	Unsubscribe,
+} from "../../types";
 
-type Handler = (data: RealtimePayload) => void
+type Handler = (data: RealtimePayload) => void;
 
 /**
  * Adaptador **client-side** de mock para testes.
@@ -25,33 +25,39 @@ type Handler = (data: RealtimePayload) => void
  * ```
  */
 export class MockClientAdapter implements RealtimeClientAdapter {
-  private listeners = new Map<string, Map<string, Set<Handler>>>()
+	private listeners = new Map<string, Map<string, Set<Handler>>>();
 
-  subscribe(channel: string, event: string, handler: Handler): Unsubscribe {
-    if (!this.listeners.has(channel)) {
-      this.listeners.set(channel, new Map())
-    }
-    const byChannel = this.listeners.get(channel)!
+	subscribe(channel: string, event: string, handler: Handler): Unsubscribe {
+		if (!this.listeners.has(channel)) {
+			this.listeners.set(channel, new Map());
+		}
+		const byChannel = this.listeners.get(channel)!;
 
-    if (!byChannel.has(event)) {
-      byChannel.set(event, new Set())
-    }
-    byChannel.get(event)!.add(handler)
+		if (!byChannel.has(event)) {
+			byChannel.set(event, new Set());
+		}
+		byChannel.get(event)?.add(handler);
 
-    return () => {
-      byChannel.get(event)?.delete(handler)
-    }
-  }
+		return () => {
+			byChannel.get(event)?.delete(handler);
+		};
+	}
 
-  disconnect(): void {
-    this.listeners.clear()
-  }
+	disconnect(): void {
+		this.listeners.clear();
+	}
 
-  /**
-   * Simula a chegada de um evento — use em testes de componentes.
-   */
-  simulateEvent(channel: string, event: string, data: RealtimePayload): void {
-    this.listeners.get(channel)?.get(event)?.forEach((h) => h(data))
-    this.listeners.get(channel)?.get('*')?.forEach((h) => h(data))
-  }
+	/**
+	 * Simula a chegada de um evento — use em testes de componentes.
+	 */
+	simulateEvent(channel: string, event: string, data: RealtimePayload): void {
+		this.listeners
+			.get(channel)
+			?.get(event)
+			?.forEach((h) => h(data));
+		this.listeners
+			.get(channel)
+			?.get("*")
+			?.forEach((h) => h(data));
+	}
 }

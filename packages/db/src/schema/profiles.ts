@@ -48,7 +48,9 @@ export const studentProfile = pgTable("student_profile", {
 	 * Quando ativo, a interface do app é simplificada para usuários com
 	 * baixa visão.
 	 */
-	simplifiedInterface: boolean("simplified_interface").notNull().default(false),
+	simplifiedInterface: boolean("simplified_interface")
+		.notNull()
+		.default(false),
 });
 
 /**
@@ -98,29 +100,38 @@ export type NewStudentDisability = typeof studentDisability.$inferInsert;
 
 // ─── Relations ───────────────────────────────────────────────────────────────
 
-export const studentProfileRelations = relations(studentProfile, ({ one, many }) => ({
-	user: one(user, {
-		fields: [studentProfile.userId],
-		references: [user.id],
+export const studentProfileRelations = relations(
+	studentProfile,
+	({ one, many }) => ({
+		user: one(user, {
+			fields: [studentProfile.userId],
+			references: [user.id],
+		}),
+		disabilities: many(studentDisability),
+		requests: many(serviceRequest),
 	}),
-	disabilities: many(studentDisability),
-	requests: many(serviceRequest),
-}));
+);
 
-export const scholarProfileRelations = relations(scholarProfile, ({ one, many }) => ({
-	user: one(user, {
-		fields: [scholarProfile.userId],
-		references: [user.id],
+export const scholarProfileRelations = relations(
+	scholarProfile,
+	({ one, many }) => ({
+		user: one(user, {
+			fields: [scholarProfile.userId],
+			references: [user.id],
+		}),
+		attendances: many(serviceAttendance),
 	}),
-	attendances: many(serviceAttendance),
-}));
+);
 
-export const studentDisabilityRelations = relations(studentDisability, ({ one }) => ({
-	studentProfile: one(studentProfile, {
-		fields: [studentDisability.studentProfileId],
-		references: [studentProfile.id],
+export const studentDisabilityRelations = relations(
+	studentDisability,
+	({ one }) => ({
+		studentProfile: one(studentProfile, {
+			fields: [studentDisability.studentProfileId],
+			references: [studentProfile.id],
+		}),
 	}),
-}));
+);
 
 // ─── Import serviceRequest here for relations ─────────────────────────────────
 import { serviceAttendance, serviceRequest } from "./requests";

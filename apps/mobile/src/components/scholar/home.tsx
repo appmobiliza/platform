@@ -1,13 +1,11 @@
-import { type ReactNode, useMemo, useState } from "react";
-
 import { useRouter } from "expo-router";
 import {
-	CirclePlay,
 	Clock,
 	MapPin,
 	Palmtree,
 	Power,
 } from "lucide-react-native";
+import { type ReactNode, useMemo, useState } from "react";
 import { FlatList, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -19,7 +17,6 @@ import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 
 import { Logo } from "@/assets/logo";
-
 import { Badge } from "../ui/badge";
 import { Icon } from "../ui/icon";
 import {
@@ -299,7 +296,7 @@ export function ScholarHome() {
 				).getTime() - currentDate.getTime();
 	const hours = Math.floor(remainingTime / (1000 * 60 * 60));
 
-	const shiftStarted = shiftState === "during";
+	const _shiftStarted = shiftState === "during";
 
 	return (
 		<ScrollView contentContainerClassName="flex-1 bg-background gap-4">

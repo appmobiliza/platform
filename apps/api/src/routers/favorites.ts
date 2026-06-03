@@ -13,8 +13,9 @@ import {
 
 import { TRPCError } from "@trpc/server";
 
-import { protectedProcedure, router } from "@/trpc/context";
 import { toTRPCCode } from "@/utils/error";
+
+import { protectedProcedure, router } from "@/trpc/context";
 
 export const favoritesRouter = router({
 	create: protectedProcedure
