@@ -34,6 +34,7 @@ import {
 	studentProfile,
 	user,
 } from "@mobiliza/db/schema";
+
 import { sql } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 
@@ -111,9 +112,6 @@ export async function seedScholarProfile(
 			cpf: cpfSuffix,
 			shift: "morning",
 			gender: "male",
-			isApproved: false,
-			approvedAt: null,
-			approvedBy: null,
 			isAvailable: false,
 			isActive: true,
 			...overrides,

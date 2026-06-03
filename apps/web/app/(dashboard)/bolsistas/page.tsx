@@ -1,7 +1,6 @@
+import { Frown, Plus, Search } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-
-import { Frown, Plus, Search } from "lucide-react";
 
 import { ScholarDetailsSidebar } from "@/components/details";
 import { StatusMessage } from "@/components/status-message";
@@ -44,7 +43,6 @@ type ScholarDashboardItem = {
 		campus: string;
 		phone: string;
 		shift: string;
-		isApproved: boolean;
 		isAvailable: boolean;
 		isActive: boolean;
 	};
@@ -309,10 +307,7 @@ export default async function ScholarsPage({
 										</Badge>
 									</div>
 									<p className="text-xs text-muted-foreground">
-										Matrícula {scholar.profile.enrollment} ·{" "}
-										{scholar.profile.isApproved
-											? "Aprovado"
-											: "Pendente de aprovação"}
+										Matrícula {scholar.profile.enrollment}
 									</p>
 								</CardHeader>
 								<CardContent className="space-y-3">

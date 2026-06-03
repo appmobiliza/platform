@@ -56,14 +56,14 @@ export const studentProfile = pgTable("student_profile", {
 /**
  * Perfil do bolsista do NAC.
  * Um bolsista precisa ser aprovado pela coordenação antes de poder
- * receber solicitações. O campo `approvedAt` serve como evidência
- * de quando a aprovação ocorreu.
+ * receber solicitações.
  */
 export const scholarProfile = pgTable("scholar_profile", {
 	...sharedProfileColumns(),
 	course: text("course").notNull(),
 	shift: scholarShiftEnum("shift").notNull(),
 	cpf: text("cpf").notNull().unique(),
+
 	/*
 	 * Controlado pelo próprio bolsista no app — indica se ele está apto a
 	 * receber solicitações no momento atual, dentro do seu turno.
