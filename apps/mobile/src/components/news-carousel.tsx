@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-
 import { Image } from "expo-image";
 import { ChevronRight } from "lucide-react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	AccessibilityInfo,
 	findNodeHandle,
@@ -361,7 +360,7 @@ const NewsCard = ({
 				accessibilityRole="button"
 				accessibilityLabel={`Notícia ${index + 1} de ${length}: ${item.label}`}
 				accessibilityHint="Abre a notícia no navegador"
-				className="h-44 overflow-hidden rounded-3xl border border-border bg-card"
+				className="h-44 overflow-hidden rounded-3xl border border-border bg-card active:opacity-90"
 			>
 				<Image
 					source={{ uri: item.image }}

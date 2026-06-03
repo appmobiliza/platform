@@ -46,7 +46,7 @@
 		"react-hook-form": "^7.76.1",
 		"react-map-gl": "^8.1.1",
 		"react-native": "0.85.3",
-		"react-native-css": "^3.0.7",
+		"react-native-css": "0.0.0-nightly.b5f2a4d",
 		"react-native-gesture-handler": "~2.31.1",
 		"react-native-keyboard-controller": "1.21.6",
 		"react-native-maps": "1.27.2",
