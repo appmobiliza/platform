@@ -22,13 +22,6 @@ export const accept = scholarProcedure
 			throw new TRPCError({ code: "FORBIDDEN" });
 		}
 
-		if (!scholarProfile.isApproved) {
-			throw new TRPCError({
-				code: "FORBIDDEN",
-				message: "Seu cadastro ainda não foi aprovado pelo NAC.",
-			});
-		}
-
 		if (!scholarProfile.isAvailable) {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
@@ -74,15 +67,22 @@ export const accept = scholarProcedure
 				.returning();
 
 			// Notifica o estudante via realtime
-			await ctx.realtime.publish(
-				`request:${input.requestId}`,
-				"request:accepted",
-				{
-					requestId: input.requestId,
-					scholarId: ctx.session.user.id,
-					scholarName: ctx.session.user.name,
-				},
-			);
+			try {
+				await ctx.realtime.publish(
+					`request:${input.requestId}`,
+					"request:accepted",
+					{
+						requestId: input.requestId,
+						scholarId: ctx.session.user.id,
+						scholarName: ctx.session.user.name,
+					},
+				);
+			} catch (publishError) {
+				console.error(
+					"[Realtime] Failed to publish request:accepted event:",
+					publishError,
+				);
+			}
 
 			return { request: { ...request, status: "accepted" }, attendance };
 		});

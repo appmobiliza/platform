@@ -15,13 +15,12 @@ const sharedProfileSchema = {
 			const digitsOnly = val.replace(/\D/g, "");
 			return digitsOnly.length >= 5 && digitsOnly.length <= 20;
 		},
-		{ message: "Matrícula inválida" }
+		{ message: "Matrícula inválida" },
 	),
 	campus: z.enum(campusValues),
-	phone: z.string().regex(
-		/^\(?\d{2}\)?[\s]?\d{4,5}[\s-]?\d{4}$/,
-		"Telefone inválido"
-	),
+	phone: z
+		.string()
+		.regex(/^\(?\d{2}\)?[\s]?\d{4,5}[\s-]?\d{4}$/, "Telefone inválido"),
 	gender: z.enum(genderValues, { error: "Gênero deve ser selecionado" }),
 };
 
@@ -43,7 +42,11 @@ export const insertStudentSchema = z.object({
 	nickname: z.string().optional(),
 	attendanceNotes: z.string().optional(),
 	simplifiedInterface: z.boolean().optional(),
-	disabilityTypes: z.array(z.enum(disabilityTypeValues), { error: "Tipo de deficiência deve ser selecionado" }).min(1, { message: "Tipo de deficiência deve ser selecionado" }),
+	disabilityTypes: z
+		.array(z.enum(disabilityTypeValues), {
+			error: "Tipo de deficiência deve ser selecionado",
+		})
+		.min(1, { message: "Tipo de deficiência deve ser selecionado" }),
 });
 
 export const updateStudentSchema = insertStudentSchema.partial();

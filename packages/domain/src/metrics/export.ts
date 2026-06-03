@@ -1,6 +1,7 @@
 import type { ExportReportSchema } from "@mobiliza/contracts";
 import type { Database } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
+
 import { and, asc, eq, gte, lte, sql } from "drizzle-orm";
 import type { z } from "zod";
 
@@ -80,10 +81,10 @@ export async function generateAttendanceReportCSV(
 	const rows = filteredRecords.map((att) => {
 		const waitTime = att.startedAt
 			? Math.floor(
-				(att.startedAt.getTime() -
-					att.request.createdAt.getTime()) /
-				1000,
-			)
+					(att.startedAt.getTime() -
+						att.request.createdAt.getTime()) /
+						1000,
+				)
 			: "";
 
 		return [

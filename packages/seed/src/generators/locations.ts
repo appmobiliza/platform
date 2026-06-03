@@ -48,7 +48,8 @@ const PREDEFINED_LOCATIONS: PredefinedLocation[] = [
 	{
 		name: "Reitoria",
 		abbreviation: "REI",
-		description: "Prédio da Reitoria — entrada adaptada na lateral esquerda",
+		description:
+			"Prédio da Reitoria — entrada adaptada na lateral esquerda",
 		latitude: -9.5568,
 		longitude: -35.7758,
 	},
@@ -259,5 +260,5 @@ function randomLatitude(): number {
  * Range: -35.770 a -35.780
  */
 function randomLongitude(): number {
-	return faker.number.float({ min: -35.780, max: -35.770, fractionDigits: 6 });
+	return faker.number.float({ min: -35.78, max: -35.77, fractionDigits: 6 });
 }

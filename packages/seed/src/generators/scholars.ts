@@ -18,7 +18,12 @@ import { eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 
 import { db } from "../lib/db";
-import { faker, generateCPF, generateEnrollment, generatePhone } from "../lib/faker";
+import {
+	faker,
+	generateCPF,
+	generateEnrollment,
+	generatePhone,
+} from "../lib/faker";
 import type { SeedContext, SeedGenerator } from "../lib/types";
 
 // ─── Generator ────────────────────────────────────────────────────────────────
@@ -49,7 +54,9 @@ export const scholarGenerator: SeedGenerator = {
 		}
 
 		// 2. Gerar perfis
-		const profiles = scholarUsers.map((su) => generateScholarProfile(su.id));
+		const profiles = scholarUsers.map((su) =>
+			generateScholarProfile(su.id),
+		);
 
 		// 3. Inserir em batch
 		await db.insert(scholarProfile).values(profiles);
@@ -68,7 +75,8 @@ function generateScholarProfile(userId: string): NewScholarProfile {
 	const isAvailable = isApproved ? faker.datatype.boolean(0.6) : false;
 
 	const createdAt = new Date(
-		now.getTime() - faker.number.int({ min: 1, max: 60 }) * 24 * 60 * 60 * 1000,
+		now.getTime() -
+			faker.number.int({ min: 1, max: 60 }) * 24 * 60 * 60 * 1000,
 	);
 
 	return {
@@ -82,7 +90,14 @@ function generateScholarProfile(userId: string): NewScholarProfile {
 		shift: faker.helpers.arrayElement([...scholarShiftValues]),
 		isApproved,
 		approvedAt: isApproved
-			? new Date(createdAt.getTime() + faker.number.int({ min: 1, max: 5 }) * 24 * 60 * 60 * 1000)
+			? new Date(
+					createdAt.getTime() +
+						faker.number.int({ min: 1, max: 5 }) *
+							24 *
+							60 *
+							60 *
+							1000,
+				)
 			: null,
 		approvedBy: null, // será vinculado a um manager quando o generator de managers existir
 		isAvailable,
