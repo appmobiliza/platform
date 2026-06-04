@@ -326,7 +326,7 @@ export default async function ScholarsPage({
 					</div>
 				) : (
 					<StatusMessage
-						className="my-48"
+						className="my-48 lg:max-w-2/3 mx-auto"
 						title="Nenhum bolsista encontrado"
 						description="Ajuste a busca ou os filtros na URL para encontrar bolsistas ou aguarde por novos registros."
 						icon={<Frown className="size-8" />}

@@ -19,7 +19,7 @@ const SharedProfileSchema = {
 		},
 		{ message: "Matrícula inválida" },
 	),
-	campus: z.enum(campusValues),
+	campus: z.enum(campusValues, { error: "Campus deve ser selecionado" }),
 	phone: z
 		.string()
 		.regex(/^\(?\d{2}\)?[\s]?\d{4,5}[\s-]?\d{4}$/, "Telefone inválido"),
@@ -28,8 +28,8 @@ const SharedProfileSchema = {
 
 export const InsertScholarSchema = z.object({
 	...SharedProfileSchema,
-	course: z.string(),
-	shift: z.enum(scholarShiftValues),
+	course: z.enum(courseValues, { error: "Curso deve ser selecionado" }),
+	shift: z.enum(scholarShiftValues, { error: "Turno deve ser selecionado" }),
 	cpf: z
 		.string()
 		.regex(/^(?:\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11})$/, "CPF inválido"),
