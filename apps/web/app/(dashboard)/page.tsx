@@ -23,16 +23,21 @@ import {
 } from "@/components/ui/card";
 import type { ChartConfig } from "@/components/ui/chart";
 
+import { requireManagerAuth } from "@/lib/auth";
+import {
+	type CachedManagerRequest,
+	getCachedManagerList,
+	getCachedScholarDashboard,
+	getCachedSummary,
+} from "@/lib/cached-data";
 import {
 	countBy,
 	formatDurationShort,
 	getRouteLabel,
 	getTodayRange,
-	type ManagerRequest,
 	mapRequestToServiceEntry,
 	toDate,
 } from "@/lib/dashboard-data";
-import { withServerTRPC } from "@/lib/trpc-server";
 import { cn, getInitials } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -79,7 +84,7 @@ function getScholarBadgeVariant(
 	return "secondary";
 }
 
-function getHourlyChartData(requests: ManagerRequest[]) {
+function getHourlyChartData(requests: CachedManagerRequest[]) {
 	const counts = new Map<string, number>();
 
 	for (const request of requests) {
@@ -96,7 +101,7 @@ function getHourlyChartData(requests: ManagerRequest[]) {
 	}));
 }
 
-function getPendingAlert(requests: ManagerRequest[]) {
+function getPendingAlert(requests: CachedManagerRequest[]) {
 	const pending = requests
 		.filter((request) => request.status === "pending")
 		.sort(
@@ -121,15 +126,14 @@ function getPendingAlert(requests: ManagerRequest[]) {
 }
 
 export default async function DashboardPage() {
+	await requireManagerAuth();
+
 	const todayRange = getTodayRange();
-	const [summary, scholarDashboard, requests] = await withServerTRPC(
-		async (trpc) =>
-			Promise.all([
-				trpc.metrics.summary(todayRange),
-				trpc.profiles.scholarDashboard(),
-				trpc.requests.managerList({ limit: 100 }),
-			]),
-	);
+	const [summary, scholarDashboard, requests] = await Promise.all([
+		getCachedSummary(todayRange.from, todayRange.to),
+		getCachedScholarDashboard(),
+		getCachedManagerList(100),
+	]);
 	const inProgressCount = requests.filter(
 		(request) =>
 			request.status === "accepted" || request.status === "ongoing",
@@ -138,10 +142,20 @@ export default async function DashboardPage() {
 		(scholar) => scholar.status === "available",
 	).length;
 	const alertData = getPendingAlert(requests);
-	const mostRequestedRoutes = countBy(requests, getRouteLabel)
+	const getRouteLabelForCached = (req: CachedManagerRequest) =>
+		getRouteLabel(req as unknown as Parameters<typeof getRouteLabel>[0]);
+	const mostRequestedRoutes = countBy(requests, getRouteLabelForCached)
 		.slice(0, 4)
 		.map((item) => ({ route: item.name, requests: item.count }));
-	const lastRequests = requests.slice(0, 6).map(mapRequestToServiceEntry);
+	const lastRequests = requests
+		.slice(0, 6)
+		.map((req) =>
+			mapRequestToServiceEntry(
+				req as unknown as Parameters<
+					typeof mapRequestToServiceEntry
+				>[0],
+			),
+		);
 	const currentDate = new Date();
 	const dashboardCards: Array<{
 		icon: typeof Users;

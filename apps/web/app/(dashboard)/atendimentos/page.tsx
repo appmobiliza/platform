@@ -22,12 +22,18 @@ import {
 } from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
+import { requireManagerAuth } from "@/lib/auth";
+import {
+	getCachedManagerList,
+	getCachedScholarDashboard,
+	getCachedStudentDashboard,
+	getCachedSummary,
+} from "@/lib/cached-data";
 import {
 	formatDurationShort,
 	getCurrentMonthRange,
 	mapRequestToServiceEntry,
 } from "@/lib/dashboard-data";
-import { withServerTRPC } from "@/lib/trpc-server";
 import { getInitials } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -35,18 +41,22 @@ export const metadata: Metadata = {
 };
 
 export default async function ServicesPage() {
+	await requireManagerAuth();
+
 	const currentDate = new Date();
 	const monthRange = getCurrentMonthRange();
 	const [summary, requests, scholarsDashboard, studentsDashboard] =
-		await withServerTRPC(async (trpc) =>
-			Promise.all([
-				trpc.metrics.summary(monthRange),
-				trpc.requests.managerList({ limit: 200 }),
-				trpc.profiles.scholarDashboard(),
-				trpc.profiles.studentDashboard(),
-			]),
-		);
-	const serviceEntries = requests.map(mapRequestToServiceEntry);
+		await Promise.all([
+			getCachedSummary(monthRange.from, monthRange.to),
+			getCachedManagerList(200),
+			getCachedScholarDashboard(),
+			getCachedStudentDashboard(),
+		]);
+	const serviceEntries = requests.map((req) =>
+		mapRequestToServiceEntry(
+			req as unknown as Parameters<typeof mapRequestToServiceEntry>[0],
+		),
+	);
 
 	return (
 		<>

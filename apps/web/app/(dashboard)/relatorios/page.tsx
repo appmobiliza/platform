@@ -19,15 +19,22 @@ import {
 import type { ChartConfig } from "@/components/ui/chart";
 import { VerticalBarsChart } from "@/components/vertical-bars-chart";
 
+import { requireManagerAuth } from "@/lib/auth";
+import {
+	type CachedManagerRequest,
+	getCachedManagerList,
+	getCachedScholarDashboard,
+	getCachedScholarPerformance,
+	getCachedStudentDashboard,
+	getCachedSummary,
+} from "@/lib/cached-data";
 import {
 	countBy,
 	formatDurationShort,
 	getCurrentMonthRange,
 	getRouteLabel,
-	type ManagerRequest,
 	toDate,
 } from "@/lib/dashboard-data";
-import { withServerTRPC } from "@/lib/trpc-server";
 import { getInitials } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -256,7 +263,7 @@ function getTopItem(items: ReadonlyArray<{ label: string; value: number }>) {
 	});
 }
 
-function getHourlyChartData(requests: ManagerRequest[]) {
+function getHourlyChartData(requests: CachedManagerRequest[]) {
 	const counts = new Map<string, number>();
 
 	for (const request of requests) {
@@ -281,6 +288,8 @@ function getHourlyChartData(requests: ManagerRequest[]) {
 }
 
 export default async function ReportsPage() {
+	await requireManagerAuth();
+
 	const monthRange = getCurrentMonthRange();
 	const [
 		summary,
@@ -288,15 +297,13 @@ export default async function ReportsPage() {
 		requests,
 		scholarDashboard,
 		studentDashboard,
-	] = await withServerTRPC(async (trpc) =>
-		Promise.all([
-			trpc.metrics.summary(monthRange),
-			trpc.metrics.scholarPerformance(monthRange),
-			trpc.requests.managerList({ limit: 500 }),
-			trpc.profiles.scholarDashboard(),
-			trpc.profiles.studentDashboard(),
-		]),
-	);
+	] = await Promise.all([
+		getCachedSummary(monthRange.from, monthRange.to),
+		getCachedScholarPerformance(monthRange.from, monthRange.to),
+		getCachedManagerList(500),
+		getCachedScholarDashboard(),
+		getCachedStudentDashboard(),
+	]);
 	const reportMonth = new Date().toLocaleDateString("pt-BR", {
 		month: "long",
 		year: "numeric",
@@ -365,7 +372,9 @@ export default async function ReportsPage() {
 		name: scholar.scholarName,
 		count: Number(scholar.totalAttendances),
 	}));
-	const routeRanking = countBy(requests, getRouteLabel).slice(0, 5);
+	const getRouteLabelForCached = (req: CachedManagerRequest) =>
+		getRouteLabel(req as unknown as Parameters<typeof getRouteLabel>[0]);
+	const routeRanking = countBy(requests, getRouteLabelForCached).slice(0, 5);
 	const studentRanking = countBy(
 		requests,
 		(request) => request.studentProfile.user.name,
