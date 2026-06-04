@@ -1,19 +1,20 @@
 import type { Database } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
 import type { RealtimeAdapter } from "@mobiliza/realtime";
+
 import { and, eq, lt } from "drizzle-orm";
 
 export async function notifyUnansweredRequests(
 	db: Database,
 	realtime: RealtimeAdapter,
 ) {
-	// Tempo limite = 10 minutos atrás
-	const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+	// Tempo limite = 5 minutos atrás
+	const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
 	const unansweredRequests = await db.query.serviceRequest.findMany({
 		where: and(
 			eq(schema.serviceRequest.status, "pending"),
-			lt(schema.serviceRequest.createdAt, tenMinutesAgo),
+			lt(schema.serviceRequest.createdAt, fiveMinutesAgo),
 		),
 	});
 
