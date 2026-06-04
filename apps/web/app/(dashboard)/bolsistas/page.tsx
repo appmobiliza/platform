@@ -1,3 +1,8 @@
+import {
+	type ScholarShiftValues,
+	scholarShiftLabels,
+} from "@mobiliza/contracts";
+
 import { Frown, Plus, Search } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -47,8 +52,6 @@ type ScholarDashboardItem = {
 		isActive: boolean;
 	};
 	status: Exclude<StatusFilter, "all">;
-	statusLabel: string;
-	shiftLabel: string;
 };
 
 type ScholarDashboardResponse = {
@@ -283,8 +286,13 @@ export default async function ScholarsPage({
 													{scholar.user.name}
 												</CardTitle>
 												<p className="text-sm text-muted-foreground">
-													{scholar.shiftLabel} ·{" "}
-													{scholar.profile.course}
+													{
+														scholarShiftLabels[
+															scholar.profile
+																.shift as ScholarShiftValues
+														]
+													}{" "}
+													· {scholar.profile.course}
 												</p>
 												<p className="text-xs text-muted-foreground">
 													{scholar.profile.campus}
@@ -303,7 +311,14 @@ export default async function ScholarsPage({
 															: "secondary"
 											}
 										>
-											{scholar.statusLabel}
+											{scholar.status === "available"
+												? "Disponível"
+												: scholar.status === "busy"
+													? "Em atendimento"
+													: scholar.status ===
+															"off_shift"
+														? "Fora do turno"
+														: "Pendente"}
 										</Badge>
 									</div>
 									<p className="text-xs text-muted-foreground">

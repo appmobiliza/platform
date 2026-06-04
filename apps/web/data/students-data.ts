@@ -1,3 +1,4 @@
+import type { RequestStatusValues } from "@mobiliza/contracts";
 import type { StudentProfile, User } from "@mobiliza/db/schema";
 
 import { students, users } from "@/data/mock";
@@ -37,7 +38,7 @@ interface SummaryData {
 	recentRoutes: Array<{
 		route: string;
 		date: string;
-		status: "completed" | "pending" | "canceled";
+		status: RequestStatusValues;
 	}>;
 	frequentScholars: Array<{
 		name: string;
@@ -50,6 +51,20 @@ export type StudentData = {
 	profile: StudentProfile & { disabilities: string[] };
 	summary: SummaryData;
 };
+
+export function getStudentRouteStatus(
+	status: RequestStatusValues,
+): "completed" | "pending" | "canceled" {
+	if (status === "completed") {
+		return "completed";
+	}
+
+	if (status === "cancelled" || status === "unattended") {
+		return "canceled";
+	}
+
+	return "pending";
+}
 
 const summaries: SummaryData[] = [
 	{
@@ -68,7 +83,7 @@ const summaries: SummaryData[] = [
 				status: "completed",
 			},
 			{ route: "RU → IC", date: "2024-07-11", status: "pending" },
-			{ route: "IC → RU", date: "2024-07-12", status: "canceled" },
+			{ route: "IC → RU", date: "2024-07-12", status: "cancelled" },
 		],
 		frequentScholars: [
 			{ name: "Maria Silva", amount: 8 },
@@ -147,7 +162,7 @@ const summaries: SummaryData[] = [
 				date: "2024-07-19",
 				status: "completed",
 			},
-			{ route: "RU → IC", date: "2024-07-20", status: "canceled" },
+			{ route: "RU → IC", date: "2024-07-20", status: "cancelled" },
 			{ route: "Biblioteca → IC", date: "2024-07-21", status: "pending" },
 		],
 		frequentScholars: [
@@ -204,7 +219,7 @@ const summaries: SummaryData[] = [
 				status: "completed",
 			},
 			{ route: "Biblioteca → RU", date: "2024-07-26", status: "pending" },
-			{ route: "IC → RU", date: "2024-07-27", status: "canceled" },
+			{ route: "IC → RU", date: "2024-07-27", status: "cancelled" },
 		],
 		frequentScholars: [
 			{ name: "Eduarda Martins", amount: 5 },
@@ -314,7 +329,7 @@ const summaries: SummaryData[] = [
 			{
 				route: "Centro de Vivência → IC",
 				date: "2024-08-07",
-				status: "canceled",
+				status: "cancelled",
 			},
 			{
 				route: "RU → Centro de Vivência",

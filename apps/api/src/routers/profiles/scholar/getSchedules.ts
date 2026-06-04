@@ -1,5 +1,3 @@
-import type { DayOfWeekValues, ScholarShiftValues } from "@mobiliza/contracts";
-import { dayOfWeekLabels, scholarShiftLabels } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { protectedProcedure } from "@mobiliza/trpc";
 
@@ -29,11 +27,7 @@ export const getSchedules = protectedProcedure
 				campus: scholar.campus,
 				schedule: scholar.weeklySchedule.map((entry) => ({
 					dayOfWeek: entry.dayOfWeek,
-					dayOfWeekLabel:
-						dayOfWeekLabels[entry.dayOfWeek as DayOfWeekValues],
 					shift: entry.shift,
-					shiftLabel:
-						scholarShiftLabels[entry.shift as ScholarShiftValues],
 				})),
 			}));
 

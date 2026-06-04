@@ -1,13 +1,3 @@
-import type {
-	ExtraShiftReasonValues,
-	ExtraShiftRequestStatusValues,
-	ScholarShiftValues,
-} from "@mobiliza/contracts";
-import {
-	extraShiftReasonLabels,
-	extraShiftRequestStatusLabels,
-	scholarShiftLabels,
-} from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
@@ -47,16 +37,6 @@ export const getExtraShiftRequests = protectedProcedure
 
 			return requests.map((req) => ({
 				...req,
-				shiftLabel:
-					scholarShiftLabels[req.shift as ScholarShiftValues],
-				reasonLabel:
-					extraShiftReasonLabels[
-					req.reason as ExtraShiftReasonValues
-					],
-				statusLabel:
-					extraShiftRequestStatusLabels[
-					req.status as ExtraShiftRequestStatusValues
-					],
 			}));
 		}
 
@@ -78,16 +58,9 @@ export const getExtraShiftRequests = protectedProcedure
 			scholarProfileId: req.scholarProfileId,
 			date: req.date,
 			shift: req.shift,
-			shiftLabel: scholarShiftLabels[req.shift as ScholarShiftValues],
 			reason: req.reason,
-			reasonLabel:
-				extraShiftReasonLabels[req.reason as ExtraShiftReasonValues],
 			customReason: req.customReason,
 			status: req.status,
-			statusLabel:
-				extraShiftRequestStatusLabels[
-				req.status as ExtraShiftRequestStatusValues
-				],
 			approvedById: req.approvedById,
 			approvedAt: req.approvedAt,
 			createdAt: req.createdAt,

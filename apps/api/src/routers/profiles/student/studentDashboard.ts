@@ -1,7 +1,3 @@
-import {
-	disabilityTypeLabels,
-	type requestStatusValues,
-} from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { managerProcedure } from "@mobiliza/trpc";
 
@@ -21,18 +17,6 @@ function getRouteLabel(request: {
 		"-";
 
 	return `${origin} \u2192 ${destination}`;
-}
-
-function getStudentRouteStatus(status: (typeof requestStatusValues)[number]) {
-	if (status === "completed") {
-		return "completed" as const;
-	}
-
-	if (status === "cancelled" || status === "unattended") {
-		return "canceled" as const;
-	}
-
-	return "pending" as const;
 }
 
 function getTopCounts(items: string[], limit = 3) {
@@ -113,7 +97,6 @@ export const studentDashboard = managerProcedure
 				{
 					title: "Com solicitação hoje",
 					value: String(requestedToday),
-					variant: "blue" as const,
 				},
 				{
 					title: "Deficiência visual",
@@ -156,8 +139,7 @@ export const studentDashboard = managerProcedure
 					profile: {
 						...profile,
 						disabilities: disabilities.map(
-							(disability) =>
-								disabilityTypeLabels[disability.disabilityType],
+							(disability) => disability.disabilityType,
 						),
 					},
 					summary: {
@@ -177,7 +159,7 @@ export const studentDashboard = managerProcedure
 							.map((request) => ({
 								route: getRouteLabel(request),
 								date: new Date(request.createdAt).toISOString(),
-								status: getStudentRouteStatus(request.status),
+								status: request.status,
 							})),
 						frequentScholars,
 					},

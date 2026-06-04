@@ -1,4 +1,9 @@
 import {
+	type ScholarShiftValues,
+	scholarShiftLabels,
+} from "@mobiliza/contracts";
+
+import {
 	Activity,
 	Clock,
 	CloudLightning,
@@ -53,10 +58,9 @@ type ScholarDashboardItem = {
 	};
 	profile: {
 		course: string;
+		shift: string;
 	};
 	status: "available" | "busy" | "off_shift" | "pending";
-	statusLabel: string;
-	shiftLabel: string;
 };
 
 type ScholarDashboardResponse = {
@@ -69,6 +73,19 @@ const chartConfig = {
 		color: "var(--chart-1)",
 	},
 } satisfies ChartConfig;
+
+function getScholarStatusLabel(status: ScholarDashboardItem["status"]) {
+	switch (status) {
+		case "available":
+			return "Disponível";
+		case "busy":
+			return "Em atendimento";
+		case "off_shift":
+			return "Fora do turno";
+		case "pending":
+			return "Pendente";
+	}
+}
 
 function getScholarBadgeVariant(status: ScholarDashboardItem["status"]) {
 	if (status === "available") {
@@ -281,7 +298,13 @@ export default async function DashboardPage() {
 															{scholar.user.name}
 														</span>
 														<span className="text-xs">
-															{scholar.shiftLabel}{" "}
+															{
+																scholarShiftLabels[
+																	scholar
+																		.profile
+																		.shift as ScholarShiftValues
+																]
+															}{" "}
 															·{" "}
 															{
 																scholar.profile
@@ -296,7 +319,9 @@ export default async function DashboardPage() {
 														scholar.status,
 													)}
 												>
-													{scholar.statusLabel}
+													{getScholarStatusLabel(
+														scholar.status,
+													)}
 												</Badge>
 											</li>
 										))

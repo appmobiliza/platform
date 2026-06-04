@@ -1,19 +1,11 @@
 import {
 	getCurrentShift,
-	scholarShiftLabels,
 	type scholarShiftValues,
 } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { managerProcedure } from "@mobiliza/trpc";
 
 import { z } from "zod";
-
-const scholarDashboardStatusValues = [
-	"available",
-	"busy",
-	"off_shift",
-	"pending",
-] as const;
 
 function getScholarDashboardStatus(profile: {
 	isActive: boolean;
@@ -33,25 +25,6 @@ function getScholarDashboardStatus(profile: {
 	}
 
 	return "busy" as const;
-}
-
-function getScholarDashboardStatusLabel(
-	status: (typeof scholarDashboardStatusValues)[number],
-) {
-	switch (status) {
-		case "available":
-			return "Disponível";
-		case "busy":
-			return "Em atendimento";
-		case "off_shift":
-			return "Fora do turno";
-		case "pending":
-			return "Pendente";
-	}
-}
-
-function getScholarShiftLabel(shift: (typeof scholarShiftValues)[number]) {
-	return scholarShiftLabels[shift];
 }
 
 export const scholarDashboard = managerProcedure
@@ -88,8 +61,6 @@ export const scholarDashboard = managerProcedure
 					isActive: profile.isActive,
 				},
 				status,
-				statusLabel: getScholarDashboardStatusLabel(status),
-				shiftLabel: getScholarShiftLabel(profile.shift),
 			};
 		});
 
@@ -110,12 +81,10 @@ export const scholarDashboard = managerProcedure
 				{
 					title: "Disponível agora",
 					value: String(availableNow),
-					variant: "green" as const,
 				},
 				{
 					title: "Em atendimento",
 					value: String(inAttendance),
-					variant: "yellow" as const,
 				},
 			],
 			scholars: scholarsWithStatus,

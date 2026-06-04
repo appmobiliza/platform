@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
-
 import {
 	disabilityTypeLabels,
 	disabilityTypeValues,
 } from "@mobiliza/contracts";
+
 import { Frown } from "lucide-react";
+import type { Metadata } from "next";
 
 import { ComboboxMultiple } from "@/components/combobox-multiple";
 import {
@@ -52,7 +52,6 @@ type StudentDashboardResponse = {
 	cards: Array<{
 		title: string;
 		value: string;
-		variant?: "default" | "blue";
 	}>;
 	students: StudentData[];
 };
@@ -79,7 +78,7 @@ export default async function StudentsPage() {
 				</header>
 
 				<div className="grid grid-cols-1 gap-4 border-b border-border p-4 md:grid-cols-4 md:p-6">
-					{dashboard.cards.map(({ title, value, variant }) => (
+					{dashboard.cards.map(({ title, value }) => (
 						<Card key={title} className="group w-full gap-2">
 							<CardHeader>
 								<CardTitle>{title}</CardTitle>
@@ -88,7 +87,8 @@ export default async function StudentsPage() {
 								<p
 									className={cn(
 										"text-4xl font-bold",
-										variant === "blue" && "text-info",
+										title === "Com solicitação hoje" &&
+											"text-info",
 									)}
 								>
 									{value}
@@ -161,9 +161,14 @@ export default async function StudentsPage() {
 											</div>
 										</TableCell>
 										<TableCell>
-											{entry.profile.disabilities.join(
-												", ",
-											)}
+											{entry.profile.disabilities
+												.map(
+													(d) =>
+														disabilityTypeLabels[
+															d as keyof typeof disabilityTypeLabels
+														],
+												)
+												.join(", ")}
 										</TableCell>
 										<TableCell>
 											{entry.summary.servicesAmount}

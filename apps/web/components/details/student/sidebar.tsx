@@ -1,5 +1,7 @@
 "use client";
 
+import { disabilityTypeLabels } from "@mobiliza/contracts";
+
 import { DetailsSidebar } from "@/components/details/details-sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -9,12 +11,14 @@ import { Separator } from "@/components/ui/separator";
 
 import { getInitials } from "@/lib/utils";
 
-import type { StudentData } from "@/data/students-data";
+import { getStudentRouteStatus, type StudentData } from "@/data/students-data";
 
 import { DetailsSection } from "../../section";
 import { closeStudentDetails, useStudentDetailsEntry } from "./store";
 
-function getRouteStatusVariant(status: "completed" | "pending" | "canceled") {
+function getRouteStatusVariant(
+	status: ReturnType<typeof getStudentRouteStatus>,
+) {
 	switch (status) {
 		case "completed":
 			return "success";
@@ -25,7 +29,7 @@ function getRouteStatusVariant(status: "completed" | "pending" | "canceled") {
 	}
 }
 
-function getRouteStatusLabel(status: "completed" | "pending" | "canceled") {
+function getRouteStatusLabel(status: ReturnType<typeof getStudentRouteStatus>) {
 	switch (status) {
 		case "completed":
 			return "Concluído";
@@ -118,8 +122,14 @@ function StudentDetailsContent({ student }: { student: StudentData }) {
 							{new Date(route.date).toLocaleDateString("pt-BR")} →{" "}
 							{route.route}
 						</span>
-						<Badge variant={getRouteStatusVariant(route.status)}>
-							{getRouteStatusLabel(route.status)}
+						<Badge
+							variant={getRouteStatusVariant(
+								getStudentRouteStatus(route.status),
+							)}
+						>
+							{getRouteStatusLabel(
+								getStudentRouteStatus(route.status),
+							)}
 						</Badge>
 					</div>
 				))}
@@ -161,7 +171,11 @@ export function StudentDetailsSidebar() {
 						<div className="flex items-center gap-2 flex-row">
 							{student.profile.disabilities.map((disability) => (
 								<Badge key={disability} variant={"secondary"}>
-									Def. {disability}
+									{
+										disabilityTypeLabels[
+											disability as keyof typeof disabilityTypeLabels
+										]
+									}
 								</Badge>
 							))}
 							<Badge variant={"success"}>Ativo</Badge>
