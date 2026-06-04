@@ -3,11 +3,12 @@ import {
 	scholarShiftLabels,
 } from "@mobiliza/contracts";
 
-import { Frown, Plus, Search } from "lucide-react";
+import { Frown, Plus, Search, XIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ScholarDetailsSidebar } from "@/components/details";
+import { ScholarCard } from "@/components/scholar-card";
 import { StatusMessage } from "@/components/status-message";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -150,7 +151,7 @@ export default async function ScholarsPage({
 			</div>
 
 			<div className="flex min-w-0 flex-col gap-4 overflow-hidden p-4 md:p-6">
-				<div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 md:flex-row md:items-end md:justify-between">
+				<div className="flex flex-col md:flex-row items-start md:items-center justify-start gap-4">
 					<form
 						action="/bolsistas"
 						method="get"
@@ -158,12 +159,28 @@ export default async function ScholarsPage({
 					>
 						<div className="relative w-full">
 							<Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-							<Input
-								name="q"
-								defaultValue={query}
-								placeholder="Buscar por nome, matrícula, curso ou campus"
-								className="pl-9"
-							/>
+							<div className="flex relative">
+								<Input
+									name="q"
+									defaultValue={query}
+									placeholder="Buscar por nome, matrícula, curso ou campus"
+									className="pl-9"
+								/>
+								{/*{query ? (
+									<Button
+										asChild
+										size="icon-sm"
+										variant="ghost"
+									>
+										<Link
+											className="absolute right-3 top-1/2 size-4 -translate-y-1/2"
+											href="/bolsistas"
+										>
+											<XIcon className="size-4" />
+										</Link>
+									</Button>
+								) : null}*/}
+							</div>
 						</div>
 						{statusFilter !== "all" ? (
 							<input
@@ -172,13 +189,6 @@ export default async function ScholarsPage({
 								value={statusFilter}
 							/>
 						) : null}
-						<Button
-							type="submit"
-							variant="outline"
-							className="gap-2"
-						>
-							Filtrar
-						</Button>
 					</form>
 
 					<div className="flex flex-wrap gap-2">
@@ -193,7 +203,6 @@ export default async function ScholarsPage({
 								label: "Fora do turno",
 								value: "off_shift" as const,
 							},
-							{ label: "Pendentes", value: "pending" as const },
 						].map((item) => {
 							const active = statusFilter === item.value;
 
@@ -215,113 +224,16 @@ export default async function ScholarsPage({
 								</Button>
 							);
 						})}
-						{hasFilters ? (
-							<Button asChild size="sm" variant="ghost">
-								<Link href="/bolsistas">Limpar</Link>
-							</Button>
-						) : null}
 					</div>
 				</div>
 
 				{filteredScholars.length > 0 ? (
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
 						{filteredScholars.map((scholar) => (
-							<Card
+							<ScholarCard
 								key={scholar.user.id}
-								className={cn(
-									"gap-4 border-border/80 bg-card/95 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md",
-									scholar.status === "available" &&
-										"ring-1 ring-success/20",
-									scholar.status === "busy" &&
-										"ring-1 ring-warning/20",
-									scholar.status === "off_shift" &&
-										"ring-1 ring-destructive/20",
-								)}
-							>
-								<CardHeader className="space-y-4">
-									<div className="flex items-start justify-between gap-4">
-										<div className="flex items-start gap-3">
-											<Avatar className="size-12 border border-border">
-												<AvatarFallback>
-													{getInitials(
-														scholar.user.name,
-													)}
-												</AvatarFallback>
-												<AvatarImage
-													src={
-														scholar.user.image ||
-														undefined
-													}
-													alt={scholar.user.name}
-												/>
-											</Avatar>
-											<div className="space-y-1">
-												<CardTitle className="text-lg">
-													{scholar.user.name}
-												</CardTitle>
-												<p className="text-sm text-muted-foreground">
-													{
-														scholarShiftLabels[
-															scholar.profile
-																.shift as ScholarShiftValues
-														]
-													}{" "}
-													· {scholar.profile.course}
-												</p>
-												<p className="text-xs text-muted-foreground">
-													{scholar.profile.campus}
-												</p>
-											</div>
-										</div>
-										<Badge
-											variant={
-												scholar.status === "available"
-													? "success"
-													: scholar.status === "busy"
-														? "warning"
-														: scholar.status ===
-																"off_shift"
-															? "destructive"
-															: "secondary"
-											}
-										>
-											{scholar.status === "available"
-												? "Disponível"
-												: scholar.status === "busy"
-													? "Em atendimento"
-													: scholar.status ===
-															"off_shift"
-														? "Fora do turno"
-														: "Pendente"}
-										</Badge>
-									</div>
-									<p className="text-xs text-muted-foreground">
-										Matrícula {scholar.profile.enrollment}
-									</p>
-								</CardHeader>
-								<CardContent className="space-y-3">
-									<div className="grid grid-cols-2 gap-3 text-sm">
-										<div className="rounded-md border bg-muted/40 p-3">
-											<p className="text-xs text-muted-foreground">
-												Telefone
-											</p>
-											<p className="font-medium">
-												{scholar.profile.phone}
-											</p>
-										</div>
-										<div className="rounded-md border bg-muted/40 p-3">
-											<p className="text-xs text-muted-foreground">
-												Situação
-											</p>
-											<p className="font-medium">
-												{scholar.profile.isActive
-													? "Ativo"
-													: "Inativo"}
-											</p>
-										</div>
-									</div>
-								</CardContent>
-							</Card>
+								scholar={scholar}
+							/>
 						))}
 					</div>
 				) : (

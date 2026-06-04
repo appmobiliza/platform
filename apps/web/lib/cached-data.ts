@@ -22,6 +22,8 @@ type ScholarDashboardOutput = Awaited<
 	ReturnType<TRPCCaller["profiles"]["scholarDashboard"]>
 >;
 
+export type CachedScholar = ScholarDashboardOutput["scholars"][number];
+
 /** Tipo do retorno de `profiles.studentDashboard` */
 type StudentDashboardOutput = Awaited<
 	ReturnType<TRPCCaller["profiles"]["studentDashboard"]>
@@ -169,12 +171,45 @@ export async function getCachedScholarDashboard(): Promise<ScholarDashboardOutpu
 		orderBy: (table, { asc }) => [asc(table.createdAt)],
 	});
 
+	// ─── Aggregate attendance metrics per scholar ─────────────────────────
+	const attendanceRows = await db
+		.select({
+			scholarProfileId: schema.serviceAttendance.scholarProfileId,
+			servicesAmount: count(schema.serviceAttendance.id),
+			totalDurationSeconds:
+				sql<number>`COALESCE(SUM(${schema.serviceAttendance.durationSeconds}), 0)`,
+			avgDurationSeconds:
+				sql<number>`AVG(${schema.serviceAttendance.durationSeconds})`,
+		})
+		.from(schema.serviceAttendance)
+		.innerJoin(
+			schema.serviceRequest,
+			eq(schema.serviceAttendance.requestId, schema.serviceRequest.id),
+		)
+		.where(eq(schema.serviceRequest.status, "completed"))
+		.groupBy(schema.serviceAttendance.scholarProfileId);
+
+	const attendanceMap = new Map(
+		attendanceRows.map((row) => [
+			row.scholarProfileId,
+			{
+				servicesAmount: Number(row.servicesAmount),
+				totalDurationSeconds: Number(row.totalDurationSeconds),
+				avgDurationSeconds: row.avgDurationSeconds
+					? Math.round(Number(row.avgDurationSeconds))
+					: 0,
+			},
+		]),
+	);
+
 	const scholarsWithStatus = scholars.map((profile) => {
 		const status = getScholarStatus({
 			isActive: profile.isActive,
 			isAvailable: profile.isAvailable,
 			shift: profile.shift,
 		});
+
+		const stats = attendanceMap.get(profile.id);
 
 		return {
 			user: {
@@ -183,6 +218,7 @@ export async function getCachedScholarDashboard(): Promise<ScholarDashboardOutpu
 				email: profile.user.email,
 				image: profile.user.image,
 				role: profile.user.role,
+				createdAt: profile.user.createdAt.toISOString(),
 			},
 			profile: {
 				id: profile.id,
@@ -196,6 +232,15 @@ export async function getCachedScholarDashboard(): Promise<ScholarDashboardOutpu
 				isActive: profile.isActive,
 			},
 			status,
+			summary: {
+				servicesAmount: stats?.servicesAmount ?? 0,
+				monthHours: stats?.totalDurationSeconds
+					? Math.round(stats.totalDurationSeconds / 3600)
+					: 0,
+				averageDuration: stats?.avgDurationSeconds
+					? Math.round(stats.avgDurationSeconds / 60)
+					: 0,
+			},
 		};
 	});
 

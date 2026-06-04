@@ -26,7 +26,7 @@ export default function SettingsPage() {
 	return (
 		<>
 			<section className="min-w-0 flex-1 bg-background">
-				<div className="mx-auto flex w-full flex-col gap-6 px-4 pt-4 pb-20 md:p-6">
+				<div className="mx-auto flex w-full flex-col gap-6 px-4 pt-4 pb-20 md:p-6 opacity-50 pointer-events-none select-none">
 					<div className="space-y-3">
 						<SectionTitle>Operação</SectionTitle>
 						<SectionCard>

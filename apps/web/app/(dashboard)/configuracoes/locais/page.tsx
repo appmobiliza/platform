@@ -1,6 +1,5 @@
-import type { Metadata } from "next";
-
 import { Plus, Search } from "lucide-react";
+import type { Metadata } from "next";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,7 +56,7 @@ export default async function SettingsPage() {
 
 	return (
 		<section className="min-w-0 flex-1 bg-background">
-			<div className="mx-auto flex w-full flex-col px-4 py-4 md:px-6 md:py-6">
+			<div className="mx-auto flex w-full flex-col px-4 py-4 md:px-6 md:py-6 opacity-50 pointer-events-none select-none">
 				<div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm">
 					<div className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between md:p-5">
 						<div className="flex min-w-0 flex-1 flex-col gap-4 md:flex-row md:items-center">

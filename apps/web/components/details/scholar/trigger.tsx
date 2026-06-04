@@ -4,7 +4,7 @@ import type * as React from "react";
 
 import { Button } from "@/components/ui/button";
 
-import type { ScholarData } from "@/data/scholars-data";
+import type { CachedScholar } from "@/lib/cached-data";
 
 import { openScholarDetails } from "./store";
 
@@ -13,7 +13,7 @@ export function ScholarDetailsTrigger({
 	children,
 	className,
 }: {
-	scholar: ScholarData;
+	scholar: CachedScholar;
 	children?: React.ReactNode;
 	className?: string;
 }) {

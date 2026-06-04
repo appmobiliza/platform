@@ -1,4 +1,4 @@
-import { getCurrentShift, type ScholarShiftValues } from "@mobiliza/contracts";
+import type { ScholarShiftValues } from "@mobiliza/contracts";
 
 import { ScholarDetailsTrigger } from "@/components/details";
 import { ProgressWithLabel } from "@/components/progress-with-label";
@@ -6,53 +6,30 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
+import type { CachedScholar } from "@/lib/cached-data";
 import { getInitials } from "@/lib/utils";
 
 import { EditShiftDialog } from "@/app/(dashboard)/bolsistas/dialog/edit-shift";
-import type { ScholarData } from "@/data/scholars-data";
 
 const SCHOLARS_SERVICES_AVERAGE = 150;
 const MONTHLY_HOURS_GOAL = 40;
 
-enum ScholarStatus {
-	AVAILABLE = "Disponível",
-	UNAVAILABLE = "Em atendimento",
-	OFF_SHIFT = "Fora do turno",
-}
+const STATUS_LABEL: Record<CachedScholar["status"], string> = {
+	available: "Disponível",
+	busy: "Em atendimento",
+	off_shift: "Fora do turno",
+	pending: "Pendente",
+};
 
-function getScholarStatus(isAvailable: boolean, shift: string) {
-	if (shift !== getCurrentShift()) {
-		return ScholarStatus.OFF_SHIFT;
-	}
-
-	if (isAvailable) {
-		return ScholarStatus.AVAILABLE;
-	}
-
-	return ScholarStatus.UNAVAILABLE;
-}
-
-function getBadgeLabel(status: ScholarStatus) {
-	switch (status) {
-		case ScholarStatus.AVAILABLE:
-			return "Disponível";
-		case ScholarStatus.UNAVAILABLE:
-			return "Em atendimento";
-		case ScholarStatus.OFF_SHIFT:
-			return "Fora do turno";
-	}
-}
-
-function getLabelVariant(status: ScholarStatus) {
-	switch (status) {
-		case ScholarStatus.AVAILABLE:
-			return "success";
-		case ScholarStatus.UNAVAILABLE:
-			return "warning";
-		case ScholarStatus.OFF_SHIFT:
-			return "destructive";
-	}
-}
+const STATUS_VARIANT: Record<
+	CachedScholar["status"],
+	"success" | "warning" | "destructive" | "secondary"
+> = {
+	available: "success",
+	busy: "warning",
+	off_shift: "destructive",
+	pending: "secondary",
+};
 
 function getShiftLabel(shift: ScholarShiftValues) {
 	switch (shift) {
@@ -67,12 +44,7 @@ function getShiftLabel(shift: ScholarShiftValues) {
 	}
 }
 
-export function ScholarCard({ scholar }: { scholar: ScholarData }) {
-	const status = getScholarStatus(
-		scholar.profile.isAvailable,
-		scholar.profile.shift,
-	);
-
+export function ScholarCard({ scholar }: { scholar: CachedScholar }) {
 	return (
 		<div className="flex flex-col items-center gap-4 rounded-md border p-4">
 			<div className="flex flex-row flex-wrap items-start gap-4 justify-between w-full">
@@ -82,7 +54,7 @@ export function ScholarCard({ scholar }: { scholar: ScholarData }) {
 							{getInitials(scholar.user.name)}
 						</AvatarFallback>
 						<AvatarImage
-							src={scholar.user.image || undefined}
+							src={scholar.user.image ?? undefined}
 							alt={scholar.user.name}
 						/>
 					</Avatar>
@@ -91,13 +63,15 @@ export function ScholarCard({ scholar }: { scholar: ScholarData }) {
 							{scholar.user.name}
 						</p>
 						<p className="text-sm text-muted-foreground">
-							{getShiftLabel(scholar.profile.shift)} •{" "}
-							{scholar.profile.course}
+							{getShiftLabel(
+								scholar.profile.shift as ScholarShiftValues,
+							)}{" "}
+							• {scholar.profile.course}
 						</p>
 					</div>
 				</div>
-				<Badge variant={getLabelVariant(status)}>
-					{getBadgeLabel(status)}
+				<Badge variant={STATUS_VARIANT[scholar.status]}>
+					{STATUS_LABEL[scholar.status]}
 				</Badge>
 			</div>
 			<div className="flex flex-col items-start w-full">

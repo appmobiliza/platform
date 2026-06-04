@@ -3,6 +3,8 @@ import {
 	type scholarShiftValues,
 } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
+import { and, avg, count, eq, gte, lte, sql } from "@mobiliza/db/drizzle";
+import * as schema from "@mobiliza/db/schema";
 import { managerProcedure } from "@mobiliza/trpc";
 
 function getScholarDashboardStatus(profile: {
@@ -34,8 +36,40 @@ export const scholarDashboard = managerProcedure
 			orderBy: (table, { asc }) => [asc(table.createdAt)],
 		});
 
+		// ─── Aggregate attendance metrics per scholar ─────────────────────
+		const attendanceRows = await db
+			.select({
+				scholarProfileId: schema.serviceAttendance.scholarProfileId,
+				servicesAmount: count(schema.serviceAttendance.id),
+				totalDurationSeconds:
+					sql<number>`COALESCE(SUM(${schema.serviceAttendance.durationSeconds}), 0)`,
+				avgDurationSeconds:
+					sql<number>`AVG(${schema.serviceAttendance.durationSeconds})`,
+			})
+			.from(schema.serviceAttendance)
+			.innerJoin(
+				schema.serviceRequest,
+				eq(schema.serviceAttendance.requestId, schema.serviceRequest.id),
+			)
+			.where(eq(schema.serviceRequest.status, "completed"))
+			.groupBy(schema.serviceAttendance.scholarProfileId);
+
+		const attendanceMap = new Map(
+			attendanceRows.map((row) => [
+				row.scholarProfileId,
+				{
+					servicesAmount: Number(row.servicesAmount),
+					totalDurationSeconds: Number(row.totalDurationSeconds),
+					avgDurationSeconds: row.avgDurationSeconds
+						? Math.round(Number(row.avgDurationSeconds))
+						: 0,
+				},
+			]),
+		);
+
 		const scholarsWithStatus = scholars.map((profile) => {
 			const status = getScholarDashboardStatus(profile);
+			const stats = attendanceMap.get(profile.id);
 
 			return {
 				user: {
@@ -44,6 +78,7 @@ export const scholarDashboard = managerProcedure
 					email: profile.user.email,
 					image: profile.user.image,
 					role: profile.user.role,
+					createdAt: profile.user.createdAt.toISOString(),
 				},
 				profile: {
 					id: profile.id,
@@ -57,6 +92,15 @@ export const scholarDashboard = managerProcedure
 					isActive: profile.isActive,
 				},
 				status,
+				summary: {
+					servicesAmount: stats?.servicesAmount ?? 0,
+					monthHours: stats?.totalDurationSeconds
+						? Math.round(stats.totalDurationSeconds / 3600)
+						: 0,
+					averageDuration: stats?.avgDurationSeconds
+						? Math.round(stats.avgDurationSeconds / 60)
+						: 0,
+				},
 			};
 		});
 

@@ -2,9 +2,9 @@
 
 import { createDetailsStore } from "@/components/details/details-store";
 
-import type { ScholarData } from "@/data/scholars-data";
+import type { CachedScholar } from "@/lib/cached-data";
 
-const scholarDetailsStore = createDetailsStore<ScholarData>();
+const scholarDetailsStore = createDetailsStore<CachedScholar>();
 
 export const openScholarDetails = scholarDetailsStore.openDetails;
 export const closeScholarDetails = scholarDetailsStore.closeDetails;
