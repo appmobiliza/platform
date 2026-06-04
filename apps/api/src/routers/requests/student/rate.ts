@@ -8,9 +8,8 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const rate = protectedProcedure
-	.meta({ openapi: { method: "POST", path: "/requests/rate" } })
 	.input(RateRequestSchema)
-	.output(z.any())
+
 	.mutation(async ({ ctx, input }) => {
 		const studentProfile = await db.query.studentProfile.findFirst({
 			where: eq(schema.studentProfile.userId, ctx.session.user.id),

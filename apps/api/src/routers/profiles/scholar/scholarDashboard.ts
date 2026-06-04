@@ -5,8 +5,6 @@ import {
 import { db } from "@mobiliza/db/client";
 import { managerProcedure } from "@mobiliza/trpc";
 
-import { z } from "zod";
-
 function getScholarDashboardStatus(profile: {
 	isActive: boolean;
 	isAvailable: boolean;
@@ -28,8 +26,6 @@ function getScholarDashboardStatus(profile: {
 }
 
 export const scholarDashboard = managerProcedure
-	.meta({ openapi: { method: "GET", path: "/profiles/scholars" } })
-	.output(z.any())
 	.query(async () => {
 		const scholars = await db.query.scholarProfile.findMany({
 			with: {
@@ -73,20 +69,9 @@ export const scholarDashboard = managerProcedure
 		).length;
 
 		return {
-			cards: [
-				{
-					title: "Total de bolsistas",
-					value: String(totalScholars),
-				},
-				{
-					title: "Disponível agora",
-					value: String(availableNow),
-				},
-				{
-					title: "Em atendimento",
-					value: String(inAttendance),
-				},
-			],
+			totalScholars,
+			availableNow,
+			inAttendance,
 			scholars: scholarsWithStatus,
 		};
 	});

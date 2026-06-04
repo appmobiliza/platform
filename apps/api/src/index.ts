@@ -16,6 +16,7 @@ import { trpcServer } from "@hono/trpc-server";
 import "dotenv/config";
 
 import { auth } from "@mobiliza/auth";
+import { getSession } from "@mobiliza/auth/server";
 import { db } from "@mobiliza/db/client";
 import { notifyUnansweredRequests } from "@mobiliza/domain";
 import { apiEnv } from "@mobiliza/env/api";
@@ -26,7 +27,6 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
-import { openApiDocument, openApiHandler } from "./openapi";
 import { appRouter } from "./router";
 
 console.log("🚀 Iniciando Mobiliza API...");
@@ -80,14 +80,6 @@ app.get("/health", (c) =>
 	}),
 );
 
-// ─── OpenAPI ─────────────────────────────────────────────────────────────────
-
-app.get("/openapi", (c) => c.redirect("/openapi.json"));
-
-app.get("/openapi.json", (c) => c.json(openApiDocument));
-
-app.all("/openapi/*", async (c) => openApiHandler(c));
-
 // ─── Better Auth ──────────────────────────────────────────────────────────────
 
 /**
@@ -109,7 +101,7 @@ app.use(
 	"/trpc/*",
 	trpcServer({
 		router: appRouter,
-		createContext: (_opts, c) => createTRPCContext(c),
+		createContext: (_opts, c) => createTRPCContext(c, getSession),
 
 		onError:
 			apiEnv.NODE_ENV === "development"

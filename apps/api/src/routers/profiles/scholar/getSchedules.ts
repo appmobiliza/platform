@@ -1,11 +1,7 @@
 import { db } from "@mobiliza/db/client";
 import { protectedProcedure } from "@mobiliza/trpc";
 
-import { z } from "zod";
-
 export const getSchedules = protectedProcedure
-	.meta({ openapi: { method: "GET", path: "/profiles/schedules" } })
-	.output(z.any())
 	.query(async () => {
 		const scholars = await db.query.scholarProfile.findMany({
 			with: {

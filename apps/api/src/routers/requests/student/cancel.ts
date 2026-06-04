@@ -8,9 +8,8 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const cancel = protectedProcedure
-	.meta({ openapi: { method: "POST", path: "/requests/cancel" } })
 	.input(RequestIdSchema)
-	.output(z.any())
+
 	.mutation(async ({ ctx, input }) => {
 		const studentProfile = await db.query.studentProfile.findFirst({
 			where: eq(schema.studentProfile.userId, ctx.session.user.id),

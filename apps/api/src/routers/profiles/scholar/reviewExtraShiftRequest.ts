@@ -8,14 +8,8 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const reviewExtraShiftRequest = managerProcedure
-	.meta({
-		openapi: {
-			method: "PUT",
-			path: "/profiles/extra-shift-requests",
-		},
-	})
 	.input(ReviewExtraShiftRequestSchema)
-	.output(z.any())
+
 	.mutation(async ({ ctx, input }) => {
 		const request = await db.query.extraShiftRequest.findFirst({
 			where: eq(schema.extraShiftRequest.id, input.id),

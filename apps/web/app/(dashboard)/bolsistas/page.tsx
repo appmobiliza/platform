@@ -26,39 +26,6 @@ export const metadata: Metadata = {
 
 type StatusFilter = "all" | "available" | "busy" | "off_shift" | "pending";
 
-type ScholarDashboardCard = {
-	title: string;
-	value: string;
-	variant?: "default" | "green" | "yellow";
-};
-
-type ScholarDashboardItem = {
-	user: {
-		id: string;
-		name: string;
-		email: string;
-		image: string | null | undefined;
-		role: string;
-	};
-	profile: {
-		id: string;
-		userId: string;
-		enrollment: string;
-		course: string;
-		campus: string;
-		phone: string;
-		shift: string;
-		isAvailable: boolean;
-		isActive: boolean;
-	};
-	status: Exclude<StatusFilter, "all">;
-};
-
-type ScholarDashboardResponse = {
-	cards: ScholarDashboardCard[];
-	scholars: ScholarDashboardItem[];
-};
-
 function getFirstValue(value: string | string[] | undefined) {
 	return Array.isArray(value) ? value[0] : value;
 }
@@ -105,9 +72,9 @@ export default async function ScholarsPage({
 	const resolvedSearchParams = await searchParams;
 	const query = getFirstValue(resolvedSearchParams.q)?.trim() ?? "";
 	const statusFilter = normalizeStatus(resolvedSearchParams.status);
-	const dashboard = (await withServerTRPC((trpc) =>
+	const dashboard = await withServerTRPC((trpc) =>
 		trpc.profiles.scholarDashboard(),
-	)) as ScholarDashboardResponse;
+	);
 	const normalizedQuery = query.toLowerCase();
 	const filteredScholars = dashboard.scholars.filter((item) => {
 		if (statusFilter !== "all" && item.status !== statusFilter) {
@@ -152,27 +119,36 @@ export default async function ScholarsPage({
 			</header>
 
 			<div className="grid grid-cols-1 gap-4 border-b border-border p-4 md:grid-cols-3 md:p-6">
-				{dashboard.cards.map(({ title, value, variant }) => (
-					<Card key={title} className="group w-full gap-2">
-						<CardHeader>
-							<CardTitle>{title}</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<p
-								className={cn(
-									"text-4xl font-bold",
-									variant === "green"
-										? "text-success"
-										: variant === "yellow"
-											? "text-yellow-500"
-											: "text-foreground",
-								)}
-							>
-								{value}
-							</p>
-						</CardContent>
-					</Card>
-				))}
+				<Card className="group w-full gap-2">
+					<CardHeader>
+						<CardTitle>Total de bolsistas</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<p className="text-4xl font-bold text-foreground">
+							{dashboard.totalScholars}
+						</p>
+					</CardContent>
+				</Card>
+				<Card className="group w-full gap-2">
+					<CardHeader>
+						<CardTitle>Disponível agora</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<p className="text-4xl font-bold text-success">
+							{dashboard.availableNow}
+						</p>
+					</CardContent>
+				</Card>
+				<Card className="group w-full gap-2">
+					<CardHeader>
+						<CardTitle>Em atendimento</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<p className="text-4xl font-bold text-yellow-500">
+							{dashboard.inAttendance}
+						</p>
+					</CardContent>
+				</Card>
 			</div>
 
 			<div className="flex min-w-0 flex-col gap-4 overflow-hidden p-4 md:p-6">

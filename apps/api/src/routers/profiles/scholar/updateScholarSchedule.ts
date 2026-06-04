@@ -9,9 +9,8 @@ import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
 export const updateScholarSchedule = managerProcedure
-	.meta({ openapi: { method: "PUT", path: "/profiles/schedules" } })
 	.input(UpdateScholarScheduleSchema)
-	.output(z.any())
+
 	.mutation(async ({ input }) => {
 		const { scholarId, entries } = input;
 

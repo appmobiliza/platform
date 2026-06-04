@@ -33,9 +33,7 @@ import {
 } from "@/components/ui/table";
 
 import { withServerTRPC } from "@/lib/trpc-server";
-import { cn, getInitials } from "@/lib/utils";
-
-import type { StudentData } from "@/data/students-data";
+import { getInitials } from "@/lib/utils";
 
 export const metadata: Metadata = {
 	title: "Estudantes",
@@ -48,18 +46,10 @@ const sortOptions = [
 	{ value: "name-desc", label: "Nome (Z-A)" },
 ];
 
-type StudentDashboardResponse = {
-	cards: Array<{
-		title: string;
-		value: string;
-	}>;
-	students: StudentData[];
-};
-
 export default async function StudentsPage() {
-	const dashboard = (await withServerTRPC((trpc) =>
+	const dashboard = await withServerTRPC((trpc) =>
 		trpc.profiles.studentDashboard(),
-	)) as StudentDashboardResponse;
+	);
 	const studentsData = dashboard.students;
 
 	return (
@@ -78,24 +68,46 @@ export default async function StudentsPage() {
 				</header>
 
 				<div className="grid grid-cols-1 gap-4 border-b border-border p-4 md:grid-cols-4 md:p-6">
-					{dashboard.cards.map(({ title, value }) => (
-						<Card key={title} className="group w-full gap-2">
-							<CardHeader>
-								<CardTitle>{title}</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<p
-									className={cn(
-										"text-4xl font-bold",
-										title === "Com solicitação hoje" &&
-											"text-info",
-									)}
-								>
-									{value}
-								</p>
-							</CardContent>
-						</Card>
-					))}
+					<Card className="group w-full gap-2">
+						<CardHeader>
+							<CardTitle>Total de alunos</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<p className="text-4xl font-bold text-foreground">
+								{dashboard.totalStudents}
+							</p>
+						</CardContent>
+					</Card>
+					<Card className="group w-full gap-2">
+						<CardHeader>
+							<CardTitle>Com solicitação hoje</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<p className="text-4xl font-bold text-info">
+								{dashboard.requestedToday}
+							</p>
+						</CardContent>
+					</Card>
+					<Card className="group w-full gap-2">
+						<CardHeader>
+							<CardTitle>Deficiência visual</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<p className="text-4xl font-bold text-foreground">
+								{dashboard.visualImpairmentCount}
+							</p>
+						</CardContent>
+					</Card>
+					<Card className="group w-full gap-2">
+						<CardHeader>
+							<CardTitle>Deficiência motora</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<p className="text-4xl font-bold text-foreground">
+								{dashboard.mobilityCount}
+							</p>
+						</CardContent>
+					</Card>
 				</div>
 
 				<div className="flex min-w-0 flex-col gap-4 overflow-hidden py-4 md:py-6">

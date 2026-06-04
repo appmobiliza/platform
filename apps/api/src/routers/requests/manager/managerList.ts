@@ -6,7 +6,6 @@ import { managerProcedure } from "@mobiliza/trpc";
 import { z } from "zod";
 
 export const managerList = managerProcedure
-	.meta({ openapi: { method: "GET", path: "/requests/manager" } })
 	.input(
 		z
 			.object({
@@ -14,7 +13,6 @@ export const managerList = managerProcedure
 			})
 			.default({ limit: 100 }),
 	)
-	.output(z.any())
 	.query(async ({ input }) => {
 		return db.query.serviceRequest.findMany({
 			with: {

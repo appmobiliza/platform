@@ -9,12 +9,10 @@ import { ExportReportSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { and, avg, count, desc, eq, gte, lte, sql } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
-import { AppError, generateAttendanceReportCSV } from "@mobiliza/domain";
-
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
-
+import { generateAttendanceReportCSV } from "@mobiliza/domain";
 import { managerProcedure, router } from "@mobiliza/trpc";
+
+import { z } from "zod";
 
 const dateRangeInput = z.object({
 	from: z.iso.datetime(),
@@ -26,9 +24,7 @@ export const metricsRouter = router({
 	 * Resumo geral do período — cards no topo do dashboard.
 	 */
 	summary: managerProcedure
-		.meta({ openapi: { method: "GET", path: "/metrics/summary" } })
 		.input(dateRangeInput)
-		.output(z.any())
 		.query(async ({ input, ctx }) => {
 			console.log(
 				ctx.session.session.id,
@@ -105,11 +101,8 @@ export const metricsRouter = router({
 	 * Identifica pontos do campus com maior demanda.
 	 */
 	byOriginLocation: managerProcedure
-		.meta({
-			openapi: { method: "GET", path: "/metrics/by-origin-location" },
-		})
 		.input(dateRangeInput)
-		.output(z.any())
+
 		.query(async ({ input }) => {
 			const from = new Date(input.from);
 			const to = new Date(input.to);
@@ -148,11 +141,7 @@ export const metricsRouter = router({
 	 * Mostra atendimentos, avaliação média e duração média por bolsista.
 	 */
 	scholarPerformance: managerProcedure
-		.meta({
-			openapi: { method: "GET", path: "/metrics/scholar-performance" },
-		})
 		.input(dateRangeInput)
-		.output(z.any())
 		.query(async ({ input }) => {
 			const from = new Date(input.from);
 			const to = new Date(input.to);

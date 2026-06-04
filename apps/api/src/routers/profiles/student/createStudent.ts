@@ -9,9 +9,8 @@ import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
 export const createStudent = protectedProcedure
-	.meta({ openapi: { method: "POST", path: "/profiles/student" } })
 	.input(InsertStudentSchema)
-	.output(z.any())
+
 	.mutation(async ({ ctx, input }) => {
 		const existing = await db.query.studentProfile.findFirst({
 			where: eq(schema.studentProfile.userId, ctx.session.user.id),

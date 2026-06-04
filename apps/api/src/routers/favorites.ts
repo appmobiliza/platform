@@ -6,13 +6,9 @@ import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import {
-	AppError,
 	createFavoriteRoute,
 	deleteFavoriteRoute,
 } from "@mobiliza/domain";
-
-import { TRPCError } from "@trpc/server";
-
 import { protectedProcedure, router } from "@mobiliza/trpc";
 
 export const favoritesRouter = router({

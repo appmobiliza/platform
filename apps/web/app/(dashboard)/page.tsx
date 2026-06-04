@@ -45,28 +45,6 @@ export const metadata: Metadata = {
 	title: "Visão Geral",
 };
 
-type MetricsSummary = {
-	totalRequests: number;
-	avgDurationSeconds: number | null;
-};
-
-type ScholarDashboardItem = {
-	user: {
-		id: string;
-		name: string;
-		image: string | null | undefined;
-	};
-	profile: {
-		course: string;
-		shift: string;
-	};
-	status: "available" | "busy" | "off_shift" | "pending";
-};
-
-type ScholarDashboardResponse = {
-	scholars: ScholarDashboardItem[];
-};
-
 const chartConfig = {
 	value: {
 		label: "Horário",
@@ -74,7 +52,9 @@ const chartConfig = {
 	},
 } satisfies ChartConfig;
 
-function getScholarStatusLabel(status: ScholarDashboardItem["status"]) {
+function getScholarStatusLabel(
+	status: "available" | "busy" | "off_shift" | "pending",
+) {
 	switch (status) {
 		case "available":
 			return "Disponível";
@@ -87,7 +67,9 @@ function getScholarStatusLabel(status: ScholarDashboardItem["status"]) {
 	}
 }
 
-function getScholarBadgeVariant(status: ScholarDashboardItem["status"]) {
+function getScholarBadgeVariant(
+	status: "available" | "busy" | "off_shift" | "pending",
+) {
 	if (status === "available") {
 		return "success";
 	}
@@ -146,14 +128,14 @@ function getPendingAlert(requests: ManagerRequest[]) {
 
 export default async function DashboardPage() {
 	const todayRange = getTodayRange();
-	const [summary, scholarDashboard, requests] = (await withServerTRPC(
+	const [summary, scholarDashboard, requests] = await withServerTRPC(
 		async (trpc) =>
 			Promise.all([
 				trpc.metrics.summary(todayRange),
 				trpc.profiles.scholarDashboard(),
 				trpc.requests.managerList({ limit: 100 }),
 			]),
-	)) as [MetricsSummary, ScholarDashboardResponse, ManagerRequest[]];
+	);
 	const inProgressCount = requests.filter(
 		(request) =>
 			request.status === "accepted" || request.status === "ongoing",

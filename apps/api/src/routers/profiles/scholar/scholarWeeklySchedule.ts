@@ -9,9 +9,8 @@ import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
 export const scholarWeeklySchedule = scholarProcedure
-	.meta({ openapi: { method: "POST", path: "/profiles/schedule" } })
 	.input(UpsertScheduleSchema)
-	.output(z.any())
+
 	.mutation(async ({ ctx, input }) => {
 		const profile = await db.query.scholarProfile.findFirst({
 			where: eq(schema.scholarProfile.userId, ctx.session.user.id),

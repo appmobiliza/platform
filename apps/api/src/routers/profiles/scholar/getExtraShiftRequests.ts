@@ -1,18 +1,9 @@
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
-import { protectedProcedure } from "@mobiliza/trpc";
-
-import { z } from "zod";
+import { protectedProcedure } from "@mobiliza/trpc";;
 
 export const getExtraShiftRequests = protectedProcedure
-	.meta({
-		openapi: {
-			method: "GET",
-			path: "/profiles/extra-shift-requests",
-		},
-	})
-	.output(z.any())
 	.query(async ({ ctx }) => {
 		const isScholar = ctx.session.user.role === "scholar";
 

@@ -1,7 +1,6 @@
+import { FileDown, FileSpreadsheet, InfoIcon } from "lucide-react";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-
-import { FileDown, FileSpreadsheet, InfoIcon } from "lucide-react";
 
 import { ComboboxMultiple } from "@/components/combobox-multiple";
 import { DatePickerWithRange } from "@/components/date-range-picker";
@@ -33,39 +32,6 @@ import { getInitials } from "@/lib/utils";
 
 export const metadata: Metadata = {
 	title: "Relatórios",
-};
-
-type MetricsSummary = {
-	totalRequests: number;
-	completedRequests: number;
-	cancelledRequests: number;
-	unattendedRequests: number;
-	completionRate: number;
-	avgDurationSeconds: number | null;
-};
-
-type ScholarPerformance = {
-	scholarProfileId: string;
-	scholarName: string;
-	totalAttendances: number;
-};
-
-type ScholarDashboardResponse = {
-	scholars: Array<{
-		user: {
-			id: string;
-			name: string;
-		};
-	}>;
-};
-
-type StudentDashboardResponse = {
-	students: Array<{
-		user: {
-			id: string;
-			name: string;
-		};
-	}>;
 };
 
 const hourlyChartConfig = {
@@ -322,7 +288,7 @@ export default async function ReportsPage() {
 		requests,
 		scholarDashboard,
 		studentDashboard,
-	] = (await withServerTRPC(async (trpc) =>
+	] = await withServerTRPC(async (trpc) =>
 		Promise.all([
 			trpc.metrics.summary(monthRange),
 			trpc.metrics.scholarPerformance(monthRange),
@@ -330,13 +296,7 @@ export default async function ReportsPage() {
 			trpc.profiles.scholarDashboard(),
 			trpc.profiles.studentDashboard(),
 		]),
-	)) as [
-		MetricsSummary,
-		ScholarPerformance[],
-		ManagerRequest[],
-		ScholarDashboardResponse,
-		StudentDashboardResponse,
-	];
+	);
 	const reportMonth = new Date().toLocaleDateString("pt-BR", {
 		month: "long",
 		year: "numeric",

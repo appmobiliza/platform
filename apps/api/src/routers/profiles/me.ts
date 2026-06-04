@@ -7,8 +7,6 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const me = protectedProcedure
-	.meta({ openapi: { method: "GET", path: "/profiles/me" } })
-	.output(z.any())
 	.query(async ({ ctx }) => {
 		const user = await db.query.user.findFirst({
 			where: eq(schema.user.id, ctx.session.user.id),

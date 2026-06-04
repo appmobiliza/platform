@@ -8,9 +8,8 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const start = scholarProcedure
-	.meta({ openapi: { method: "POST", path: "/requests/start" } })
 	.input(RequestIdSchema)
-	.output(z.any())
+
 	.mutation(async ({ ctx, input }) => {
 		const scholarProfile = await db.query.scholarProfile.findFirst({
 			where: eq(schema.scholarProfile.userId, ctx.session.user.id),

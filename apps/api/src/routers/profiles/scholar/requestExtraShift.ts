@@ -17,14 +17,8 @@ function getTodayString(): string {
 }
 
 export const requestExtraShift = scholarProcedure
-	.meta({
-		openapi: {
-			method: "POST",
-			path: "/profiles/extra-shift-requests",
-		},
-	})
 	.input(CreateExtraShiftRequestSchema)
-	.output(z.any())
+
 	.mutation(async ({ ctx, input }) => {
 		const profile = await db.query.scholarProfile.findFirst({
 			where: eq(schema.scholarProfile.userId, ctx.session.user.id),

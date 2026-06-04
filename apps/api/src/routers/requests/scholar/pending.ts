@@ -6,8 +6,6 @@ import { scholarProcedure } from "@mobiliza/trpc";
 import { z } from "zod";
 
 export const pending = scholarProcedure
-	.meta({ openapi: { method: "GET", path: "/requests/pending" } })
-	.output(z.any())
 	.query(async () => {
 		return db.query.serviceRequest.findMany({
 			where: eq(schema.serviceRequest.status, "pending"),

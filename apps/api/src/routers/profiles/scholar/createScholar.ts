@@ -5,12 +5,10 @@ import * as schema from "@mobiliza/db/schema";
 import { protectedProcedure } from "@mobiliza/trpc";
 
 import { uuidv7 } from "uuidv7";
-import { z } from "zod";
 
 export const createScholar = protectedProcedure
-	.meta({ openapi: { method: "POST", path: "/profiles/scholar" } })
 	.input(InsertScholarSchema)
-	.output(z.any())
+
 	.mutation(async ({ ctx, input }) => {
 		const existing = await db.query.scholarProfile.findFirst({
 			where: eq(schema.scholarProfile.userId, ctx.session.user.id),

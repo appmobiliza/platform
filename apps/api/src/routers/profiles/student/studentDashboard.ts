@@ -1,8 +1,6 @@
 import { db } from "@mobiliza/db/client";
 import { managerProcedure } from "@mobiliza/trpc";
 
-import { z } from "zod";
-
 function getRouteLabel(request: {
 	originLocation?: { abbreviation: string; name: string } | null;
 	destinationLocation?: { abbreviation: string; name: string } | null;
@@ -33,8 +31,6 @@ function getTopCounts(items: string[], limit = 3) {
 }
 
 export const studentDashboard = managerProcedure
-	.meta({ openapi: { method: "GET", path: "/profiles/students" } })
-	.output(z.any())
 	.query(async () => {
 		const students = await db.query.studentProfile.findMany({
 			with: {
@@ -89,24 +85,10 @@ export const studentDashboard = managerProcedure
 		).length;
 
 		return {
-			cards: [
-				{
-					title: "Total de alunos",
-					value: String(activeStudents.length),
-				},
-				{
-					title: "Com solicitação hoje",
-					value: String(requestedToday),
-				},
-				{
-					title: "Deficiência visual",
-					value: String(visualImpairmentCount),
-				},
-				{
-					title: "Deficiência motora",
-					value: String(mobilityCount),
-				},
-			],
+			totalStudents: activeStudents.length,
+			requestedToday,
+			visualImpairmentCount,
+			mobilityCount,
 			students: students.map((student) => {
 				const { disabilities, requests, user, ...profile } = student;
 				const sortedRequests = [...requests].sort(

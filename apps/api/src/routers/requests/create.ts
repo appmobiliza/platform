@@ -7,9 +7,8 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const create = protectedProcedure
-	.meta({ openapi: { method: "POST", path: "/requests/create" } })
 	.input(CreateRequestSchema)
-	.output(z.any())
+
 	.mutation(async ({ ctx, input }) => {
 		try {
 			const request = await createRequest(input, ctx.session.user.id, db);
