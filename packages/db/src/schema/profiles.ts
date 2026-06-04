@@ -1,11 +1,20 @@
 import { relations } from "drizzle-orm";
-import { boolean, pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
+import {
+	boolean,
+	date,
+	pgTable,
+	text,
+	timestamp,
+	unique,
+} from "drizzle-orm/pg-core";
 
 import { user } from "./auth";
 import {
 	campusEnum,
 	courseEnum,
+	dayOfWeekEnum,
 	disabilityTypeEnum,
+	extraShiftRequestStatusEnum,
 	genderEnum,
 	scholarShiftEnum,
 	studentShiftEnum,
@@ -95,8 +104,81 @@ export type StudentProfile = typeof studentProfile.$inferSelect;
 export type NewStudentProfile = typeof studentProfile.$inferInsert;
 export type ScholarProfile = typeof scholarProfile.$inferSelect;
 export type NewScholarProfile = typeof scholarProfile.$inferInsert;
+/**
+ * Grade horária semanal do bolsista.
+ * Define em quais dias da semana e turnos o bolsista trabalha.
+ */
+export const scholarWeeklySchedule = pgTable(
+	"scholar_weekly_schedule",
+	{
+		id: text("id").primaryKey(),
+
+		scholarProfileId: text("scholar_profile_id")
+			.notNull()
+			.references(() => scholarProfile.id, { onDelete: "cascade" }),
+
+		dayOfWeek: dayOfWeekEnum("day_of_week").notNull(),
+		shift: scholarShiftEnum("shift").notNull(),
+
+		createdAt: timestamp("created_at").notNull().defaultNow(),
+		updatedAt: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [unique().on(table.scholarProfileId, table.dayOfWeek, table.shift)],
+);
+
+/**
+ * Solicitação de turno extra feita pelo bolsista para compensar horas não
+ * cumpridas (ex: falta por doença, consulta médica, etc.).
+ *
+ * Um bolsista cria a solicitação informando a data e o turno em que deseja
+ * trabalhar extra e o motivo. Um gestor então aprova ou rejeita.
+ */
+export const extraShiftRequest = pgTable(
+	"extra_shift_request",
+	{
+		id: text("id").primaryKey(),
+
+		scholarProfileId: text("scholar_profile_id")
+			.notNull()
+			.references(() => scholarProfile.id, { onDelete: "cascade" }),
+
+		/*
+		 * Data em que o bolsista deseja realizar o turno extra.
+		 */
+		date: date("date").notNull(),
+
+		shift: scholarShiftEnum("shift").notNull(),
+
+		/*
+		 * Motivo da solicitação — justifica por que o bolsista precisa
+		 * compensar horas não cumpridas.
+		 */
+		reason: text("reason").notNull(),
+
+		status: extraShiftRequestStatusEnum("status")
+			.notNull()
+			.default("pending"),
+
+		approvedById: text("approved_by_id").references(
+			() => user.id,
+			{ onDelete: "set null" },
+		),
+
+		approvedAt: timestamp("approved_at"),
+
+		createdAt: timestamp("created_at").notNull().defaultNow(),
+		updatedAt: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [unique().on(table.scholarProfileId, table.date, table.shift)],
+);
+
 export type StudentDisability = typeof studentDisability.$inferSelect;
 export type NewStudentDisability = typeof studentDisability.$inferInsert;
+export type ScholarWeeklySchedule = typeof scholarWeeklySchedule.$inferSelect;
+export type NewScholarWeeklySchedule =
+	typeof scholarWeeklySchedule.$inferInsert;
+export type ExtraShiftRequest = typeof extraShiftRequest.$inferSelect;
+export type NewExtraShiftRequest = typeof extraShiftRequest.$inferInsert;
 
 // ─── Relations ───────────────────────────────────────────────────────────────
 
@@ -120,6 +202,32 @@ export const scholarProfileRelations = relations(
 			references: [user.id],
 		}),
 		attendances: many(serviceAttendance),
+		weeklySchedule: many(scholarWeeklySchedule),
+		extraShiftRequests: many(extraShiftRequest),
+	}),
+);
+
+export const scholarWeeklyScheduleRelations = relations(
+	scholarWeeklySchedule,
+	({ one }) => ({
+		scholarProfile: one(scholarProfile, {
+			fields: [scholarWeeklySchedule.scholarProfileId],
+			references: [scholarProfile.id],
+		}),
+	}),
+);
+
+export const extraShiftRequestRelations = relations(
+	extraShiftRequest,
+	({ one }) => ({
+		scholarProfile: one(scholarProfile, {
+			fields: [extraShiftRequest.scholarProfileId],
+			references: [scholarProfile.id],
+		}),
+		approvedBy: one(user, {
+			fields: [extraShiftRequest.approvedById],
+			references: [user.id],
+		}),
 	}),
 );
 
