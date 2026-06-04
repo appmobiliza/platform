@@ -1,16 +1,15 @@
 "use client";
 
-import {
-	type ScholarShiftValues,
-	scholarShiftLabels,
-} from "@mobiliza/contracts";
+import { getCurrentShift } from "@mobiliza/contracts";
 
 import { DetailsSidebar } from "@/components/details/details-sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { ChartConfig } from "@/components/ui/chart";
 import { Separator } from "@/components/ui/separator";
+import { VerticalBarsChart } from "@/components/vertical-bars-chart";
 
 import type { CachedScholar } from "@/lib/cached-data";
 import { getInitials } from "@/lib/utils";
@@ -19,6 +18,13 @@ import { MutateScholarDialog } from "@/app/(dashboard)/bolsistas/dialog/add-scho
 
 import { DetailsSection } from "../../section";
 import { closeScholarDetails, useScholarDetailsEntry } from "./store";
+
+const chartConfig = {
+	value: {
+		label: "Atendimentos",
+		color: "var(--chart-1)",
+	},
+} satisfies ChartConfig;
 
 const STATUS_LABEL: Record<CachedScholar["status"], string> = {
 	available: "Disponível",
@@ -38,8 +44,28 @@ const STATUS_VARIANT: Record<
 };
 
 function getShiftLabel(shift: string) {
-	const key = shift as ScholarShiftValues;
-	return scholarShiftLabels[key] ?? shift;
+	switch (shift) {
+		case "morning":
+			return "Manhã";
+		case "afternoon":
+			return "Tarde";
+		case "night":
+			return "Noite";
+		default:
+			return shift;
+	}
+}
+
+function getScholarStatus(scholar: CachedScholar) {
+	if (scholar.profile.shift !== getCurrentShift()) {
+		return "off_shift";
+	}
+
+	if (scholar.profile.isAvailable) {
+		return "available";
+	}
+
+	return "unavailable";
 }
 
 function ScholarDetailsContent({ scholar }: { scholar: CachedScholar }) {
@@ -68,6 +94,60 @@ function ScholarDetailsContent({ scholar }: { scholar: CachedScholar }) {
 					</CardContent>
 				</Card>
 			</div>
+
+			{scholar.summary.servicesPerWeek.length > 0 && (
+				<DetailsSection label="Atendimentos por semana">
+					<VerticalBarsChart
+						data={scholar.summary.servicesPerWeek.map(
+							(week, index) => ({
+								label: `S${index + 1}`,
+								value: week.amount,
+							}),
+						)}
+						config={chartConfig}
+						className="h-32"
+					/>
+				</DetailsSection>
+			)}
+
+			{scholar.summary.frequentStudents.length > 0 && (
+				<DetailsSection label="Alunos atendidos">
+					{scholar.summary.frequentStudents.map((student) => (
+						<div
+							key={student.name}
+							className="flex items-center justify-between gap-3"
+						>
+							<div className="flex flex-row items-center gap-3">
+								<Avatar className="h-6 w-6">
+									<AvatarFallback className="text-[8px]">
+										{getInitials(student.name)}
+									</AvatarFallback>
+								</Avatar>
+								<span className="text-sm">{student.name}</span>
+							</div>
+							<span className="text-sm text-muted-foreground">
+								{student.amount}x
+							</span>
+						</div>
+					))}
+				</DetailsSection>
+			)}
+
+			{scholar.summary.frequentRoutes.length > 0 && (
+				<DetailsSection label="Rotas mais frequentes">
+					{scholar.summary.frequentRoutes.map((route) => (
+						<div
+							key={route.route}
+							className="flex items-center justify-between gap-3 text-sm"
+						>
+							<span>{route.route}</span>
+							<span className="text-muted-foreground">
+								{route.amount}x
+							</span>
+						</div>
+					))}
+				</DetailsSection>
+			)}
 
 			<DetailsSection label="Informações">
 				{[
@@ -98,16 +178,16 @@ function ScholarDetailsContent({ scholar }: { scholar: CachedScholar }) {
 
 			<Separator />
 
-			<Button variant="outline" className="w-full">
+			<Button variant="outline" className="w-full" disabled>
 				Ver histórico completo
 			</Button>
 			<div className="flex flex-row gap-2 justify-between">
-				<MutateScholarDialog>
+				<MutateScholarDialog scholar={scholar}>
 					<Button className="w-full">Editar bolsista</Button>
 				</MutateScholarDialog>
-				<Button variant="destructive" className="w-[49%]">
+				{/*<Button variant="destructive" className="w-[49%]" disabled>
 					Desativar
-				</Button>
+				</Button>*/}
 			</div>
 		</div>
 	);

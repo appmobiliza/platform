@@ -62,6 +62,18 @@ export type UpdateScholarBySelfInput = z.infer<
 	typeof UpdateScholarBySelfSchema
 >;
 
+/**
+ * Schema for a manager to update any scholar's profile.
+ * All fields are optional — only provided fields are updated.
+ */
+export const UpdateScholarAsManagerSchema = UpdateScholarSchema.extend({
+	userId: z.string(),
+});
+
+export type UpdateScholarAsManagerInput = z.infer<
+	typeof UpdateScholarAsManagerSchema
+>;
+
 // ─── Weekly Schedule ───────────────────────────────────────────────────────────
 
 const ScheduleEntrySchema = z.object({

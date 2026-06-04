@@ -9,12 +9,14 @@ import {
 	InsertScholarAsManagerSchema,
 	scholarShiftLabels,
 	scholarShiftValues,
+	type UpdateScholarAsManagerInput,
 } from "@mobiliza/contracts";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -51,30 +53,30 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 
+import type { CachedScholar } from "@/lib/cached-data";
+
 import { trpc } from "@/providers/trpc-provider";
+
+// Shared form schema: create requires everything, edit requires userId + any subset
+const ScholarFormSchema = InsertScholarAsManagerSchema.extend({
+	userId: z.string().optional(),
+});
+
+type ScholarFormData = z.infer<typeof ScholarFormSchema>;
 
 interface Props {
 	children: React.ReactNode;
+	scholar?: CachedScholar;
 }
 
-export function MutateScholarDialog({ children }: Props) {
+export function MutateScholarDialog({ children, scholar }: Props) {
 	const router = useRouter();
 	const [open, setOpen] = React.useState(false);
+	const isEditing = Boolean(scholar);
 
-	const form = useForm<InsertScholarAsManagerInput>({
-		resolver: zodResolver(InsertScholarAsManagerSchema),
+	const form = useForm<ScholarFormData>({
+		resolver: zodResolver(ScholarFormSchema),
 		mode: "onSubmit",
-		defaultValues: {
-			name: "",
-			email: "",
-			enrollment: "",
-			phone: "",
-			cpf: "",
-			course: undefined,
-			campus: undefined,
-			shift: undefined,
-			gender: undefined,
-		},
 	});
 
 	const {
@@ -93,9 +95,56 @@ export function MutateScholarDialog({ children }: Props) {
 		},
 	});
 
-	function onSubmit(data: InsertScholarAsManagerInput) {
-		createScholar.mutate(data);
+	const updateScholar = trpc.profiles.updateScholarAsManager.useMutation({
+		onSuccess() {
+			router.refresh();
+			setOpen(false);
+		},
+	});
+
+	const isPending = isEditing
+		? updateScholar.isPending
+		: createScholar.isPending;
+	const mutationError = isEditing ? updateScholar.error : createScholar.error;
+
+	function onSubmit(data: ScholarFormData) {
+		if (isEditing) {
+			const {
+				name: _name,
+				email: _email,
+				cpf: _cpf,
+				userId,
+				...profileData
+			} = data;
+			updateScholar.mutate({
+				userId: userId!,
+				...profileData,
+			} as UpdateScholarAsManagerInput);
+		} else {
+			const { userId: _userId, ...rest } = data;
+			createScholar.mutate(rest as InsertScholarAsManagerInput);
+		}
 	}
+
+	// Reset form with scholar data when editing
+	React.useEffect(() => {
+		if (open && scholar) {
+			reset({
+				userId: scholar.profile.userId,
+				name: scholar.user.name,
+				enrollment: scholar.profile.enrollment,
+				course: scholar.profile.course as ScholarFormData["course"],
+				campus: scholar.profile.campus as ScholarFormData["campus"],
+				phone: scholar.profile.phone ?? "",
+				shift: scholar.profile.shift as ScholarFormData["shift"],
+				email: scholar.user.email,
+				cpf: "",
+				gender: undefined,
+			});
+		} else if (!open) {
+			reset();
+		}
+	}, [open, scholar, reset]);
 
 	const comboboxPortalRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -112,7 +161,7 @@ export function MutateScholarDialog({ children }: Props) {
 			<DialogTrigger asChild>{children}</DialogTrigger>
 			<DialogContent
 				className="sm:max-w-lg"
-				preventClose={isSubmitting || createScholar.isPending}
+				preventClose={isSubmitting || isPending}
 			>
 				<form
 					onSubmit={handleSubmit(onSubmit)}
@@ -120,25 +169,74 @@ export function MutateScholarDialog({ children }: Props) {
 					noValidate
 				>
 					<DialogHeader>
-						<DialogTitle>Adicionar bolsista</DialogTitle>
+						<DialogTitle>
+							{isEditing
+								? "Editar bolsista"
+								: "Adicionar bolsista"}
+						</DialogTitle>
 						<DialogDescription>
-							Adicione informações sobre o novo bolsista aqui
+							{isEditing
+								? "Atualize as informações do bolsista"
+								: "Adicione informações sobre o novo bolsista aqui"}
 						</DialogDescription>
 					</DialogHeader>
 					<div ref={comboboxPortalRef}>
 						<FieldGroup>
-							<Field data-invalid={!!errors.name}>
-								<Label htmlFor="name">Nome completo</Label>
-								<Input
-									id="name"
-									{...register("name")}
-									placeholder="Nome do bolsista"
-									aria-invalid={!!errors.name}
-								/>
-								{errors.name && (
-									<FieldError errors={[errors.name]} />
-								)}
-							</Field>
+							{!isEditing && (
+								<>
+									<Field data-invalid={!!errors.name}>
+										<Label htmlFor="name">
+											Nome completo
+										</Label>
+										<Input
+											id="name"
+											{...register("name")}
+											placeholder="Nome do bolsista"
+											aria-invalid={!!errors.name}
+										/>
+										{errors.name && (
+											<FieldError
+												errors={[errors.name]}
+											/>
+										)}
+									</Field>
+									<Field data-invalid={!!errors.email}>
+										<Label htmlFor="email">E-mail</Label>
+										<Input
+											id="email"
+											type="email"
+											{...register("email")}
+											placeholder="bolsista@example.com"
+											aria-invalid={!!errors.email}
+										/>
+										{errors.email && (
+											<FieldError
+												errors={[errors.email]}
+											/>
+										)}
+									</Field>
+									<Field data-invalid={!!errors.cpf}>
+										<Label htmlFor="cpf">CPF</Label>
+										<Controller
+											name="cpf"
+											control={control}
+											render={({ field }) => (
+												<MaskedInput
+													id="cpf"
+													mask="cpf"
+													placeholder="999.999.999-99"
+													value={field.value}
+													onChange={field.onChange}
+													aria-invalid={!!errors.cpf}
+												/>
+											)}
+										/>
+										{errors.cpf && (
+											<FieldError errors={[errors.cpf]} />
+										)}
+									</Field>
+								</>
+							)}
 							<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 								<Field data-invalid={!!errors.course}>
 									<Label htmlFor="course">Curso</Label>
@@ -392,43 +490,10 @@ export function MutateScholarDialog({ children }: Props) {
 									)}
 								</Field>
 							</div>
-							<Field data-invalid={!!errors.email}>
-								<Label htmlFor="email">E-mail</Label>
-								<Input
-									id="email"
-									type="email"
-									{...register("email")}
-									placeholder="bolsista@example.com"
-									aria-invalid={!!errors.email}
-								/>
-								{errors.email && (
-									<FieldError errors={[errors.email]} />
-								)}
-							</Field>
-							<Field data-invalid={!!errors.cpf}>
-								<Label htmlFor="cpf">CPF</Label>
-								<Controller
-									name="cpf"
-									control={control}
-									render={({ field }) => (
-										<MaskedInput
-											id="cpf"
-											mask="cpf"
-											placeholder="999.999.999-99"
-											value={field.value}
-											onChange={field.onChange}
-											aria-invalid={!!errors.cpf}
-										/>
-									)}
-								/>
-								{errors.cpf && (
-									<FieldError errors={[errors.cpf]} />
-								)}
-							</Field>
-							{createScholar.error ? (
+							{mutationError ? (
 								<Alert variant="destructive">
 									<AlertDescription>
-										{createScholar.error.message}
+										{mutationError.message}
 									</AlertDescription>
 								</Alert>
 							) : null}
@@ -439,20 +504,20 @@ export function MutateScholarDialog({ children }: Props) {
 							<Button
 								type="button"
 								variant="outline"
-								disabled={
-									isSubmitting || createScholar.isPending
-								}
+								disabled={isSubmitting || isPending}
 							>
 								Cancelar
 							</Button>
 						</DialogClose>
 						<Button
 							type="submit"
-							disabled={isSubmitting || createScholar.isPending}
+							disabled={isSubmitting || isPending}
 						>
-							{createScholar.isPending
+							{isPending
 								? "Salvando..."
-								: "Adicionar bolsista"}
+								: isEditing
+									? "Salvar alterações"
+									: "Adicionar bolsista"}
 						</Button>
 					</DialogFooter>
 				</form>

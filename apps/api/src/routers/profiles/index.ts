@@ -10,6 +10,7 @@ import { scholarDashboard } from "./scholar/scholarDashboard";
 import { scholarWeeklySchedule } from "./scholar/scholarWeeklySchedule";
 import { toggleAvailability } from "./scholar/toggleAvailability";
 import { updateScholar } from "./scholar/updateScholar";
+import { updateScholarAsManager } from "./scholar/updateScholarAsManager";
 import { updateScholarSchedule } from "./scholar/updateScholarSchedule";
 import { createStudent } from "./student/createStudent";
 import { studentDashboard } from "./student/studentDashboard";
@@ -22,6 +23,7 @@ export const profilesRouter = router({
 	me,
 	createStudent,
 	createScholarAsManager,
+	updateScholarAsManager,
 	updateScholar,
 	toggleAvailability,
 	scholarDashboard,
