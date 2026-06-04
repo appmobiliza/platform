@@ -3,13 +3,7 @@ import {
 	scholarShiftLabels,
 } from "@mobiliza/contracts";
 
-import {
-	Activity,
-	Clock,
-	CloudLightning,
-	TriangleAlert,
-	Users,
-} from "lucide-react";
+import { Activity, Clock, Hourglass, TriangleAlert, Users } from "lucide-react";
 import type { Metadata } from "next";
 
 import { HorizontalBarsChart } from "@/components/horizontal-bars-chart";
@@ -163,13 +157,13 @@ export default async function DashboardPage() {
 			footer: "registrados no período",
 		},
 		{
-			icon: CloudLightning,
+			icon: Clock,
 			title: "Em andamento agora",
 			value: String(inProgressCount),
 			footer: "solicitações aceitas ou iniciadas",
 		},
 		{
-			icon: Clock,
+			icon: Hourglass,
 			title: "Tempo médio",
 			value: formatDurationShort(summary.avgDurationSeconds),
 			footer: "atendimentos concluídos",

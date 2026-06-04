@@ -9,9 +9,8 @@ import {
 	LogOut,
 	UserCircle,
 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -30,29 +29,15 @@ import {
 	useSidebar,
 } from "@/components/ui/sidebar";
 
+import { useLogout } from "@/hooks/use-logout";
+
 export function NavUser() {
 	const { data: session, isPending } = authClient.useSession();
 	const { isMobile } = useSidebar();
 	const router = useRouter();
-	const [isLoggingOut, setIsLoggingOut] = useState(false);
+	const { handleLogout, isLoggingOut } = useLogout();
 
 	const user = session?.user;
-
-	async function handleLogout() {
-		setIsLoggingOut(true);
-		try {
-			await authClient.signOut({
-				fetchOptions: {
-					onSuccess: () => {
-						router.push("/auth");
-					},
-				},
-			});
-		} catch {
-			toast.error("Erro ao sair. Tente novamente.");
-			setIsLoggingOut(false);
-		}
-	}
 
 	return (
 		<SidebarMenu>
@@ -135,13 +120,15 @@ export function NavUser() {
 								</DropdownMenuLabel>
 								<DropdownMenuSeparator />
 								<DropdownMenuGroup>
-									<DropdownMenuItem>
-										<UserCircle />
-										Account
+									<DropdownMenuItem asChild>
+										<Link href={`/configuracoes/conta`}>
+											<UserCircle />
+											Conta
+										</Link>
 									</DropdownMenuItem>
-									<DropdownMenuItem>
+									<DropdownMenuItem disabled>
 										<BellIcon />
-										Notifications
+										Notificações
 									</DropdownMenuItem>
 								</DropdownMenuGroup>
 								<DropdownMenuSeparator />

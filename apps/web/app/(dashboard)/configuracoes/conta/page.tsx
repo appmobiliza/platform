@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 
+import { LogoutButton } from "@/components/logout-button";
 import { SectionCard, SectionTitle, SettingItem } from "@/components/settings";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 const activeSessions = [
 	{
@@ -94,7 +94,7 @@ export default function SettingsPage() {
 							</Badge>
 						</div>
 
-						<SettingItem
+						{/*<SettingItem
 							title="Nome de exibição"
 							description="Aparece no cabeçalho do painel e nos registros do sistema"
 							className="border-b border-border/70"
@@ -105,7 +105,7 @@ export default function SettingsPage() {
 									className="h-10 w-full bg-background px-3 text-foreground shadow-none md:w-80"
 								/>
 							}
-						/>
+						/>*/}
 
 						<SettingItem
 							title="E-mail"
@@ -119,7 +119,7 @@ export default function SettingsPage() {
 					</SectionCard>
 				</SectionShell>
 
-				<SectionShell>
+				{/*<SectionShell>
 					<SectionTitle>SESSÕES ATIVAS</SectionTitle>
 					<SectionCard>
 						{activeSessions.map((session) => (
@@ -145,7 +145,7 @@ export default function SettingsPage() {
 							</Button>
 						</div>
 					</SectionCard>
-				</SectionShell>
+				</SectionShell>*/}
 
 				<SectionShell>
 					<SectionTitle>SESSÃO</SectionTitle>
@@ -154,14 +154,11 @@ export default function SettingsPage() {
 							title="Sair do painel"
 							description="Encerra a sessão atual neste dispositivo"
 							content={
-								<Button
-									type="button"
+								<LogoutButton
 									variant="destructive"
 									size="lg"
-									className="h-10 w-fit px-4 text-sm border-destructive-border"
-								>
-									Sair
-								</Button>
+									className="h-10 w-fit px-4 text-sm"
+								/>
 							}
 						/>
 					</SectionCard>
