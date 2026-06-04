@@ -36,8 +36,6 @@ import { requireManagerAuth } from "@/lib/auth";
 import { getCachedStudentDashboard } from "@/lib/cached-data";
 import { getInitials } from "@/lib/utils";
 
-import type { StudentData } from "@/data/students-data";
-
 export const metadata: Metadata = {
 	title: "Estudantes",
 };
@@ -200,9 +198,7 @@ export default async function StudentsPage() {
 										</TableCell>
 										<TableCell className="pr-6 md:pr-8 text-right">
 											<StudentDetailsTrigger
-												student={
-													entry as unknown as StudentData
-												}
+												student={entry}
 											/>
 										</TableCell>
 									</TableRow>

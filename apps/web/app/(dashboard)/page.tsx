@@ -142,20 +142,10 @@ export default async function DashboardPage() {
 		(scholar) => scholar.status === "available",
 	).length;
 	const alertData = getPendingAlert(requests);
-	const getRouteLabelForCached = (req: CachedManagerRequest) =>
-		getRouteLabel(req as unknown as Parameters<typeof getRouteLabel>[0]);
-	const mostRequestedRoutes = countBy(requests, getRouteLabelForCached)
+	const mostRequestedRoutes = countBy(requests, getRouteLabel)
 		.slice(0, 4)
 		.map((item) => ({ route: item.name, requests: item.count }));
-	const lastRequests = requests
-		.slice(0, 6)
-		.map((req) =>
-			mapRequestToServiceEntry(
-				req as unknown as Parameters<
-					typeof mapRequestToServiceEntry
-				>[0],
-			),
-		);
+	const lastRequests = requests.slice(0, 6).map(mapRequestToServiceEntry);
 	const currentDate = new Date();
 	const dashboardCards: Array<{
 		icon: typeof Users;

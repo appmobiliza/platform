@@ -52,11 +52,7 @@ export default async function ServicesPage() {
 			getCachedScholarDashboard(),
 			getCachedStudentDashboard(),
 		]);
-	const serviceEntries = requests.map((req) =>
-		mapRequestToServiceEntry(
-			req as unknown as Parameters<typeof mapRequestToServiceEntry>[0],
-		),
-	);
+	const serviceEntries = requests.map(mapRequestToServiceEntry);
 
 	return (
 		<>

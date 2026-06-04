@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { AppRouter } from "@mobiliza/api/router";
 import { getCurrentShift } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { and, avg, count, desc, eq, gte, lte, sql } from "@mobiliza/db/drizzle";
@@ -7,156 +8,33 @@ import * as schema from "@mobiliza/db/schema";
 
 import { cacheLife, cacheTag } from "next/cache";
 
-// ─── Tipos ──────────────────────────────────────────────────────────────────
+// ─── Tipos herdados do tRPC ─────────────────────────────────────────────────
 
-export interface CachedSummary {
-	totalRequests: number;
-	completedRequests: number;
-	cancelledRequests: number;
-	unattendedRequests: number;
-	completionRate: number;
-	avgDurationSeconds: number | null;
-	avgRating: number | null;
-}
+type TRPCCaller = ReturnType<AppRouter["createCaller"]>;
 
-export type ScholarStatus = "available" | "busy" | "off_shift" | "pending";
+/** Tipo do retorno de `metrics.summary` */
+type SummaryOutput = Awaited<ReturnType<TRPCCaller["metrics"]["summary"]>>;
 
-export interface CachedScholarEntry {
-	user: {
-		id: string;
-		name: string;
-		email: string;
-		image: string | null;
-		role: string;
-	};
-	profile: {
-		id: string;
-		userId: string;
-		enrollment: string;
-		course: string;
-		campus: string;
-		phone: string;
-		shift: string;
-		isAvailable: boolean;
-		isActive: boolean;
-	};
-	status: ScholarStatus;
-}
+/** Tipo do retorno de `profiles.scholarDashboard` */
+type ScholarDashboardOutput = Awaited<
+	ReturnType<TRPCCaller["profiles"]["scholarDashboard"]>
+>;
 
-export interface CachedScholarDashboard {
-	totalScholars: number;
-	availableNow: number;
-	inAttendance: number;
-	scholars: CachedScholarEntry[];
-}
+/** Tipo do retorno de `profiles.studentDashboard` */
+type StudentDashboardOutput = Awaited<
+	ReturnType<TRPCCaller["profiles"]["studentDashboard"]>
+>;
 
-export interface CachedStudentDashboard {
-	totalStudents: number;
-	requestedToday: number;
-	visualImpairmentCount: number;
-	mobilityCount: number;
-	students: Array<{
-		user: {
-			id: string;
-			name: string;
-			email: string;
-			image: string | null;
-			role: string;
-		};
-		profile: {
-			id: string;
-			userId: string;
-			enrollment: string;
-			course: string;
-			campus: string;
-			phone: string;
-			shift: string;
-			isActive: boolean;
-			disabilities: string[];
-		};
-		summary: {
-			servicesAmount: number;
-			monthHours: number;
-			averageDuration: number;
-			frequentRoutes: Array<{ route: string; amount: number }>;
-			recentRoutes: Array<{
-				route: string;
-				date: string;
-				status: string;
-			}>;
-			frequentScholars: Array<{ name: string; amount: number }>;
-		};
-	}>;
-}
+/** Tipo do retorno de `requests.managerList` — item individual */
+type ManagerListOutput = Awaited<
+	ReturnType<TRPCCaller["requests"]["managerList"]>
+>;
+export type CachedManagerRequest = ManagerListOutput[number];
 
-export interface CachedLocation {
-	id: string;
-	name: string;
-	abbreviation: string | null;
-}
-
-export interface CachedUser {
-	id: string;
-	name: string;
-	email: string;
-	emailVerified: boolean;
-	image: string | null;
-	createdAt: string;
-	updatedAt: string;
-	role: string;
-}
-
-export interface CachedStudentProfile {
-	id: string;
-	userId: string;
-	enrollment: string;
-	course: string;
-	campus: string;
-	phone: string;
-	shift: string;
-	isActive: boolean;
-	user: CachedUser;
-}
-
-export interface CachedScholarProfileFull {
-	id: string;
-	userId: string;
-	enrollment: string;
-	course: string;
-	campus: string;
-	phone: string;
-	shift: string;
-	isAvailable: boolean;
-	isActive: boolean;
-	user: CachedUser;
-}
-
-export interface CachedAttendance {
-	id: string;
-	durationSeconds: number | null;
-	status: string | null;
-	scholarProfile: CachedScholarProfileFull | null;
-}
-
-export interface CachedManagerRequest {
-	id: string;
-	createdAt: string;
-	status: string;
-	notes: string | null;
-	originLocation: CachedLocation | null;
-	destinationLocation: CachedLocation | null;
-	studentProfile: CachedStudentProfile;
-	attendance: CachedAttendance | null;
-}
-
-export interface CachedScholarPerformance {
-	scholarProfileId: string;
-	scholarName: string;
-	scholarEmail: string;
-	totalAttendances: number;
-	avgRating: number | null;
-	avgDurationSeconds: number | null;
-}
+/** Tipo do retorno de `metrics.scholarPerformance` */
+type ScholarPerformanceOutput = Awaited<
+	ReturnType<TRPCCaller["metrics"]["scholarPerformance"]>
+>;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -164,11 +42,11 @@ function getScholarStatus(profile: {
 	isActive: boolean;
 	isAvailable: boolean;
 	shift: string;
-}): ScholarStatus {
-	if (!profile.isActive) return "pending";
-	if (profile.shift !== getCurrentShift()) return "off_shift";
-	if (profile.isAvailable) return "available";
-	return "busy";
+}) {
+	if (!profile.isActive) return "pending" as const;
+	if (profile.shift !== getCurrentShift()) return "off_shift" as const;
+	if (profile.isAvailable) return "available" as const;
+	return "busy" as const;
 }
 
 function getRouteLabel(request: {
@@ -215,7 +93,7 @@ function getTopCounts(
 export async function getCachedSummary(
 	from: string,
 	to: string,
-): Promise<CachedSummary> {
+): Promise<SummaryOutput> {
 	"use cache: remote";
 	cacheLife({ stale: 30, revalidate: 60, expire: 300 });
 	cacheTag("metrics-summary");
@@ -264,14 +142,14 @@ export async function getCachedSummary(
 		avgRating: attendanceStats?.avgRating
 			? Number(Number(attendanceStats.avgRating).toFixed(1))
 			: null,
-	};
+	} as SummaryOutput;
 }
 
 /**
  * Painel de bolsistas (status, turno, etc.).
  * Cache: 15s stale + 30s revalidate.
  */
-export async function getCachedScholarDashboard(): Promise<CachedScholarDashboard> {
+export async function getCachedScholarDashboard(): Promise<ScholarDashboardOutput> {
 	"use cache: remote";
 	cacheLife({ stale: 15, revalidate: 30, expire: 120 });
 	cacheTag("scholar-dashboard");
@@ -287,13 +165,14 @@ export async function getCachedScholarDashboard(): Promise<CachedScholarDashboar
 			isAvailable: profile.isAvailable,
 			shift: profile.shift,
 		});
-		const { createdAt, updatedAt, ...userRest } = profile.user;
 
 		return {
 			user: {
-				...userRest,
-				createdAt: createdAt.toISOString(),
-				updatedAt: updatedAt.toISOString(),
+				id: profile.user.id,
+				name: profile.user.name,
+				email: profile.user.email,
+				image: profile.user.image,
+				role: profile.user.role,
 			},
 			profile: {
 				id: profile.id,
@@ -317,14 +196,14 @@ export async function getCachedScholarDashboard(): Promise<CachedScholarDashboar
 		inAttendance: scholarsWithStatus.filter((s) => s.status === "busy")
 			.length,
 		scholars: scholarsWithStatus,
-	};
+	} as ScholarDashboardOutput;
 }
 
 /**
  * Painel de estudantes (cadastros, deficiências, resumo).
  * Cache: 30s stale + 60s revalidate.
  */
-export async function getCachedStudentDashboard(): Promise<CachedStudentDashboard> {
+export async function getCachedStudentDashboard(): Promise<StudentDashboardOutput> {
 	"use cache: remote";
 	cacheLife({ stale: 30, revalidate: 60, expire: 300 });
 	cacheTag("student-dashboard");
@@ -387,8 +266,7 @@ export async function getCachedStudentDashboard(): Promise<CachedStudentDashboar
 		visualImpairmentCount,
 		mobilityCount,
 		students: students.map((student) => {
-			const { disabilities, requests, user: studentUser, ...profile } = student;
-			const { createdAt: uCreatedAt, updatedAt: uUpdatedAt, ...userRest } = studentUser;
+			const { disabilities, requests, user, ...profile } = student;
 			const sortedRequests = [...requests].sort(
 				(a, b) =>
 					new Date(b.createdAt).getTime() -
@@ -403,11 +281,7 @@ export async function getCachedStudentDashboard(): Promise<CachedStudentDashboar
 			);
 
 			return {
-				user: {
-					...userRest,
-					createdAt: uCreatedAt.toISOString(),
-					updatedAt: uUpdatedAt.toISOString(),
-				},
+				user,
 				profile: {
 					...profile,
 					disabilities: disabilities.map((d) => d.disabilityType),
@@ -441,7 +315,7 @@ export async function getCachedStudentDashboard(): Promise<CachedStudentDashboar
 				},
 			};
 		}),
-	};
+	} as StudentDashboardOutput;
 }
 
 /**
@@ -450,7 +324,7 @@ export async function getCachedStudentDashboard(): Promise<CachedStudentDashboar
  */
 export async function getCachedManagerList(
 	limit: number,
-): Promise<CachedManagerRequest[]> {
+): Promise<ManagerListOutput> {
 	"use cache";
 	cacheLife({ stale: 15, revalidate: 30, expire: 120 });
 	cacheTag("manager-requests");
@@ -474,14 +348,10 @@ export async function getCachedManagerList(
 		limit,
 	});
 
-	return rows.map((row) => {
-		const { createdAt, ...rest } = row;
-
-		return {
-			...rest,
-			createdAt: createdAt.toISOString(),
-		} as unknown as CachedManagerRequest;
-	});
+	return rows.map((row) => ({
+		...row,
+		createdAt: row.createdAt.toISOString(),
+	})) as unknown as ManagerListOutput;
 }
 
 /**
@@ -491,7 +361,7 @@ export async function getCachedManagerList(
 export async function getCachedScholarPerformance(
 	from: string,
 	to: string,
-): Promise<CachedScholarPerformance[]> {
+): Promise<ScholarPerformanceOutput> {
 	"use cache: remote";
 	cacheLife({ stale: 60, revalidate: 120, expire: 600 });
 	cacheTag("scholar-performance");
@@ -539,9 +409,11 @@ export async function getCachedScholarPerformance(
 		scholarName: row.scholarName,
 		scholarEmail: row.scholarEmail,
 		totalAttendances: Number(row.totalAttendances),
-		avgRating: row.avgRating ? Number(Number(row.avgRating).toFixed(1)) : null,
+		avgRating: row.avgRating
+			? Number(Number(row.avgRating).toFixed(1))
+			: null,
 		avgDurationSeconds: row.avgDurationSeconds
 			? Math.round(Number(row.avgDurationSeconds))
 			: null,
-	}));
+	})) as unknown as ScholarPerformanceOutput;
 }

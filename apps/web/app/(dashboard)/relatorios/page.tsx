@@ -372,9 +372,7 @@ export default async function ReportsPage() {
 		name: scholar.scholarName,
 		count: Number(scholar.totalAttendances),
 	}));
-	const getRouteLabelForCached = (req: CachedManagerRequest) =>
-		getRouteLabel(req as unknown as Parameters<typeof getRouteLabel>[0]);
-	const routeRanking = countBy(requests, getRouteLabelForCached).slice(0, 5);
+	const routeRanking = countBy(requests, getRouteLabel).slice(0, 5);
 	const studentRanking = countBy(
 		requests,
 		(request) => request.studentProfile.user.name,
