@@ -2,6 +2,7 @@ export * from "./campus";
 export * from "./course";
 export * from "./day-of-week";
 export * from "./disability-type";
+export * from "./extra-shift-reason";
 export * from "./extra-shift-request-status";
 export * from "./gender";
 export * from "./notification-type";

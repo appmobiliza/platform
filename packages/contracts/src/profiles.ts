@@ -5,6 +5,7 @@ import {
 	courseValues,
 	dayOfWeekValues,
 	disabilityTypeValues,
+	extraShiftReasonValues,
 	genderValues,
 	scholarShiftValues,
 	studentShiftValues,
@@ -68,13 +69,16 @@ export type UpdateScholarScheduleInput = z.infer<
 
 /**
  * Schema for a scholar to request an extra shift.
+ *
+ * A data é definida automaticamente como a data da requisição,
+ * pois o bolsista só pode solicitar quando está fora do turno regular.
+ * O motivo é selecionado a partir de opções pré-definidas, com
+ * campo opcional para detalhamento adicional.
  */
 export const CreateExtraShiftRequestSchema = z.object({
-	date: z
-		.string()
-		.regex(/^\d{4}-\d{2}-\d{2}$/, "Data deve estar no formato YYYY-MM-DD"),
 	shift: z.enum(scholarShiftValues),
-	reason: z.string().min(1, "Motivo é obrigatório"),
+	reason: z.enum(extraShiftReasonValues),
+	customReason: z.string().max(500).optional(),
 });
 
 export type CreateExtraShiftRequestInput = z.infer<

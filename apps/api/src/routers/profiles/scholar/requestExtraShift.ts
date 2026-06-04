@@ -8,6 +8,14 @@ import { TRPCError } from "@trpc/server";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
+function getTodayString(): string {
+	const now = new Date();
+	const year = now.getFullYear();
+	const month = String(now.getMonth() + 1).padStart(2, "0");
+	const day = String(now.getDate()).padStart(2, "0");
+	return `${year}-${month}-${day}`;
+}
+
 export const requestExtraShift = scholarProcedure
 	.meta({
 		openapi: {
@@ -24,12 +32,14 @@ export const requestExtraShift = scholarProcedure
 
 		if (!profile) throw new TRPCError({ code: "NOT_FOUND" });
 
-		// Verifica se já existe uma solicitação para a mesma data/turno
+		const today = getTodayString();
+
+		// Verifica se já existe uma solicitação para hoje + turno
 		const existing = await db.query.extraShiftRequest.findFirst({
 			where: (table, { and, eq }) =>
 				and(
 					eq(table.scholarProfileId, profile.id),
-					eq(table.date, input.date),
+					eq(table.date, today),
 					eq(table.shift, input.shift),
 				),
 		});
@@ -38,7 +48,7 @@ export const requestExtraShift = scholarProcedure
 			throw new TRPCError({
 				code: "CONFLICT",
 				message:
-					"Você já possui uma solicitação para esta data e turno.",
+					"Você já possui uma solicitação para este turno hoje.",
 			});
 		}
 
@@ -47,9 +57,10 @@ export const requestExtraShift = scholarProcedure
 			.values({
 				id: uuidv7(),
 				scholarProfileId: profile.id,
-				date: input.date,
+				date: today,
 				shift: input.shift,
 				reason: input.reason,
+				customReason: input.customReason ?? null,
 			})
 			.returning();
 

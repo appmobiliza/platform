@@ -1,8 +1,10 @@
 import type {
+	ExtraShiftReasonValues,
 	ExtraShiftRequestStatusValues,
 	ScholarShiftValues,
 } from "@mobiliza/contracts";
 import {
+	extraShiftReasonLabels,
 	extraShiftRequestStatusLabels,
 	scholarShiftLabels,
 } from "@mobiliza/contracts";
@@ -47,6 +49,10 @@ export const getExtraShiftRequests = protectedProcedure
 				...req,
 				shiftLabel:
 					scholarShiftLabels[req.shift as ScholarShiftValues],
+				reasonLabel:
+					extraShiftReasonLabels[
+					req.reason as ExtraShiftReasonValues
+					],
 				statusLabel:
 					extraShiftRequestStatusLabels[
 					req.status as ExtraShiftRequestStatusValues
@@ -74,6 +80,9 @@ export const getExtraShiftRequests = protectedProcedure
 			shift: req.shift,
 			shiftLabel: scholarShiftLabels[req.shift as ScholarShiftValues],
 			reason: req.reason,
+			reasonLabel:
+				extraShiftReasonLabels[req.reason as ExtraShiftReasonValues],
+			customReason: req.customReason,
 			status: req.status,
 			statusLabel:
 				extraShiftRequestStatusLabels[

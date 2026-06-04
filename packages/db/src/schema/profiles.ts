@@ -14,6 +14,7 @@ import {
 	courseEnum,
 	dayOfWeekEnum,
 	disabilityTypeEnum,
+	extraShiftReasonEnum,
 	extraShiftRequestStatusEnum,
 	genderEnum,
 	scholarShiftEnum,
@@ -143,17 +144,24 @@ export const extraShiftRequest = pgTable(
 			.references(() => scholarProfile.id, { onDelete: "cascade" }),
 
 		/*
-		 * Data em que o bolsista deseja realizar o turno extra.
+		 * Data do turno extra — definida automaticamente como a data
+		 * da requisição, já que o bolsista só pode solicitar quando está
+		 * fora do seu turno regular.
 		 */
 		date: date("date").notNull(),
 
 		shift: scholarShiftEnum("shift").notNull(),
 
 		/*
-		 * Motivo da solicitação — justifica por que o bolsista precisa
-		 * compensar horas não cumpridas.
+		 * Motivo pré-definido selecionado pelo bolsista.
 		 */
-		reason: text("reason").notNull(),
+		reason: extraShiftReasonEnum("reason").notNull(),
+
+		/*
+		 * Motivo personalizado opcional — usado quando o bolsista
+		 * seleciona "outro" ou quer detalhar o motivo escolhido.
+		 */
+		customReason: text("custom_reason"),
 
 		status: extraShiftRequestStatusEnum("status")
 			.notNull()
