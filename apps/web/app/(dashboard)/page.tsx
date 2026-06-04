@@ -116,7 +116,7 @@ function getPendingData(
 	}
 
 	return {
-		createdAt: pending.createdAt,
+		createdAt: pending.createdAt.toISOString(),
 		name: pending.studentProfile.user.name,
 	};
 }
@@ -283,7 +283,7 @@ export default async function DashboardPage() {
 								) : (
 									<div className="flex items-center justify-center h-full">
 										<StatusMessage
-											className="max-w-1/2"
+											className="xl:max-w-1/2"
 											title="Nenhum bolsista encontrado."
 											description="Os status dos bolsistas serão exibidos aqui assim que houver registros."
 										/>
@@ -307,7 +307,7 @@ export default async function DashboardPage() {
 							) : (
 								<div className="flex items-center justify-center h-full">
 									<StatusMessage
-										className="max-w-1/2"
+										className="xl:max-w-1/2"
 										title="Nenhuma solicitação registrada hoje."
 										description="Os dados de demanda por horário serão exibidos aqui assim que houver solicitações."
 									/>
@@ -336,7 +336,7 @@ export default async function DashboardPage() {
 									</li>
 								))
 							) : (
-								<li className="text-sm text-muted-foreground">
+								<li className="text-sm text-muted-foreground w-full text-nowrap">
 									Nenhuma rota registrada.
 								</li>
 							)}

@@ -109,12 +109,13 @@ export default async function StudentsPage() {
 				</div>
 
 				<div className="flex min-w-0 flex-col gap-4 overflow-hidden py-4 md:py-6">
-					<div className="flex min-w-0 w-full flex-col items-center justify-start gap-4 px-4 md:px-6 md:flex-row">
+					<div className="flex min-w-0 w-full flex-col items-center justify-start gap-4 px-4 md:px-6 lg:flex-row">
 						<Input
 							placeholder="Buscar por nome, matrícula ou curso"
 							className=""
 						/>
 						<ComboboxMultiple
+							className="w-full lg:w-auto"
 							items={disabilityTypeValues.map((disability) => ({
 								id: disability,
 								label: disabilityTypeLabels[disability],
@@ -122,7 +123,7 @@ export default async function StudentsPage() {
 							allLabel="Todos os tipos de deficiência"
 						/>
 						<Select defaultValue="recent">
-							<SelectTrigger className="w-full md:w-auto">
+							<SelectTrigger className="w-full lg:w-auto">
 								<SelectValue placeholder="Ordenar por" />
 							</SelectTrigger>
 							<SelectContent>
