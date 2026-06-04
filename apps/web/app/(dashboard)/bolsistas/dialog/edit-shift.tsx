@@ -1,11 +1,6 @@
 "use client";
 
-import {
-	campusValues,
-	courseValues,
-	scholarShiftLabels,
-	scholarShiftValues,
-} from "@mobiliza/contracts";
+import { scholarShiftLabels, scholarShiftValues } from "@mobiliza/contracts";
 
 import { InfoIcon } from "lucide-react";
 import type * as React from "react";

@@ -1,7 +1,7 @@
 import { router } from "@mobiliza/trpc";
 
 import { me } from "./me";
-import { createScholar } from "./scholar/createScholar";
+import { createScholarAsManager } from "./scholar/createScholarAsManager";
 import { getExtraShiftRequests } from "./scholar/getExtraShiftRequests";
 import { getSchedules } from "./scholar/getSchedules";
 import { requestExtraShift } from "./scholar/requestExtraShift";
@@ -9,6 +9,7 @@ import { reviewExtraShiftRequest } from "./scholar/reviewExtraShiftRequest";
 import { scholarDashboard } from "./scholar/scholarDashboard";
 import { scholarWeeklySchedule } from "./scholar/scholarWeeklySchedule";
 import { toggleAvailability } from "./scholar/toggleAvailability";
+import { updateScholar } from "./scholar/updateScholar";
 import { updateScholarSchedule } from "./scholar/updateScholarSchedule";
 import { createStudent } from "./student/createStudent";
 import { studentDashboard } from "./student/studentDashboard";
@@ -20,7 +21,8 @@ import { studentDashboard } from "./student/studentDashboard";
 export const profilesRouter = router({
 	me,
 	createStudent,
-	createScholar,
+	createScholarAsManager,
+	updateScholar,
 	toggleAvailability,
 	scholarDashboard,
 	studentDashboard,

@@ -35,7 +35,32 @@ export const InsertScholarSchema = z.object({
 		.regex(/^(?:\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11})$/, "CPF inválido"),
 });
 
+/**
+ * Schema for a manager to create a new scholar with full user details.
+ * Extends the scholar profile schema with user-level fields (name, email).
+ */
+export const InsertScholarAsManagerSchema = InsertScholarSchema.extend({
+	name: z.string().min(1, "Nome é obrigatório"),
+	email: z.string().email("E-mail inválido"),
+});
+
+export type InsertScholarAsManagerInput = z.infer<
+	typeof InsertScholarAsManagerSchema
+>;
+
 export const UpdateScholarSchema = InsertScholarSchema.partial();
+
+/**
+ * Schema for a scholar to update their own personal data.
+ * Extends the profile fields with the user-level name.
+ */
+export const UpdateScholarBySelfSchema = UpdateScholarSchema.extend({
+	name: z.string().min(1, "Nome é obrigatório").optional(),
+});
+
+export type UpdateScholarBySelfInput = z.infer<
+	typeof UpdateScholarBySelfSchema
+>;
 
 // ─── Weekly Schedule ───────────────────────────────────────────────────────────
 
