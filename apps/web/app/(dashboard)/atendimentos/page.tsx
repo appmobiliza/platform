@@ -1,6 +1,5 @@
-import type { Metadata } from "next";
-
 import { Frown } from "lucide-react";
+import type { Metadata } from "next";
 
 import { ComboboxMultiple } from "@/components/combobox-multiple";
 import { DatePickerWithRange } from "@/components/date-range-picker";
@@ -26,74 +25,28 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
 	formatDurationShort,
 	getCurrentMonthRange,
-	type ManagerRequest,
 	mapRequestToServiceEntry,
 } from "@/lib/dashboard-data";
 import { withServerTRPC } from "@/lib/trpc-server";
-import { cn, getInitials } from "@/lib/utils";
+import { getInitials } from "@/lib/utils";
 
 export const metadata: Metadata = {
 	title: "Atendimentos",
-};
-
-type MetricsSummary = {
-	totalRequests: number;
-	avgDurationSeconds: number | null;
-	unattendedRequests: number;
-};
-
-type PersonOption = {
-	user: {
-		id: string;
-		name: string;
-	};
-};
-
-type ScholarDashboardResponse = {
-	scholars: PersonOption[];
-};
-
-type StudentDashboardResponse = {
-	students: PersonOption[];
 };
 
 export default async function ServicesPage() {
 	const currentDate = new Date();
 	const monthRange = getCurrentMonthRange();
 	const [summary, requests, scholarsDashboard, studentsDashboard] =
-		(await withServerTRPC(async (trpc) =>
+		await withServerTRPC(async (trpc) =>
 			Promise.all([
 				trpc.metrics.summary(monthRange),
 				trpc.requests.managerList({ limit: 200 }),
 				trpc.profiles.scholarDashboard(),
 				trpc.profiles.studentDashboard(),
 			]),
-		)) as [
-			MetricsSummary,
-			ManagerRequest[],
-			ScholarDashboardResponse,
-			StudentDashboardResponse,
-		];
+		);
 	const serviceEntries = requests.map(mapRequestToServiceEntry);
-	const dashboardCards: Array<{
-		title: string;
-		value: string;
-		variant?: "default" | "destructive";
-	}> = [
-		{
-			title: "Total no mês",
-			value: String(summary.totalRequests),
-		},
-		{
-			title: "Tempo médio",
-			value: formatDurationShort(summary.avgDurationSeconds),
-		},
-		{
-			title: "Não atendidos",
-			value: String(summary.unattendedRequests),
-			variant: "destructive",
-		},
-	];
 
 	return (
 		<>
@@ -125,24 +78,38 @@ export default async function ServicesPage() {
 				</header>
 
 				<div className="grid grid-cols-1 gap-4 border-b border-border p-4 md:grid-cols-3 md:p-6">
-					{dashboardCards.map(({ title, value, variant }) => (
-						<Card key={title} className="group w-full gap-2">
-							<CardHeader>
-								<CardTitle>{title}</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<p
-									className={cn(
-										"text-4xl font-bold",
-										variant === "destructive" &&
-											"text-destructive",
-									)}
-								>
-									{value}
-								</p>
-							</CardContent>
-						</Card>
-					))}
+					<Card className="group w-full gap-2">
+						<CardHeader>
+							<CardTitle>Total no mês</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<p className="text-4xl font-bold">
+								{summary.totalRequests}
+							</p>
+						</CardContent>
+					</Card>
+					<Card className="group w-full gap-2">
+						<CardHeader>
+							<CardTitle>Tempo médio</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<p className="text-4xl font-bold">
+								{formatDurationShort(
+									summary.avgDurationSeconds,
+								)}
+							</p>
+						</CardContent>
+					</Card>
+					<Card className="group w-full gap-2">
+						<CardHeader>
+							<CardTitle>Não atendidos</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<p className="text-4xl font-bold text-destructive">
+								{summary.unattendedRequests}
+							</p>
+						</CardContent>
+					</Card>
 				</div>
 
 				<div className="flex min-w-0 flex-col gap-4 overflow-hidden py-4 md:py-6">
