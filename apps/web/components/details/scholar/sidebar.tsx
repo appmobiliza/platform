@@ -90,7 +90,9 @@ function ScholarDetailsContent({ scholar }: { scholar: CachedScholar }) {
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="text-2xl font-semibold">
-						{scholar.summary.monthHours}
+						{Math.round(
+							scholar.summary.monthDurationSeconds / 3600,
+						)}
 					</CardContent>
 				</Card>
 			</div>
@@ -163,7 +165,7 @@ function ScholarDetailsContent({ scholar }: { scholar: CachedScholar }) {
 					},
 					{
 						title: "Tempo médio",
-						description: `${scholar.summary.averageDuration} min / atend.`,
+						description: `${Math.round(scholar.summary.averageDurationSeconds / 60)} min / atend.`,
 					},
 				].map(({ title, description }) => (
 					<div

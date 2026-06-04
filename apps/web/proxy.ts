@@ -50,7 +50,7 @@ export default async function middleware(request: NextRequest) {
 	// Cache miss: consulta o banco
 	const session = await getSession(request.headers);
 	const isValid =
-		session?.user?.role === "manager" || session?.user?.role === "admin";
+		session?.user?.role === "manager";
 
 	sessionCache.set(token, {
 		valid: isValid,

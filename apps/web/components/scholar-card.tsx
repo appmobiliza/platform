@@ -87,9 +87,15 @@ export function ScholarCard({ scholar }: { scholar: CachedScholar }) {
 				/>
 				<ProgressWithLabel
 					label="Horas no mês"
-					value={scholar.summary.monthHours}
+					value={Math.round(
+						scholar.summary.monthDurationSeconds / 3600,
+					)}
 					percentage={Math.round(
-						(scholar.summary.monthHours / MONTHLY_HOURS_GOAL) * 100,
+						(Math.round(
+							scholar.summary.monthDurationSeconds / 3600,
+						) /
+							MONTHLY_HOURS_GOAL) *
+							100,
 					)}
 					variant="horizontal"
 				/>

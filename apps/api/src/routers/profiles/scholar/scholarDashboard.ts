@@ -3,7 +3,7 @@ import {
 	type scholarShiftValues,
 } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
-import { aliasedTable, eq, sql } from "@mobiliza/db/drizzle";
+import { aliasedTable, and, eq, gte, sql } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { managerProcedure } from "@mobiliza/trpc";
 
@@ -46,7 +46,11 @@ export const scholarDashboard = managerProcedure
 			orderBy: (table, { asc }) => [asc(table.createdAt)],
 		});
 
-		// ─── Load all completed attendances with related data ──────────────
+		// ─── Restrict to the current month ────────────────────────────────
+		const now = new Date();
+		const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+		// ─── Load completed attendances for the current month ─────────────
 		const originLocation = aliasedTable(
 			schema.campusLocation,
 			"origin_location",
@@ -92,7 +96,12 @@ export const scholarDashboard = managerProcedure
 					destinationLocation.id,
 				),
 			)
-			.where(eq(schema.serviceRequest.status, "completed"));
+			.where(
+				and(
+					eq(schema.serviceRequest.status, "completed"),
+					gte(schema.serviceRequest.createdAt, startOfMonth),
+				),
+			);
 
 		// ─── Process per-scholar aggregations in memory ────────────────────
 		const grouped = new Map<
@@ -168,12 +177,12 @@ export const scholarDashboard = managerProcedure
 		}
 
 		const scholarsWithStatus = scholars.map((profile) => {
-			const status = getScholarDashboardStatus(profile);
+			const status = getScholarDashboardStatus({ ...profile, shift: profile.shift });
 			const scholarId = profile.id;
 			const stats = grouped.get(scholarId);
-			const totalDuration = stats?.totalDurationSeconds ?? 0;
+			const totalDurationSeconds = stats?.totalDurationSeconds ?? 0;
 			const allDurations = stats?.allDurations ?? [];
-			const avgDurationSec =
+			const avgDurationSeconds =
 				allDurations.length > 0
 					? Math.round(
 						allDurations.reduce((a, b) => a + b, 0) /
@@ -204,23 +213,20 @@ export const scholarDashboard = managerProcedure
 				status,
 				summary: {
 					servicesAmount: stats?.servicesAmount ?? 0,
-					monthHours: totalDuration
-						? Math.round(totalDuration / 3600)
-						: 0,
-					averageDuration: avgDurationSec
-						? Math.round(avgDurationSec / 60)
-						: 0,
+					// Raw seconds — let the client format as needed
+					monthDurationSeconds: totalDurationSeconds,
+					averageDurationSeconds: avgDurationSeconds,
 					servicesPerWeek: (scholarWeeks.get(scholarId) ?? []).map(
-						(w) => ({ amount: w.amount }),
+						(w) => ({ week: w.week, amount: w.amount }),
 					),
 					frequentStudents: stats
 						? topCounts(stats.frequentStudents)
 						: [],
 					frequentRoutes: stats
-						? Array.from(stats.frequentRoutes.entries())
-							.sort(([, a], [, b]) => b - a)
-							.slice(0, 3)
-							.map(([route, amount]) => ({ route, amount }))
+						? topCounts(stats.frequentRoutes).map(({ name, amount }) => ({
+							route: name,
+							amount,
+						}))
 						: [],
 				},
 			};
