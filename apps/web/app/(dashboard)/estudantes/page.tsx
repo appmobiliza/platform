@@ -32,7 +32,6 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 
-import { requireManagerAuth } from "@/lib/auth";
 import { getCachedStudentDashboard } from "@/lib/cached-data";
 import { getInitials } from "@/lib/utils";
 
@@ -48,7 +47,6 @@ const sortOptions = [
 ];
 
 export default async function StudentsPage() {
-	await requireManagerAuth();
 	const dashboard = await getCachedStudentDashboard();
 	const studentsData = dashboard.students;
 

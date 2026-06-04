@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
-import { requireManagerAuth } from "@/lib/auth";
 import { getCachedScholarDashboard } from "@/lib/cached-data";
 import { cn, getInitials } from "@/lib/utils";
 
@@ -73,7 +72,6 @@ export default async function ScholarsPage({
 	const resolvedSearchParams = await searchParams;
 	const query = getFirstValue(resolvedSearchParams.q)?.trim() ?? "";
 	const statusFilter = normalizeStatus(resolvedSearchParams.status);
-	await requireManagerAuth();
 	const dashboard = await getCachedScholarDashboard();
 	const normalizedQuery = query.toLowerCase();
 	const filteredScholars = dashboard.scholars.filter((item) => {

@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
-import { requireManagerAuth } from "@/lib/auth";
 import {
 	getCachedManagerList,
 	getCachedScholarDashboard,
@@ -41,8 +40,6 @@ export const metadata: Metadata = {
 };
 
 export default async function ServicesPage() {
-	await requireManagerAuth();
-
 	const currentDate = new Date();
 	const monthRange = getCurrentMonthRange();
 	const [summary, requests, scholarsDashboard, studentsDashboard] =

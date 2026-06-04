@@ -3,13 +3,14 @@ import {
 	scholarShiftLabels,
 } from "@mobiliza/contracts";
 
-import { Activity, Clock, Hourglass, TriangleAlert, Users } from "lucide-react";
+import { Activity, Clock, Hourglass, Users } from "lucide-react";
 import type { Metadata } from "next";
 
+import { DashboardDate } from "@/components/dashboard/date";
+import { PendingAlert } from "@/components/dashboard/pending-alert";
 import { HorizontalBarsChart } from "@/components/horizontal-bars-chart";
 import { RoutePreview } from "@/components/route-preview";
 import { StatusMessage } from "@/components/status-message";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,6 @@ import {
 } from "@/components/ui/card";
 import type { ChartConfig } from "@/components/ui/chart";
 
-import { requireManagerAuth } from "@/lib/auth";
 import {
 	type CachedManagerRequest,
 	getCachedManagerList,
@@ -34,7 +34,6 @@ import {
 	countBy,
 	formatDurationShort,
 	getRouteLabel,
-	getTodayRange,
 	mapRequestToServiceEntry,
 	toDate,
 } from "@/lib/dashboard-data";
@@ -101,7 +100,9 @@ function getHourlyChartData(requests: CachedManagerRequest[]) {
 	}));
 }
 
-function getPendingAlert(requests: CachedManagerRequest[]) {
+function getPendingData(
+	requests: CachedManagerRequest[],
+): { createdAt: string; name: string } | null {
 	const pending = requests
 		.filter((request) => request.status === "pending")
 		.sort(
@@ -115,22 +116,14 @@ function getPendingAlert(requests: CachedManagerRequest[]) {
 	}
 
 	return {
-		delay: Math.max(
-			1,
-			Math.floor(
-				(Date.now() - toDate(pending.createdAt).getTime()) / 60_000,
-			),
-		),
+		createdAt: pending.createdAt,
 		name: pending.studentProfile.user.name,
 	};
 }
 
 export default async function DashboardPage() {
-	await requireManagerAuth();
-
-	const todayRange = getTodayRange();
 	const [summary, scholarDashboard, requests] = await Promise.all([
-		getCachedSummary(todayRange.from, todayRange.to),
+		getCachedSummary(),
 		getCachedScholarDashboard(),
 		getCachedManagerList(100),
 	]);
@@ -141,12 +134,11 @@ export default async function DashboardPage() {
 	const availableScholars = scholarDashboard.scholars.filter(
 		(scholar) => scholar.status === "available",
 	).length;
-	const alertData = getPendingAlert(requests);
+	const alertData = getPendingData(requests);
 	const mostRequestedRoutes = countBy(requests, getRouteLabel)
 		.slice(0, 4)
 		.map((item) => ({ route: item.name, requests: item.count }));
 	const lastRequests = requests.slice(0, 6).map(mapRequestToServiceEntry);
-	const currentDate = new Date();
 	const dashboardCards: Array<{
 		icon: typeof Users;
 		title: string;
@@ -185,27 +177,10 @@ export default async function DashboardPage() {
 		<section className="min-w-0 flex-1">
 			<header className="border-b border-border p-4 md:p-6 flex flex-col items-start gap-1 justify-between bg-card">
 				<h1 className="text-base font-semibold">Visão Geral</h1>
-				<h2 className="text-sm text-muted-foreground">
-					{currentDate.toLocaleDateString("pt-BR", {
-						weekday: "long",
-						day: "2-digit",
-						month: "long",
-						year: "numeric",
-					})}
-				</h2>
+				<DashboardDate />
 			</header>
 			<div className="p-4 flex flex-col gap-4 md:p-6">
-				{alertData ? (
-					<Alert variant={"warning"}>
-						<TriangleAlert className="h-4 w-4" />
-						<AlertTitle>Alerta de espera</AlertTitle>
-						<AlertDescription>
-							A solicitação de {alertData.name} aguarda resposta
-							há {alertData.delay} min. Nenhum bolsista aceitou
-							ainda.
-						</AlertDescription>
-					</Alert>
-				) : null}
+				{alertData ? <PendingAlert data={alertData} /> : null}
 
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 					{dashboardCards.map(

@@ -8,6 +8,8 @@ import * as schema from "@mobiliza/db/schema";
 
 import { cacheLife, cacheTag } from "next/cache";
 
+import { getTodayRange } from "./dashboard-data";
+
 // ─── Tipos herdados do tRPC ─────────────────────────────────────────────────
 
 type TRPCCaller = ReturnType<AppRouter["createCaller"]>;
@@ -91,10 +93,18 @@ function getTopCounts(
  * Cache: 30s stale + 60s revalidate = no máximo 1 requisição ao DB por minuto.
  */
 export async function getCachedSummary(
-	from: string,
-	to: string,
+	from?: string,
+	to?: string,
 ): Promise<SummaryOutput> {
 	"use cache: remote";
+
+	// Se não receber um range explícito, usa o dia atual
+	if (!from || !to) {
+		const todayRange = getTodayRange();
+		from = todayRange.from;
+		to = todayRange.to;
+	}
+
 	cacheLife({ stale: 30, revalidate: 60, expire: 300 });
 	cacheTag("metrics-summary");
 

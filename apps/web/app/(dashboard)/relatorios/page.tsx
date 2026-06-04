@@ -19,7 +19,6 @@ import {
 import type { ChartConfig } from "@/components/ui/chart";
 import { VerticalBarsChart } from "@/components/vertical-bars-chart";
 
-import { requireManagerAuth } from "@/lib/auth";
 import {
 	type CachedManagerRequest,
 	getCachedManagerList,
@@ -288,8 +287,6 @@ function getHourlyChartData(requests: CachedManagerRequest[]) {
 }
 
 export default async function ReportsPage() {
-	await requireManagerAuth();
-
 	const monthRange = getCurrentMonthRange();
 	const [
 		summary,
