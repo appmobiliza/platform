@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import { TRPCProvider } from "@/providers/trpc-provider";
 
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -36,6 +37,7 @@ export default function RootLayout({
 				<TRPCProvider>
 					<ThemeProvider>
 						<TooltipProvider>{children}</TooltipProvider>
+						<Toaster />
 					</ThemeProvider>
 				</TRPCProvider>
 			</body>

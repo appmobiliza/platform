@@ -9,12 +9,11 @@
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+import { managerProcedure, publicProcedure, router } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-
-import { managerProcedure, publicProcedure, router } from "../trpc/context";
 
 export const locationsRouter = router({
 	/**

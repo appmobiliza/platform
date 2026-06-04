@@ -38,6 +38,7 @@
 	},
 	"devDependencies": {
 		"@mobiliza/db": "workspace:*",
+		"@mobiliza/trpc": "workspace:*",
 		"@mobiliza/typescript-config": "workspace:*",
 		"@tailwindcss/postcss": "^4.3.0",
 		"@types/node": "^25.9.1",

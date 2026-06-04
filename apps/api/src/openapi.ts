@@ -1,3 +1,5 @@
+import { createTRPCContext } from "@mobiliza/trpc";
+
 import type { Context } from "hono";
 import {
 	createOpenApiFetchHandler,
@@ -5,7 +7,6 @@ import {
 } from "trpc-to-openapi";
 
 import { appRouter } from "./router";
-import { createTRPCContext } from "./trpc/context";
 
 const port = Number(process.env.PORT ?? 3001);
 const baseUrl =

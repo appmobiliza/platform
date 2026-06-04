@@ -12,7 +12,7 @@ import * as schema from "@mobiliza/db/schema";
 
 import { z } from "zod";
 
-import { protectedProcedure, router } from "@/trpc/context";
+import { protectedProcedure, router } from "@mobiliza/trpc";
 
 export const notificationsRouter = router({
 	/**

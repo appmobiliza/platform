@@ -1,11 +1,10 @@
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+import { protectedProcedure } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-
-import { protectedProcedure } from "@/trpc/context";
 
 export const me = protectedProcedure
 	.meta({ openapi: { method: "GET", path: "/profiles/me" } })

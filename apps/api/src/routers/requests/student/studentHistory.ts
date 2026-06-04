@@ -2,10 +2,9 @@ import { PaginationSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { and, desc, eq, sql } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+import { protectedProcedure } from "@mobiliza/trpc";
 
 import { z } from "zod";
-
-import { protectedProcedure } from "@/trpc/context";
 
 export const studentHistory = protectedProcedure
 	.meta({ openapi: { method: "GET", path: "/requests/history" } })

@@ -1,17 +1,15 @@
 import { CreateRequestSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
-import type { ServiceRequest } from "@mobiliza/db/schema";
 import { AppError, createRequest } from "@mobiliza/domain";
+import { protectedProcedure } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { protectedProcedure } from "@/trpc/context";
-
 export const create = protectedProcedure
 	.meta({ openapi: { method: "POST", path: "/requests/create" } })
 	.input(CreateRequestSchema)
-	.output(z.custom<ServiceRequest>())
+	.output(z.any())
 	.mutation(async ({ ctx, input }) => {
 		try {
 			const request = await createRequest(input, ctx.session.user.id, db);

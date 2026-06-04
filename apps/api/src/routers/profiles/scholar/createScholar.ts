@@ -2,11 +2,10 @@ import { InsertScholarSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+import { protectedProcedure } from "@mobiliza/trpc";
 
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-
-import { protectedProcedure } from "@/trpc/context";
 
 export const createScholar = protectedProcedure
 	.meta({ openapi: { method: "POST", path: "/profiles/scholar" } })

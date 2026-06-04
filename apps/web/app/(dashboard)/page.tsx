@@ -1,5 +1,3 @@
-import type { Metadata } from "next";
-
 import {
 	Activity,
 	Clock,
@@ -7,6 +5,7 @@ import {
 	TriangleAlert,
 	Users,
 } from "lucide-react";
+import type { Metadata } from "next";
 
 import { HorizontalBarsChart } from "@/components/horizontal-bars-chart";
 import { RoutePreview } from "@/components/route-preview";

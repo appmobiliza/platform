@@ -2,12 +2,11 @@ import { InsertStudentSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+import { protectedProcedure } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-
-import { protectedProcedure } from "@/trpc/context";
 
 export const createStudent = protectedProcedure
 	.meta({ openapi: { method: "POST", path: "/profiles/student" } })

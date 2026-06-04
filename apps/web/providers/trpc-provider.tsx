@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-
-import type { AppRouter } from "@mobiliza/api/src/router";
+import type { AppRouter } from "@mobiliza/api/router";
 import { backendBaseUrl } from "@mobiliza/env/base-url";
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
+import { useState } from "react";
 
 export const trpc = createTRPCReact<AppRouter>();
 

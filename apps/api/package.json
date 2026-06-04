@@ -5,6 +5,9 @@
 	"description": "Servidor HTTP do Mobiliza — Hono + tRPC + Better Auth",
 	"type": "module",
 	"main": "./src/index.ts",
+	"exports": {
+		"./router": "./src/router.ts"
+	},
 	"scripts": {
 		"dev": "tsx watch src/index.ts",
 		"build": "tsc --noEmit && tsup src/index.ts --format esm --target node20",
@@ -23,6 +26,7 @@
 		"@mobiliza/db": "workspace:*",
 		"@mobiliza/domain": "workspace:*",
 		"@mobiliza/realtime": "workspace:*",
+		"@mobiliza/trpc": "workspace:*",
 		"hono": "^4.12.19",
 		"trpc-to-openapi": "^3.3.0",
 		"uuidv7": "^1.2.1",

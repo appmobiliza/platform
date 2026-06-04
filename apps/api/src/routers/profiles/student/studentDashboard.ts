@@ -3,10 +3,9 @@ import {
 	type requestStatusValues,
 } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
+import { managerProcedure } from "@mobiliza/trpc";
 
 import { z } from "zod";
-
-import { managerProcedure } from "@/trpc/context";
 
 function getRouteLabel(request: {
 	originLocation?: { abbreviation: string; name: string } | null;
@@ -82,9 +81,7 @@ export const studentDashboard = managerProcedure
 		const todayEnd = new Date(now);
 		todayEnd.setHours(23, 59, 59, 999);
 
-		const activeStudents = students.filter(
-			(profile) => profile.isActive,
-		);
+		const activeStudents = students.filter((profile) => profile.isActive);
 		const allRequests = students.flatMap((profile) => profile.requests);
 		const requestedToday = new Set(
 			allRequests
@@ -96,9 +93,7 @@ export const studentDashboard = managerProcedure
 		).size;
 		const visualImpairmentCount = students.filter((profile) =>
 			profile.disabilities.some((disability) =>
-				["blindness", "low_vision"].includes(
-					disability.disabilityType,
-				),
+				["blindness", "low_vision"].includes(disability.disabilityType),
 			),
 		).length;
 		const mobilityCount = students.filter((profile) =>
@@ -130,8 +125,7 @@ export const studentDashboard = managerProcedure
 				},
 			],
 			students: students.map((student) => {
-				const { disabilities, requests, user, ...profile } =
-					student;
+				const { disabilities, requests, user, ...profile } = student;
 				const sortedRequests = [...requests].sort(
 					(requestA, requestB) =>
 						new Date(requestB.createdAt).getTime() -
@@ -152,8 +146,7 @@ export const studentDashboard = managerProcedure
 					requests
 						.map(
 							(request) =>
-								request.attendance?.scholarProfile?.user
-									?.name,
+								request.attendance?.scholarProfile?.user?.name,
 						)
 						.filter((name): name is string => Boolean(name)),
 				);
@@ -164,9 +157,7 @@ export const studentDashboard = managerProcedure
 						...profile,
 						disabilities: disabilities.map(
 							(disability) =>
-								disabilityTypeLabels[
-								disability.disabilityType
-								],
+								disabilityTypeLabels[disability.disabilityType],
 						),
 					},
 					summary: {
@@ -185,12 +176,8 @@ export const studentDashboard = managerProcedure
 							.slice(0, 3)
 							.map((request) => ({
 								route: getRouteLabel(request),
-								date: new Date(
-									request.createdAt,
-								).toISOString(),
-								status: getStudentRouteStatus(
-									request.status,
-								),
+								date: new Date(request.createdAt).toISOString(),
+								status: getStudentRouteStatus(request.status),
 							})),
 						frequentScholars,
 					},

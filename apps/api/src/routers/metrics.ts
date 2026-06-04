@@ -14,8 +14,7 @@ import { AppError, generateAttendanceReportCSV } from "@mobiliza/domain";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { toTRPCCode } from "@/utils/error";
-import { managerProcedure, router } from "../trpc/context";
+import { managerProcedure, router } from "@mobiliza/trpc";
 
 const dateRangeInput = z.object({
 	from: z.iso.datetime(),
@@ -97,18 +96,8 @@ export const metricsRouter = router({
 	exportCSV: managerProcedure
 		.input(ExportReportSchema)
 		.query(async ({ input }) => {
-			try {
-				const csv = await generateAttendanceReportCSV(input, db);
-				return csv;
-			} catch (error) {
-				if (error instanceof AppError) {
-					throw new TRPCError({
-						code: toTRPCCode(error),
-						message: error.message,
-					});
-				}
-				throw error;
-			}
+			const csv = await generateAttendanceReportCSV(input, db);
+			return csv;
 		}),
 
 	/**

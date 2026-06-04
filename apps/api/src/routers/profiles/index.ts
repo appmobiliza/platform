@@ -1,4 +1,5 @@
-import { router } from "@/trpc/context";
+import { router } from "@mobiliza/trpc";
+
 import { me } from "./me";
 import { createScholar } from "./scholar/createScholar";
 import { scholarDashboard } from "./scholar/scholarDashboard";

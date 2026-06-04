@@ -1,13 +1,16 @@
 import "server-only";
 
+import { appRouter } from "@mobiliza/api/router";
+import { getSession } from "@mobiliza/auth/server";
+import { createTRPCContextFactory } from "@mobiliza/trpc";
+
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
-import { appRouter } from "@mobiliza/api/src/router";
-import { createTRPCContextFromHeaders } from "@mobiliza/api/src/trpc/context";
-
 type ServerTRPCCaller = ReturnType<typeof appRouter.createCaller>;
+
+const createTRPCContextFromHeaders = createTRPCContextFactory(getSession);
 
 const getServerTRPCCaller = cache(async () => {
 	return appRouter.createCaller(async () =>

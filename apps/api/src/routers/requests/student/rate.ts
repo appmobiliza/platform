@@ -2,11 +2,10 @@ import { RateRequestSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { and, eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+import { protectedProcedure } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-
-import { protectedProcedure } from "@/trpc/context";
 
 export const rate = protectedProcedure
 	.meta({ openapi: { method: "POST", path: "/requests/rate" } })

@@ -2,11 +2,10 @@ import { RequestIdSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { and, eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+import { scholarProcedure } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-
-import { scholarProcedure } from "@/trpc/context";
 
 export const start = scholarProcedure
 	.meta({ openapi: { method: "POST", path: "/requests/start" } })

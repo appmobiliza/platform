@@ -4,10 +4,9 @@ import {
 	type scholarShiftValues,
 } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
+import { managerProcedure } from "@mobiliza/trpc";
 
 import { z } from "zod";
-
-import { managerProcedure } from "@/trpc/context";
 
 const scholarDashboardStatusValues = [
 	"available",

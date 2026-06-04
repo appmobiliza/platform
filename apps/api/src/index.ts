@@ -20,13 +20,14 @@ import { db } from "@mobiliza/db/client";
 import { notifyUnansweredRequests } from "@mobiliza/domain";
 import { apiEnv } from "@mobiliza/env/api";
 import { realtimeEnv } from "@mobiliza/env/realtime";
+import { createTRPCContext, getRealtimeAdapter } from "@mobiliza/trpc";
+
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
 import { openApiDocument, openApiHandler } from "./openapi";
 import { appRouter } from "./router";
-import { createTRPCContext, getRealtimeAdapter } from "./trpc/context";
 
 console.log("🚀 Iniciando Mobiliza API...");
 
@@ -47,7 +48,7 @@ app.get("/api/cron/check-timeouts", async (c) => {
 		return c.json({ error: "Unauthorized" }, 401);
 	}
 
-	const result = await notifyUnansweredRequests(db, getRealtimeAdapter());
+	const result = await notifyUnansweredRequests(db, await getRealtimeAdapter());
 	return c.json({
 		success: true,
 		...result,
@@ -113,11 +114,11 @@ app.use(
 		onError:
 			apiEnv.NODE_ENV === "development"
 				? ({ path, error }) => {
-						console.error(
-							`[tRPC error] ${path ?? "unknown"}:`,
-							error,
-						);
-					}
+					console.error(
+						`[tRPC error] ${path ?? "unknown"}:`,
+						error,
+					);
+				}
 				: undefined,
 	}),
 );
