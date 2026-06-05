@@ -14,12 +14,12 @@
 
 import { router } from "@mobiliza/trpc";
 
-import { favoritesRouter } from "./routers/favorites";
-import { locationsRouter } from "./routers/locations";
-import { metricsRouter } from "./routers/metrics";
-import { notificationsRouter } from "./routers/notifications";
-import { profilesRouter } from "./routers/profiles";
-import { requestsRouter } from "./routers/requests";
+import { favoritesRouter } from "./routers/favorites.js";
+import { locationsRouter } from "./routers/locations.js";
+import { metricsRouter } from "./routers/metrics.js";
+import { notificationsRouter } from "./routers/notifications.js";
+import { profilesRouter } from "./routers/profiles/index.js";
+import { requestsRouter } from "./routers/requests/index.js";
 
 export const appRouter = router({
 	requests: requestsRouter,

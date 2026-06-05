@@ -25,7 +25,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
-import { appRouter } from "./router";
+import { appRouter } from "./router.js";
 
 const app = new Hono();
 
