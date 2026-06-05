@@ -33,8 +33,6 @@ const app = new Hono();
 
 /**
  * Endpoint de manutenção/cron.
- * Disparado pela Vercel Cron (configurado em vercel.json).
- * A Vercel injeta automaticamente o header Authorization com CRON_SECRET.
  */
 app.get("/api/cron/check-timeouts", async (c) => {
 	const cronSecret = apiEnv.CRON_SECRET;
