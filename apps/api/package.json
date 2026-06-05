@@ -4,7 +4,6 @@
 	"private": true,
 	"description": "Servidor HTTP do Mobiliza — Hono + tRPC + Better Auth",
 	"type": "module",
-	"main": "./src/index.ts",
 	"exports": {
 		"./router": "./src/router.ts"
 	},

@@ -20,7 +20,7 @@ import { handle } from "hono/vercel";
 
 // biome-ignore lint/suspicious/noTsIgnore: Não precisamos de type assertions aqui
 // @ts-ignore
-import app from "../dist/index.js";
+import app from "../dist/bundle.js";
 
 export const runtime = "nodejs";
 
