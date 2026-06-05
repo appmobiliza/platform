@@ -6,7 +6,7 @@ import { getRealtimeAdapter } from "@mobiliza/trpc";
 
 import { cacheLife, cacheTag } from "next/cache";
 
-import { getTodayRange } from "./dashboard-data";
+import { getCurrentMonthRange } from "./dashboard-data";
 
 // ─── tRPC caller para cache (sem headers) ──────────────────────────────────
 // As funções com "use cache" não podem acessar `headers()`, pois seriam
@@ -83,9 +83,9 @@ export async function getCachedSummary(
 ): Promise<SummaryOutput> {
 	"use cache: remote";
 
-	// Se não receber um range explícito, usa o dia atual
+	// Se não receber um range explícito, usa o mês atual
 	const { from: f, to: t } =
-		from && to ? { from, to } : getTodayRange();
+		from && to ? { from, to } : getCurrentMonthRange();
 
 	cacheLife({ stale: 30, revalidate: 60, expire: 300 });
 	cacheTag("metrics-summary");
@@ -136,12 +136,17 @@ export async function getCachedManagerList(
  * Cache: 60s stale + 120s revalidate.
  */
 export async function getCachedScholarPerformance(
-	from: string,
-	to: string,
+	from?: string,
+	to?: string,
 ): Promise<ScholarPerformanceOutput> {
 	"use cache: remote";
+
+	// Se não receber um range explícito, usa o mês atual
+	const { from: f, to: t } =
+		from && to ? { from, to } : getCurrentMonthRange();
+
 	cacheLife({ stale: 60, revalidate: 120, expire: 600 });
 	cacheTag("scholar-performance");
 
-	return cacheCaller.metrics.scholarPerformance({ from, to });
+	return cacheCaller.metrics.scholarPerformance({ from: f, to: t });
 }

@@ -1,7 +1,5 @@
 import type { AppRouter } from "@mobiliza/api/router";
 
-import type { ServiceEntry, ServiceStatus } from "@/data/services-data";
-
 export type ApiDate = Date | string;
 
 /**
@@ -14,6 +12,31 @@ type ManagerListOutput = Awaited<
 	ReturnType<Caller["requests"]["managerList"]>
 >;
 export type ManagerRequest = ManagerListOutput[number];
+
+export type ServiceStatus =
+	| "concluded"
+	| "in_progress"
+	| "not_attended";
+
+type AttendanceWithRelations = NonNullable<ManagerRequest["attendance"]>;
+
+export type ServiceEntry = {
+	id: ManagerRequest["id"];
+	date: string;
+	duration: string;
+	notes: string;
+	route: string;
+	status: ServiceStatus;
+	time: string;
+	student: {
+		user: ManagerRequest["studentProfile"]["user"];
+		profile: ManagerRequest["studentProfile"];
+	};
+	scholar: {
+		user: AttendanceWithRelations["scholarProfile"]["user"];
+		profile: AttendanceWithRelations["scholarProfile"];
+	} | null;
+};
 
 export function getCurrentMonthRange() {
 	const now = new Date();

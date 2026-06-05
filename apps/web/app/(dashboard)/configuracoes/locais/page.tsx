@@ -23,18 +23,10 @@ export const metadata: Metadata = {
 	title: "Locais do campus",
 };
 
-type CampusLocation = {
-	id: number;
-	name: string;
-	abbreviation: string;
-	description: string | null;
-	isActive: boolean;
-};
-
 export default async function SettingsPage() {
-	const campusLocations = (await withServerTRPC((trpc) =>
+	const campusLocations = await withServerTRPC((trpc) =>
 		trpc.locations.listAll(),
-	)) as CampusLocation[];
+	);
 	const activeLocations = campusLocations.filter(
 		(location) => location.isActive,
 	);

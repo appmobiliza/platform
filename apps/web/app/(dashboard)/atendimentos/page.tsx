@@ -30,7 +30,6 @@ import {
 } from "@/lib/cached-data";
 import {
 	formatDurationShort,
-	getCurrentMonthRange,
 	mapRequestToServiceEntry,
 } from "@/lib/dashboard-data";
 import { getInitials } from "@/lib/utils";
@@ -40,15 +39,14 @@ export const metadata: Metadata = {
 };
 
 export default async function ServicesPage() {
-	const currentDate = new Date();
-	const monthRange = getCurrentMonthRange();
 	const [summary, requests, scholarsDashboard, studentsDashboard] =
 		await Promise.all([
-			getCachedSummary(monthRange.from, monthRange.to),
+			getCachedSummary(),
 			getCachedManagerList(200),
 			getCachedScholarDashboard(),
 			getCachedStudentDashboard(),
 		]);
+	const currentDate = new Date();
 	const serviceEntries = requests.map(mapRequestToServiceEntry);
 
 	return (

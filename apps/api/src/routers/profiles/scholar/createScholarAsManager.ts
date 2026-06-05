@@ -39,6 +39,13 @@ export const createScholarAsManager = managerProcedure
 			})
 			.returning();
 
+		if (!newUser) {
+			throw new TRPCError({
+				code: "INTERNAL_SERVER_ERROR",
+				message: "Falha ao criar o usuário.",
+			});
+		}
+
 		// Cria o perfil de bolsista vinculado ao novo usuário
 		const [profile] = await db
 			.insert(schema.scholarProfile)

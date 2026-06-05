@@ -1,11 +1,20 @@
 /**
  * Root router do tRPC.
  *
- * Agrega todos os sub-routers e exporta `AppRouter` — o tipo que o
- * cliente (React Native, Next.js) importa para ter tipagem completa
- * sem importar nenhum código de servidor.
+ * Agrega todos os sub-routers e exporta:
+ * - `appRouter`  → runtime, usado pelo servidor Hono e pelo servidor Next.js
+ *   via `createCaller()` (chamadas in-process, sem HTTP).
+ * - `AppRouter`  → tipo, importado por clientes (React Native, tRPC Client)
+ *   para tipagem completa sem executar código de servidor.
  *
- * @example Uso no cliente:
+ * O servidor Next.js importa o runtime `appRouter` em dois contextos:
+ * - `trpc-server.ts`  → caller autenticado com a sessão real do request
+ * - `cached-data.ts`  → caller sintético para funções `"use cache"`
+ *
+ * Ambos usam `import "server-only"` para garantir que o código da API
+ * nunca vaze para o bundle do cliente.
+ *
+ * @example Uso no cliente (apenas tipos):
  * ```ts
  * import type { AppRouter } from '@mobiliza/api'
  * const trpc = createTRPCClient<AppRouter>({ ... })

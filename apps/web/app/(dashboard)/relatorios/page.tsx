@@ -30,7 +30,6 @@ import {
 import {
 	countBy,
 	formatDurationShort,
-	getCurrentMonthRange,
 	getRouteLabel,
 	toDate,
 } from "@/lib/dashboard-data";
@@ -287,7 +286,6 @@ function getHourlyChartData(requests: CachedManagerRequest[]) {
 }
 
 export default async function ReportsPage() {
-	const monthRange = getCurrentMonthRange();
 	const [
 		summary,
 		scholarPerformance,
@@ -295,8 +293,8 @@ export default async function ReportsPage() {
 		scholarDashboard,
 		studentDashboard,
 	] = await Promise.all([
-		getCachedSummary(monthRange.from, monthRange.to),
-		getCachedScholarPerformance(monthRange.from, monthRange.to),
+		getCachedSummary(),
+		getCachedScholarPerformance(),
 		getCachedManagerList(500),
 		getCachedScholarDashboard(),
 		getCachedStudentDashboard(),

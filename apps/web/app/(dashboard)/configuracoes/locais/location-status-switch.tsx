@@ -7,15 +7,17 @@ import { Switch } from "@/components/ui/switch";
 
 import { trpc } from "@/providers/trpc-provider";
 
+interface LocationStatusSwitchProps {
+	id: string;
+	isActive: boolean;
+	name: string;
+}
+
 export function LocationStatusSwitch({
 	id,
 	isActive,
 	name,
-}: {
-	id: number;
-	isActive: boolean;
-	name: string;
-}) {
+}: LocationStatusSwitchProps) {
 	const router = useRouter();
 	const [checked, setChecked] = useState(isActive);
 	const setActive = trpc.locations.setActive.useMutation({
@@ -35,7 +37,7 @@ export function LocationStatusSwitch({
 			aria-label={`${checked ? "Desativar" : "Ativar"} local ${name}`}
 			onCheckedChange={(nextChecked) => {
 				setChecked(nextChecked);
-				setActive.mutate({ id, isActive: nextChecked });
+				setActive.mutate({ id: id, isActive: nextChecked });
 			}}
 		/>
 	);

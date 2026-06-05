@@ -2,7 +2,7 @@
 
 import { createDetailsStore } from "@/components/details/details-store";
 
-import type { ServiceEntry } from "@/data/services-data";
+import type { ServiceEntry } from "@/lib/dashboard-data";
 
 const serviceDetailsStore = createDetailsStore<ServiceEntry>();
 

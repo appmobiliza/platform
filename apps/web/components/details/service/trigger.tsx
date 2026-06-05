@@ -1,12 +1,11 @@
 "use client";
 
-import type * as React from "react";
-
 import { ExternalLink } from "lucide-react";
+import type * as React from "react";
 
 import { Button } from "@/components/ui/button";
 
-import type { ServiceEntry } from "@/data/services-data";
+import type { ServiceEntry } from "@/lib/dashboard-data";
 
 import { openServiceDetails } from "./store";
 

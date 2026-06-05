@@ -26,6 +26,7 @@ export function PendingAlert({ data }: { data: PendingAlertData | null }) {
 		if (!data) return;
 
 		function update() {
+			if (!data) return;
 			setDelay(
 				Math.max(
 					1,

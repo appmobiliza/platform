@@ -9,9 +9,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
+import type { ServiceEntry } from "@/lib/dashboard-data";
 import { getInitials } from "@/lib/utils";
-
-import type { ServiceEntry } from "@/data/services-data";
 
 import { closeServiceDetails, useServiceDetailsEntry } from "./store";
 

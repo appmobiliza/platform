@@ -9,7 +9,8 @@
 		"strictNullChecks": true,
 		"skipLibCheck": true,
 		"moduleResolution": "bundler",
-		"module": "ESNext"
+		"module": "ESNext",
+		"ignoreDeprecations": "6.0"
 	},
 	"include": ["src"],
 	"exclude": ["node_modules", "dist"]
