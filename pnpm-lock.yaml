@@ -15,9 +15,6 @@ importers:
       '@biomejs/biome':
         specifier: 2.4.15
         version: 2.4.15
-      tsup:
-        specifier: ^8.5.1
-        version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@6.0.3)(yaml@2.9.0)
       turbo:
         specifier: ^2.9.14
         version: 2.9.16
@@ -615,10 +612,6 @@ importers:
       '@trpc/server':
         specifier: ^11.17.0
         version: 11.17.0(typescript@6.0.3)
-    devDependencies:
-      '@types/node':
-        specifier: ^25.9.0
-        version: 25.9.1
 
 packages:
 

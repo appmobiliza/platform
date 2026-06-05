@@ -3,28 +3,13 @@
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
-	"main": "./dist/index.js",
-	"types": "./dist/index.d.ts",
 	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"default": "./dist/index.js"
-		},
-		"./client": {
-			"types": "./dist/client.d.ts",
-			"default": "./dist/client.js"
-		},
-		"./drizzle": {
-			"types": "./dist/drizzle.d.ts",
-			"default": "./dist/drizzle.js"
-		},
-		"./schema": {
-			"types": "./dist/schema/index.d.ts",
-			"default": "./dist/schema/index.js"
-		}
+		".": "./src/index.ts",
+		"./schema": "./src/schema/index.ts",
+		"./drizzle": "./src/drizzle.ts",
+		"./client": "./src/client.ts"
 	},
 	"scripts": {
-		"build": "tsup src/index.ts src/client.ts src/drizzle.ts src/schema/index.ts --format esm --dts --no-splitting --target node20 --out-dir dist",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:push": "drizzle-kit push",

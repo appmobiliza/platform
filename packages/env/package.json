@@ -3,29 +3,32 @@
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
-	"scripts": {
-		"build": "tsup src/shared.ts src/api.ts src/auth.ts src/base-url.ts src/realtime.ts --format esm --dts --no-splitting --target node20 --out-dir dist"
-	},
+	"main": "./src/index.ts",
+	"types": "./src/index.ts",
 	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"default": "./src/index.ts"
+		},
 		"./api": {
-			"types": "./dist/api.d.ts",
-			"default": "./dist/api.js"
+			"types": "./src/api.ts",
+			"default": "./src/api.ts"
 		},
 		"./auth": {
-			"types": "./dist/auth.d.ts",
-			"default": "./dist/auth.js"
+			"types": "./src/auth.ts",
+			"default": "./src/auth.ts"
 		},
 		"./realtime": {
-			"types": "./dist/realtime.d.ts",
-			"default": "./dist/realtime.js"
+			"types": "./src/realtime.ts",
+			"default": "./src/realtime.ts"
 		},
 		"./shared": {
-			"types": "./dist/shared.d.ts",
-			"default": "./dist/shared.js"
+			"types": "./src/shared.ts",
+			"default": "./src/shared.ts"
 		},
 		"./base-url": {
-			"types": "./dist/base-url.d.ts",
-			"default": "./dist/base-url.js"
+			"types": "./src/base-url.ts",
+			"default": "./src/base-url.ts"
 		}
 	},
 	"dependencies": {
