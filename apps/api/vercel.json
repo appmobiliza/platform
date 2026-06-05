@@ -1,4 +1,4 @@
 {
-	"buildCommand": "cd ../.. && turbo run build --filter=@mobiliza/api && cd apps/api && tsup --config tsup.vercel.ts",
+	"buildCommand": "cd ../.. && turbo run build --filter='@mobiliza/api^...' && pnpm --filter @mobiliza/api build:vercel",
 	"rewrites": [{ "source": "/(.*)", "destination": "/api/index" }]
 }
