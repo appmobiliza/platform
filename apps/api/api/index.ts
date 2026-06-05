@@ -15,10 +15,13 @@
  *   { "source": "/(.*)", "destination": "/api/index" }
  */
 
+import type { Hono } from "hono";
 import { handle } from "hono/vercel";
 
+// biome-ignore lint/suspicious/noTsIgnore: Não precisamos de type assertions aqui
+// @ts-ignore
 import app from "../dist/index.js";
 
 export const runtime = "nodejs";
 
-export default handle(app);
+export default handle(app as Hono);
