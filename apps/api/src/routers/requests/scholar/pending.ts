@@ -1,14 +1,11 @@
 import { db } from "@mobiliza/db/client";
 import { desc, eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+import { scholarProcedure } from "@mobiliza/trpc";
 
 import { z } from "zod";
 
-import { scholarProcedure } from "@/trpc/context";
-
 export const pending = scholarProcedure
-	.meta({ openapi: { method: "GET", path: "/requests/pending" } })
-	.output(z.any())
 	.query(async () => {
 		return db.query.serviceRequest.findMany({
 			where: eq(schema.serviceRequest.status, "pending"),

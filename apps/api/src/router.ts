@@ -12,13 +12,14 @@
  * ```
  */
 
+import { router } from "@mobiliza/trpc";
+
 import { favoritesRouter } from "./routers/favorites";
 import { locationsRouter } from "./routers/locations";
 import { metricsRouter } from "./routers/metrics";
 import { notificationsRouter } from "./routers/notifications";
 import { profilesRouter } from "./routers/profiles";
 import { requestsRouter } from "./routers/requests";
-import { router } from "./trpc/context";
 
 export const appRouter = router({
 	requests: requestsRouter,

@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
-
 import {
 	disabilityTypeLabels,
 	disabilityTypeValues,
 } from "@mobiliza/contracts";
+
 import { Frown } from "lucide-react";
+import type { Metadata } from "next";
 
 import { ComboboxMultiple } from "@/components/combobox-multiple";
 import {
@@ -32,10 +32,8 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 
-import { withServerTRPC } from "@/lib/trpc-server";
-import { cn, getInitials } from "@/lib/utils";
-
-import type { StudentData } from "@/data/students-data";
+import { getCachedStudentDashboard } from "@/lib/cached-data";
+import { getInitials } from "@/lib/utils";
 
 export const metadata: Metadata = {
 	title: "Estudantes",
@@ -48,19 +46,8 @@ const sortOptions = [
 	{ value: "name-desc", label: "Nome (Z-A)" },
 ];
 
-type StudentDashboardResponse = {
-	cards: Array<{
-		title: string;
-		value: string;
-		variant?: "default" | "blue";
-	}>;
-	students: StudentData[];
-};
-
 export default async function StudentsPage() {
-	const dashboard = (await withServerTRPC((trpc) =>
-		trpc.profiles.studentDashboard(),
-	)) as StudentDashboardResponse;
+	const dashboard = await getCachedStudentDashboard();
 	const studentsData = dashboard.students;
 
 	return (
@@ -79,32 +66,56 @@ export default async function StudentsPage() {
 				</header>
 
 				<div className="grid grid-cols-1 gap-4 border-b border-border p-4 md:grid-cols-4 md:p-6">
-					{dashboard.cards.map(({ title, value, variant }) => (
-						<Card key={title} className="group w-full gap-2">
-							<CardHeader>
-								<CardTitle>{title}</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<p
-									className={cn(
-										"text-4xl font-bold",
-										variant === "blue" && "text-info",
-									)}
-								>
-									{value}
-								</p>
-							</CardContent>
-						</Card>
-					))}
+					<Card className="group w-full gap-2">
+						<CardHeader>
+							<CardTitle>Total de alunos</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<p className="text-4xl font-bold text-foreground">
+								{dashboard.totalStudents}
+							</p>
+						</CardContent>
+					</Card>
+					<Card className="group w-full gap-2">
+						<CardHeader>
+							<CardTitle>Com solicitação hoje</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<p className="text-4xl font-bold text-info">
+								{dashboard.requestedToday}
+							</p>
+						</CardContent>
+					</Card>
+					<Card className="group w-full gap-2">
+						<CardHeader>
+							<CardTitle>Deficiência visual</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<p className="text-4xl font-bold text-foreground">
+								{dashboard.visualImpairmentCount}
+							</p>
+						</CardContent>
+					</Card>
+					<Card className="group w-full gap-2">
+						<CardHeader>
+							<CardTitle>Deficiência motora</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<p className="text-4xl font-bold text-foreground">
+								{dashboard.mobilityCount}
+							</p>
+						</CardContent>
+					</Card>
 				</div>
 
 				<div className="flex min-w-0 flex-col gap-4 overflow-hidden py-4 md:py-6">
-					<div className="flex min-w-0 w-full flex-col items-center justify-start gap-4 px-4 md:px-6 md:flex-row">
+					<div className="flex min-w-0 w-full flex-col items-center justify-start gap-4 px-4 md:px-6 lg:flex-row">
 						<Input
 							placeholder="Buscar por nome, matrícula ou curso"
 							className=""
 						/>
 						<ComboboxMultiple
+							className="w-full lg:w-auto"
 							items={disabilityTypeValues.map((disability) => ({
 								id: disability,
 								label: disabilityTypeLabels[disability],
@@ -112,7 +123,7 @@ export default async function StudentsPage() {
 							allLabel="Todos os tipos de deficiência"
 						/>
 						<Select defaultValue="recent">
-							<SelectTrigger className="w-full md:w-auto">
+							<SelectTrigger className="w-full lg:w-auto">
 								<SelectValue placeholder="Ordenar por" />
 							</SelectTrigger>
 							<SelectContent>
@@ -161,9 +172,14 @@ export default async function StudentsPage() {
 											</div>
 										</TableCell>
 										<TableCell>
-											{entry.profile.disabilities.join(
-												", ",
-											)}
+											{entry.profile.disabilities
+												.map(
+													(d) =>
+														disabilityTypeLabels[
+															d as keyof typeof disabilityTypeLabels
+														],
+												)
+												.join(", ")}
 										</TableCell>
 										<TableCell>
 											{entry.summary.servicesAmount}

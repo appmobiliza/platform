@@ -1,68 +1,11 @@
 import type { ReactNode } from "react";
 
+import { LogoutButton } from "@/components/logout-button";
 import { SectionCard, SectionTitle, SettingItem } from "@/components/settings";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-
-const activeSessions = [
-	{
-		device: "Chrome · macOS",
-		location: "Maceió, AL · agora",
-		current: true,
-	},
-	{
-		device: "Safari · iPhone",
-		location: "Maceió, AL · há 2 dias",
-		current: false,
-	},
-	{
-		device: "Chrome · Windows",
-		location: "Maceió, AL · há 5 dias",
-		current: false,
-	},
-];
 
 function SectionShell({ children }: { children: ReactNode }) {
 	return <div className="space-y-3">{children}</div>;
-}
-
-function SessionRow({
-	device,
-	location,
-	current,
-}: {
-	device: string;
-	location: string;
-	current?: boolean;
-}) {
-	return (
-		<div className="flex gap-4 border-b border-border/70 p-5 last:border-b-0 flex-row flex-wrap items-center justify-between">
-			<div className="flex min-w-0 items-start gap-3">
-				<span className="mt-2 size-2 shrink-0 rounded-full bg-emerald-500" />
-				<div className="min-w-0 space-y-0.5">
-					<p className="text-sm font-medium text-foreground">
-						{device}
-					</p>
-					<p className="text-sm text-muted-foreground">{location}</p>
-				</div>
-			</div>
-			<div className="flex flex-col items-start gap-3 md:items-end">
-				{current ? (
-					<Badge
-						variant="success"
-						className="h-6 px-3 text-[12px] font-semibold"
-					>
-						Esta sessão
-					</Badge>
-				) : (
-					<Button type="button" variant="outline" size="lg">
-						Encerrar
-					</Button>
-				)}
-			</div>
-		</div>
-	);
 }
 
 export default function SettingsPage() {
@@ -94,7 +37,7 @@ export default function SettingsPage() {
 							</Badge>
 						</div>
 
-						<SettingItem
+						{/*<SettingItem
 							title="Nome de exibição"
 							description="Aparece no cabeçalho do painel e nos registros do sistema"
 							className="border-b border-border/70"
@@ -105,7 +48,7 @@ export default function SettingsPage() {
 									className="h-10 w-full bg-background px-3 text-foreground shadow-none md:w-80"
 								/>
 							}
-						/>
+						/>*/}
 
 						<SettingItem
 							title="E-mail"
@@ -120,48 +63,17 @@ export default function SettingsPage() {
 				</SectionShell>
 
 				<SectionShell>
-					<SectionTitle>SESSÕES ATIVAS</SectionTitle>
-					<SectionCard>
-						{activeSessions.map((session) => (
-							<SessionRow
-								key={session.device}
-								device={session.device}
-								location={session.location}
-								current={session.current}
-							/>
-						))}
-						<div className="flex flex-col gap-4 px-5 py-5 md:py-3 bg-background md:flex-row md:items-center md:justify-between">
-							<p className="text-sm text-muted-foreground">
-								Sessões expiram automaticamente após 30 dias de
-								inatividade
-							</p>
-							<Button
-								type="button"
-								variant="outline"
-								size="lg"
-								className="w-fit px-4 text-sm"
-							>
-								Encerrar todas
-							</Button>
-						</div>
-					</SectionCard>
-				</SectionShell>
-
-				<SectionShell>
 					<SectionTitle>SESSÃO</SectionTitle>
 					<SectionCard>
 						<SettingItem
 							title="Sair do painel"
 							description="Encerra a sessão atual neste dispositivo"
 							content={
-								<Button
-									type="button"
+								<LogoutButton
 									variant="destructive"
 									size="lg"
-									className="h-10 w-fit px-4 text-sm border-destructive-border"
-								>
-									Sair
-								</Button>
+									className="h-10 w-fit px-4 text-sm"
+								/>
 							}
 						/>
 					</SectionCard>

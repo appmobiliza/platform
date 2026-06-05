@@ -1,0 +1,14 @@
+{
+	"name": "@mobiliza/trpc",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"dependencies": {
+		"@mobiliza/domain": "workspace:*",
+		"@mobiliza/realtime": "workspace:*",
+		"@trpc/server": "^11.17.0"
+	}
+}

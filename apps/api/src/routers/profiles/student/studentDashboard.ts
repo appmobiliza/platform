@@ -1,12 +1,5 @@
-import {
-	disabilityTypeLabels,
-	type requestStatusValues,
-} from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
-
-import { z } from "zod";
-
-import { managerProcedure } from "@/trpc/context";
+import { managerProcedure } from "@mobiliza/trpc";
 
 function getRouteLabel(request: {
 	originLocation?: { abbreviation: string; name: string } | null;
@@ -24,18 +17,6 @@ function getRouteLabel(request: {
 	return `${origin} \u2192 ${destination}`;
 }
 
-function getStudentRouteStatus(status: (typeof requestStatusValues)[number]) {
-	if (status === "completed") {
-		return "completed" as const;
-	}
-
-	if (status === "cancelled" || status === "unattended") {
-		return "canceled" as const;
-	}
-
-	return "pending" as const;
-}
-
 function getTopCounts(items: string[], limit = 3) {
 	const counts = new Map<string, number>();
 
@@ -50,8 +31,6 @@ function getTopCounts(items: string[], limit = 3) {
 }
 
 export const studentDashboard = managerProcedure
-	.meta({ openapi: { method: "GET", path: "/profiles/students" } })
-	.output(z.any())
 	.query(async () => {
 		const students = await db.query.studentProfile.findMany({
 			with: {
@@ -82,9 +61,7 @@ export const studentDashboard = managerProcedure
 		const todayEnd = new Date(now);
 		todayEnd.setHours(23, 59, 59, 999);
 
-		const activeStudents = students.filter(
-			(profile) => profile.isActive,
-		);
+		const activeStudents = students.filter((profile) => profile.isActive);
 		const allRequests = students.flatMap((profile) => profile.requests);
 		const requestedToday = new Set(
 			allRequests
@@ -96,9 +73,7 @@ export const studentDashboard = managerProcedure
 		).size;
 		const visualImpairmentCount = students.filter((profile) =>
 			profile.disabilities.some((disability) =>
-				["blindness", "low_vision"].includes(
-					disability.disabilityType,
-				),
+				["blindness", "low_vision"].includes(disability.disabilityType),
 			),
 		).length;
 		const mobilityCount = students.filter((profile) =>
@@ -110,28 +85,12 @@ export const studentDashboard = managerProcedure
 		).length;
 
 		return {
-			cards: [
-				{
-					title: "Total de alunos",
-					value: String(activeStudents.length),
-				},
-				{
-					title: "Com solicitação hoje",
-					value: String(requestedToday),
-					variant: "blue" as const,
-				},
-				{
-					title: "Deficiência visual",
-					value: String(visualImpairmentCount),
-				},
-				{
-					title: "Deficiência motora",
-					value: String(mobilityCount),
-				},
-			],
+			totalStudents: activeStudents.length,
+			requestedToday,
+			visualImpairmentCount,
+			mobilityCount,
 			students: students.map((student) => {
-				const { disabilities, requests, user, ...profile } =
-					student;
+				const { disabilities, requests, user, ...profile } = student;
 				const sortedRequests = [...requests].sort(
 					(requestA, requestB) =>
 						new Date(requestB.createdAt).getTime() -
@@ -152,8 +111,7 @@ export const studentDashboard = managerProcedure
 					requests
 						.map(
 							(request) =>
-								request.attendance?.scholarProfile?.user
-									?.name,
+								request.attendance?.scholarProfile?.user?.name,
 						)
 						.filter((name): name is string => Boolean(name)),
 				);
@@ -163,10 +121,7 @@ export const studentDashboard = managerProcedure
 					profile: {
 						...profile,
 						disabilities: disabilities.map(
-							(disability) =>
-								disabilityTypeLabels[
-								disability.disabilityType
-								],
+							(disability) => disability.disabilityType,
 						),
 					},
 					summary: {
@@ -185,12 +140,8 @@ export const studentDashboard = managerProcedure
 							.slice(0, 3)
 							.map((request) => ({
 								route: getRouteLabel(request),
-								date: new Date(
-									request.createdAt,
-								).toISOString(),
-								status: getStudentRouteStatus(
-									request.status,
-								),
+								date: new Date(request.createdAt).toISOString(),
+								status: request.status,
 							})),
 						frequentScholars,
 					},

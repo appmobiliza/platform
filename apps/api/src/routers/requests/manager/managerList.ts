@@ -1,13 +1,11 @@
 import { db } from "@mobiliza/db/client";
 import { desc } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+import { managerProcedure } from "@mobiliza/trpc";
 
 import { z } from "zod";
 
-import { managerProcedure } from "@/trpc/context";
-
 export const managerList = managerProcedure
-	.meta({ openapi: { method: "GET", path: "/requests/manager" } })
 	.input(
 		z
 			.object({
@@ -15,7 +13,6 @@ export const managerList = managerProcedure
 			})
 			.default({ limit: 100 }),
 	)
-	.output(z.any())
 	.query(async ({ input }) => {
 		return db.query.serviceRequest.findMany({
 			with: {

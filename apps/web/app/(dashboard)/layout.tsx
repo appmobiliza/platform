@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Toaster } from "@/components/ui/sonner";
 
 import Logo from "@/assets/icons/logo";
 
@@ -29,7 +28,6 @@ export default async function DashboardLayout({
 				</header>
 				{children}
 			</main>
-			<Toaster />
 		</SidebarProvider>
 	);
 }

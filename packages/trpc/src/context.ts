@@ -13,13 +13,12 @@
  *   managerProcedure  → role === "manager"
  */
 
-import { getSession } from "@mobiliza/auth/server";
 import type { RealtimeAdapter } from "@mobiliza/realtime";
 import { createRealtimeAdapter } from "@mobiliza/realtime";
 
 import { initTRPC, TRPCError } from "@trpc/server";
 import type { Context } from "hono";
-import type { OpenApiMeta } from "trpc-to-openapi";
+
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -83,36 +82,55 @@ export async function getRealtimeAdapter(): Promise<RealtimeAdapter> {
 // ─── Factory de contexto ──────────────────────────────────────────────────────
 
 /**
- * Cria o contexto do tRPC a partir de um request Hono.
- * Chamado uma vez por requisição pelo adaptador Hono-tRPC.
- */
-export async function createTRPCContext(c: Context): Promise<TRPCContext> {
-	return createTRPCContextFromHeaders(c.req.raw.headers);
-}
-
-/**
  * Cria o contexto do tRPC a partir de headers puros.
  * Útil para servidores que não passam por um objeto Hono, como o app web.
  */
 export async function createTRPCContextFromHeaders(
 	headersInit: HeadersInit,
+	getSession: (headers: Headers) => Promise<Session | null>
 ): Promise<TRPCContext> {
 	const headers = new Headers(headersInit);
-
-	// O Better Auth valida o cookie/token de sessão nos headers
 	const session = await getSession(headers);
-
 	return {
-		session: session as Session | null,
+		session,
 		realtime: await getRealtimeAdapter(),
 		headers,
 	};
 }
 
+/**
+ * Cria o contexto do tRPC a partir de um request Hono.
+ * Chamado uma vez por requisição pelo adaptador Hono-tRPC.
+ *
+ * O `getSession` deve vir do `@mobiliza/auth/server`.
+ */
+export async function createTRPCContext(
+	c: Context,
+	getSession: (headers: Headers) => Promise<Session | null>
+): Promise<TRPCContext> {
+	return createTRPCContextFromHeaders(c.req.raw.headers, getSession);
+}
+
+/**
+ * Factory para criar um contexto a partir de headers puros.
+ * Útil para ambientes que não usam Hono, como o app Next.js.
+ *
+ * Exemplo:
+ * ```ts
+ * const createContext = createTRPCContextFactory(getSession);
+ * const ctx = await createContext(headers());
+ * ```
+ */
+export function createTRPCContextFactory(
+	getSession: (headers: Headers) => Promise<Session | null>
+): (headersInit: HeadersInit) => Promise<TRPCContext> {
+	return async (headersInit) =>
+		createTRPCContextFromHeaders(headersInit, getSession);
+}
+
 // ─── Instância do tRPC ────────────────────────────────────────────────────────
 
 const t = initTRPC
-	.meta<OpenApiMeta>()
 	.context<TRPCContext>()
 	.create({
 		/**

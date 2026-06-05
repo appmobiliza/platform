@@ -9,12 +9,11 @@
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+import { managerProcedure, publicProcedure, router } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-
-import { managerProcedure, publicProcedure, router } from "../trpc/context";
 
 export const locationsRouter = router({
 	/**
@@ -22,8 +21,6 @@ export const locationsRouter = router({
 	 * Público — usado no formulário de nova solicitação.
 	 */
 	list: publicProcedure
-		.meta({ openapi: { method: "GET", path: "/locations" } })
-		.output(z.any())
 		.query(async () => {
 			return db.query.campusLocation.findMany({
 				where: eq(schema.campusLocation.isActive, true),
@@ -35,8 +32,6 @@ export const locationsRouter = router({
 	 * Retorna todos os locais incluindo inativos — apenas para o painel do gestor.
 	 */
 	listAll: managerProcedure
-		.meta({ openapi: { method: "GET", path: "/locations/all" } })
-		.output(z.any())
 		.query(async () => {
 			return db.query.campusLocation.findMany({
 				orderBy: (t, { asc }) => [asc(t.name)],
@@ -47,7 +42,6 @@ export const locationsRouter = router({
 	 * Cria um novo local do campus.
 	 */
 	create: managerProcedure
-		.meta({ openapi: { method: "POST", path: "/locations" } })
 		.input(
 			z.object({
 				name: z.string().min(2).max(100),
@@ -57,7 +51,7 @@ export const locationsRouter = router({
 				longitude: z.number(),
 			}),
 		)
-		.output(z.any())
+
 		.mutation(async ({ input }) => {
 			const [location] = await db
 				.insert(schema.campusLocation)
@@ -76,9 +70,8 @@ export const locationsRouter = router({
 	 * o histórico existente é preservado (onDelete: restrict).
 	 */
 	setActive: managerProcedure
-		.meta({ openapi: { method: "POST", path: "/locations/active" } })
 		.input(z.object({ id: z.string(), isActive: z.boolean() }))
-		.output(z.any())
+
 		.mutation(async ({ input }) => {
 			const [updated] = await db
 				.update(schema.campusLocation)

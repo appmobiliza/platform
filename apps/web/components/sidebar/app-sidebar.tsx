@@ -1,7 +1,5 @@
 "use client";
 
-import type * as React from "react";
-
 import {
 	ChartNoAxesColumn,
 	File,
@@ -10,6 +8,7 @@ import {
 	User,
 	Users,
 } from "lucide-react";
+import type * as React from "react";
 
 import { NavMain } from "@/components/sidebar/nav-main";
 import { NavUser } from "@/components/sidebar/nav-user";
@@ -26,11 +25,6 @@ import {
 import Logo from "@/assets/icons/logo";
 
 const data = {
-	user: {
-		name: "Marcos Silveira",
-		email: "m@example.com",
-		avatar: "https://github.com/meninocoiso.png",
-	},
 	navMain: [
 		{
 			title: "Visão Geral",
@@ -88,7 +82,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				<NavMain items={data.navMain} />
 			</SidebarContent>
 			<SidebarFooter>
-				<NavUser user={data.user} />
+				<NavUser />
 			</SidebarFooter>
 		</Sidebar>
 	);

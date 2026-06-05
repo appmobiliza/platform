@@ -2,16 +2,14 @@ import { RequestIdSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+import { protectedProcedure } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { protectedProcedure } from "@/trpc/context";
-
 export const cancel = protectedProcedure
-	.meta({ openapi: { method: "POST", path: "/requests/cancel" } })
 	.input(RequestIdSchema)
-	.output(z.any())
+
 	.mutation(async ({ ctx, input }) => {
 		const studentProfile = await db.query.studentProfile.findFirst({
 			where: eq(schema.studentProfile.userId, ctx.session.user.id),

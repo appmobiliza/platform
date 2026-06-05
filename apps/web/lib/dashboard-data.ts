@@ -1,41 +1,19 @@
+import type { AppRouter } from "@mobiliza/api/router";
+
 import type { ServiceEntry, ServiceStatus } from "@/data/services-data";
 
 export type ApiDate = Date | string;
 
-export type ManagerRequest = {
-	id: string;
-	status:
-		| "pending"
-		| "accepted"
-		| "ongoing"
-		| "completed"
-		| "cancelled"
-		| "unattended";
-	notes: string | null;
-	createdAt: ApiDate;
-	respondedAt: ApiDate | null;
-	originLocation: {
-		name: string;
-		abbreviation: string;
-	};
-	destinationLocation: {
-		name: string;
-		abbreviation: string;
-	};
-	studentProfile: ServiceEntry["student"]["profile"] & {
-		user: ServiceEntry["student"]["user"];
-	};
-	attendance: {
-		acceptedAt: ApiDate;
-		startedAt: ApiDate | null;
-		completedAt: ApiDate | null;
-		durationSeconds: number | null;
-		rating: number | null;
-		scholarProfile: NonNullable<ServiceEntry["scholar"]>["profile"] & {
-			user: NonNullable<ServiceEntry["scholar"]>["user"];
-		};
-	} | null;
-};
+/**
+ * Tipo derivado diretamente da procedure `requests.managerList` através
+ * do caller em vez de `inferRouterOutputs`. Isso preserva os tipos `Date`
+ * originais do banco, já que o caller in-process não serializa para HTTP.
+ */
+type Caller = ReturnType<AppRouter["createCaller"]>;
+type ManagerListOutput = Awaited<
+	ReturnType<Caller["requests"]["managerList"]>
+>;
+export type ManagerRequest = ManagerListOutput[number];
 
 export function getCurrentMonthRange() {
 	const now = new Date();
@@ -154,9 +132,9 @@ export function mapRequestToServiceEntry(
 		},
 		scholar: attendance?.scholarProfile
 			? {
-					user: attendance.scholarProfile.user,
-					profile: attendance.scholarProfile,
-				}
+				user: attendance.scholarProfile.user,
+				profile: attendance.scholarProfile,
+			}
 			: null,
 		time: formatTime(request.createdAt),
 	};

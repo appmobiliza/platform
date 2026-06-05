@@ -1,7 +1,6 @@
+import { FileDown, FileSpreadsheet, InfoIcon } from "lucide-react";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-
-import { FileDown, FileSpreadsheet, InfoIcon } from "lucide-react";
 
 import { ComboboxMultiple } from "@/components/combobox-multiple";
 import { DatePickerWithRange } from "@/components/date-range-picker";
@@ -21,51 +20,24 @@ import type { ChartConfig } from "@/components/ui/chart";
 import { VerticalBarsChart } from "@/components/vertical-bars-chart";
 
 import {
+	type CachedManagerRequest,
+	getCachedManagerList,
+	getCachedScholarDashboard,
+	getCachedScholarPerformance,
+	getCachedStudentDashboard,
+	getCachedSummary,
+} from "@/lib/cached-data";
+import {
 	countBy,
 	formatDurationShort,
 	getCurrentMonthRange,
 	getRouteLabel,
-	type ManagerRequest,
 	toDate,
 } from "@/lib/dashboard-data";
-import { withServerTRPC } from "@/lib/trpc-server";
 import { getInitials } from "@/lib/utils";
 
 export const metadata: Metadata = {
 	title: "Relatórios",
-};
-
-type MetricsSummary = {
-	totalRequests: number;
-	completedRequests: number;
-	cancelledRequests: number;
-	unattendedRequests: number;
-	completionRate: number;
-	avgDurationSeconds: number | null;
-};
-
-type ScholarPerformance = {
-	scholarProfileId: string;
-	scholarName: string;
-	totalAttendances: number;
-};
-
-type ScholarDashboardResponse = {
-	scholars: Array<{
-		user: {
-			id: string;
-			name: string;
-		};
-	}>;
-};
-
-type StudentDashboardResponse = {
-	students: Array<{
-		user: {
-			id: string;
-			name: string;
-		};
-	}>;
 };
 
 const hourlyChartConfig = {
@@ -290,7 +262,7 @@ function getTopItem(items: ReadonlyArray<{ label: string; value: number }>) {
 	});
 }
 
-function getHourlyChartData(requests: ManagerRequest[]) {
+function getHourlyChartData(requests: CachedManagerRequest[]) {
 	const counts = new Map<string, number>();
 
 	for (const request of requests) {
@@ -322,21 +294,13 @@ export default async function ReportsPage() {
 		requests,
 		scholarDashboard,
 		studentDashboard,
-	] = (await withServerTRPC(async (trpc) =>
-		Promise.all([
-			trpc.metrics.summary(monthRange),
-			trpc.metrics.scholarPerformance(monthRange),
-			trpc.requests.managerList({ limit: 500 }),
-			trpc.profiles.scholarDashboard(),
-			trpc.profiles.studentDashboard(),
-		]),
-	)) as [
-		MetricsSummary,
-		ScholarPerformance[],
-		ManagerRequest[],
-		ScholarDashboardResponse,
-		StudentDashboardResponse,
-	];
+	] = await Promise.all([
+		getCachedSummary(monthRange.from, monthRange.to),
+		getCachedScholarPerformance(monthRange.from, monthRange.to),
+		getCachedManagerList(500),
+		getCachedScholarDashboard(),
+		getCachedStudentDashboard(),
+	]);
 	const reportMonth = new Date().toLocaleDateString("pt-BR", {
 		month: "long",
 		year: "numeric",
@@ -413,28 +377,18 @@ export default async function ReportsPage() {
 
 	return (
 		<section className="min-w-0 flex-1">
-			<header className="border-b border-border bg-card px-4 py-4 backdrop-blur md:px-6 md:py-5">
-				<div className="flex flex-wrap items-start justify-between gap-4">
-					<div className="space-y-1">
-						<h1 className="text-base font-semibold">Relatórios</h1>
-						<h2 className="text-sm text-muted-foreground">
-							Campus A.C. Simões
-						</h2>
-					</div>
-
-					<div className="flex items-center gap-3">
-						<Badge
-							variant="success"
-							className="hidden py-2 md:inline-flex"
-						>
-							<span className="mr-1 h-2 w-2 rounded-full bg-success" />
-							Dados atualizados
-						</Badge>
-						<Button className="gap-2 px-4">
-							<FileDown className="size-4" />
-							Exportar PDF
-						</Button>
-					</div>
+			<header className="flex flex-row items-center justify-between border-b border-border bg-card p-4 md:p-6">
+				<div className="space-y-1">
+					<h1 className="text-base font-semibold">Relatórios</h1>
+					<h2 className="text-sm text-muted-foreground">
+						Campus A.C. Simões
+					</h2>
+				</div>
+				<div className="flex items-center gap-3">
+					<Button className="gap-2 px-4 py-5">
+						<FileDown className="size-4" />
+						Exportar PDF
+					</Button>
 				</div>
 			</header>
 

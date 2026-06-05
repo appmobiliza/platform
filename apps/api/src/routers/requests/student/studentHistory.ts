@@ -2,15 +2,13 @@ import { PaginationSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { and, desc, eq, sql } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+import { protectedProcedure } from "@mobiliza/trpc";
 
 import { z } from "zod";
 
-import { protectedProcedure } from "@/trpc/context";
-
 export const studentHistory = protectedProcedure
-	.meta({ openapi: { method: "GET", path: "/requests/history" } })
 	.input(PaginationSchema)
-	.output(z.any())
+
 	.query(async ({ ctx, input }) => {
 		const studentProfile = await db.query.studentProfile.findFirst({
 			where: eq(schema.studentProfile.userId, ctx.session.user.id),

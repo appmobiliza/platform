@@ -1,14 +1,24 @@
 "use client";
 
-import * as React from "react";
-
 import {
 	campusValues,
 	courseValues,
+	genderLabels,
+	genderValues,
+	type InsertScholarAsManagerInput,
+	InsertScholarAsManagerSchema,
 	scholarShiftLabels,
 	scholarShiftValues,
+	type UpdateScholarAsManagerInput,
 } from "@mobiliza/contracts";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import * as React from "react";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
 	Combobox,
@@ -30,9 +40,10 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Field, FieldGroup } from "@/components/ui/field";
+import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MaskedInput } from "@/components/ui/masked-input";
 import {
 	Select,
 	SelectContent,
@@ -42,172 +53,475 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 
+import type { CachedScholar } from "@/lib/cached-data";
+
+import { trpc } from "@/providers/trpc-provider";
+
+// Shared form schema: create requires everything, edit requires userId + any subset
+const ScholarFormSchema = InsertScholarAsManagerSchema.extend({
+	userId: z.string().optional(),
+});
+
+type ScholarFormData = z.infer<typeof ScholarFormSchema>;
+
 interface Props {
-	className?: string;
 	children: React.ReactNode;
+	scholar?: CachedScholar;
 }
 
-export function MutateScholarDialog({ className, children }: Props) {
+export function MutateScholarDialog({ children, scholar }: Props) {
+	const router = useRouter();
+	const [open, setOpen] = React.useState(false);
+	const isEditing = Boolean(scholar);
+
+	const form = useForm<ScholarFormData>({
+		resolver: zodResolver(ScholarFormSchema),
+		mode: "onSubmit",
+	});
+
+	const {
+		control,
+		handleSubmit,
+		formState: { errors, isSubmitting },
+		register,
+		reset,
+	} = form;
+
+	const createScholar = trpc.profiles.createScholarAsManager.useMutation({
+		onSuccess() {
+			router.refresh();
+			setOpen(false);
+			reset();
+		},
+	});
+
+	const updateScholar = trpc.profiles.updateScholarAsManager.useMutation({
+		onSuccess() {
+			router.refresh();
+			setOpen(false);
+		},
+	});
+
+	const isPending = isEditing
+		? updateScholar.isPending
+		: createScholar.isPending;
+	const mutationError = isEditing ? updateScholar.error : createScholar.error;
+
+	function onSubmit(data: ScholarFormData) {
+		if (isEditing) {
+			const {
+				name: _name,
+				email: _email,
+				cpf: _cpf,
+				userId,
+				...profileData
+			} = data;
+			updateScholar.mutate({
+				userId: userId!,
+				...profileData,
+			} as UpdateScholarAsManagerInput);
+		} else {
+			const { userId: _userId, ...rest } = data;
+			createScholar.mutate(rest as InsertScholarAsManagerInput);
+		}
+	}
+
+	// Reset form with scholar data when editing
+	React.useEffect(() => {
+		if (open && scholar) {
+			reset({
+				userId: scholar.profile.userId,
+				name: scholar.user.name,
+				enrollment: scholar.profile.enrollment,
+				course: scholar.profile.course as ScholarFormData["course"],
+				campus: scholar.profile.campus as ScholarFormData["campus"],
+				phone: scholar.profile.phone ?? "",
+				shift: scholar.profile.shift as ScholarFormData["shift"],
+				email: scholar.user.email,
+				cpf: "",
+				gender: undefined,
+			});
+		} else if (!open) {
+			reset();
+		}
+	}, [open, scholar, reset]);
+
 	const comboboxPortalRef = React.useRef<HTMLDivElement | null>(null);
 
 	return (
-		<Dialog>
-			<form className={className}>
-				<DialogTrigger asChild>{children}</DialogTrigger>
-				<DialogContent className="sm:max-w-lg">
+		<Dialog
+			open={open}
+			onOpenChange={(v) => {
+				setOpen(v);
+				if (!v) {
+					reset();
+				}
+			}}
+		>
+			<DialogTrigger asChild>{children}</DialogTrigger>
+			<DialogContent
+				className="sm:max-w-lg"
+				preventClose={isSubmitting || isPending}
+			>
+				<form
+					onSubmit={handleSubmit(onSubmit)}
+					className="contents"
+					noValidate
+				>
 					<DialogHeader>
-						<DialogTitle>Adicionar bolsista</DialogTitle>
+						<DialogTitle>
+							{isEditing
+								? "Editar bolsista"
+								: "Adicionar bolsista"}
+						</DialogTitle>
 						<DialogDescription>
-							Adicione informações sobre o novo bolsista aqui
+							{isEditing
+								? "Atualize as informações do bolsista"
+								: "Adicione informações sobre o novo bolsista aqui"}
 						</DialogDescription>
 					</DialogHeader>
 					<div ref={comboboxPortalRef}>
 						<FieldGroup>
-							<Field>
-								<Label htmlFor="name-1">Nome completo</Label>
-								<Input
-									id="name-1"
-									name="name"
-									defaultValue="Pedro Duarte"
-								/>
-							</Field>
-							<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-								<Field>
-									<Label htmlFor="course">Curso</Label>
-									<Combobox
-										items={courseValues}
-										defaultValue={courseValues[0]}
-									>
-										<ComboboxTrigger
-											render={
-												<Button
-													type="button"
-													variant="outline"
-													className="w-64 justify-between font-normal"
-												>
-													<ComboboxValue />
-												</Button>
-											}
+							{!isEditing && (
+								<>
+									<Field data-invalid={!!errors.name}>
+										<Label htmlFor="name">
+											Nome completo
+										</Label>
+										<Input
+											id="name"
+											{...register("name")}
+											placeholder="Nome do bolsista"
+											aria-invalid={!!errors.name}
 										/>
-										<ComboboxContent
-											container={comboboxPortalRef}
-										>
-											<ComboboxInput
-												showTrigger={false}
-												placeholder="Pesquisar curso"
+										{errors.name && (
+											<FieldError
+												errors={[errors.name]}
 											/>
-											<ComboboxEmpty>
-												Nenhum curso encontrado.
-											</ComboboxEmpty>
-											<ComboboxList>
-												{(item) => (
-													<ComboboxItem
-														key={item}
-														value={item}
-													>
-														{item}
-													</ComboboxItem>
-												)}
-											</ComboboxList>
-										</ComboboxContent>
-									</Combobox>
+										)}
+									</Field>
+									<Field data-invalid={!!errors.email}>
+										<Label htmlFor="email">E-mail</Label>
+										<Input
+											id="email"
+											type="email"
+											{...register("email")}
+											placeholder="bolsista@example.com"
+											aria-invalid={!!errors.email}
+										/>
+										{errors.email && (
+											<FieldError
+												errors={[errors.email]}
+											/>
+										)}
+									</Field>
+									<Field data-invalid={!!errors.cpf}>
+										<Label htmlFor="cpf">CPF</Label>
+										<Controller
+											name="cpf"
+											control={control}
+											render={({ field }) => (
+												<MaskedInput
+													id="cpf"
+													mask="cpf"
+													placeholder="999.999.999-99"
+													value={field.value}
+													onChange={field.onChange}
+													aria-invalid={!!errors.cpf}
+												/>
+											)}
+										/>
+										{errors.cpf && (
+											<FieldError errors={[errors.cpf]} />
+										)}
+									</Field>
+								</>
+							)}
+							<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+								<Field data-invalid={!!errors.course}>
+									<Label htmlFor="course">Curso</Label>
+									<Controller
+										name="course"
+										control={control}
+										render={({ field }) => (
+											<Combobox
+												items={courseValues}
+												value={field.value}
+												onValueChange={(v) =>
+													field.onChange(v ?? "")
+												}
+											>
+												<ComboboxTrigger
+													render={
+														<Button
+															type="button"
+															variant="outline"
+															className="w-full justify-between font-normal"
+															aria-invalid={
+																!!errors.course
+															}
+														>
+															<ComboboxValue placeholder="Selecione um curso" />
+														</Button>
+													}
+												/>
+												<ComboboxContent
+													container={
+														comboboxPortalRef
+													}
+												>
+													<ComboboxInput
+														showTrigger={false}
+														placeholder="Pesquisar curso"
+													/>
+													<ComboboxEmpty>
+														Nenhum curso encontrado.
+													</ComboboxEmpty>
+													<ComboboxList>
+														{(item) => (
+															<ComboboxItem
+																key={item}
+																value={item}
+															>
+																{item}
+															</ComboboxItem>
+														)}
+													</ComboboxList>
+												</ComboboxContent>
+											</Combobox>
+										)}
+									/>
+									{errors.course && (
+										<FieldError errors={[errors.course]} />
+									)}
 								</Field>
-								<Field>
+								<Field data-invalid={!!errors.campus}>
 									<Label htmlFor="campus">Campus</Label>
-									<Combobox items={campusValues} id="campus">
-										<ComboboxInput placeholder="Pesquisar campus" />
-										<ComboboxContent
-											container={comboboxPortalRef}
-										>
-											<ComboboxEmpty>
-												Nenhum campus encontrado.
-											</ComboboxEmpty>
-											<ComboboxList>
-												{(item) => (
-													<ComboboxItem
-														key={item}
-														value={item}
-													>
-														{item}
-													</ComboboxItem>
-												)}
-											</ComboboxList>
-										</ComboboxContent>
-									</Combobox>
+									<Controller
+										name="campus"
+										control={control}
+										render={({ field }) => (
+											<Combobox
+												items={campusValues}
+												value={field.value}
+												onValueChange={(v) =>
+													field.onChange(v ?? "")
+												}
+											>
+												<ComboboxTrigger
+													render={
+														<Button
+															type="button"
+															variant="outline"
+															className="w-full justify-between font-normal"
+															aria-invalid={
+																!!errors.campus
+															}
+														>
+															<ComboboxValue placeholder="Selecione um campus" />
+														</Button>
+													}
+												/>
+												<ComboboxContent
+													container={
+														comboboxPortalRef
+													}
+												>
+													<ComboboxInput
+														showTrigger={false}
+														placeholder="Pesquisar campus"
+													/>
+													<ComboboxEmpty>
+														Nenhum campus
+														encontrado.
+													</ComboboxEmpty>
+													<ComboboxList>
+														{(item) => (
+															<ComboboxItem
+																key={item}
+																value={item}
+															>
+																{item}
+															</ComboboxItem>
+														)}
+													</ComboboxList>
+												</ComboboxContent>
+											</Combobox>
+										)}
+									/>
+									{errors.campus && (
+										<FieldError errors={[errors.campus]} />
+									)}
 								</Field>
-								<Field>
-									<Label htmlFor="registration">
+								<Field data-invalid={!!errors.enrollment}>
+									<Label htmlFor="enrollment">
 										Matrícula
 									</Label>
-									<Input
-										id="registration"
-										name="registration"
-										defaultValue="2023123456"
+									<Controller
+										name="enrollment"
+										control={control}
+										render={({ field }) => (
+											<MaskedInput
+												id="enrollment"
+												mask="enrollment"
+												placeholder="2023123456"
+												value={field.value}
+												onChange={field.onChange}
+												aria-invalid={
+													!!errors.enrollment
+												}
+											/>
+										)}
 									/>
+									{errors.enrollment && (
+										<FieldError
+											errors={[errors.enrollment]}
+										/>
+									)}
 								</Field>
-								<Field>
+								<Field data-invalid={!!errors.shift}>
 									<Label htmlFor="shift">Turno</Label>
-									<Select>
-										<SelectTrigger>
-											<SelectValue placeholder="Turno" />
-										</SelectTrigger>
-										<SelectContent id="shift">
-											<SelectGroup>
-												{scholarShiftValues.map(
-													(shift) => (
-														<SelectItem
-															key={shift}
-															value={shift}
-														>
-															{
-																scholarShiftLabels[
-																	shift
-																]
-															}
-														</SelectItem>
-													),
-												)}
-											</SelectGroup>
-										</SelectContent>
-									</Select>
+									<Controller
+										name="shift"
+										control={control}
+										render={({ field }) => (
+											<Select
+												value={field.value}
+												onValueChange={field.onChange}
+											>
+												<SelectTrigger
+													id="shift"
+													className="w-full"
+													aria-invalid={
+														!!errors.shift
+													}
+												>
+													<SelectValue placeholder="Turno" />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectGroup>
+														{scholarShiftValues.map(
+															(_shift) => (
+																<SelectItem
+																	key={_shift}
+																	value={
+																		_shift
+																	}
+																>
+																	{
+																		scholarShiftLabels[
+																			_shift
+																		]
+																	}
+																</SelectItem>
+															),
+														)}
+													</SelectGroup>
+												</SelectContent>
+											</Select>
+										)}
+									/>
+									{errors.shift && (
+										<FieldError errors={[errors.shift]} />
+									)}
+								</Field>
+								<Field data-invalid={!!errors.gender}>
+									<Label htmlFor="gender">Gênero</Label>
+									<Controller
+										name="gender"
+										control={control}
+										render={({ field }) => (
+											<Select
+												value={field.value}
+												onValueChange={field.onChange}
+											>
+												<SelectTrigger
+													id="gender"
+													className="w-full"
+													aria-invalid={
+														!!errors.gender
+													}
+												>
+													<SelectValue placeholder="Gênero" />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectGroup>
+														{genderValues.map(
+															(g) => (
+																<SelectItem
+																	key={g}
+																	value={g}
+																>
+																	{
+																		genderLabels[
+																			g
+																		]
+																	}
+																</SelectItem>
+															),
+														)}
+													</SelectGroup>
+												</SelectContent>
+											</Select>
+										)}
+									/>
+									{errors.gender && (
+										<FieldError errors={[errors.gender]} />
+									)}
+								</Field>
+								<Field data-invalid={!!errors.phone}>
+									<Label htmlFor="phone">Telefone</Label>
+									<Controller
+										name="phone"
+										control={control}
+										render={({ field }) => (
+											<MaskedInput
+												id="phone"
+												mask="phone"
+												placeholder="(99) 99999-9999"
+												value={field.value}
+												onChange={field.onChange}
+												aria-invalid={!!errors.phone}
+											/>
+										)}
+									/>
+									{errors.phone && (
+										<FieldError errors={[errors.phone]} />
+									)}
 								</Field>
 							</div>
-							<Field>
-								<Label htmlFor="email">E-mail</Label>
-								<Input
-									id="email"
-									name="email"
-									defaultValue="pedro.duarte@example.com"
-								/>
-							</Field>
-							<Field>
-								<Label htmlFor="phone">Telefone</Label>
-								<Input
-									id="phone"
-									name="phone"
-									placeholder="(99) 99999-9999"
-								/>
-							</Field>
-							<Field>
-								<Label htmlFor="cpf">CPF</Label>
-								<Input
-									id="cpf"
-									name="cpf"
-									placeholder="999.999.999-99"
-								/>
-							</Field>
+							{mutationError ? (
+								<Alert variant="destructive">
+									<AlertDescription>
+										{mutationError.message}
+									</AlertDescription>
+								</Alert>
+							) : null}
 						</FieldGroup>
 					</div>
 					<DialogFooter>
 						<DialogClose asChild>
-							<Button type="button" variant="outline">
+							<Button
+								type="button"
+								variant="outline"
+								disabled={isSubmitting || isPending}
+							>
 								Cancelar
 							</Button>
 						</DialogClose>
-						<Button type="submit">Adicionar bolsista</Button>
+						<Button
+							type="submit"
+							disabled={isSubmitting || isPending}
+						>
+							{isPending
+								? "Salvando..."
+								: isEditing
+									? "Salvar alterações"
+									: "Adicionar bolsista"}
+						</Button>
 					</DialogFooter>
-				</DialogContent>
-			</form>
+				</form>
+			</DialogContent>
 		</Dialog>
 	);
 }

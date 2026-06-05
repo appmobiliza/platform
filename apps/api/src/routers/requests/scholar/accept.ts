@@ -2,17 +2,15 @@ import { RequestIdSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db";
 import { and, eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+import { scholarProcedure } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
-import { scholarProcedure } from "@/trpc/context";
-
 export const accept = scholarProcedure
-	.meta({ openapi: { method: "POST", path: "/requests/accept" } })
 	.input(RequestIdSchema)
-	.output(z.any())
+
 	.mutation(async ({ ctx, input }) => {
 		const scholarProfile = await db.query.scholarProfile.findFirst({
 			where: eq(schema.scholarProfile.userId, ctx.session.user.id),

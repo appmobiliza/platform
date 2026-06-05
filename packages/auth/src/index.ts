@@ -2,9 +2,10 @@ import { roleValues } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
 import { authEnv } from "@mobiliza/env/auth";
+
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { testUtils } from "better-auth/plugins";
+
 /*
 const allowedDomains = [
 	"@ufal.br",
@@ -28,6 +29,8 @@ const allowedDomains = [
  * Referência: https://www.better-auth.com/docs/integrations/hono
  */
 export const auth = betterAuth({
+	baseURL: authEnv.BETTER_AUTH_URL,
+
 	database: drizzleAdapter(db, {
 		provider: "pg",
 		schema: {
@@ -78,8 +81,6 @@ export const auth = betterAuth({
 	},
 
 	trustedOrigins: authEnv.TRUSTED_ORIGINS,
-
-	plugins: [testUtils()],
 });
 
 export type Auth = typeof auth;

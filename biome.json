@@ -59,7 +59,9 @@
 						"groups": [
 							["@mobiliza/**"],
 							":BLANK_LINE:",
-							[":PACKAGE:", "!@mobiliza/**", "!@/**"],
+							[":PACKAGE:", "!@mobiliza/**"],
+							":BLANK_LINE:",
+							{ "type": true, "source": ":PACKAGE:" },
 							":BLANK_LINE:",
 							["@/layout/**"],
 							":BLANK_LINE:",
@@ -67,7 +69,19 @@
 							":BLANK_LINE:",
 							["@/hooks/**", "@/utils/**", "@/lib/**"],
 							":BLANK_LINE:",
-							["type::PACKAGE:"]
+							["@/public/**"],
+							":BLANK_LINE:",
+							[
+								":ALIAS:",
+								"!@/layout/**",
+								"!@/components/**",
+								"!@/hooks/**",
+								"!@/utils/**",
+								"!@/lib/**",
+								"!@/public/**"
+							],
+							":BLANK_LINE:",
+							[":PATH:"]
 						]
 					}
 				}

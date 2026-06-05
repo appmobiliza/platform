@@ -1,15 +1,12 @@
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
+import { scholarProcedure } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { scholarProcedure } from "@/trpc/context";
-
 export const toggleAvailability = scholarProcedure
-	.meta({ openapi: { method: "POST", path: "/profiles/availability" } })
-	.output(z.any())
 	.mutation(async ({ ctx }) => {
 		const profile = await db.query.scholarProfile.findFirst({
 			where: eq(schema.scholarProfile.userId, ctx.session.user.id),

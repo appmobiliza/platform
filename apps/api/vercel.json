@@ -1,0 +1,9 @@
+{
+	"crons": [
+		{
+			"path": "/api/cron/check-timeouts",
+			"schedule": "*/5 * * * *"
+		}
+	],
+	"rewrites": [{ "source": "/(.*)", "destination": "/api/index" }]
+}

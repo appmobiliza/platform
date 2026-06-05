@@ -1,10 +1,9 @@
 "use client";
 
+import { Save } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
-
-import { Save } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -44,6 +43,7 @@ export function SettingsHeader() {
 					size={"lg"}
 					className="gap-2 px-3 w-full md:w-auto"
 					type="submit"
+					disabled
 				>
 					<Save className="size-4" />
 					Salvar alterações

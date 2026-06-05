@@ -1,17 +1,16 @@
+import {
+	type ScholarShiftValues,
+	scholarShiftLabels,
+} from "@mobiliza/contracts";
+
+import { Activity, Clock, Hourglass, Users } from "lucide-react";
 import type { Metadata } from "next";
 
-import {
-	Activity,
-	Clock,
-	CloudLightning,
-	TriangleAlert,
-	Users,
-} from "lucide-react";
-
+import { DashboardDate } from "@/components/dashboard/date";
+import { PendingAlert } from "@/components/dashboard/pending-alert";
 import { HorizontalBarsChart } from "@/components/horizontal-bars-chart";
 import { RoutePreview } from "@/components/route-preview";
 import { StatusMessage } from "@/components/status-message";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,42 +25,22 @@ import {
 import type { ChartConfig } from "@/components/ui/chart";
 
 import {
+	type CachedManagerRequest,
+	getCachedManagerList,
+	getCachedScholarDashboard,
+	getCachedSummary,
+} from "@/lib/cached-data";
+import {
 	countBy,
 	formatDurationShort,
 	getRouteLabel,
-	getTodayRange,
-	type ManagerRequest,
 	mapRequestToServiceEntry,
 	toDate,
 } from "@/lib/dashboard-data";
-import { withServerTRPC } from "@/lib/trpc-server";
 import { cn, getInitials } from "@/lib/utils";
 
 export const metadata: Metadata = {
 	title: "Visão Geral",
-};
-
-type MetricsSummary = {
-	totalRequests: number;
-	avgDurationSeconds: number | null;
-};
-
-type ScholarDashboardItem = {
-	user: {
-		id: string;
-		name: string;
-		image: string | null | undefined;
-	};
-	profile: {
-		course: string;
-	};
-	status: "available" | "busy" | "off_shift" | "pending";
-	statusLabel: string;
-	shiftLabel: string;
-};
-
-type ScholarDashboardResponse = {
-	scholars: ScholarDashboardItem[];
 };
 
 const chartConfig = {
@@ -71,7 +50,24 @@ const chartConfig = {
 	},
 } satisfies ChartConfig;
 
-function getScholarBadgeVariant(status: ScholarDashboardItem["status"]) {
+function getScholarStatusLabel(
+	status: "available" | "busy" | "off_shift" | "pending",
+) {
+	switch (status) {
+		case "available":
+			return "Disponível";
+		case "busy":
+			return "Em atendimento";
+		case "off_shift":
+			return "Fora do turno";
+		case "pending":
+			return "Pendente";
+	}
+}
+
+function getScholarBadgeVariant(
+	status: "available" | "busy" | "off_shift" | "pending",
+) {
 	if (status === "available") {
 		return "success";
 	}
@@ -87,7 +83,7 @@ function getScholarBadgeVariant(status: ScholarDashboardItem["status"]) {
 	return "secondary";
 }
 
-function getHourlyChartData(requests: ManagerRequest[]) {
+function getHourlyChartData(requests: CachedManagerRequest[]) {
 	const counts = new Map<string, number>();
 
 	for (const request of requests) {
@@ -104,7 +100,9 @@ function getHourlyChartData(requests: ManagerRequest[]) {
 	}));
 }
 
-function getPendingAlert(requests: ManagerRequest[]) {
+function getPendingData(
+	requests: CachedManagerRequest[],
+): { createdAt: string; name: string } | null {
 	const pending = requests
 		.filter((request) => request.status === "pending")
 		.sort(
@@ -118,26 +116,17 @@ function getPendingAlert(requests: ManagerRequest[]) {
 	}
 
 	return {
-		delay: Math.max(
-			1,
-			Math.floor(
-				(Date.now() - toDate(pending.createdAt).getTime()) / 60_000,
-			),
-		),
+		createdAt: pending.createdAt.toISOString(),
 		name: pending.studentProfile.user.name,
 	};
 }
 
 export default async function DashboardPage() {
-	const todayRange = getTodayRange();
-	const [summary, scholarDashboard, requests] = (await withServerTRPC(
-		async (trpc) =>
-			Promise.all([
-				trpc.metrics.summary(todayRange),
-				trpc.profiles.scholarDashboard(),
-				trpc.requests.managerList({ limit: 100 }),
-			]),
-	)) as [MetricsSummary, ScholarDashboardResponse, ManagerRequest[]];
+	const [summary, scholarDashboard, requests] = await Promise.all([
+		getCachedSummary(),
+		getCachedScholarDashboard(),
+		getCachedManagerList(100),
+	]);
 	const inProgressCount = requests.filter(
 		(request) =>
 			request.status === "accepted" || request.status === "ongoing",
@@ -145,12 +134,11 @@ export default async function DashboardPage() {
 	const availableScholars = scholarDashboard.scholars.filter(
 		(scholar) => scholar.status === "available",
 	).length;
-	const alertData = getPendingAlert(requests);
+	const alertData = getPendingData(requests);
 	const mostRequestedRoutes = countBy(requests, getRouteLabel)
 		.slice(0, 4)
 		.map((item) => ({ route: item.name, requests: item.count }));
 	const lastRequests = requests.slice(0, 6).map(mapRequestToServiceEntry);
-	const currentDate = new Date();
 	const dashboardCards: Array<{
 		icon: typeof Users;
 		title: string;
@@ -165,13 +153,13 @@ export default async function DashboardPage() {
 			footer: "registrados no período",
 		},
 		{
-			icon: CloudLightning,
+			icon: Clock,
 			title: "Em andamento agora",
 			value: String(inProgressCount),
 			footer: "solicitações aceitas ou iniciadas",
 		},
 		{
-			icon: Clock,
+			icon: Hourglass,
 			title: "Tempo médio",
 			value: formatDurationShort(summary.avgDurationSeconds),
 			footer: "atendimentos concluídos",
@@ -189,27 +177,10 @@ export default async function DashboardPage() {
 		<section className="min-w-0 flex-1">
 			<header className="border-b border-border p-4 md:p-6 flex flex-col items-start gap-1 justify-between bg-card">
 				<h1 className="text-base font-semibold">Visão Geral</h1>
-				<h2 className="text-sm text-muted-foreground">
-					{currentDate.toLocaleDateString("pt-BR", {
-						weekday: "long",
-						day: "2-digit",
-						month: "long",
-						year: "numeric",
-					})}
-				</h2>
+				<DashboardDate />
 			</header>
 			<div className="p-4 flex flex-col gap-4 md:p-6">
-				{alertData ? (
-					<Alert variant={"warning"}>
-						<TriangleAlert className="h-4 w-4" />
-						<AlertTitle>Alerta de espera</AlertTitle>
-						<AlertDescription>
-							A solicitação de {alertData.name} aguarda resposta
-							há {alertData.delay} min. Nenhum bolsista aceitou
-							ainda.
-						</AlertDescription>
-					</Alert>
-				) : null}
+				{alertData ? <PendingAlert data={alertData} /> : null}
 
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 					{dashboardCards.map(
@@ -282,7 +253,13 @@ export default async function DashboardPage() {
 															{scholar.user.name}
 														</span>
 														<span className="text-xs">
-															{scholar.shiftLabel}{" "}
+															{
+																scholarShiftLabels[
+																	scholar
+																		.profile
+																		.shift as ScholarShiftValues
+																]
+															}{" "}
 															·{" "}
 															{
 																scholar.profile
@@ -297,14 +274,16 @@ export default async function DashboardPage() {
 														scholar.status,
 													)}
 												>
-													{scholar.statusLabel}
+													{getScholarStatusLabel(
+														scholar.status,
+													)}
 												</Badge>
 											</li>
 										))
 								) : (
 									<div className="flex items-center justify-center h-full">
 										<StatusMessage
-											className="max-w-1/2"
+											className="xl:max-w-1/2"
 											title="Nenhum bolsista encontrado."
 											description="Os status dos bolsistas serão exibidos aqui assim que houver registros."
 										/>
@@ -328,7 +307,7 @@ export default async function DashboardPage() {
 							) : (
 								<div className="flex items-center justify-center h-full">
 									<StatusMessage
-										className="max-w-1/2"
+										className="xl:max-w-1/2"
 										title="Nenhuma solicitação registrada hoje."
 										description="Os dados de demanda por horário serão exibidos aqui assim que houver solicitações."
 									/>
@@ -357,7 +336,7 @@ export default async function DashboardPage() {
 									</li>
 								))
 							) : (
-								<li className="text-sm text-muted-foreground">
+								<li className="text-sm text-muted-foreground w-full text-nowrap">
 									Nenhuma rota registrada.
 								</li>
 							)}

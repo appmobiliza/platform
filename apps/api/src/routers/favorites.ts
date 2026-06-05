@@ -6,58 +6,32 @@ import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import {
-	AppError,
 	createFavoriteRoute,
 	deleteFavoriteRoute,
 } from "@mobiliza/domain";
-
-import { TRPCError } from "@trpc/server";
-
-import { toTRPCCode } from "@/utils/error";
-
-import { protectedProcedure, router } from "@/trpc/context";
+import { protectedProcedure, router } from "@mobiliza/trpc";
 
 export const favoritesRouter = router({
 	create: protectedProcedure
 		.input(CreateFavoriteRouteSchema)
 		.mutation(async ({ ctx, input }) => {
-			try {
-				const route = await createFavoriteRoute(
-					input,
-					ctx.session.user.id,
-					db,
-				);
-				return route;
-			} catch (error) {
-				if (error instanceof AppError) {
-					throw new TRPCError({
-						code: toTRPCCode(error),
-						message: error.message,
-					});
-				}
-				throw error;
-			}
+			const route = await createFavoriteRoute(
+				input,
+				ctx.session.user.id,
+				db,
+			);
+			return route;
 		}),
 
 	delete: protectedProcedure
 		.input(DeleteFavoriteRouteSchema)
 		.mutation(async ({ ctx, input }) => {
-			try {
-				const result = await deleteFavoriteRoute(
-					input.routeId,
-					ctx.session.user.id,
-					db,
-				);
-				return result;
-			} catch (error) {
-				if (error instanceof AppError) {
-					throw new TRPCError({
-						code: toTRPCCode(error),
-						message: error.message,
-					});
-				}
-				throw error;
-			}
+			const result = await deleteFavoriteRoute(
+				input.routeId,
+				ctx.session.user.id,
+				db,
+			);
+			return result;
 		}),
 
 	list: protectedProcedure.query(async ({ ctx }) => {
