@@ -1,9 +1,9 @@
-import { insertStudentSchema } from "@mobiliza/contracts";
+import { InsertStudentSchema } from "@mobiliza/contracts";
 
 import { z } from "zod";
 
 export const ProfileDisabilitiesSchema = z.object({
-	disabilities: insertStudentSchema.shape.disabilityTypes,
+	disabilities: InsertStudentSchema.shape.disabilityTypes,
 });
 
 export const ProfileObservationSchema = z.object({

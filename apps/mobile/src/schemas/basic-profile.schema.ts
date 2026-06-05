@@ -1,4 +1,4 @@
-import { insertScholarSchema, insertStudentSchema } from "@mobiliza/contracts";
+import { InsertScholarSchema, InsertStudentSchema } from "@mobiliza/contracts";
 
 import { z } from "zod";
 
@@ -11,14 +11,14 @@ export const ProfileNameSchema = z.object({
 		.refine((val) => val.split(/\s+/).filter(Boolean).length >= 2, {
 			message: "Nome deve ser completo"
 		}),
-	nickname: insertStudentSchema.shape.nickname
+	nickname: InsertStudentSchema.shape.nickname
 });
 
-export const ProfileGenderSchema = insertStudentSchema.pick({ gender: true });
+export const ProfileGenderSchema = InsertStudentSchema.pick({ gender: true });
 
-export const ProfilePhoneSchema = insertStudentSchema.pick({ phone: true });
+export const ProfilePhoneSchema = InsertStudentSchema.pick({ phone: true });
 
-export const ProfileCpfSchema = insertScholarSchema.pick({ cpf: true });
+export const ProfileCpfSchema = InsertScholarSchema.pick({ cpf: true });
 
 export const ProfileEmailSchema = z.object({
 	email: z.string().trim().email("E-mail inválido"),
