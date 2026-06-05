@@ -37,6 +37,7 @@
 	},
 	"devDependencies": {
 		"@mobiliza/typescript-config": "workspace:*",
-		"@types/node": "^25.8.0"
+		"@types/node": "^25.8.0",
+		"dotenv": "^17.4.2"
 	}
 }

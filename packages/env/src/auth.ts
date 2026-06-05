@@ -1,7 +1,9 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
-import { commaSeparatedOrigins } from "./shared";
+import { commaSeparatedOrigins, loadEnv } from "./shared";
+
+await loadEnv("../../.env");
 
 export const authEnv = createEnv({
 	server: {

@@ -62,13 +62,29 @@ A base atual do repositório inclui:
 pnpm install
 ```
 
-2. Configure as variáveis de ambiente necessárias no arquivo `.env` da raiz.
+2. Configure as variáveis de ambiente conforme o template na raiz:
+
+```bash
+cp .env.example .env
+```
 
 3. Execute o ambiente de desenvolvimento:
 
 ```bash
 pnpm dev
 ```
+
+---
+
+## 🌍 Variáveis de ambiente
+
+Para o desenvolvimento local, as variáveis de ambiente devem ser definidas em um arquivo `.env` na raiz do projeto, seguindo o modelo disponível em [`.env.example`](.env.example).
+
+O pacote [`packages/env`](packages/env) é o responsável por carregar e validar essas variáveis a partir do `.env` da raiz, utilizando `dotenv` e `zod`.  
+As aplicações e pacotes do monorepo importam as variáveis exclusivamente pelos módulos públicos deste pacote (`@mobiliza/env`, `@mobiliza/env/api`, `@mobiliza/env/auth`, etc.), evitando acesso direto a `process.env`.
+
+> [!NOTE] 
+> Em ambientes hospedados (produção, staging, etc.), a configuração das variáveis de ambiente é abstraída automaticamente pelos serviços de cloud ou pelo provedor de deploy — não sendo necessário manter um arquivo `.env` local nesses casos.
 
 ---
 
@@ -97,7 +113,8 @@ pnpm store prune
 pnpm install
 ```
 
-> ⚠️ Os comandos acima removem completamente os diretórios `node_modules`, `.turbo`, `dist` e `build` de todo o monorepo, e em seguida limpam o cache global de pacotes do pnpm. Depois disso, uma nova instalação é feita.
+> [!WARNING] 
+> Os comandos acima removem completamente os diretórios `node_modules`, `.turbo`, `dist` e `build` de todo o monorepo, e em seguida limpam o cache global de pacotes do pnpm. Depois disso, uma nova instalação é feita.
 
 ---
 
@@ -128,7 +145,7 @@ flowchart LR
 
 ## 🤝 Direção do projeto
 
-Este repositório está organizado como base de evolução da plataforma Mobiliza. A ideia é manter a lógica compartilhada fora das aplicações e deixar cada app com sua responsabilidade clara.
+Este repositório foi organizado com a ideia de manter a lógica compartilhada fora das aplicações e deixar cada app com sua responsabilidade clara.
 
 Nos READMEs individuais, cada pacote e aplicação tem sua própria documentação com detalhes de execução, escopo e decisões de implementação.
 
