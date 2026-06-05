@@ -14,7 +14,6 @@
 		"@faker-js/faker": "^9.6.0",
 		"@mobiliza/contracts": "workspace:*",
 		"@mobiliza/db": "workspace:*",
-		"dotenv": "^17.4.2",
 		"drizzle-orm": "^0.45.2",
 		"uuidv7": "^1.2.1"
 	},

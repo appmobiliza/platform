@@ -8,8 +8,6 @@
  *   pnpm dev  →  tsx watch src/server.ts
  */
 
-import "dotenv/config";
-
 import { apiEnv } from "@mobiliza/env/api";
 import { realtimeEnv } from "@mobiliza/env/realtime";
 

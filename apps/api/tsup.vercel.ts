@@ -8,5 +8,6 @@ export default defineConfig({
 	bundle: true,
 	splitting: false,
 	noExternal: [/^@mobiliza\//],
+	external: ['dotenv'],
 	target: 'node20',
 })

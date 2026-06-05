@@ -79,9 +79,6 @@ importers:
       '@types/node':
         specifier: ^25.9.0
         version: 25.9.1
-      dotenv:
-        specifier: ^17.4.2
-        version: 17.4.2
       jest:
         specifier: 29.7.0
         version: 29.7.0(@types/node@25.9.1)
@@ -538,9 +535,6 @@ importers:
       ably:
         specifier: ^2.21.0
         version: 2.21.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      dotenv:
-        specifier: ^17.4.2
-        version: 17.4.2
       pusher:
         specifier: ^5.3.3
         version: 5.3.3
@@ -581,9 +575,6 @@ importers:
       '@mobiliza/db':
         specifier: workspace:*
         version: link:../db
-      dotenv:
-        specifier: ^17.4.2
-        version: 17.4.2
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(@neondatabase/serverless@1.1.0)(kysely@0.28.17)
