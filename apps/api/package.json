@@ -16,7 +16,7 @@
 		"test": "NODE_OPTIONS=--experimental-vm-modules jest",
 		"test:coverage": "jest --coverage",
 		"check-infra": "tsx scripts/check-infra.ts",
-		"build:vercel": "tsup --config tsup.vercel.ts && rm -f api/index.ts"
+		"build:vercel": "tsup --config tsup.vercel.ts"
 	},
 	"dependencies": {
 		"@hono/node-server": "^1.19.14",

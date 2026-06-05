@@ -1,6 +1,12 @@
 /**
  * Entry point para a Vercel Serverless Function.
  *
+ * No deploy, o `buildCommand` (definido em vercel.json) executa
+ * `tsup --config tsup.vercel.ts` antes do @vercel/node compilar
+ * este arquivo. O tsup produz dist/bundle.js com todos os pacotes
+ * do monorepo (@mobiliza/*) compilados e inline. Este entrypoint
+ * apenas re-exporta o app montado a partir desse bundle.
+ *
  * A Vercel descobre este arquivo pela convenção de pasta `api/`.
  * O `handle` do hono/vercel adapta o `app.fetch` para o formato
  * de handler esperado pelas Serverless Functions da Vercel.
@@ -11,7 +17,7 @@
 
 import { handle } from "hono/vercel";
 
-import app from "../src/index";
+import app from "../dist/bundle.js";
 
 export const runtime = "nodejs";
 
