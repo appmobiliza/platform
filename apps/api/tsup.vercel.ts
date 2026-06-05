@@ -23,24 +23,11 @@ import { defineConfig } from "tsup";
  * Localmente o entrypoint não é usado (roda com tsx src/server.ts).
  */
 export default defineConfig({
-	entry: {
-		bundle: "src/index.ts",
-	},
-	format: "esm",
-	target: "node22",
-	clean: false,
-	dts: false,
-	sourcemap: false,
-	splitting: false,
-	treeshake: true,
-	noExternal: [
-		"@mobiliza/auth",
-		"@mobiliza/contracts",
-		"@mobiliza/db",
-		"@mobiliza/domain",
-		"@mobiliza/env",
-		"@mobiliza/realtime",
-		"@mobiliza/trpc",
-	],
-	outDir: "dist",
-});
+	entry: ['src/index.ts'],
+	format: ['esm'],
+	outDir: 'dist',
+	outExtension: () => ({ js: '.js' }),
+	bundle: true,
+	noExternal: [/^@mobiliza\//], // ← this is the critical line
+	target: 'node20',
+})
