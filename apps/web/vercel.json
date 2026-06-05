@@ -1,3 +1,0 @@
-{
-	"buildCommand": "cd ../.. && turbo run build --filter=@mobiliza/web"
-}
