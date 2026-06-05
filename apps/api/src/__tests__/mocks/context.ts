@@ -5,9 +5,9 @@
  * procedures protegidas.
  */
 
-import { jest } from "@jest/globals";
+import type { Session, TRPCContext } from "@mobiliza/trpc";
 
-import type { Session, TRPCContext } from "../../trpc/context";
+import { jest } from "@jest/globals";
 
 export function createMockTRPCContext(
 	overrides: Partial<TRPCContext> = {},
@@ -29,10 +29,10 @@ export function createMockTRPCContext(
 	return {
 		session: defaultSession,
 		realtime: {
-			publish: jest.fn(async () => {}),
-			subscribe: jest.fn(() => () => {}),
-			unsubscribe: jest.fn(async () => {}),
-			disconnect: jest.fn(async () => {}),
+			publish: jest.fn(async () => { }),
+			subscribe: jest.fn(() => () => { }),
+			unsubscribe: jest.fn(async () => { }),
+			disconnect: jest.fn(async () => { }),
 		},
 		headers: new Headers(),
 		...overrides,
@@ -43,10 +43,10 @@ export function createNullSessionContext(): TRPCContext {
 	return {
 		session: null,
 		realtime: {
-			publish: jest.fn(async () => {}),
-			subscribe: jest.fn(() => () => {}),
-			unsubscribe: jest.fn(async () => {}),
-			disconnect: jest.fn(async () => {}),
+			publish: jest.fn(async () => { }),
+			subscribe: jest.fn(() => () => { }),
+			unsubscribe: jest.fn(async () => { }),
+			disconnect: jest.fn(async () => { }),
 		},
 		headers: new Headers(),
 	};

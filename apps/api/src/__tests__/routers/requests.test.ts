@@ -586,7 +586,7 @@ describe("requestsRouter", () => {
 			caller = appRouter.createCaller(() => session);
 
 			// Act
-			const result = await caller.requests.myHistory({
+			const result = await caller.requests.studentHistory({
 				limit: 20,
 			});
 
@@ -615,7 +615,7 @@ describe("requestsRouter", () => {
 			caller = appRouter.createCaller(() => session);
 
 			// Act
-			const result = await caller.requests.myHistory({
+			const result = await caller.requests.studentHistory({
 				limit: 20,
 			});
 
@@ -648,7 +648,7 @@ describe("requestsRouter", () => {
 			caller = appRouter.createCaller(() => session);
 
 			// Act
-			const result = await caller.requests.available();
+			const result = await caller.requests.pending();
 
 			// Assert
 			expect(result).toHaveLength(1);

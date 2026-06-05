@@ -6,6 +6,7 @@ import { describe, expect, test } from "@jest/globals";
 import { uuidv7 } from "uuidv7";
 
 import { appRouter } from "../../router";
+import { createScholarSession, createStudentSession } from "../mocks/context";
 
 describe("Profiles: Update Mutations", () => {
 	test("updateStudent should update profile fields and disabilities", async () => {
@@ -37,12 +38,13 @@ describe("Profiles: Update Mutations", () => {
 			.then((r) => r[0]);
 
 		// 2. Mock context
-		const ctx = {
-			session: { user: studentUser },
-			user: studentUser,
-		} as any;
-
-		const caller = appRouter.createCaller(ctx);
+		const caller = appRouter.createCaller(
+			createStudentSession({
+				id: studentUser.id,
+				name: studentUser.name,
+				email: studentUser.email,
+			}),
+		);
 
 		// 3. Act
 		await caller.profiles.updateStudent({
@@ -87,6 +89,7 @@ describe("Profiles: Update Mutations", () => {
 				shift: "morning",
 				enrollment: `ENROLL_${uuidv7()}`,
 				phone: "82999999999",
+				gender: "prefer_not_to_say",
 				cpf: Math.floor(Math.random() * 10000000000)
 					.toString()
 					.padStart(11, "0"),
@@ -96,12 +99,13 @@ describe("Profiles: Update Mutations", () => {
 			.then((r) => r[0]);
 
 		// 2. Mock context
-		const ctx = {
-			session: { user: scholarUser },
-			user: scholarUser,
-		} as any;
-
-		const caller = appRouter.createCaller(ctx);
+		const caller = appRouter.createCaller(
+			createScholarSession({
+				id: scholarUser.id,
+				name: scholarUser.name,
+				email: scholarUser.email,
+			}),
+		);
 
 		// 3. Act
 		await caller.profiles.updateScholar({

@@ -1,4 +1,3 @@
-import { describe, expect, jest, test } from "@jest/globals";
 import { db } from "@mobiliza/db/client";
 import { eq } from "@mobiliza/db/drizzle";
 import {
@@ -7,9 +6,12 @@ import {
 	studentProfile,
 	user,
 } from "@mobiliza/db/schema";
+
+import { describe, expect, jest, test } from "@jest/globals";
 import { uuidv7 } from "uuidv7";
 
 import { appRouter } from "../../router";
+import { createMockTRPCContext } from "../mocks/context";
 
 describe("Security/Stability: Realtime Outage", () => {
 	test("create request should succeed even if realtime.publish fails", async () => {
@@ -68,18 +70,29 @@ describe("Security/Stability: Realtime Outage", () => {
 			.then((r) => r[0]);
 
 		// 2. Mock context with FAILING realtime
-		const ctx = {
-			session: { user: studentUser },
-			user: studentUser,
-			realtime: {
-				publish: jest
-					.fn()
-					.mockRejectedValue(new Error("Supabase is down!")),
-				subscribe: jest.fn(),
-				unsubscribe: jest.fn(),
-				disconnect: jest.fn(),
+		const ctx = createMockTRPCContext({
+			session: {
+				user: {
+					id: studentUser.id,
+					name: studentUser.name,
+					email: studentUser.email,
+					role: "student",
+					image: null,
+				},
+				session: {
+					id: "test-session-id",
+					expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+				},
 			},
-		} as any;
+			realtime: {
+				publish: jest.fn(async () => {
+					throw new Error("Supabase is down!");
+				}),
+				subscribe: jest.fn(() => () => { }),
+				unsubscribe: jest.fn(async () => { }),
+				disconnect: jest.fn(async () => { }),
+			},
+		});
 
 		const caller = appRouter.createCaller(ctx);
 

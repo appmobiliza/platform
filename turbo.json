@@ -5,7 +5,20 @@
 		"build": {
 			"dependsOn": ["^build"],
 			"inputs": ["$TURBO_DEFAULT$", ".env*"],
-			"outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+			"outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+			"env": [
+				"PORT",
+				"NODE_ENV",
+				"TRUSTED_ORIGINS",
+				"CRON_SECRET",
+				"BETTER_AUTH_SECRET",
+				"BETTER_AUTH_URL",
+				"GOOGLE_CLIENT_ID",
+				"GOOGLE_CLIENT_SECRET",
+				"DATABASE_URL",
+				"REALTIME_PROVIDER",
+				"ABLY_API_KEY"
+			]
 		},
 		"//#format-and-lint": {},
 		"//#format-and-lint:fix": {

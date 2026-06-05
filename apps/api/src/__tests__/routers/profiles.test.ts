@@ -218,7 +218,9 @@ describe("profilesRouter", () => {
 			caller = appRouter.createCaller(() => session);
 
 			// Act
-			const result = await caller.profiles.createScholar({
+			const result = await caller.profiles.createScholarAsManager({
+				email: user.email,
+				name: user.name,
 				enrollment: "2024007",
 				course: "Ciência da Computação",
 				campus: "Campus A.C. Simões",
@@ -247,7 +249,9 @@ describe("profilesRouter", () => {
 			caller = appRouter.createCaller(() => session);
 
 			// Act
-			const result = await caller.profiles.createScholar({
+			const result = await caller.profiles.createScholarAsManager({
+				email: user.email,
+				name: user.name,
 				enrollment: "2024008",
 				course: "Ciência da Computação",
 				campus: "Campus A.C. Simões",

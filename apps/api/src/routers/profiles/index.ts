@@ -14,6 +14,7 @@ import { updateScholarAsManager } from "./scholar/updateScholarAsManager";
 import { updateScholarSchedule } from "./scholar/updateScholarSchedule";
 import { createStudent } from "./student/createStudent";
 import { studentDashboard } from "./student/studentDashboard";
+import { updateStudent } from "./student/updateStudent";
 
 /**
  * Router de perfis modularizado.
@@ -28,6 +29,7 @@ export const profilesRouter = router({
 	toggleAvailability,
 	scholarDashboard,
 	studentDashboard,
+	updateStudent,
 	scholarWeeklySchedule,
 	getSchedules,
 	updateScholarSchedule,

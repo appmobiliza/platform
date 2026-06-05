@@ -58,6 +58,7 @@ describe("Security: PII Leak in requests.available", () => {
 			course: "Matemática",
 			campus: "Campus A.C. Simões",
 			shift: "morning",
+			gender: "prefer_not_to_say",
 			isAvailable: true,
 			enrollment: "654321",
 			phone: "82888888888",
@@ -101,26 +102,28 @@ describe("Security: PII Leak in requests.available", () => {
 		// 2. Mock context as the scholar
 		const ctx = {
 			session: { user: scholarUser },
-			user: scholarUser,
-			realtime: { publish: async () => {} },
-		} as any;
+			realtime: { publish: async () => { } },
+		};
 
-		const caller = appRouter.createCaller(ctx);
+		const caller = appRouter.createCaller(
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			ctx as any,
+		);
 
 		// 3. Act
-		const availableRequests = await caller.requests.available();
+		const pendingRequests = await caller.requests.pending();
 
 		// 4. Assert
-		const request = availableRequests.find(
-			(r: any) => r.studentProfileId === sProfile.id,
+		const request = pendingRequests.find(
+			(r) => r.studentProfileId === sProfile.id,
 		);
 		expect(request).toBeDefined();
-
-		const studentUserResult = request.studentProfile.user;
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const studentUserResult = request!.studentProfile.user;
 		expect(studentUserResult).toBeDefined();
-		// This is the RED phase: these will currently fail because email and name ARE returned
-		expect(studentUserResult.email).toBeUndefined();
-		expect(studentUserResult.name).toBeUndefined();
+		// Drizzle's `columns` config excludes PII — verify they are NOT present
+		expect("email" in studentUserResult).toBe(false);
+		expect("name" in studentUserResult).toBe(false);
 
 		// Cleanup
 		await db
