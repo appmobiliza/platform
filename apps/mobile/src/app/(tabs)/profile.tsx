@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
-import { useUserRole } from "@/lib/auth-store";
+import { useUser, useUserRole } from "@/lib/auth-store";
 import { cn } from "@/lib/utils";
 
 const options = [
@@ -58,6 +58,7 @@ const options = [
 export default function Profile() {
 	const insets = useSafeAreaInsets();
 	const role = useUserRole();
+	const user = useUser();
 
 	const renderItem = useCallback(
 		({
@@ -115,7 +116,9 @@ export default function Profile() {
 						}}
 					>
 						<Image
-							source={{ uri: "https://i.pravatar.cc/300" }}
+							source={{
+								uri: user.image ?? "https://i.pravatar.cc/300",
+							}}
 							style={{
 								width: 96,
 								height: 96,
@@ -128,10 +131,10 @@ export default function Profile() {
 							contentPosition="center"
 						/>
 						<Text className="font-bold text-2xl text-primary-foreground">
-							Fulano da Silva
+							{user.name || "Usuário"}
 						</Text>
 						<Text className="font-normal text-lg text-primary-foreground">
-							als@ic.ufal.br
+							{user.email}
 						</Text>
 					</View>
 				}

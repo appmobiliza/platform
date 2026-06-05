@@ -5,7 +5,10 @@
 	"description": "Servidor HTTP do Mobiliza — Hono + tRPC + Better Auth",
 	"type": "module",
 	"exports": {
-		"./router": "./src/router.ts"
+		"./router": {
+			"types": "./src/router.ts",
+			"default": "./dist/router.js"
+		}
 	},
 	"scripts": {
 		"dev": "tsx watch src/server.ts",
@@ -14,8 +17,7 @@
 		"check-types": "tsc --noEmit",
 		"test": "NODE_OPTIONS=--experimental-vm-modules jest",
 		"test:coverage": "jest --coverage",
-		"check-infra": "tsx scripts/check-infra.ts",
-		"build:vercel": "pnpm exec tsup --config tsup.vercel.ts"
+		"check-infra": "tsx scripts/check-infra.ts"
 	},
 	"dependencies": {
 		"@hono/node-server": "^1.19.14",
@@ -32,8 +34,8 @@
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
-		"@jest/globals": "29.7.0",
 		"@mobiliza/typescript-config": "workspace:*",
+		"@jest/globals": "29.7.0",
 		"@trpc/server": "^11.17.0",
 		"@types/jest": "29.5.14",
 		"@types/node": "^25.9.0",

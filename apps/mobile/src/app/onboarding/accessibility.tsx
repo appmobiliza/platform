@@ -1,7 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { ScrollView, View } from "react-native";
+import { Alert, ScrollView, View } from "react-native";
 
 import BoxOptions from "@/components/box-options";
 import { Header } from "@/components/header";
@@ -11,13 +12,17 @@ import { Field, FieldGroup, FieldSet } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { Text } from "@/components/ui/text";
 
-import { setIsLoggedIn } from "@/lib/auth-store";
+import { authClient } from "@/lib/auth-client";
+import { cacheUserInfo, setHasProfile } from "@/lib/auth-store";
+import { clearOnboardingData, getOnboardingData } from "@/lib/onboarding-store";
+import { trpc } from "@/lib/trpc/client";
 
 import { onboardingSteps } from "@/constants/onboarding";
 import {
 	type ProfileAccessibilityInput,
 	ProfileAccessibilitySchema,
 } from "@/schemas";
+import { toSessionUser } from "@/types/session";
 
 export default function AccessibilityInfo() {
 	const { control, handleSubmit } = useForm<ProfileAccessibilityInput>({
@@ -29,14 +34,80 @@ export default function AccessibilityInfo() {
 		mode: "onTouched",
 	});
 
-	// const handleFinish = handleSubmit(() => {
-	// 	// TODO: Integrar com API quando backend estiver pronto
-	// 	setIsLoggedIn(true);
-	// });
+	const router = useRouter();
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const handleFinish = () => {
-		setIsLoggedIn(true);
-	};
+	const createStudent = trpc.profiles.createStudent.useMutation();
+
+	const handleFinish = handleSubmit(
+		async (data) => {
+			setIsSubmitting(true);
+			console.log(data);
+
+			try {
+				// Recupera dados da sessão atual
+				const session = await authClient.getSession();
+				const user = toSessionUser(
+					session.data?.user as Record<string, unknown>,
+				);
+
+				console.log(user);
+
+				// Recupera dados coletados nas etapas anteriores
+				const onboardingData = getOnboardingData();
+
+				// Cria o perfil do estudante via tRPC
+				await createStudent.mutateAsync({
+					enrollment: onboardingData.enrollment,
+					course: onboardingData.course as never,
+					shift: onboardingData.shift as never,
+					campus: onboardingData.campus as never,
+					phone: onboardingData.phone,
+					gender: onboardingData.gender as never,
+					simplifiedInterface: data.simplifiedInterface,
+					disabilityTypes: data.disabilityTypes as never,
+				});
+
+				console.log("Perfil do estudante criado com sucesso");
+
+				// Atualiza cache local indicando que o onboarding foi concluído
+				setHasProfile(true);
+
+				cacheUserInfo({
+					id: user?.id ?? "",
+					name: user?.name ?? "",
+					email: user?.email ?? "",
+					image: user?.image ?? null,
+					role: user?.role ?? "student",
+				});
+
+				// Limpa dados temporários do onboarding
+				clearOnboardingData();
+
+				// Redireciona para o app principal
+				router.replace("/(tabs)");
+			} catch (error) {
+				console.error("Erro ao finalizar onboarding:", error);
+				Alert.alert(
+					"Erro",
+					"Não foi possível finalizar seu cadastro. Tente novamente.",
+				);
+			} finally {
+				setIsSubmitting(false);
+			}
+		},
+		(errors) => {
+			Alert.alert(
+				"Erro",
+				"Por favor, corrija os erros no formulário antes de continuar.",
+			);
+			console.log("ERRORS", errors);
+		},
+	);
+
+	// const handleFinish = () => {
+	// 	setIsLoggedIn(true);
+	// };
 
 	return (
 		<View className="flex-1">
@@ -91,8 +162,12 @@ export default function AccessibilityInfo() {
 					</FieldGroup>
 				</FieldSet>
 
-				<Button className="mt-8" onPress={handleFinish}>
-					<Text>Concluir</Text>
+				<Button
+					className="mt-8"
+					onPress={handleFinish}
+					disabled={isSubmitting}
+				>
+					<Text>{isSubmitting ? "Salvando..." : "Concluir"}</Text>
 				</Button>
 			</ScrollView>
 		</View>

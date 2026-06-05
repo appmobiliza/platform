@@ -4,7 +4,6 @@ import { AppError, createRequest } from "@mobiliza/domain";
 import { protectedProcedure } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 
 export const create = protectedProcedure
 	.input(CreateRequestSchema)

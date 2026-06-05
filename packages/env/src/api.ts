@@ -1,7 +1,9 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
-import { commaSeparatedOrigins, nodeEnvSchema, optionalString } from "./shared";
+import { commaSeparatedOrigins, loadEnv, nodeEnvSchema, optionalString } from "./shared";
+
+await loadEnv("../../.env");
 
 export const apiEnv = createEnv({
 	server: {

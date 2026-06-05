@@ -1,14 +1,18 @@
 import { useRouter } from "expo-router";
-import { Linking, View } from "react-native";
+import { useState } from "react";
+import { Alert, Linking, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
-import { setIsLoggedIn, setUserRole, UserRole } from "@/lib/auth-store";
+import { authClient } from "@/lib/auth-client";
+import { cacheUserInfo, getHasProfile, setHasProfile } from "@/lib/auth-store";
+import { trpc } from "@/lib/trpc/client";
 
 import GoogleIcon from "@/assets/google";
 import { Logo } from "@/assets/logo";
+import { toSessionUser } from "@/types/session";
 
 const openURL = (url: string) => {
 	Linking.openURL(url).catch((err) => {
@@ -19,10 +23,103 @@ const openURL = (url: string) => {
 export default function Auth() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
+	const [isLoading, setIsLoading] = useState(false);
 
-	const handleLogin = (role: UserRole) => {
-		setUserRole(role);
-		setIsLoggedIn(true);
+	const handleGoogleLogin = async () => {
+		setIsLoading(true);
+
+		try {
+			const { error } = await authClient.signIn.social({
+				provider: "google",
+				callbackURL: "/auth",
+			});
+
+			if (error) {
+				setIsLoading(false);
+				Alert.alert(
+					"Erro de autenticação",
+					error.message ?? "Não foi possível fazer login com Google.",
+				);
+				return;
+			}
+
+			// Busca a sessão recém-criada
+			const { data: sessionData } = await authClient.getSession();
+
+			if (!sessionData?.user) {
+				setIsLoading(false);
+				Alert.alert(
+					"Erro",
+					"Não foi possível recuperar os dados da sessão.",
+				);
+				return;
+			}
+
+			const user = toSessionUser(
+				sessionData.user as Record<string, unknown>,
+			);
+
+			if (!user) {
+				setIsLoading(false);
+				Alert.alert("Erro", "Dados do usuário não disponíveis.");
+				return;
+			}
+
+			// Cacheia dados básicos do usuário em MMKV
+			cacheUserInfo({
+				id: user.id,
+				name: user.name,
+				email: user.email,
+				image: user.image,
+				role: user.role,
+			});
+
+			// Scholar — loga direto (perfil gerenciado pelo gestor)
+			if (user.role === "scholar") {
+				setHasProfile(true);
+				setIsLoading(false);
+				router.replace("/(tabs)");
+				return;
+			}
+
+			// Student — verifica se já tem perfil (onboarding completo)
+			if (getHasProfile()) {
+				setIsLoading(false);
+				router.replace("/(tabs)");
+				return;
+			}
+
+			// Verifica no servidor se o perfil de estudante existe
+			try {
+				const profileData = await trpc.profiles.me.query();
+
+				const hasStudentProfile =
+					"studentProfile" in profileData &&
+					profileData.studentProfile != null;
+
+				setHasProfile(hasStudentProfile);
+
+				if (hasStudentProfile) {
+					setIsLoading(false);
+					router.replace("/(tabs)");
+					return;
+				}
+			} catch {
+				// Erro ao consultar perfil — assume que não existe (primeiro acesso)
+				setHasProfile(false);
+			}
+
+			// Primeiro acesso — redireciona para o onboarding
+			setIsLoading(false);
+			router.replace("/onboarding/unregistered");
+		} catch (err) {
+			setIsLoading(false);
+			console.error("Google login error:", err);
+			Alert.alert(
+				"Erro de autenticação",
+				"Ocorreu um erro inesperado ao tentar fazer login.",
+			);
+		}
 	};
 
 	return (
@@ -48,31 +145,15 @@ export default function Auth() {
 
 					<Button
 						className="relative mb-3"
-						onPress={() => handleLogin(UserRole.Student)}
-						variant={"inverted"}
-						size={"lg"}
+						onPress={handleGoogleLogin}
+						variant="inverted"
+						size="lg"
+						disabled={isLoading}
 					>
 						<GoogleIcon />
-						<Text>Entrar como Aluno</Text>
-					</Button>
-
-					<Button
-						className="relative"
-						onPress={() => handleLogin(UserRole.Scholar)}
-						variant={"outline"}
-						size={"lg"}
-					>
-						<GoogleIcon />
-						<Text>Entrar como Bolsista</Text>
-					</Button>
-
-					<Button
-						className="relative"
-						onPress={() => router.push("/onboarding")}
-						variant={"ghost"}
-						size={"sm"}
-					>
-						<Text>Testar onboarding</Text>
+						<Text>
+							{isLoading ? "Entrando..." : "Entrar com Google"}
+						</Text>
 					</Button>
 
 					<Text className="text-center text-sm text-muted-foreground mt-8">

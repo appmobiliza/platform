@@ -1,14 +1,12 @@
-import { CreateRequestSchema } from "@mobiliza/contracts";
+import { CreateRequestSchema, ServiceRequestSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { AppError, createRequest } from "@mobiliza/domain";
 import { protectedProcedure } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 
 export const create = protectedProcedure
 	.input(CreateRequestSchema)
-
 	.mutation(async ({ ctx, input }) => {
 		try {
 			const request = await createRequest(input, ctx.session.user.id, db);

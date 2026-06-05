@@ -1,12 +1,12 @@
-import { insertStudentSchema } from "@mobiliza/contracts";
+import { InsertStudentSchema } from "@mobiliza/contracts";
 
 import { z } from "zod";
 
-export const ProfileDisabilitiesSchema = insertStudentSchema.pick({ disabilityTypes: true });
+export const ProfileDisabilitiesSchema = InsertStudentSchema.pick({ disabilityTypes: true });
 
-export const ProfileObservationSchema = insertStudentSchema.pick({ attendanceNotes: true });
+export const ProfileObservationSchema = InsertStudentSchema.pick({ attendanceNotes: true });
 
-export const ProfileSimplifiedInterfaceSchema = insertStudentSchema.pick({ simplifiedInterface: true });
+export const ProfileSimplifiedInterfaceSchema = InsertStudentSchema.pick({ simplifiedInterface: true });
 
 export const ProfileAccessibilitySchema = z.object({
 	...ProfileDisabilitiesSchema.shape,

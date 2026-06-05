@@ -33,3 +33,8 @@ export function requireEnvVar<
 
 	return value;
 }
+
+export async function loadEnv(path: string) {
+	const dotenv = await import("dotenv");
+	dotenv.config({ path });
+}

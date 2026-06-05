@@ -14,6 +14,9 @@ import { MaskedInput } from "@/components/ui/masked-input";
 import { SelectField } from "@/components/ui/select-field";
 import { Text } from "@/components/ui/text";
 
+import { getCachedUser } from "@/lib/auth-store";
+import { updateOnboardingData } from "@/lib/onboarding-store";
+
 import { onboardingSteps } from "@/constants/onboarding";
 import { type BasicInfoInput, BasicInfoSchema } from "@/schemas";
 
@@ -27,14 +30,19 @@ export default function BasicInfo() {
 	} = useForm<BasicInfoInput>({
 		resolver: zodResolver(BasicInfoSchema),
 		defaultValues: {
-			name: "",
+			name: getCachedUser().name,
 			phone: "",
 			gender: undefined,
 		},
 		mode: "onTouched",
 	});
 
-	const handleContinue = handleSubmit(() => {
+	const handleContinue = handleSubmit((data) => {
+		updateOnboardingData({
+			name: data.name,
+			phone: data.phone,
+			gender: data.gender,
+		});
 		router.push("/onboarding/academic");
 	});
 

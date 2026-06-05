@@ -1,14 +1,14 @@
-import { insertStudentSchema } from "@mobiliza/contracts";
+import { InsertStudentSchema } from "@mobiliza/contracts";
 
 import { z } from "zod";
 
-export const ProfileCourseSchema = insertStudentSchema.pick({ course: true });
+export const ProfileCourseSchema = InsertStudentSchema.pick({ course: true });
 
-export const ProfileStudentShiftSchema = insertStudentSchema.pick({ shift: true });
+export const ProfileStudentShiftSchema = InsertStudentSchema.pick({ shift: true });
 
-export const ProfileCampusSchema = insertStudentSchema.pick({ campus: true });
+export const ProfileCampusSchema = InsertStudentSchema.pick({ campus: true });
 
-export const ProfileEnrollmentSchema = insertStudentSchema.pick({
+export const ProfileEnrollmentSchema = InsertStudentSchema.pick({
 	enrollment: true,
 });
 

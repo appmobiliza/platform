@@ -3,6 +3,8 @@ import { createWSClient, httpBatchLink, splitLink, wsLink } from "@trpc/client";
 import { useState } from "react";
 import { Platform } from "react-native";
 
+import { authClient } from "@/lib/auth-client";
+
 import { trpc } from "./client";
 
 // URL do Backend: localhost no iOS, 10.0.2.2 no Android (Emulador)
@@ -11,7 +13,7 @@ const getBaseUrl = () => {
 	if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
 
 	if (Platform.OS === "android") {
-		return "http://10.0.2.2:3001";
+		return "https://unmaidenlike-unaborted-jaelyn.ngrok-free.dev";
 	}
 	return "http://localhost:3001";
 };
@@ -50,11 +52,12 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 					false: httpBatchLink({
 						url: `${getBaseUrl()}/trpc`,
 						async headers() {
-							// No futuro, você pegará o token JWT/Cookie aqui:
-							// const token = await getAuthToken();
-							return {
-								// authorization: token ? `Bearer ${token}` : undefined,
-							};
+							const cookies = authClient.getCookie();
+							const headers: Record<string, string> = {};
+							if (cookies) {
+								headers["Cookie"] = cookies;
+							}
+							return headers;
 						},
 					}),
 				}),

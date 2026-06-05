@@ -6,7 +6,7 @@
  * garantindo type-safety de ponta a ponta.
  */
 
-import type { AppRouter } from "@mobiliza/api/src/router";
+import type { AppRouter } from "@mobiliza/api/router";
 
 import { createTRPCReact } from "@trpc/react-query";
 

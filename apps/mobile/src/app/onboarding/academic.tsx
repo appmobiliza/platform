@@ -18,6 +18,8 @@ import { Input } from "@/components/ui/input";
 import { SelectField } from "@/components/ui/select-field";
 import { Text } from "@/components/ui/text";
 
+import { updateOnboardingData } from "@/lib/onboarding-store";
+
 import { onboardingSteps } from "@/constants/onboarding";
 import { type CourseInfoInput, CourseInfoSchema } from "@/schemas";
 
@@ -39,7 +41,13 @@ export default function CourseInfo() {
 		mode: "onTouched",
 	});
 
-	const handleContinue = handleSubmit(() => {
+	const handleContinue = handleSubmit((data) => {
+		updateOnboardingData({
+			course: data.course,
+			shift: data.shift,
+			campus: data.campus,
+			enrollment: data.enrollment,
+		});
 		router.push("/onboarding/accessibility");
 	});
 

@@ -1,3 +1,5 @@
+import { disabilityTypeValues } from "@mobiliza/contracts";
+
 import { Accessibility, Ear, Ellipsis, Eye } from "lucide-react-native";
 import type React from "react";
 import { Pressable, View } from "react-native";
@@ -10,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { Icon } from "./ui/icon";
 
 type Option = {
-	id: string;
+	ids: string[];
 	label: string;
 	icon: React.ComponentType<{ size?: number; color?: string }>;
 };
@@ -25,13 +27,21 @@ interface BoxOptionsProps {
 
 const DEFAULT_OPTIONS: Option[] = [
 	{
-		id: "physical",
+		ids: [disabilityTypeValues[0], disabilityTypeValues[1]],
 		label: "Deficiência física ou\nmobilidade reduzida",
 		icon: Accessibility,
 	},
-	{ id: "hearing", label: "Deficiência auditiva", icon: Ear },
-	{ id: "visual", label: "Cegueira ou\nbaixa visão", icon: Eye },
-	{ id: "other", label: "Outro tipo", icon: Ellipsis },
+	{
+		ids: [disabilityTypeValues[4], disabilityTypeValues[5]],
+		label: "Deficiência auditiva",
+		icon: Ear,
+	},
+	{
+		ids: [disabilityTypeValues[2], disabilityTypeValues[3]],
+		label: "Cegueira ou\nbaixa visão",
+		icon: Eye,
+	},
+	{ ids: [disabilityTypeValues[7]], label: "Outro tipo", icon: Ellipsis },
 ];
 
 export function BoxOptions({
@@ -47,30 +57,40 @@ export function BoxOptions({
 		<Field error={error}>
 			<View className="flex-row flex-wrap justify-between">
 				{options.map((option) => {
-					const isSelected = selectedIds.includes(option.id);
+					const allSelected = option.ids.every((id) =>
+						selectedIds.includes(id),
+					);
 
 					return (
 						<Pressable
-							key={option.id}
+							key={option.ids.join("-")}
 							onPress={() => {
-								const nextValue = isSelected
+								const nextValue = allSelected
 									? selectedIds.filter(
-											(item) => item !== option.id,
+											(item) =>
+												!option.ids.includes(item),
 										)
 									: maxSelections !== undefined &&
-											selectedIds.length >= maxSelections
-										? [...selectedIds.slice(1), option.id]
-										: [...selectedIds, option.id];
+											selectedIds.length +
+												option.ids.length >
+												maxSelections
+										? [
+												...selectedIds.slice(
+													option.ids.length,
+												),
+												...option.ids,
+											]
+										: [...selectedIds, ...option.ids];
 
 								onChange(nextValue);
 							}}
 							accessibilityRole="checkbox"
-							accessibilityState={{ checked: isSelected }}
+							accessibilityState={{ checked: allSelected }}
 							style={({ pressed }) => pressed && { opacity: 0.8 }}
 							className={cn(
 								"mb-4 min-h-[120px] w-[48%] items-center justify-center rounded-xl border-2 p-4 border-border bg-background active:bg-accent/25 transition-colors",
 								{
-									"border-primary bg-primary": isSelected,
+									"border-primary bg-primary": allSelected,
 								},
 							)}
 						>
@@ -78,7 +98,7 @@ export function BoxOptions({
 								icon={option.icon}
 								size={32}
 								color={
-									isSelected
+									allSelected
 										? "--primary-foreground"
 										: "--foreground"
 								}
@@ -87,7 +107,7 @@ export function BoxOptions({
 								className={cn(
 									"mt-3 text-center text-sm font-medium text-foreground",
 									{
-										"text-primary-foreground": isSelected,
+										"text-primary-foreground": allSelected,
 									},
 								)}
 							>

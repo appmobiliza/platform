@@ -3,6 +3,7 @@
 	"private": true,
 	"scripts": {
 		"build": "turbo run build",
+		"build:deps": "turbo run build --filter=@mobiliza/api",
 		"dev": "turbo run dev",
 		"lint": "turbo run lint",
 		"check-types": "turbo run check-types",
