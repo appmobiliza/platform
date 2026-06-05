@@ -377,28 +377,18 @@ export default async function ReportsPage() {
 
 	return (
 		<section className="min-w-0 flex-1">
-			<header className="border-b border-border bg-card px-4 py-4 backdrop-blur md:px-6 md:py-5">
-				<div className="flex flex-wrap items-start justify-between gap-4">
-					<div className="space-y-1">
-						<h1 className="text-base font-semibold">Relatórios</h1>
-						<h2 className="text-sm text-muted-foreground">
-							Campus A.C. Simões
-						</h2>
-					</div>
-
-					<div className="flex items-center gap-3">
-						<Badge
-							variant="success"
-							className="hidden py-2 md:inline-flex"
-						>
-							<span className="mr-1 h-2 w-2 rounded-full bg-success" />
-							Dados atualizados
-						</Badge>
-						<Button className="gap-2 px-4">
-							<FileDown className="size-4" />
-							Exportar PDF
-						</Button>
-					</div>
+			<header className="flex flex-row items-center justify-between border-b border-border bg-card p-4 md:p-6">
+				<div className="space-y-1">
+					<h1 className="text-base font-semibold">Relatórios</h1>
+					<h2 className="text-sm text-muted-foreground">
+						Campus A.C. Simões
+					</h2>
+				</div>
+				<div className="flex items-center gap-3">
+					<Button className="gap-2 px-4 py-5">
+						<FileDown className="size-4" />
+						Exportar PDF
+					</Button>
 				</div>
 			</header>
 

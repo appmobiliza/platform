@@ -4,7 +4,7 @@ export default function DashboardLoading() {
 	return (
 		<section className="min-w-0 flex-1">
 			<header className="border-b border-border p-4 md:p-6 flex flex-col items-start gap-1 justify-between bg-card">
-				<Skeleton className="h-5 w-32" />
+				<Skeleton className="h-6 w-32" />
 				<Skeleton className="h-4 w-56 mt-1" />
 			</header>
 			<div className="p-4 flex flex-col gap-4 md:p-6">
