@@ -4,7 +4,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"build": "tsup src/shared.ts src/api.ts src/auth.ts src/base-url.ts src/realtime.ts --format esm --dts --no-splitting --target node20 --out-dir dist"
+		"build": "tsup src/shared.ts src/api.ts src/auth.ts src/base-url.ts src/realtime.ts --format esm --dts --no-splitting --target node20 --out-dir dist --external dotenv"
 	},
 	"exports": {
 		"./api": {
