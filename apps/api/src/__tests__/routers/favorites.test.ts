@@ -191,6 +191,8 @@ describe("favoritesRouter", () => {
 				destinationLocationId: loc2.id,
 			});
 
+			if (!route) throw new Error("Failed to create route");
+
 			await caller.favorites.delete({ routeId: route.id });
 
 			const list = await caller.favorites.list();
@@ -227,6 +229,8 @@ describe("favoritesRouter", () => {
 
 			const session2 = createStudentSession({ id: user2.id });
 			const caller2 = appRouter.createCaller(() => session2);
+
+			if (!route) throw new Error("Failed to create route");
 
 			await expect(
 				caller2.favorites.delete({ routeId: route.id }),
