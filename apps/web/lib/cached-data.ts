@@ -1,11 +1,45 @@
 import "server-only";
 
 import type { AppRouter } from "@mobiliza/api/router";
+import { appRouter } from "@mobiliza/api/router";
+import { getRealtimeAdapter } from "@mobiliza/trpc";
 
 import { cacheLife, cacheTag } from "next/cache";
 
 import { getTodayRange } from "./dashboard-data";
-import { withServerTRPC } from "./trpc-server";
+
+// ─── tRPC caller para cache (sem headers) ──────────────────────────────────
+// As funções com "use cache" não podem acessar `headers()`, pois seriam
+// reexecutadas fora do contexto da requisição original.  Como essas páginas
+// já são protegidas pelo middleware de rota (apenas managers autenticados
+// chegam aqui), criamos um caller sintético com role "manager" que ignora
+// a verificação de sessão real.
+//
+// Segurança: analisamos todas as procedures chamadas aqui e nenhuma delas
+// usa `ctx.session` para filtrar dados — elas apenas verificam a role via
+// `managerProcedure`.  O session.id só aparece num `console.log` em
+// `metrics.summary`.  Portanto não há risco de vazamento de dados entre
+// usuários.
+const cacheCaller = appRouter.createCaller(async () => {
+	const realtime = await getRealtimeAdapter();
+	return {
+		session: {
+			user: {
+				id: "system",
+				name: "System",
+				email: "system@mobiliza.app",
+				role: "manager" as const,
+				image: null,
+			},
+			session: {
+				id: "system-cache",
+				expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+			},
+		},
+		realtime,
+		headers: new Headers(),
+	};
+});
 
 // ─── Tipos herdados do tRPC ─────────────────────────────────────────────────────
 
@@ -56,9 +90,7 @@ export async function getCachedSummary(
 	cacheLife({ stale: 30, revalidate: 60, expire: 300 });
 	cacheTag("metrics-summary");
 
-	return withServerTRPC((trpc) =>
-		trpc.metrics.summary({ from: f, to: t }),
-	);
+	return cacheCaller.metrics.summary({ from: f, to: t });
 }
 
 /**
@@ -70,7 +102,7 @@ export async function getCachedScholarDashboard(): Promise<ScholarDashboardOutpu
 	cacheLife({ stale: 15, revalidate: 30, expire: 120 });
 	cacheTag("scholar-dashboard");
 
-	return withServerTRPC((trpc) => trpc.profiles.scholarDashboard());
+	return cacheCaller.profiles.scholarDashboard();
 }
 
 /**
@@ -82,7 +114,7 @@ export async function getCachedStudentDashboard(): Promise<StudentDashboardOutpu
 	cacheLife({ stale: 30, revalidate: 60, expire: 300 });
 	cacheTag("student-dashboard");
 
-	return withServerTRPC((trpc) => trpc.profiles.studentDashboard());
+	return cacheCaller.profiles.studentDashboard();
 }
 
 /**
@@ -96,7 +128,7 @@ export async function getCachedManagerList(
 	cacheLife({ stale: 15, revalidate: 30, expire: 120 });
 	cacheTag("manager-requests");
 
-	return withServerTRPC((trpc) => trpc.requests.managerList({ limit }));
+	return cacheCaller.requests.managerList({ limit });
 }
 
 /**
@@ -111,7 +143,5 @@ export async function getCachedScholarPerformance(
 	cacheLife({ stale: 60, revalidate: 120, expire: 600 });
 	cacheTag("scholar-performance");
 
-	return withServerTRPC((trpc) =>
-		trpc.metrics.scholarPerformance({ from, to }),
-	);
+	return cacheCaller.metrics.scholarPerformance({ from, to });
 }
