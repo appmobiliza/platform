@@ -87,6 +87,20 @@ pnpm format-and-lint:fix
 
 ---
 
+## 🧹 Cleanup (reinstalação de dependências)
+
+Caso enfrente problemas com dependências quebradas ou inconsistentes, execute os comandos abaixo para limpar os vestígios de instalações anteriores e reinstalar tudo do zero:
+
+```bash
+find . \( -name "node_modules" -o -name ".turbo" -o -name "dist" -o -name "build" \) -type d -prune -exec rm -rf '{}' +
+pnpm store prune
+pnpm install
+```
+
+> ⚠️ Os comandos acima removem completamente os diretórios `node_modules`, `.turbo`, `dist` e `build` de todo o monorepo, e em seguida limpam o cache global de pacotes do pnpm. Depois disso, uma nova instalação é feita.
+
+---
+
 ## 🗄️ Banco de dados
 
 O projeto utiliza PostgreSQL com Drizzle ORM, e o pacote `packages/db` concentra a camada de acesso ao banco.
