@@ -51,5 +51,5 @@ export function updateOnboardingData(partial: Partial<OnboardingData>) {
 }
 
 export function clearOnboardingData() {
-	storage.delete(ONBOARDING_KEY);
+	storage.remove(ONBOARDING_KEY);
 }

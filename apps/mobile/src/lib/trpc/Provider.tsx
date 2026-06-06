@@ -37,7 +37,22 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 			links: [
 				httpBatchLink({
 					url: `${getBaseUrl()}/trpc`,
+					// On web, the browser forbids manually setting the Cookie header.
+					// Use credentials: "include" so cookies are sent automatically.
+					// On native, fetch has no such restriction, so we manually attach
+					// the cookie from the secure store via the headers function below.
+					fetch:
+						Platform.OS === "web"
+							? (url, options) =>
+									fetch(url, {
+										...options,
+										credentials: "include",
+									})
+							: undefined,
 					async headers() {
+						// Web: cookies are sent automatically via credentials: "include"
+						if (Platform.OS === "web") return {};
+
 						const cookies = authClient.getCookie();
 						const headers: Record<string, string> = {};
 						if (cookies) {

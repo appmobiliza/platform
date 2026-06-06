@@ -36,8 +36,6 @@ export default function ProfileLayout() {
 					headerShown: false,
 				}}
 			>
-				<Stack.Screen name="index" options={{ headerShown: false }} />
-
 				{/* Básico */}
 				<Stack.Screen
 					name="basic/index"

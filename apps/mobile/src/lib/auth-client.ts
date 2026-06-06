@@ -1,24 +1,13 @@
 /**
- * Better Auth Client para o app mobile.
+ * Better Auth Client — Web.
  *
- * Usa o plugin expoClient para:
- * - Gerenciar cookies de sessão de forma segura via expo-secure-store
- * - Suportar fluxo OAuth (Google) via WebBrowser do Expo
- * - Habilitar deep links para o callback de autenticação
+ * Versão simplificada sem expoClient: o navegador gerencia cookies de
+ * sessão nativamente. Não usamos expo-secure-store nem expoClient aqui,
+ * pois esses módulos não são compatíveis com ambientes web.
  */
 
 import { createAuthClient } from "better-auth/react";
-import { expoClient } from "@better-auth/expo/client";
-
-import * as SecureStore from "expo-secure-store";
 
 export const authClient = createAuthClient({
 	baseURL: `${process.env.EXPO_PUBLIC_API_URL}/api/auth`,
-	plugins: [
-		expoClient({
-			scheme: "mobiliza",
-			storagePrefix: "mobiliza",
-			storage: SecureStore,
-		}),
-	],
 });

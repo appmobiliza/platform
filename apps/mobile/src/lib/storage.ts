@@ -20,7 +20,7 @@ export const storage = {
 			// Storage may be full or unavailable
 		}
 	},
-	delete(key: string): void {
+	remove(key: string): void {
 		try {
 			localStorage.removeItem(buildKey(key));
 		} catch {

@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { LogOut } from "lucide-react-native";
-import { Platform, View } from "react-native";
+import { useState } from "react";
+import { ActivityIndicator, Platform, View } from "react-native";
 
 import { SettingsButton } from "@/components/settings-button";
 import { Icon } from "@/components/ui/icon";
@@ -18,6 +19,8 @@ const THEME_LABELS: Record<string, string> = {
 export default function SettingsProfile() {
 	const router = useRouter();
 	const theme = useThemePreference();
+	const [isLoading, setIsLoading] = useState(false);
+
 	return (
 		<View>
 			<SettingsButton
@@ -43,12 +46,17 @@ export default function SettingsProfile() {
 				className="text-destructive"
 				variant="destructive"
 				onPress={async () => {
+					setIsLoading(true);
 					await authClient.signOut();
 					clearUserCache();
 					router.replace("/auth");
 				}}
 			>
-				<Icon icon={LogOut} size={24} color="--destructive" />
+				{isLoading ? (
+					<ActivityIndicator />
+				) : (
+					<Icon icon={LogOut} size={24} color="--destructive" />
+				)}
 			</SettingsButton>
 		</View>
 	);

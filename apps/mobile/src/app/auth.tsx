@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
 import { authClient } from "@/lib/auth-client";
-import { cacheUserInfo, getHasProfile, setHasProfile } from "@/lib/auth-store";
+import { cacheUserInfo, setHasProfile } from "@/lib/auth-store";
 import { trpc } from "@/lib/trpc/client";
 
 import GoogleIcon from "@/assets/google";
@@ -92,12 +92,9 @@ export default function Auth() {
 				return;
 			}
 
-			// Student — verifica se já tem perfil (onboarding completo)
-			if (getHasProfile()) {
-				setIsLoading(false);
-				router.replace("/(tabs)");
-				return;
-			}
+			// Student — limpa cache local e verifica com o servidor
+			// para evitar redirecionamento incorreto com dado desatualizado
+			setHasProfile(false);
 
 			// Verifica no servidor se o perfil de estudante existe
 			try {

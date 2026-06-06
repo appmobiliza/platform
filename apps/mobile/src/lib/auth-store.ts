@@ -44,14 +44,14 @@ export function cacheUserInfo(user: {
 	if (user.image) {
 		storage.set(CACHE_KEYS.userImage, user.image);
 	} else {
-		storage.delete(CACHE_KEYS.userImage);
+		storage.remove(CACHE_KEYS.userImage);
 	}
 	storage.set(CACHE_KEYS.userRole, user.role);
 }
 
 export function clearUserCache() {
 	for (const key of Object.values(CACHE_KEYS)) {
-		storage.delete(key);
+		storage.remove(key);
 	}
 }
 

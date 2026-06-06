@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 
 import { authClient } from "@/lib/auth-client";
-import { cacheUserInfo, getHasProfile, setHasProfile } from "@/lib/auth-store";
+import { cacheUserInfo, setHasProfile } from "@/lib/auth-store";
 import { trpc } from "@/lib/trpc/client";
 
 import { toSessionUser } from "@/types/session";
@@ -84,11 +84,9 @@ function usePostLogin() {
 					return;
 				}
 
-				// 4. Student — verifica se já tem perfil no cache local
-				if (getHasProfile()) {
-					window.location.href = "/(tabs)";
-					return;
-				}
+				// 4. Student — limpa cache local e verifica com o servidor
+				//     para evitar redirecionamento incorreto com dado desatualizado
+				setHasProfile(false);
 
 				// 5. Verifica no servidor se o perfil de estudante existe
 				try {
