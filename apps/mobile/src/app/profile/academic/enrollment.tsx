@@ -32,6 +32,7 @@ export default function BasicProfileEnrollment() {
 	const {
 		control,
 		handleSubmit,
+		reset,
 		formState: { errors, isDirty },
 	} = useForm<ProfileEnrollmentInput>({
 		resolver: zodResolver(ProfileEnrollmentSchema),
@@ -53,6 +54,7 @@ export default function BasicProfileEnrollment() {
 				});
 			}
 			await utils.profiles.me.invalidate();
+			reset(data);
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar matrícula:", error);

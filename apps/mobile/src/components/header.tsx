@@ -11,7 +11,7 @@ interface HeaderProps {
 	title?: string;
 	description?: string;
 	size?: "default" | "small";
-	href: "back" | string | null;
+	href?: "back" | string;
 	onClick?: () => void;
 	isDisabled?: boolean;
 }
@@ -26,7 +26,7 @@ export function Header({
 }: HeaderProps) {
 	const router = useRouter();
 
-	const showBackButton = Boolean(href !== null || onClick);
+	const showBackButton = Boolean(href !== undefined || onClick);
 
 	const handlePress = () => {
 		if (onClick) {

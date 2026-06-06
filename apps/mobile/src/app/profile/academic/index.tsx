@@ -1,3 +1,5 @@
+import { studentShiftLabels } from "@mobiliza/contracts";
+
 import { View } from "react-native";
 
 import { SettingsButton } from "@/components/settings-button";
@@ -34,11 +36,16 @@ export default function AcademicProfile() {
 				label={profile?.course || "Não informado"}
 				href={`/profile/academic/course?course=${encodeURIComponent(profile?.course ?? "")}`}
 			/>
-			<SettingsButton
-				title="Turno"
-				label={profile?.shift || "Não informado"}
-				href={`/profile/academic/shift?shift=${encodeURIComponent(profile?.shift ?? "")}`}
-			/>
+			{!isScholar && (
+				<SettingsButton
+					title="Turno"
+					label={
+						studentShiftLabels[profile?.shift ?? ""] ||
+						"Não informado"
+					}
+					href={`/profile/academic/shift?shift=${encodeURIComponent(profile?.shift ?? "")}`}
+				/>
+			)}
 			<SettingsButton
 				title="Campus"
 				label={profile?.campus || "Não informado"}

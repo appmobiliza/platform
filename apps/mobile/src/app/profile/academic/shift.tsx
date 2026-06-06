@@ -46,6 +46,7 @@ export default function AcademicProfileShift() {
 	const {
 		control,
 		handleSubmit,
+		reset,
 		formState: { errors, isDirty },
 	} = useForm<ProfileStudentShiftInput>({
 		resolver: zodResolver(ProfileStudentShiftSchema),
@@ -65,6 +66,7 @@ export default function AcademicProfileShift() {
 				await updateStudent.mutateAsync({ shift: data.shift });
 			}
 			await utils.profiles.me.invalidate();
+			reset(data);
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar turno:", error);

@@ -29,6 +29,7 @@ export default function BasicProfilePhone() {
 	const {
 		control,
 		handleSubmit,
+		reset,
 		formState: { errors, isDirty },
 	} = useForm<ProfilePhoneInput>({
 		resolver: zodResolver(ProfilePhoneSchema),
@@ -46,6 +47,7 @@ export default function BasicProfilePhone() {
 				await updateStudent.mutateAsync({ phone: data.phone });
 			}
 			await utils.profiles.me.invalidate();
+			reset(data);
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar telefone:", error);

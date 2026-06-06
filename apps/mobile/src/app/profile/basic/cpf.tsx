@@ -28,6 +28,7 @@ export default function BasicProfileCpf() {
 	const {
 		control,
 		handleSubmit,
+		reset,
 		formState: { errors, isDirty },
 	} = useForm<ProfileCpfInput>({
 		resolver: zodResolver(ProfileCpfSchema),
@@ -47,6 +48,7 @@ export default function BasicProfileCpf() {
 		try {
 			await updateScholar.mutateAsync({ cpf: data.cpf });
 			await utils.profiles.me.invalidate();
+			reset(data);
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar CPF:", error);

@@ -108,6 +108,7 @@ export default function Profile() {
 				className="w-full"
 				data={options}
 				keyExtractor={(item) => item.title}
+				showsVerticalScrollIndicator={false}
 				ListHeaderComponent={
 					<View
 						className="bg-primary pb-16 px-4 flex justify-center items-center w-full"

@@ -32,6 +32,7 @@ export default function BasicProfileName() {
 	const {
 		control,
 		handleSubmit,
+		reset,
 		formState: { errors, isDirty },
 	} = useForm<ProfileNameInput>({
 		resolver: zodResolver(ProfileNameSchema),
@@ -53,6 +54,7 @@ export default function BasicProfileName() {
 				});
 			}
 			await utils.profiles.me.invalidate();
+			reset(data);
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar nome:", error);

@@ -32,6 +32,7 @@ export default function AcademicProfileCampus() {
 	const {
 		control,
 		handleSubmit,
+		reset,
 		formState: { errors, isDirty },
 	} = useForm<ProfileCampusInput>({
 		resolver: zodResolver(ProfileCampusSchema),
@@ -49,6 +50,7 @@ export default function AcademicProfileCampus() {
 				await updateStudent.mutateAsync({ campus: data.campus });
 			}
 			await utils.profiles.me.invalidate();
+			reset(data);
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar campus:", error);

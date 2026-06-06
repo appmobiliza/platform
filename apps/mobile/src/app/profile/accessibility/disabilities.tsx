@@ -43,6 +43,7 @@ export default function AccessibilityDisabilities() {
 	const {
 		control,
 		handleSubmit,
+		reset,
 		formState: { errors, isDirty },
 	} = useForm<ProfileDisabilitiesInput>({
 		resolver: zodResolver(ProfileDisabilitiesSchema),
@@ -59,6 +60,7 @@ export default function AccessibilityDisabilities() {
 					data.disabilityTypes as UpdateStudentDisabilitiesInput,
 			});
 			await utils.profiles.me.invalidate();
+			reset(data);
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar tipos de deficiência:", error);

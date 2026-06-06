@@ -3,14 +3,11 @@ import { genderLabels, genderValues } from "@mobiliza/contracts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
-import { Alert, ScrollView, View } from "react-native";
+import { Alert } from "react-native";
 
 import ProfileLayout from "@/layout/profile";
 
-import { Header } from "@/components/header";
-import { Button } from "@/components/ui/button";
 import { SelectField } from "@/components/ui/select-field";
-import { Text } from "@/components/ui/text";
 
 import { useUserRole } from "@/lib/auth-store";
 import { trpc } from "@/lib/trpc/client";
@@ -33,6 +30,7 @@ export default function BasicProfileGender() {
 	const {
 		control,
 		handleSubmit,
+		reset,
 		formState: { errors, isDirty },
 	} = useForm<ProfileGenderInput>({
 		resolver: zodResolver(ProfileGenderSchema),
@@ -52,6 +50,7 @@ export default function BasicProfileGender() {
 				await updateStudent.mutateAsync({ gender: data.gender });
 			}
 			await utils.profiles.me.invalidate();
+			reset(data);
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar gênero:", error);

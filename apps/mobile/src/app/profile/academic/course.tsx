@@ -31,6 +31,7 @@ export default function AcademicProfileCourse() {
 	const {
 		control,
 		handleSubmit,
+		reset,
 		formState: { errors, isDirty },
 	} = useForm<ProfileCourseInput>({
 		resolver: zodResolver(ProfileCourseSchema),
@@ -48,6 +49,7 @@ export default function AcademicProfileCourse() {
 				await updateStudent.mutateAsync({ course: data.course });
 			}
 			await utils.profiles.me.invalidate();
+			reset(data);
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar curso:", error);

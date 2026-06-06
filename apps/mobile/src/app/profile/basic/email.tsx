@@ -1,6 +1,4 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { Controller, useForm } from "react-hook-form";
+import { useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 
 import ProfileLayout from "@/layout/profile";
@@ -8,8 +6,6 @@ import ProfileLayout from "@/layout/profile";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
-
-import { type ProfileEmailInput, ProfileEmailSchema } from "@/schemas";
 
 export default function BasicProfileEmail() {
 	const { email } = useLocalSearchParams<{ email?: string }>();
@@ -33,8 +29,9 @@ export default function BasicProfileEmail() {
 					/>
 				</Field>
 				<Text className="text-sm text-muted-foreground">
-					O e-mail de sua conta é vinculado ao seu e-mail institucional. Entre em
-					contato com o suporte caso seja necessário alterá-lo.
+					O e-mail de sua conta é vinculado ao seu e-mail
+					institucional. Entre em contato com o suporte caso seja
+					necessário alterá-lo.
 				</Text>
 			</View>
 		</ProfileLayout>

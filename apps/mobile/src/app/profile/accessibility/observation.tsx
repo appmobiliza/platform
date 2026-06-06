@@ -32,6 +32,7 @@ export default function AccessibilityObservation() {
 	const {
 		control,
 		handleSubmit,
+		reset,
 		formState: { errors, isDirty },
 	} = useForm<ProfileObservationInput>({
 		resolver: zodResolver(ProfileObservationSchema),
@@ -47,6 +48,7 @@ export default function AccessibilityObservation() {
 				attendanceNotes: data.attendanceNotes,
 			});
 			await utils.profiles.me.invalidate();
+			reset(data);
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar observações:", error);
