@@ -81,14 +81,13 @@ const SuggestionRow = memo(function SuggestionRow({
 				label: distance,
 			}}
 			className={cn("p-4 border-b border-border rounded-lg", {
-				"bg-primary/10 border-t border-r border-l border-b border-primary/30":
-					isSelected,
+				"bg-input border-none": isSelected,
 			})}
 			variant="default"
 		>
 			{isSelected && (
-				<View className="bg-primary rounded-full p-1">
-					<Icon icon={Check} size={14} color="white" />
+				<View className="bg-foreground rounded-full p-1">
+					<Icon icon={Check} size={14} color="--card" />
 				</View>
 			)}
 		</PlaceCard>
@@ -186,8 +185,8 @@ function AddressRouteInput({
 		[origin, destination],
 	);
 
-	// Remembers the last sorted order so post-selection renders can rehydrate
-	// distances in-place without re-sorting and moving items around.
+	// Remembers the last sorted order so post-selection renders reuse it
+	// directly — distances stay correct and nothing moves.
 	const stableSuggestionsRef = useRef<SuggestionItem[]>([]);
 
 	const suggestions = useMemo<SuggestionItem[]>(() => {
@@ -215,13 +214,30 @@ function AddressRouteInput({
 					(p.abbrev?.toLowerCase().includes(query) ?? false),
 			)
 			.filter((p) => {
+				// Always exclude the opposite field's selection
 				if (effectiveField === "destination" && origin?.name === p.name)
 					return false;
 				if (effectiveField === "origin" && destination?.name === p.name)
 					return false;
+				// When a field is active, also exclude its own previous
+				// selection so it doesn't appear with distance=0 / checkmark
+				if (
+					activeField === "destination" &&
+					destination?.name === p.name
+				)
+					return false;
+				if (activeField === "origin" && origin?.name === p.name)
+					return false;
 				return true;
 			})
 			.map((p) => {
+				// No distance shown for origin suggestions — there's no meaningful
+				// reference point yet, and cross-track distance once both are set
+				// would be 0 for the selected item.
+				if (effectiveField === "origin") {
+					return { ...p, id: p.name };
+				}
+
 				let distanceMeters: number | undefined;
 
 				if (originPoint && destPoint) {
@@ -230,9 +246,7 @@ function AddressRouteInput({
 						originPoint,
 						destPoint,
 					);
-				} else if (effectiveField === "origin" && destPoint) {
-					distanceMeters = haversineDistance(p, destPoint);
-				} else if (effectiveField === "destination" && originPoint) {
+				} else if (originPoint) {
 					distanceMeters = haversineDistance(p, originPoint);
 				}
 
@@ -273,14 +287,15 @@ function AddressRouteInput({
 			return withHeader;
 		}
 
-		// Idle: reuse the stable snapshot as-is — distances are already correct
-		// from when the user was actively searching. Only drop items that have
-		// since been filtered out (e.g. the newly selected item).
+		// Idle (post-selection): keep the stable snapshot as-is — distances are
+		// already correct from when the user was actively searching. Only drop
+		// items that have since been filtered out (e.g. the newly selected item).
 		const visibleIds = new Set(withHeader.map((p) => p.id));
 		const rehydrated = stableSuggestionsRef.current.filter((p) =>
 			visibleIds.has(p.id),
 		);
 
+		// First render before any interaction — fall back to computed order.
 		if (rehydrated.length === 0) {
 			stableSuggestionsRef.current = withHeader;
 			return withHeader;
@@ -302,13 +317,17 @@ function AddressRouteInput({
 			if (activeField === "origin") {
 				onSelectOrigin(item.name, item.id === CURRENT_LOCATION);
 				setOriginQuery("");
-				originInputRef.current?.blur();
+				// Automatically move focus to destination after picking an origin
+				setActiveField("destination");
+				requestAnimationFrame(() => {
+					destinationInputRef.current?.focus();
+				});
 			} else {
 				onSelectDestination(item.name);
 				setDestinationQuery("");
 				destinationInputRef.current?.blur();
+				setActiveField(null);
 			}
-			setActiveField(null);
 		},
 		[activeField, onSelectOrigin, onSelectDestination],
 	);
