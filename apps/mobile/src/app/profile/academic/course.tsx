@@ -1,18 +1,29 @@
 import { courseValues } from "@mobiliza/contracts";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { Alert } from "react-native";
 
 import ProfileLayout from "@/layout/profile";
 
 import { SelectField } from "@/components/ui/select-field";
 
+import { useUserRole } from "@/lib/auth-store";
+import { trpc } from "@/lib/trpc/client";
+
 import { type ProfileCourseInput, ProfileCourseSchema } from "@/schemas";
 
 export default function AcademicProfileCourse() {
 	const router = useRouter();
+	const role = useUserRole();
+	const isScholar = role === "scholar";
+
+	const { course } = useLocalSearchParams<{ course?: string }>();
+
+	const updateStudent = trpc.profiles.updateStudent.useMutation();
+	const updateScholar = trpc.profiles.updateScholar.useMutation();
 
 	const {
 		control,
@@ -21,13 +32,26 @@ export default function AcademicProfileCourse() {
 	} = useForm<ProfileCourseInput>({
 		resolver: zodResolver(ProfileCourseSchema),
 		defaultValues: {
-			course: "Ciência da Computação",
+			course: (course as ProfileCourseInput["course"]) || undefined,
 		},
 		mode: "onTouched",
 	});
 
-	const handleSave = handleSubmit(() => {
-		router.back();
+	const handleSave = handleSubmit(async (data) => {
+		try {
+			if (isScholar) {
+				await updateScholar.mutateAsync({ course: data.course });
+			} else {
+				await updateStudent.mutateAsync({ course: data.course });
+			}
+			router.back();
+		} catch (error) {
+			console.error("Erro ao salvar curso:", error);
+			Alert.alert(
+				"Erro",
+				"Não foi possível salvar as alterações. Tente novamente.",
+			);
+		}
 	});
 
 	// ⚡️ PERFORMANCE FIX: Memoize the data conversion so it never runs during form re-renders

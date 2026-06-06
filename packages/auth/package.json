@@ -18,7 +18,10 @@
 			"default": "./dist/proxy.js"
 		},
 		"./client": {
-			"default": "./dist/client.js"
+			"default": "./dist/client/index.js"
+		},
+		"./client/expo": {
+			"default": "./dist/client/expo.js"
 		},
 		"./server": {
 			"types": "./dist/server.d.ts",
@@ -26,11 +29,11 @@
 		}
 	},
 	"dependencies": {
-		"@better-auth/expo": "^1.6.14",
 		"@mobiliza/contracts": "workspace:*",
 		"@mobiliza/db": "workspace:*",
 		"@mobiliza/env": "workspace:*",
-		"better-auth": "1.6.11"
+		"better-auth": "1.6.11",
+		"@better-auth/expo": "1.6.11"
 	},
 	"devDependencies": {
 		"@mobiliza/typescript-config": "workspace:*"

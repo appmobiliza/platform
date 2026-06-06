@@ -1,14 +1,17 @@
 import { genderLabels, genderValues } from "@mobiliza/contracts";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
-import { ScrollView, View } from "react-native";
+import { Alert, ScrollView, View } from "react-native";
 
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { SelectField } from "@/components/ui/select-field";
 import { Text } from "@/components/ui/text";
+
+import { useUserRole } from "@/lib/auth-store";
+import { trpc } from "@/lib/trpc/client";
 
 import { type ProfileGenderInput, ProfileGenderSchema } from "@/schemas";
 
@@ -16,6 +19,13 @@ import { type ProfileGenderInput, ProfileGenderSchema } from "@/schemas";
 
 export default function BasicProfileGender() {
 	const router = useRouter();
+	const role = useUserRole();
+	const isScholar = role === "scholar";
+
+	const { gender } = useLocalSearchParams<{ gender?: string }>();
+
+	const updateStudent = trpc.profiles.updateStudent.useMutation();
+	const updateScholar = trpc.profiles.updateScholar.useMutation();
 
 	const {
 		control,
@@ -24,13 +34,26 @@ export default function BasicProfileGender() {
 	} = useForm<ProfileGenderInput>({
 		resolver: zodResolver(ProfileGenderSchema),
 		defaultValues: {
-			gender: "male",
+			gender: (gender as ProfileGenderInput["gender"]) || undefined,
 		},
 		mode: "onTouched",
 	});
 
-	const handleSave = handleSubmit(() => {
-		router.back();
+	const handleSave = handleSubmit(async (data) => {
+		try {
+			if (isScholar) {
+				await updateScholar.mutateAsync({ gender: data.gender });
+			} else {
+				await updateStudent.mutateAsync({ gender: data.gender });
+			}
+			router.back();
+		} catch (error) {
+			console.error("Erro ao salvar gênero:", error);
+			Alert.alert(
+				"Erro",
+				"Não foi possível salvar as alterações. Tente novamente.",
+			);
+		}
 	});
 
 	return (

@@ -1,11 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
+import { Alert } from "react-native";
 
 import ProfileLayout from "@/layout/profile";
 
 import { Field } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
+
+import { trpc } from "@/lib/trpc/client";
 
 import {
 	type ProfileObservationInput,
@@ -14,8 +17,14 @@ import {
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
-export default function AcademicProfileCourse() {
+export default function AccessibilityObservation() {
 	const router = useRouter();
+
+	const { attendanceNotes } = useLocalSearchParams<{
+		attendanceNotes?: string;
+	}>();
+
+	const updateStudent = trpc.profiles.updateStudent.useMutation();
 
 	const {
 		control,
@@ -24,13 +33,24 @@ export default function AcademicProfileCourse() {
 	} = useForm<ProfileObservationInput>({
 		resolver: zodResolver(ProfileObservationSchema),
 		defaultValues: {
-			attendanceNotes: undefined,
+			attendanceNotes: attendanceNotes || undefined,
 		},
 		mode: "onTouched",
 	});
 
-	const handleSave = handleSubmit(() => {
-		router.back();
+	const handleSave = handleSubmit(async (data) => {
+		try {
+			await updateStudent.mutateAsync({
+				attendanceNotes: data.attendanceNotes,
+			});
+			router.back();
+		} catch (error) {
+			console.error("Erro ao salvar observações:", error);
+			Alert.alert(
+				"Erro",
+				"Não foi possível salvar as alterações. Tente novamente.",
+			);
+		}
 	});
 
 	return (
@@ -54,7 +74,7 @@ export default function AcademicProfileCourse() {
 							onChangeText={field.onChange}
 							autoCapitalize="sentences"
 							autoComplete="name-given"
-							accessibilityLabel="Nome"
+							accessibilityLabel="Observações"
 							maxLength={255}
 							aria-invalid={Boolean(errors.attendanceNotes)}
 						/>

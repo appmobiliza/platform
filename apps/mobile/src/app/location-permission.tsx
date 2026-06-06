@@ -41,7 +41,7 @@ export default function LocationPermission() {
 
 	return (
 		<View className="flex-1">
-			<Header allowBack={false} />
+			<Header href={undefined} />
 
 			<View className="flex-1 px-6 pt-36 pb-8 justify-between">
 				<View>

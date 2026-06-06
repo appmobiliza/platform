@@ -148,4 +148,6 @@ export const InsertStudentSchema = z.object({
 		.min(1, { message: "Tipo de deficiência deve ser selecionado" }),
 });
 
-export const UpdateStudentSchema = InsertStudentSchema.partial();
+export const UpdateStudentSchema = InsertStudentSchema.partial().extend({
+	name: z.string().min(1, "Nome é obrigatório").optional(),
+});

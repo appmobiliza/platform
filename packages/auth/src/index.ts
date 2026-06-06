@@ -3,6 +3,8 @@ import { db } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
 import { authEnv } from "@mobiliza/env/auth";
 
+import { expo } from "@better-auth/expo";
+import type { BetterAuthPlugin } from "better-auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
@@ -80,7 +82,14 @@ export const auth = betterAuth({
 		updateAge: 60 * 60 * 24,
 	},
 
-	trustedOrigins: authEnv.TRUSTED_ORIGINS,
+	trustedOrigins: [
+		...authEnv.TRUSTED_ORIGINS,
+		// Deep link scheme do app mobile (usado pelo @better-auth/expo
+		// para redirecionar de volta ao app após OAuth).
+		"mobiliza://",
+	],
+
+	plugins: [expo() as BetterAuthPlugin],
 });
 
 export type Auth = typeof auth;

@@ -11,7 +11,11 @@ export const me = protectedProcedure
 		const user = await db.query.user.findFirst({
 			where: eq(schema.user.id, ctx.session.user.id),
 			with: {
-				studentProfile: true,
+				studentProfile: {
+					with: {
+						disabilities: true,
+					},
+				},
 				scholarProfile: true,
 			},
 		});
