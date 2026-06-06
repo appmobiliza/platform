@@ -34,7 +34,7 @@ export default function Auth() {
 				provider: "google",
 				callbackURL:
 					Platform.OS === "web"
-						? process.env.EXPO_PUBLIC_WEB_URL
+						? `${process.env.EXPO_PUBLIC_WEB_URL}/auth-callback`
 						: "/auth",
 			});
 
@@ -46,6 +46,10 @@ export default function Auth() {
 				);
 				return;
 			}
+
+			// ── Native-only path ──────────────────────────────────────────
+			// On web the code below never runs because signIn.social triggers
+			// a full browser redirect. The same logic lives in auth-callback.tsx.
 
 			// Busca a sessão recém-criada
 			const { data: sessionData } = await authClient.getSession();
