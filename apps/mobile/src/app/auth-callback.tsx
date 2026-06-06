@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 
 import { authClient } from "@/lib/auth-client";
-import { cacheUserInfo, setHasProfile } from "@/lib/auth-store";
+import { cacheUserInfo, clearUserCache, setHasProfile } from "@/lib/auth-store";
 import { trpc } from "@/lib/trpc/client";
 
 import { toSessionUser } from "@/types/session";
@@ -39,7 +39,11 @@ function usePostLogin() {
 
 		(async () => {
 			try {
-				// 1. Busca a sessão recém-criada (o cookie já foi definido pelo
+				// 1. Limpa o cache para evitar que o layout reaja
+				//    prematuramente enquanto processamos o login.
+				clearUserCache();
+
+				// 2. Busca a sessão recém-criada (o cookie já foi definido pelo
 				//    servidor Better Auth durante o redirect do OAuth).
 				const { data: sessionData, error: sessionError } =
 					await authClient.getSession();
@@ -66,7 +70,38 @@ function usePostLogin() {
 					return;
 				}
 
-				// 2. Cacheia dados básicos do usuário em localStorage
+				setStatus({ type: "redirecting" });
+
+				// 3. Scholar — loga direto (perfil gerenciado pelo gestor)
+				if (user.role === "scholar") {
+					cacheUserInfo({
+						id: user.id,
+						name: user.name,
+						email: user.email,
+						image: user.image,
+						role: user.role,
+					});
+					setHasProfile(true);
+					window.location.href = "/(tabs)";
+					return;
+				}
+
+				// 4. Student — verifica com o servidor se o perfil existe.
+				//     Só cacheia os dados DEPOIS da resposta para que o layout
+				//     nunca veja userRole definido com hasProfile incorreto.
+				let hasStudentProfile = false;
+				try {
+					const profileData = await trpcUtils.profiles.me.fetch();
+
+					hasStudentProfile =
+						"studentProfile" in profileData &&
+						profileData.studentProfile != null;
+				} catch {
+					// Erro ao consultar perfil — assume que não existe
+					hasStudentProfile = false;
+				}
+
+				// Agora cacheia com os valores corretos
 				cacheUserInfo({
 					id: user.id,
 					name: user.name,
@@ -74,40 +109,14 @@ function usePostLogin() {
 					image: user.image,
 					role: user.role,
 				});
+				setHasProfile(hasStudentProfile);
 
-				setStatus({ type: "redirecting" });
-
-				// 3. Scholar — loga direto (perfil gerenciado pelo gestor)
-				if (user.role === "scholar") {
-					setHasProfile(true);
+				if (hasStudentProfile) {
 					window.location.href = "/(tabs)";
 					return;
 				}
 
-				// 4. Student — limpa cache local e verifica com o servidor
-				//     para evitar redirecionamento incorreto com dado desatualizado
-				setHasProfile(false);
-
-				// 5. Verifica no servidor se o perfil de estudante existe
-				try {
-					const profileData = await trpcUtils.profiles.me.fetch();
-
-					const hasStudentProfile =
-						"studentProfile" in profileData &&
-						profileData.studentProfile != null;
-
-					setHasProfile(hasStudentProfile);
-
-					if (hasStudentProfile) {
-						window.location.href = "/(tabs)";
-						return;
-					}
-				} catch {
-					// Erro ao consultar perfil — assume que não existe
-					setHasProfile(false);
-				}
-
-				// 6. Primeiro acesso — redireciona para o onboarding
+				// 5. Primeiro acesso — redireciona para o onboarding
 				window.location.href = "/onboarding/unregistered";
 			} catch (err) {
 				console.error("Post-login callback error:", err);

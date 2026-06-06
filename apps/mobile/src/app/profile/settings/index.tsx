@@ -45,6 +45,7 @@ export default function SettingsProfile() {
 				label="Encerra sua sessão e desloga sua conta"
 				className="text-destructive"
 				variant="destructive"
+				disabled={isLoading}
 				onPress={async () => {
 					setIsLoading(true);
 					await authClient.signOut();

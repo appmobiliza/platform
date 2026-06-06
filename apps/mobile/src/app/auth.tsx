@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
 import { authClient } from "@/lib/auth-client";
-import { cacheUserInfo, setHasProfile } from "@/lib/auth-store";
+import { cacheUserInfo, clearUserCache, setHasProfile } from "@/lib/auth-store";
 import { trpc } from "@/lib/trpc/client";
 
 import GoogleIcon from "@/assets/google";
@@ -55,6 +55,13 @@ export default function Auth() {
 			// On web the code below never runs because signIn.social triggers
 			// a full browser redirect. The same logic lives in auth-callback.tsx.
 
+			// Limpa o cache de auth para evitar que o layout reaja
+			// prematuramente quando o useSession() resolver — enquanto
+			// userRole estiver ausente do cache, useIsLoggedIn() retorna
+			// false mesmo com sessão válida. O cache será restaurado
+			// abaixo com os valores corretos APÓS a verificação no servidor.
+			clearUserCache();
+
 			// Busca a sessão recém-criada
 			const { data: sessionData } = await authClient.getSession();
 
@@ -77,7 +84,9 @@ export default function Auth() {
 				return;
 			}
 
-			// Cacheia dados básicos do usuário em MMKV
+			console.log("Usuário encontrado", user.id);
+
+			// Agora cacheia com os valores corretos
 			cacheUserInfo({
 				id: user.id,
 				name: user.name,
@@ -85,8 +94,6 @@ export default function Auth() {
 				image: user.image,
 				role: user.role,
 			});
-
-			console.log("user", user);
 
 			// Scholar — loga direto (perfil gerenciado pelo gestor)
 			if (user.role === "scholar") {
@@ -96,33 +103,24 @@ export default function Auth() {
 				return;
 			}
 
-			// Student — limpa cache local e verifica com o servidor
-			// para evitar redirecionamento incorreto com dado desatualizado
-			setHasProfile(false);
+			// Student — verifica com o servidor se o perfil existe.
+			// Só cacheia os dados DEPOIS da resposta para que o layout
+			// nunca veja um estado intermediário com userRole definido
+			// mas hasProfile incorreto.
+			const profile = await trpcUtils.profiles.me.fetch();
+			console.log("studentProfile: ", profile);
+			const hasStudentProfile =
+				"studentProfile" in profile && profile.studentProfile !== null;
 
-			// Verifica no servidor se o perfil de estudante existe
-			try {
-				const profileData = await trpcUtils.profiles.me.fetch();
+			setHasProfile(hasStudentProfile);
 
-				const hasStudentProfile =
-					"studentProfile" in profileData &&
-					profileData.studentProfile != null;
-
-				setHasProfile(hasStudentProfile);
-
-				if (hasStudentProfile) {
-					setIsLoading(false);
-					router.replace("/(tabs)");
-					return;
-				}
-			} catch {
-				// Erro ao consultar perfil — assume que não existe (primeiro acesso)
-				setHasProfile(false);
+			if (hasStudentProfile) {
+				console.log("Usuário possui perfil", user.id);
+				// router.replace("/(tabs)");
+			} else {
+				console.log("Usuário não possui perfil", user.id);
+				// router.replace("/onboarding/unregistered");
 			}
-
-			// Primeiro acesso — redireciona para o onboarding
-			setIsLoading(false);
-			router.replace("/onboarding/unregistered");
 		} catch (err) {
 			setIsLoading(false);
 			console.error("Google login error:", err);

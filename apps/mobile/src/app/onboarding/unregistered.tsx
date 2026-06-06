@@ -19,7 +19,6 @@ export default function Unregistered() {
 				onClick={async () => {
 					await authClient.signOut();
 					clearUserCache();
-					router.replace("/auth");
 				}}
 			/>
 
