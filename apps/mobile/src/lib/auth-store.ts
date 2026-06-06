@@ -5,7 +5,7 @@
  * incluindo cache de informações do usuário em MMKV para acesso rápido.
  */
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { Platform } from "react-native";
 
 import { toSessionUser } from "@/types/session";
@@ -53,6 +53,7 @@ export function clearUserCache() {
 	for (const key of Object.values(CACHE_KEYS)) {
 		storage.remove(key);
 	}
+	notifyHasProfileListeners();
 }
 
 export function getCachedUser() {
@@ -67,8 +68,32 @@ export function getCachedUser() {
 	};
 }
 
+// ─── Reactive subscriptions ───────────────────────────────────────────────────
+
+/**
+ * Conjunto de callbacks que o React (via `useSyncExternalStore`) registra
+ * para saber quando o valor de `hasProfile` mudar. Quando `setHasProfile`
+ * é chamado, todos os listeners são notificados e o React re-renderiza
+ * os componentes que consomem este valor.
+ */
+const hasProfileListeners = new Set<() => void>();
+
+function subscribeToHasProfile(callback: () => void): () => void {
+	hasProfileListeners.add(callback);
+	return () => {
+		hasProfileListeners.delete(callback);
+	};
+}
+
+function notifyHasProfileListeners(): void {
+	for (const listener of hasProfileListeners) {
+		listener();
+	}
+}
+
 export function setHasProfile(value: boolean) {
 	storage.set(CACHE_KEYS.hasProfile, String(value));
+	notifyHasProfileListeners();
 }
 
 export function getHasProfile(): boolean {
@@ -171,11 +196,22 @@ export function useUser() {
  *
  * - Scholars sempre têm perfil (criado pelo gestor).
  * - Students têm perfil após finalizar o onboarding.
+ *
+ * Usa `useSyncExternalStore` para que o React re-renderize sempre que
+ * `setHasProfile` for chamado em outro componente (ex.: onboarding), evitando
+ * que o `Stack.Protected` em `_layout.tsx` fique com o valor desatualizado.
  */
 export function useHasProfile(): boolean {
 	const role = useUserRole();
 
+	const hasProfile = useSyncExternalStore(
+		subscribeToHasProfile,
+		getHasProfile,
+		getHasProfile,
+	);
+
+	// Scholars always have a profile (created by the manager)
 	if (role === UserRole.Scholar) return true;
 
-	return getHasProfile();
+	return hasProfile;
 }

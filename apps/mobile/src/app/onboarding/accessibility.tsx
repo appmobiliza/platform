@@ -84,6 +84,8 @@ export default function AccessibilityInfo() {
 				// Limpa dados temporários do onboarding
 				clearOnboardingData();
 
+				console.log("Onboarding concluído com sucesso");
+
 				// Redireciona para o app principal
 				router.replace("/(tabs)");
 			} catch (error) {
@@ -92,8 +94,6 @@ export default function AccessibilityInfo() {
 					"Erro",
 					"Não foi possível finalizar seu cadastro. Tente novamente.",
 				);
-			} finally {
-				setIsSubmitting(false);
 			}
 		},
 		(errors) => {
@@ -111,7 +111,11 @@ export default function AccessibilityInfo() {
 
 	return (
 		<View className="flex-1">
-			<Header title="Cadastrar-se no Mobiliza" size="small" />
+			<Header
+				title="Cadastrar-se no Mobiliza"
+				size="small"
+				isDisabled={isSubmitting}
+			/>
 
 			<ScrollView
 				className="flex-1"
