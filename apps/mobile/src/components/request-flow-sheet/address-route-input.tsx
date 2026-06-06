@@ -2,7 +2,7 @@
 
 import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import { Check, CircleX, MapPin, Navigation, Route } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
 
 import { StatusMessage } from "@/components/status-message";
@@ -47,9 +47,11 @@ const CURRENT_LOCATION_ITEM = {
 	abbrev: null,
 } as const satisfies SuggestionItem;
 
-/** Look up a UfalPoint by name so we can get coordinates. */
+// ── O(1) lookup map built once at module level ─────────────────────
+const ufalPointsByName = new Map(ufalPoints.map((p) => [p.name, p]));
+
 function findPoint(name: string): UfalPoint | undefined {
-	return ufalPoints.find((p) => p.name === name);
+	return ufalPointsByName.get(name);
 }
 
 // ── Sub-components ─────────────────────────────────────────────────
@@ -61,7 +63,7 @@ type SuggestionRowProps = {
 	onPress: (item: SuggestionItem) => void;
 };
 
-function SuggestionRow({
+const SuggestionRow = memo(function SuggestionRow({
 	item,
 	isSelected,
 	distance,
@@ -78,8 +80,9 @@ function SuggestionRow({
 				name: "map",
 				label: distance,
 			}}
-			className={cn("p-4 border-b border-border", {
-				"bg-primary/10 border-primary/30": isSelected,
+			className={cn("p-4 border-b border-border rounded-lg", {
+				"bg-primary/10 border-t border-r border-l border-b border-primary/30":
+					isSelected,
 			})}
 			variant="default"
 		>
@@ -90,7 +93,7 @@ function SuggestionRow({
 			)}
 		</PlaceCard>
 	);
-}
+});
 
 type RouteInputProps = {
 	inputRef: React.RefObject<TextInput | null>;
@@ -154,10 +157,16 @@ function AddressRouteInput({
 	const originInputRef = useRef<TextInput>(null);
 	const destinationInputRef = useRef<TextInput>(null);
 
-	const activateOrigin = () => setActiveField("origin");
-	const activateDestination = () => setActiveField("destination");
-	const clearOriginQuery = () => setOriginQuery("");
-	const clearDestinationQuery = () => setDestinationQuery("");
+	const activateOrigin = useCallback(() => setActiveField("origin"), []);
+	const activateDestination = useCallback(
+		() => setActiveField("destination"),
+		[],
+	);
+	const clearOriginQuery = useCallback(() => setOriginQuery(""), []);
+	const clearDestinationQuery = useCallback(
+		() => setDestinationQuery(""),
+		[],
+	);
 
 	// Auto-focus the destination input when the sheet opens
 	useEffect(() => {
@@ -167,6 +176,20 @@ function AddressRouteInput({
 		});
 	}, []);
 
+	// Stable reference points — only recompute when selections change,
+	// not on every keystroke.
+	const referencePoints = useMemo(
+		() => ({
+			origin: origin?.name ? findPoint(origin.name) : undefined,
+			dest: destination?.name ? findPoint(destination.name) : undefined,
+		}),
+		[origin, destination],
+	);
+
+	// Remembers the last sorted order so post-selection renders can rehydrate
+	// distances in-place without re-sorting and moving items around.
+	const stableSuggestionsRef = useRef<SuggestionItem[]>([]);
+
 	const suggestions = useMemo<SuggestionItem[]>(() => {
 		const query = (
 			activeField === "origin" ? originQuery : destinationQuery
@@ -174,11 +197,15 @@ function AddressRouteInput({
 			.toLowerCase()
 			.trim();
 
-		// Resolve reference points for distance calculation
-		const originPoint = origin?.name ? findPoint(origin.name) : undefined;
-		const destPoint = destination?.name
-			? findPoint(destination.name)
-			: undefined;
+		const { origin: originPoint, dest: destPoint } = referencePoints;
+
+		const effectiveField =
+			activeField ??
+			(origin && !destination
+				? "destination"
+				: !origin && destination
+					? "origin"
+					: "destination");
 
 		const points: SuggestionItem[] = ufalPoints
 			.filter(
@@ -188,31 +215,24 @@ function AddressRouteInput({
 					(p.abbrev?.toLowerCase().includes(query) ?? false),
 			)
 			.filter((p) => {
-				// Remove the already-selected origin from the destination list
-				if (activeField === "destination" && origin?.name === p.name) {
+				if (effectiveField === "destination" && origin?.name === p.name)
 					return false;
-				}
-				// Remove the already-selected destination from the origin list
-				if (activeField === "origin" && destination?.name === p.name) {
+				if (effectiveField === "origin" && destination?.name === p.name)
 					return false;
-				}
 				return true;
 			})
 			.map((p) => {
 				let distanceMeters: number | undefined;
 
 				if (originPoint && destPoint) {
-					// Both origin and destination are known → show cross-track distance
 					distanceMeters = pointToLineDistance(
 						p,
 						originPoint,
 						destPoint,
 					);
-				} else if (activeField === "origin" && destPoint) {
-					// Selecting origin, destination is set → show distance from destination
+				} else if (effectiveField === "origin" && destPoint) {
 					distanceMeters = haversineDistance(p, destPoint);
-				} else if (activeField === "destination" && originPoint) {
-					// Selecting destination, origin is set → show distance from origin
+				} else if (effectiveField === "destination" && originPoint) {
 					distanceMeters = haversineDistance(p, originPoint);
 				}
 
@@ -227,21 +247,55 @@ function AddressRouteInput({
 				};
 			});
 
-		// Sort from closest to farthest when distances are available
-		const anyDistance = points.some((p) => p.distanceMeters !== undefined);
-		if (anyDistance) {
-			points.sort((a, b) => {
-				if (a.distanceMeters === undefined) return 1;
-				if (b.distanceMeters === undefined) return -1;
-				return a.distanceMeters - b.distanceMeters;
-			});
+		const withHeader: SuggestionItem[] =
+			effectiveField === "origin"
+				? [CURRENT_LOCATION_ITEM, ...points]
+				: points;
+
+		// While the user is actively searching: sort and snapshot the order.
+		if (activeField !== null) {
+			const anyDistance = points.some(
+				(p) => p.distanceMeters !== undefined,
+			);
+			if (anyDistance) {
+				withHeader.sort((a, b) => {
+					if (
+						a.distanceMeters === undefined &&
+						b.distanceMeters === undefined
+					)
+						return 0;
+					if (a.distanceMeters === undefined) return 1;
+					if (b.distanceMeters === undefined) return -1;
+					return a.distanceMeters - b.distanceMeters;
+				});
+			}
+			stableSuggestionsRef.current = withHeader;
+			return withHeader;
 		}
 
-		if (activeField === "origin") {
-			return [CURRENT_LOCATION_ITEM, ...points];
+		// Idle: reuse the stable snapshot as-is — distances are already correct
+		// from when the user was actively searching. Only drop items that have
+		// since been filtered out (e.g. the newly selected item).
+		const visibleIds = new Set(withHeader.map((p) => p.id));
+		const rehydrated = stableSuggestionsRef.current.filter((p) =>
+			visibleIds.has(p.id),
+		);
+
+		if (rehydrated.length === 0) {
+			stableSuggestionsRef.current = withHeader;
+			return withHeader;
 		}
-		return points;
-	}, [activeField, originQuery, destinationQuery, origin, destination]);
+
+		stableSuggestionsRef.current = rehydrated;
+		return rehydrated;
+	}, [
+		activeField,
+		originQuery,
+		destinationQuery,
+		origin,
+		destination,
+		referencePoints,
+	]);
 
 	const handleSelectSuggestion = useCallback(
 		(item: SuggestionItem) => {
@@ -328,35 +382,6 @@ function AddressRouteInput({
 					</Text>
 				}
 			/>
-			{/*{activeField ? (
-				<BottomSheetFlatList
-					data={suggestions}
-					keyExtractor={(item) => item.id}
-					contentContainerClassName={"px-4 py-4"}
-					renderItem={renderSuggestion}
-					keyboardShouldPersistTaps="handled"
-					showsVerticalScrollIndicator={false}
-					ListEmptyComponent={
-						<Text className="py-6 text-center text-sm text-muted-foreground">
-							Nenhum local encontrado
-						</Text>
-					}
-				/>
-			) : origin && destination ? (
-				<StatusMessage
-					icon={<Icon icon={Route} color="--foreground" size={32} />}
-					className="max-w-2/3 mx-auto"
-					title="Agora é só confirmar"
-					description="A origem e o destino estão selecionados. Clique em confirmar para continuar."
-				/>
-			) : (
-				<StatusMessage
-					icon={<Icon icon={Route} color="--foreground" size={32} />}
-					className="max-w-2/3 mx-auto"
-					title="Selecione a origem e o destino"
-					description="Digite o endereço de origem e o endereço de destino para encontrar uma rota."
-				/>
-			)}*/}
 		</View>
 	);
 }
