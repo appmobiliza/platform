@@ -2,6 +2,7 @@ import { roleValues } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
 import { authEnv } from "@mobiliza/env/auth";
+import { webBaseUrl } from "@mobiliza/env/base-url";
 
 import { expo } from "@better-auth/expo";
 import type { BetterAuthPlugin } from "better-auth";
@@ -88,6 +89,21 @@ export const auth = betterAuth({
 		// para redirecionar de volta ao app após OAuth).
 		"mobiliza://",
 	],
+
+	onAPIError: {
+		/**
+		 * URL para redirecionar quando ocorre um erro no fluxo OAuth
+		 * (ex.: usuário cancela o consentimento do Google).
+		 *
+		 * Em vez da página de erro padrão do Better Auth (que tem um botão
+		 * "Go home" apontando para a API), redirecionamos para a página
+		 * de autenticação do frontend com o parâmetro `?error=`.
+		 *
+		 * O frontend (apps/web ou apps/mobile na web) deve ler este
+		 * parâmetro e exibir um diálogo de erro adequado.
+		 */
+		errorURL: `${webBaseUrl}/auth`,
+	},
 
 	plugins: [expo() as BetterAuthPlugin],
 });

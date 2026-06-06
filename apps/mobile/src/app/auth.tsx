@@ -36,6 +36,10 @@ export default function Auth() {
 					Platform.OS === "web"
 						? `${process.env.EXPO_PUBLIC_WEB_URL}/auth-callback`
 						: "/auth",
+				errorCallbackURL:
+					Platform.OS === "web"
+						? `${process.env.EXPO_PUBLIC_WEB_URL}/auth`
+						: "/auth",
 			});
 
 			if (error) {

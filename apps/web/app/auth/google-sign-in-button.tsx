@@ -23,6 +23,7 @@ export function GoogleSignInButton({ googleLogo }: GoogleSignInButtonProps) {
 			await authClient.signIn.social({
 				provider: "google",
 				callbackURL: `${process.env.NEXT_PUBLIC_WEB_URL}/`,
+				errorCallbackURL: `${process.env.NEXT_PUBLIC_WEB_URL}/auth`,
 			});
 		} catch (error) {
 			console.error("Erro ao fazer login com Google:", error);

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { Suspense } from "react";
 
 import google from "@/public/google.svg";
 import logo from "@/public/logo.svg";
 
+import { AuthErrorHandler } from "./auth-error-handler";
 import { GoogleSignInButton } from "./google-sign-in-button";
 
 export const metadata: Metadata = {
@@ -27,6 +29,9 @@ export default async function AuthPage() {
 			</div>
 			<div className="flex flex-1 w-full flex-col items-center justify-center self-center p-12 md:w-1/2">
 				<div className="flex w-full max-w-sm flex-col items-center justify-center gap-6">
+					<Suspense fallback={null}>
+						<AuthErrorHandler />
+					</Suspense>
 					<div className="flex h-full w-full flex-col items-center justify-center gap-2 text-center">
 						<p className="text-2xl font-bold">Autenticação</p>
 						<p className="text-sm font-normal text-muted-foreground lg:px-12">
