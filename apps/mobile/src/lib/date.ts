@@ -1,0 +1,61 @@
+/**
+ * Date formatting utilities for Portuguese locale.
+ */
+
+const monthNames = [
+	"janeiro",
+	"fevereiro",
+	"março",
+	"abril",
+	"maio",
+	"junho",
+	"julho",
+	"agosto",
+	"setembro",
+	"outubro",
+	"novembro",
+	"dezembro",
+] as const;
+
+/**
+ * Format a date as "1 de agosto"
+ */
+export function formatDateLong(date: Date): string {
+	return `${date.getDate()} de ${monthNames[date.getMonth()]}`;
+}
+
+/**
+ * Format a date as "1 de agosto • 19h00"
+ */
+export function formatDateTime(date: Date): string {
+	const hours = date.getHours().toString().padStart(2, "0");
+	const minutes = date.getMinutes().toString().padStart(2, "0");
+	return `${formatDateLong(date)} • ${hours}h${minutes}`;
+}
+
+/**
+ * Format a date as "19h00" (time only)
+ */
+export function formatTime(date: Date): string {
+	const hours = date.getHours().toString().padStart(2, "0");
+	const minutes = date.getMinutes().toString().padStart(2, "0");
+	return `${hours}h${minutes}`;
+}
+
+/**
+ * Format a time range like "18:00 - 18:23"
+ */
+export function formatTimeRange(start: Date, end: Date): string {
+	const fmt = (d: Date) =>
+		`${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
+	return `${fmt(start)} - ${fmt(end)}`;
+}
+
+/**
+ * Get a date key for grouping (YYYY-MM-DD)
+ */
+export function getDateKey(date: Date): string {
+	const month = (date.getMonth() + 1).toString().padStart(2, "0");
+	const day = date.getDate().toString().padStart(2, "0");
+	return `${date.getFullYear()}-${month}-${day}`;
+}

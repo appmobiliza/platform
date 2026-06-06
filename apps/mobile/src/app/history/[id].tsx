@@ -1,5 +1,7 @@
-import { Clock, Cloud, Footprints, RotateCcw, Star } from "lucide-react-native";
-import { View } from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import { Clock, RotateCcw, Star } from "lucide-react-native";
+import { useMemo } from "react";
+import { ActivityIndicator, View } from "react-native";
 
 import { HistoryDetailLayout } from "@/layout/history-details";
 
@@ -12,82 +14,116 @@ import { Text } from "@/components/ui/text";
 
 import { useLightStatusBar } from "@/hooks/use-light-status-bar";
 import { useUserRole } from "@/lib/auth-store";
+import { formatDateTime, formatTime } from "@/lib/date";
+import { trpc } from "@/lib/trpc/client";
 
 function StudentHistoryDetails() {
 	useLightStatusBar();
 
+	const { id } = useLocalSearchParams<{ id: string }>();
+
+	const { data } = trpc.requests.studentHistory.useInfiniteQuery(
+		{ limit: 50 },
+		{
+			getNextPageParam: (lastPage) => lastPage.nextCursor,
+		},
+	);
+
+	const request = useMemo(() => {
+		if (!data) return null;
+		const allItems = data.pages.flatMap((page) => page.items);
+		return allItems.find((item) => item.id === id) ?? null;
+	}, [data, id]);
+
+	if (!request) {
+		return (
+			<View className="flex-1 bg-background items-center justify-center">
+				<ActivityIndicator size="large" />
+			</View>
+		);
+	}
+
+	const originName = request.originLocation?.name ?? "Origem";
+	const destinationName = request.destinationLocation?.name ?? "Destino";
+	const title = `${originName} → ${destinationName}`;
+	const subtitle = formatDateTime(new Date(request.createdAt));
+
+	const attendance = request.attendance;
+	const scholarUser = attendance?.scholarProfile?.user;
+	const scholarName = scholarUser?.name ?? "Bolsista";
+	const scholarInitials = scholarName
+		.split(" ")
+		.map((n) => n[0])
+		.join("")
+		.slice(0, 2)
+		.toUpperCase();
+
+	const durationSeconds = attendance?.durationSeconds ?? null;
+	const durationMinutes = durationSeconds
+		? Math.round(durationSeconds / 60)
+		: null;
+
 	return (
 		<HistoryDetailLayout
-			title="CAC - Pista da UFAL"
-			subtitle="6 de agosto • 19h"
+			title={title}
+			subtitle={subtitle}
 			mapBadges={
 				<>
-					<Badge>
-						<Icon
-							icon={Footprints}
-							size={14}
-							color="--primary-foreground"
-						/>
-						<Text>2,1km</Text>
-					</Badge>
-					<Badge>
-						<Icon
-							icon={Clock}
-							size={14}
-							color="--primary-foreground"
-						/>
-						<Text>29m</Text>
-					</Badge>
+					{durationMinutes ? (
+						<Badge>
+							<Icon
+								icon={Clock}
+								size={14}
+								color="--primary-foreground"
+							/>
+							<Text>{durationMinutes}m</Text>
+						</Badge>
+					) : null}
 				</>
 			}
 			profile={
 				<View className="flex-row items-center gap-3">
-					<Avatar alt="Zach Nugent's Avatar">
-						<AvatarImage
-							source={{
-								uri: "https://github.com/meninocoiso.png",
-							}}
-						/>
+					<Avatar alt={`Avatar de ${scholarName}`}>
+						{scholarUser?.image ? (
+							<AvatarImage
+								source={{
+									uri: scholarUser.image,
+								}}
+							/>
+						) : null}
 						<AvatarFallback>
-							<Text>ZN</Text>
+							<Text>{scholarInitials}</Text>
 						</AvatarFallback>
 					</Avatar>
 					<View className="flex-1">
 						<Text className="font-medium text-sm">
 							Atendido por{" "}
 							<Text className="font-semibold text-sm">
-								João Carlos
+								{scholarName}
 							</Text>
 						</Text>
 					</View>
-					<Badge
-						variant="secondary"
-						className="px-2 py-0.5 text-foreground"
-					>
-						<Icon icon={Cloud} size={14} color="--foreground" />
-						<Text>Manhã</Text>
-					</Badge>
 				</View>
 			}
 			route={{
 				className: "w-full",
 				from: {
-					label: "CAC - Centro de Artes e Cultura",
+					label: originName,
 					className: "px-3 py-4",
 					children: (
 						<Text className="text-xs font-medium text-muted-foreground">
-							8:04 PM
+							{formatTime(new Date(request.createdAt))}
 						</Text>
 					),
 				},
 				to: {
-					label: "Pista da UFAL",
+					label: destinationName,
 					className: "px-3 py-4",
-					children: (
+					children: attendance?.completedAt ? (
 						<Text className="text-xs font-medium text-muted-foreground">
-							8:33 PM
+							{formatTime(new Date(attendance.completedAt))}
 						</Text>
-					),
+					) : null,
 				},
 			}}
 		>
@@ -112,10 +148,36 @@ function StudentHistoryDetails() {
 
 export default function HistoryDetails() {
 	const role = useUserRole();
+	const { id } = useLocalSearchParams<{ id: string }>();
 
-	return role === "scholar" ? (
-		<ScholarHistoryDetails />
-	) : (
-		<StudentHistoryDetails />
+	if (role === "scholar") {
+		return <ScholarHistoryDetailsPage id={id} />;
+	}
+
+	return <StudentHistoryDetails />;
+}
+
+function ScholarHistoryDetailsPage({ id }: { id: string }) {
+	const { data } = trpc.requests.scholarHistory.useInfiniteQuery(
+		{ limit: 50 },
+		{
+			getNextPageParam: (lastPage) => lastPage.nextCursor,
+		},
 	);
+
+	const attendance = useMemo(() => {
+		if (!data) return null;
+		const allItems = data.pages.flatMap((page) => page.items);
+		return allItems.find((item) => item.id === id) ?? null;
+	}, [data, id]);
+
+	if (!attendance) {
+		return (
+			<View className="flex-1 bg-background items-center justify-center">
+				<ActivityIndicator size="large" />
+			</View>
+		);
+	}
+
+	return <ScholarHistoryDetails attendance={attendance} />;
 }

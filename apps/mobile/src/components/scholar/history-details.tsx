@@ -1,7 +1,8 @@
+import { Clock, Edit3, Trash2 } from "lucide-react-native";
 import { useState } from "react";
-
-import { Clock, Edit3, Footprints, Trash2 } from "lucide-react-native";
 import { View } from "react-native";
+
+import { HistoryDetailLayout } from "@/layout/history-details";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -20,9 +21,17 @@ import {
 import { Text } from "@/components/ui/text";
 import { Textarea } from "@/components/ui/textarea";
 
-import { HistoryDetailLayout } from "@/layout/history-details";
+import { formatDateTime, formatTime } from "@/lib/date";
+import type { RouterOutputs } from "@/lib/trpc/client";
 
-export default function ScholarHistoryDetails() {
+type ScholarAttendance =
+	RouterOutputs["requests"]["scholarHistory"]["items"][number];
+
+interface DetailProps {
+	attendance: ScholarAttendance;
+}
+
+export default function ScholarHistoryDetails({ attendance }: DetailProps) {
 	const [observation, setObservation] = useState<string | null>(null);
 	const [draftObservation, setDraftObservation] = useState("");
 
@@ -35,70 +44,85 @@ export default function ScholarHistoryDetails() {
 		setDraftObservation("");
 	};
 
+	const { request } = attendance;
+	const studentUser = request.studentProfile?.user;
+	const studentName = studentUser?.name ?? "Estudante";
+	const studentInitials = studentName
+		.split(" ")
+		.map((n) => n[0])
+		.join("")
+		.slice(0, 2)
+		.toUpperCase();
+
+	const originName = request.originLocation?.name ?? "Origem";
+	const destinationName = request.destinationLocation?.name ?? "Destino";
+	const title = `${originName} → ${destinationName}`;
+	const subtitle = formatDateTime(new Date(attendance.acceptedAt));
+
+	const durationMinutes = attendance.durationSeconds
+		? Math.round(attendance.durationSeconds / 60)
+		: null;
+
+	const startedAt = attendance.startedAt
+		? new Date(attendance.startedAt)
+		: null;
+	const completedAt = attendance.completedAt
+		? new Date(attendance.completedAt)
+		: null;
+
 	return (
 		<HistoryDetailLayout
-			title="CAC - Pista da UFAL"
-			subtitle="6 de agosto • 19h"
+			title={title}
+			subtitle={subtitle}
 			mapBadges={
 				<>
-					<Badge className="text-primary-foreground">
-						<Icon
-							icon={Footprints}
-							size={14}
-							color="--primary-foreground"
-						/>
-						<Text>2,1km</Text>
-					</Badge>
-					<Badge className="text-primary-foreground">
-						<Icon
-							icon={Clock}
-							size={14}
-							color="--primary-foreground"
-						/>
-						<Text>29m</Text>
-					</Badge>
+					{durationMinutes ? (
+						<Badge className="text-primary-foreground">
+							<Icon
+								icon={Clock}
+								size={14}
+								color="--primary-foreground"
+							/>
+							<Text>{durationMinutes}m</Text>
+						</Badge>
+					) : null}
 				</>
 			}
 			profile={
 				<View className="flex-row items-center gap-3">
-					<Avatar alt="Zach Nugent's Avatar">
-						<AvatarImage
-							source={{
-								uri: "https://github.com/meninocoiso.png",
-							}}
-						/>
+					<Avatar alt={`Avatar de ${studentName}`}>
+						{studentUser?.image ? (
+							<AvatarImage source={{ uri: studentUser.image }} />
+						) : null}
 						<AvatarFallback>
-							<Text>ZN</Text>
+							<Text>{studentInitials}</Text>
 						</AvatarFallback>
 					</Avatar>
 					<View>
 						<Text className="font-bold text-base text-foreground">
-							João Carlos
-						</Text>
-						<Text className="text-sm text-muted-foreground">
-							Deficiência Visual
+							{studentName}
 						</Text>
 					</View>
 				</View>
 			}
 			route={{
 				from: {
-					label: "CAC - Centro de Artes e Cultura",
+					label: originName,
 					className: "px-3 py-4",
-					children: (
+					children: startedAt ? (
 						<Text className="text-xs font-medium text-muted-foreground">
-							8:04 PM
+							{formatTime(startedAt)}
 						</Text>
-					),
+					) : null,
 				},
 				to: {
-					label: "Pista da UFAL",
+					label: destinationName,
 					className: "px-3 py-4",
-					children: (
+					children: completedAt ? (
 						<Text className="text-xs font-medium text-muted-foreground">
-							8:33 PM
+							{formatTime(completedAt)}
 						</Text>
-					),
+					) : null,
 				},
 			}}
 		>
@@ -109,7 +133,7 @@ export default function ScholarHistoryDetails() {
 					onSave={handleSaveObservation}
 				>
 					<Button
-						size={"lg"}
+						size="lg"
 						onPress={() => {
 							setDraftObservation("");
 						}}
