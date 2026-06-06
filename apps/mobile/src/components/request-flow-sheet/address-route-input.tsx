@@ -1,10 +1,11 @@
 // address-route-input.tsx
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
-import { CircleX, MapPin, Navigation, Route } from "lucide-react-native";
+import { Check, CircleX, MapPin, Navigation, Route } from "lucide-react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
 
+import { StatusMessage } from "@/components/status-message";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
@@ -13,16 +14,18 @@ import { cn } from "@/lib/utils";
 
 import { FromMarker, ToMarker } from "@/assets/route";
 import { ufalPoints } from "@/constants/locations";
-import { useUpdateRef } from "@/hooks/use-update-ref";
 
-import { StatusMessage } from "../status-message";
+import { PlaceCard } from "../place-card";
 
 const CURRENT_LOCATION = "__current_location__" as const;
 
 type UfalPoint = (typeof ufalPoints)[number];
-type SuggestionItem =
+type SuggestionItem = {
+	distance?: string;
+} & (
 	| { id: typeof CURRENT_LOCATION; name: "Sua posição atual"; abbrev: null }
-	| (UfalPoint & { id: string });
+	| (UfalPoint & { id: string })
+);
 
 export type AddressRouteInputProps = {
 	origin: { name?: string; abbreviation?: string } | null;
@@ -38,53 +41,112 @@ const CURRENT_LOCATION_ITEM = {
 	abbrev: null,
 } as const satisfies SuggestionItem;
 
+// ── Distance utilities ──────────────────────────────────────────────
+
+function haversineDistance(
+	a: { latitude: number; longitude: number },
+	b: { latitude: number; longitude: number },
+): number {
+	const R = 6_371_000;
+	const toRad = (deg: number) => (deg * Math.PI) / 180;
+	const φ1 = toRad(a.latitude);
+	const φ2 = toRad(b.latitude);
+	const Δφ = toRad(b.latitude - a.latitude);
+	const Δλ = toRad(b.longitude - a.longitude);
+	const x =
+		Math.sin(Δφ / 2) ** 2 +
+		Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+	return 2 * R * Math.asin(Math.sqrt(x));
+}
+
+/** Convert lat/lng to flat Cartesian meters (approximate, fine for small areas). */
+function toMetersCoords(lat: number, lng: number) {
+	const R = 6_371_000;
+	const latRad = (lat * Math.PI) / 180;
+	const lngRad = (lng * Math.PI) / 180;
+	return {
+		x: R * lngRad * Math.cos(latRad),
+		y: R * latRad,
+	};
+}
+
+/** Shortest distance (m) from `point` to the line segment `a`–`b`. */
+function pointToLineDistance(
+	point: { latitude: number; longitude: number },
+	a: { latitude: number; longitude: number },
+	b: { latitude: number; longitude: number },
+): number {
+	const P = toMetersCoords(point.latitude, point.longitude);
+	const A = toMetersCoords(a.latitude, a.longitude);
+	const B = toMetersCoords(b.latitude, b.longitude);
+
+	const APx = P.x - A.x;
+	const APy = P.y - A.y;
+	const ABx = B.x - A.x;
+	const ABy = B.y - A.y;
+
+	const dot = APx * ABx + APy * ABy;
+	const lenSq = ABx * ABx + ABy * ABy;
+	let t = lenSq !== 0 ? dot / lenSq : -1;
+	t = Math.max(0, Math.min(1, t));
+
+	const closestX = A.x + t * ABx;
+	const closestY = A.y + t * ABy;
+
+	const dx = P.x - closestX;
+	const dy = P.y - closestY;
+	return Math.sqrt(dx * dx + dy * dy);
+}
+
+function formatDistance(meters: number): string {
+	if (meters < 1_000) {
+		return `${Math.round(meters)}m`;
+	}
+	return `${(meters / 1_000).toFixed(1)}km`;
+}
+
+/** Look up a UfalPoint by name so we can get coordinates. */
+function findPoint(name: string): UfalPoint | undefined {
+	return ufalPoints.find((p) => p.name === name);
+}
+
+// ── Sub-components ─────────────────────────────────────────────────
+
 type SuggestionRowProps = {
 	item: SuggestionItem;
 	isSelected: boolean;
+	distance?: string;
 	onPress: (item: SuggestionItem) => void;
 };
 
-function SuggestionRow({ item, isSelected, onPress }: SuggestionRowProps) {
-	const isCurrent = item.id === CURRENT_LOCATION;
+function SuggestionRow({
+	item,
+	isSelected,
+	distance,
+	onPress,
+}: SuggestionRowProps) {
 	const handlePress = useCallback(() => onPress(item), [item, onPress]);
 
 	return (
-		<Pressable
+		<PlaceCard
+			title={item.abbrev ?? item.name}
+			description={item.name}
 			onPress={handlePress}
-			className={cn(
-				"flex-row items-center gap-3 px-4 py-3 border-b border-border",
-				isSelected && "bg-primary/10",
-			)}
+			icon={{
+				name: "map",
+				label: distance,
+			}}
+			className={cn("p-4 border-b border-border", {
+				"bg-primary/10 border-primary/30": isSelected,
+			})}
+			variant="default"
 		>
-			<View
-				className={cn(
-					"size-9 items-center justify-center rounded-md",
-					isCurrent ? "bg-primary/15" : "bg-muted",
-				)}
-			>
-				<Icon
-					icon={isCurrent ? Navigation : MapPin}
-					size={17}
-					color={isCurrent ? "--primary" : "--muted-foreground"}
-				/>
-			</View>
-			<View className="flex-1">
-				<Text
-					className={cn(
-						"text-sm font-medium",
-						isCurrent && "text-primary",
-					)}
-					numberOfLines={1}
-				>
-					{item.name}
-				</Text>
-				{item.abbrev && (
-					<Text className="text-xs text-muted-foreground mt-0.5">
-						{item.abbrev}
-					</Text>
-				)}
-			</View>
-		</Pressable>
+			{isSelected && (
+				<View className="bg-primary rounded-full p-1">
+					<Icon icon={Check} size={14} color="white" />
+				</View>
+			)}
+		</PlaceCard>
 	);
 }
 
@@ -131,6 +193,8 @@ function RouteInput({
 	);
 }
 
+// ── Main component ─────────────────────────────────────────────────
+
 function AddressRouteInput({
 	origin,
 	destination,
@@ -168,6 +232,11 @@ function AddressRouteInput({
 			.toLowerCase()
 			.trim();
 
+		// Resolve reference points for distance calculation
+		const originPoint = origin?.name ? findPoint(origin.name) : undefined;
+		const destPoint = destination?.name
+			? findPoint(destination.name)
+			: undefined;
 		const points: SuggestionItem[] = ufalPoints
 			.filter(
 				(p) =>
@@ -175,13 +244,34 @@ function AddressRouteInput({
 					p.name.toLowerCase().includes(query) ||
 					(p.abbrev?.toLowerCase().includes(query) ?? false),
 			)
-			.map((p) => ({ ...p, id: p.name }));
+			.map((p) => {
+				let distanceStr: string | undefined;
+
+				if (originPoint && destPoint) {
+					// Both origin and destination are known → show cross-track distance
+					distanceStr = formatDistance(
+						pointToLineDistance(p, originPoint, destPoint),
+					);
+				} else if (activeField === "origin" && destPoint) {
+					// Selecting origin, destination is set → show distance from destination
+					distanceStr = formatDistance(
+						haversineDistance(p, destPoint),
+					);
+				} else if (activeField === "destination" && originPoint) {
+					// Selecting destination, origin is set → show distance from origin
+					distanceStr = formatDistance(
+						haversineDistance(p, originPoint),
+					);
+				}
+
+				return { ...p, id: p.name, distance: distanceStr };
+			});
 
 		if (activeField === "origin") {
 			return [CURRENT_LOCATION_ITEM, ...points];
 		}
 		return points;
-	}, [activeField, originQuery, destinationQuery]);
+	}, [activeField, originQuery, destinationQuery, origin, destination]);
 
 	const handleSelectSuggestion = useCallback(
 		(item: SuggestionItem) => {
@@ -213,6 +303,7 @@ function AddressRouteInput({
 				<SuggestionRow
 					item={item}
 					isSelected={isSelected}
+					distance={item.distance}
 					onPress={handleSelectSuggestion}
 				/>
 			);
@@ -254,10 +345,24 @@ function AddressRouteInput({
 				</View>
 			</View>
 
-			{activeField ? (
+			<BottomSheetFlatList
+				data={suggestions}
+				keyExtractor={(item) => item.id}
+				contentContainerClassName={"px-4 py-4"}
+				renderItem={renderSuggestion}
+				keyboardShouldPersistTaps="handled"
+				showsVerticalScrollIndicator={false}
+				ListEmptyComponent={
+					<Text className="py-6 text-center text-sm text-muted-foreground">
+						Nenhum local encontrado
+					</Text>
+				}
+			/>
+			{/*{activeField ? (
 				<BottomSheetFlatList
 					data={suggestions}
 					keyExtractor={(item) => item.id}
+					contentContainerClassName={"px-4 py-4"}
 					renderItem={renderSuggestion}
 					keyboardShouldPersistTaps="handled"
 					showsVerticalScrollIndicator={false}
@@ -281,7 +386,7 @@ function AddressRouteInput({
 					title="Selecione a origem e o destino"
 					description="Digite o endereço de origem e o endereço de destino para encontrar uma rota."
 				/>
-			)}
+			)}*/}
 		</View>
 	);
 }
