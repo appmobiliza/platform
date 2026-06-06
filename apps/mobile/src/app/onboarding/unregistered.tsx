@@ -6,6 +6,7 @@ import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
+
 import { authClient } from "@/lib/auth-client";
 import { clearUserCache } from "@/lib/auth-store";
 
@@ -14,11 +15,13 @@ export default function Unregistered() {
 
 	return (
 		<View className="flex-1">
-			<Header onClick={async () => {
-				await authClient.signOut();
-				clearUserCache();
-				router.replace("/auth");
-			}} />
+			<Header
+				onClick={async () => {
+					await authClient.signOut();
+					clearUserCache();
+					router.replace("/auth");
+				}}
+			/>
 
 			<View className="flex-1 px-6 pt-24 pb-8 justify-between">
 				<View>

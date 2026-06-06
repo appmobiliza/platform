@@ -1,12 +1,18 @@
+import { PortalHost } from "@rn-primitives/portal";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { View } from "react-native";
 
 import "../global.css";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import { useHasProfile, useIsLoggedIn } from "@/lib/auth-store";
+import {
+	useHasProfile,
+	useIsLoggedIn,
+	useSyncSessionCache,
+} from "@/lib/auth-store";
 import { THEME } from "@/lib/theme";
 import { TRPCProvider } from "@/lib/trpc/Provider";
 import { useAppColorScheme } from "@/lib/use-app-color-scheme";
@@ -20,6 +26,8 @@ SplashScreen.setOptions({
 });
 
 export default function RootLayout() {
+	useSyncSessionCache();
+
 	const isLoggedIn = useIsLoggedIn();
 	const hasProfile = useHasProfile();
 
@@ -55,6 +63,18 @@ export default function RootLayout() {
 								<Stack.Screen name="auth" />
 							</Stack.Protected>
 						</Stack>
+						<View
+							style={{
+								position: "absolute",
+								top: 0,
+								left: 0,
+								right: 0,
+								bottom: 0,
+							}}
+							pointerEvents="box-none"
+						>
+							<PortalHost />
+						</View>
 					</BottomSheetModalProvider>
 				</ThemeProvider>
 			</TRPCProvider>

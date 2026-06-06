@@ -30,6 +30,7 @@ export default function AccessibilityDisabilities() {
 	}>();
 
 	const updateStudent = trpc.profiles.updateStudent.useMutation();
+	const utils = trpc.useUtils();
 
 	const parsedDisabilityTypes = disabilityTypesRaw
 		? (JSON.parse(
@@ -37,10 +38,12 @@ export default function AccessibilityDisabilities() {
 			) as ProfileDisabilitiesInput["disabilityTypes"])
 		: [];
 
+	const isSaving = updateStudent.isPending;
+
 	const {
 		control,
 		handleSubmit,
-		formState: { errors },
+		formState: { errors, isDirty },
 	} = useForm<ProfileDisabilitiesInput>({
 		resolver: zodResolver(ProfileDisabilitiesSchema),
 		defaultValues: {
@@ -55,6 +58,7 @@ export default function AccessibilityDisabilities() {
 				disabilityTypes:
 					data.disabilityTypes as UpdateStudentDisabilitiesInput,
 			});
+			await utils.profiles.me.invalidate();
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar tipos de deficiência:", error);
@@ -70,6 +74,8 @@ export default function AccessibilityDisabilities() {
 			title="Tipo de deficiência"
 			description="Selecione uma ou mais opções com base em suas necessidades de acessibilidade"
 			handleSave={handleSave}
+			isSaving={isSaving}
+			isDirty={isDirty}
 		>
 			<Controller
 				control={control}

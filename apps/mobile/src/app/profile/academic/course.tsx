@@ -24,11 +24,14 @@ export default function AcademicProfileCourse() {
 
 	const updateStudent = trpc.profiles.updateStudent.useMutation();
 	const updateScholar = trpc.profiles.updateScholar.useMutation();
+	const utils = trpc.useUtils();
+
+	const isSaving = updateStudent.isPending || updateScholar.isPending;
 
 	const {
 		control,
 		handleSubmit,
-		formState: { errors },
+		formState: { errors, isDirty },
 	} = useForm<ProfileCourseInput>({
 		resolver: zodResolver(ProfileCourseSchema),
 		defaultValues: {
@@ -44,6 +47,7 @@ export default function AcademicProfileCourse() {
 			} else {
 				await updateStudent.mutateAsync({ course: data.course });
 			}
+			await utils.profiles.me.invalidate();
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar curso:", error);
@@ -67,6 +71,8 @@ export default function AcademicProfileCourse() {
 			title="Curso"
 			description="Selecione o curso de graduação que você está cursando no momento"
 			handleSave={handleSave}
+			isSaving={isSaving}
+			isDirty={isDirty}
 		>
 			<Controller
 				control={control}

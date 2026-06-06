@@ -21,11 +21,14 @@ export default function BasicProfileCpf() {
 	const { cpf } = useLocalSearchParams<{ cpf?: string }>();
 
 	const updateScholar = trpc.profiles.updateScholar.useMutation();
+	const utils = trpc.useUtils();
+
+	const isSaving = updateScholar.isPending;
 
 	const {
 		control,
 		handleSubmit,
-		formState: { errors },
+		formState: { errors, isDirty },
 	} = useForm<ProfileCpfInput>({
 		resolver: zodResolver(ProfileCpfSchema),
 		defaultValues: {
@@ -43,6 +46,7 @@ export default function BasicProfileCpf() {
 
 		try {
 			await updateScholar.mutateAsync({ cpf: data.cpf });
+			await utils.profiles.me.invalidate();
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar CPF:", error);
@@ -58,6 +62,8 @@ export default function BasicProfileCpf() {
 			title="Número do CPF"
 			description="Este é seu número de CPF, usado para identificação e registro."
 			handleSave={handleSave}
+			isSaving={isSaving}
+			isDirty={isDirty}
 		>
 			<Controller
 				control={control}

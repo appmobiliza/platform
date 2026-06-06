@@ -13,6 +13,7 @@ interface HeaderProps {
 	size?: "default" | "small";
 	href?: "back" | string;
 	onClick?: () => void;
+	isDisabled?: boolean;
 }
 
 export function Header({
@@ -21,6 +22,7 @@ export function Header({
 	size = "default",
 	href = "back",
 	onClick,
+	isDisabled,
 }: HeaderProps) {
 	const router = useRouter();
 
@@ -47,7 +49,7 @@ export function Header({
 	return (
 		<View className="gap-4 px-4 pt-12">
 			{showBackButton ? (
-				<Pressable onPress={handlePress}>
+				<Pressable onPress={handlePress} disabled={isDisabled}>
 					<Icon
 						icon={ArrowLeftToLine}
 						size={32}

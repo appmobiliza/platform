@@ -5,9 +5,11 @@
  * incluindo cache de informações do usuário em MMKV para acesso rápido.
  */
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { Platform } from "react-native";
 
 import { toSessionUser } from "@/types/session";
+
 import { authClient } from "./auth-client";
 import { storage } from "./storage";
 
@@ -74,6 +76,35 @@ export function getHasProfile(): boolean {
 }
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
+
+/**
+ * Sincroniza a sessão do Better Auth para o cache (localStorage) na web.
+ *
+ * Em OAuth (Google), o login causa um redirect completo do navegador,
+ * destruindo o contexto JS antes de `cacheUserInfo` ser chamado em
+ * `auth.tsx`. Este hook garante que o cache seja preenchido sempre
+ * que a sessão for restaurada (cookie persistente), rodando apenas
+ * em plataforma web.
+ */
+export function useSyncSessionCache() {
+	const { data: session, isPending } = authClient.useSession();
+
+	useEffect(() => {
+		if (Platform.OS !== "web") return;
+		if (isPending || !session?.user) return;
+
+		const user = toSessionUser(session.user as Record<string, unknown>);
+		if (!user) return;
+
+		cacheUserInfo({
+			id: user.id,
+			name: user.name,
+			email: user.email,
+			image: user.image,
+			role: user.role,
+		});
+	}, [session, isPending]);
+}
 
 /**
  * Indica se o usuário está autenticado.

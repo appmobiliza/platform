@@ -114,7 +114,10 @@ const trpcHandler = trpcServer({
 			: undefined,
 });
 
-app.use("/trpc", trpcHandler);
+app.use("/trpc", async (c, next) => {
+	console.log("Agent:", c.req.header("User-Agent"), "IP:", c.req.header("User-Agent"));
+	return trpcHandler(c, next);
+});
 app.use("/trpc/*", trpcHandler);
 
 export default app;

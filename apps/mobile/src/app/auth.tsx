@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, Linking, View } from "react-native";
+import { Alert, Linking, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ export default function Auth() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(false);
+	const trpcUtils = trpc.useUtils();
 
 	const handleGoogleLogin = async () => {
 		setIsLoading(true);
@@ -31,7 +32,10 @@ export default function Auth() {
 		try {
 			const { error } = await authClient.signIn.social({
 				provider: "google",
-				callbackURL: "/auth",
+				callbackURL:
+					Platform.OS === "web"
+						? process.env.EXPO_PUBLIC_WEB_URL
+						: "/auth",
 			});
 
 			if (error) {
@@ -74,6 +78,8 @@ export default function Auth() {
 				role: user.role,
 			});
 
+			console.log("user", user);
+
 			// Scholar — loga direto (perfil gerenciado pelo gestor)
 			if (user.role === "scholar") {
 				setHasProfile(true);
@@ -91,7 +97,7 @@ export default function Auth() {
 
 			// Verifica no servidor se o perfil de estudante existe
 			try {
-				const profileData = await trpc.profiles.me.query();
+				const profileData = await trpcUtils.profiles.me.fetch();
 
 				const hasStudentProfile =
 					"studentProfile" in profileData &&

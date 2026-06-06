@@ -5,6 +5,8 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { Alert, ScrollView, View } from "react-native";
 
+import ProfileLayout from "@/layout/profile";
+
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { SelectField } from "@/components/ui/select-field";
@@ -26,11 +28,12 @@ export default function BasicProfileGender() {
 
 	const updateStudent = trpc.profiles.updateStudent.useMutation();
 	const updateScholar = trpc.profiles.updateScholar.useMutation();
+	const utils = trpc.useUtils();
 
 	const {
 		control,
 		handleSubmit,
-		formState: { errors },
+		formState: { errors, isDirty },
 	} = useForm<ProfileGenderInput>({
 		resolver: zodResolver(ProfileGenderSchema),
 		defaultValues: {
@@ -39,6 +42,8 @@ export default function BasicProfileGender() {
 		mode: "onTouched",
 	});
 
+	const isSaving = updateStudent.isPending || updateScholar.isPending;
+
 	const handleSave = handleSubmit(async (data) => {
 		try {
 			if (isScholar) {
@@ -46,6 +51,7 @@ export default function BasicProfileGender() {
 			} else {
 				await updateStudent.mutateAsync({ gender: data.gender });
 			}
+			await utils.profiles.me.invalidate();
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar gênero:", error);
@@ -57,44 +63,31 @@ export default function BasicProfileGender() {
 	});
 
 	return (
-		<View className="flex-1">
-			<Header
-				title="Gênero"
-				description="Este é o gênero com o qual você se identifica."
+		<ProfileLayout
+			title="Gênero"
+			description="Este é o gênero com o qual você se identifica."
+			handleSave={handleSave}
+			isSaving={isSaving}
+			isDirty={isDirty}
+		>
+			<Controller
+				control={control}
+				name="gender"
+				render={({ field }) => (
+					<SelectField
+						label="Gênero"
+						description="Selecione o gênero com o qual você se identifica."
+						value={field.value}
+						placeholder="Selecionar gênero"
+						options={genderValues.map((value) => ({
+							value,
+							label: genderLabels[value],
+						}))}
+						onValueChange={field.onChange}
+						error={errors.gender?.message}
+					/>
+				)}
 			/>
-
-			<ScrollView
-				className="flex-1"
-				keyboardShouldPersistTaps="handled"
-				contentContainerStyle={{
-					paddingHorizontal: 16,
-					paddingTop: 24,
-					paddingBottom: 32,
-				}}
-			>
-				<Controller
-					control={control}
-					name="gender"
-					render={({ field }) => (
-						<SelectField
-							label="Gênero"
-							description="Selecione o gênero com o qual você se identifica."
-							value={field.value}
-							placeholder="Selecionar gênero"
-							options={genderValues.map((value) => ({
-								value,
-								label: genderLabels[value],
-							}))}
-							onValueChange={field.onChange}
-							error={errors.gender?.message}
-						/>
-					)}
-				/>
-
-				<Button className="mt-8" onPress={handleSave}>
-					<Text>Salvar alterações</Text>
-				</Button>
-			</ScrollView>
-		</View>
+		</ProfileLayout>
 	);
 }

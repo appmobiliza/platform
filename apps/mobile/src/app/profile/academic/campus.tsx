@@ -25,11 +25,14 @@ export default function AcademicProfileCampus() {
 
 	const updateStudent = trpc.profiles.updateStudent.useMutation();
 	const updateScholar = trpc.profiles.updateScholar.useMutation();
+	const utils = trpc.useUtils();
+
+	const isSaving = updateStudent.isPending || updateScholar.isPending;
 
 	const {
 		control,
 		handleSubmit,
-		formState: { errors },
+		formState: { errors, isDirty },
 	} = useForm<ProfileCampusInput>({
 		resolver: zodResolver(ProfileCampusSchema),
 		defaultValues: {
@@ -45,6 +48,7 @@ export default function AcademicProfileCampus() {
 			} else {
 				await updateStudent.mutateAsync({ campus: data.campus });
 			}
+			await utils.profiles.me.invalidate();
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar campus:", error);
@@ -60,6 +64,8 @@ export default function AcademicProfileCampus() {
 			title="Campus"
 			description="Selecione o campus da atual graduação que você está cursando"
 			handleSave={handleSave}
+			isSaving={isSaving}
+			isDirty={isDirty}
 		>
 			<Controller
 				control={control}

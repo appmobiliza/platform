@@ -14,7 +14,7 @@ export default function SettingsProfileAppBar() {
 	const {
 		control,
 		handleSubmit,
-		formState: { errors },
+		formState: { errors, isDirty },
 	} = useForm<ProfilePhoneInput>({
 		resolver: zodResolver(ProfilePhoneSchema),
 		defaultValues: {
@@ -32,6 +32,7 @@ export default function SettingsProfileAppBar() {
 			title="Barra de navegação"
 			description="Escolha o estilo da barra de navegação para uma experiência personalizada."
 			handleSave={handleSave}
+			isDirty={isDirty}
 		>
 			<Controller
 				control={control}

@@ -25,11 +25,14 @@ export default function AccessibilityObservation() {
 	}>();
 
 	const updateStudent = trpc.profiles.updateStudent.useMutation();
+	const utils = trpc.useUtils();
+
+	const isSaving = updateStudent.isPending;
 
 	const {
 		control,
 		handleSubmit,
-		formState: { errors },
+		formState: { errors, isDirty },
 	} = useForm<ProfileObservationInput>({
 		resolver: zodResolver(ProfileObservationSchema),
 		defaultValues: {
@@ -43,6 +46,7 @@ export default function AccessibilityObservation() {
 			await updateStudent.mutateAsync({
 				attendanceNotes: data.attendanceNotes,
 			});
+			await utils.profiles.me.invalidate();
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar observações:", error);
@@ -58,6 +62,8 @@ export default function AccessibilityObservation() {
 			title="Observações"
 			description="Descreva suas observações sobre a acessibilidade do seu perfil"
 			handleSave={handleSave}
+			isSaving={isSaving}
+			isDirty={isDirty}
 		>
 			<Controller
 				control={control}

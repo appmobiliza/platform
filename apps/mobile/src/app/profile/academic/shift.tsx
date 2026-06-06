@@ -39,11 +39,14 @@ export default function AcademicProfileShift() {
 
 	const updateStudent = trpc.profiles.updateStudent.useMutation();
 	const updateScholar = trpc.profiles.updateScholar.useMutation();
+	const utils = trpc.useUtils();
+
+	const isSaving = updateStudent.isPending || updateScholar.isPending;
 
 	const {
 		control,
 		handleSubmit,
-		formState: { errors },
+		formState: { errors, isDirty },
 	} = useForm<ProfileStudentShiftInput>({
 		resolver: zodResolver(ProfileStudentShiftSchema),
 		defaultValues: {
@@ -61,6 +64,7 @@ export default function AcademicProfileShift() {
 			} else {
 				await updateStudent.mutateAsync({ shift: data.shift });
 			}
+			await utils.profiles.me.invalidate();
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar turno:", error);
@@ -76,6 +80,8 @@ export default function AcademicProfileShift() {
 			title="Turma"
 			description="Selecione sua turma de graduação."
 			handleSave={handleSave}
+			isSaving={isSaving}
+			isDirty={isDirty}
 		>
 			<Controller
 				control={control}

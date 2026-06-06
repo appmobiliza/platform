@@ -25,11 +25,14 @@ export default function BasicProfileName() {
 
 	const updateStudent = trpc.profiles.updateStudent.useMutation();
 	const updateScholar = trpc.profiles.updateScholar.useMutation();
+	const utils = trpc.useUtils();
+
+	const isSaving = updateStudent.isPending || updateScholar.isPending;
 
 	const {
 		control,
 		handleSubmit,
-		formState: { errors },
+		formState: { errors, isDirty },
 	} = useForm<ProfileNameInput>({
 		resolver: zodResolver(ProfileNameSchema),
 		defaultValues: {
@@ -49,6 +52,7 @@ export default function BasicProfileName() {
 					nickname: data.nickname || undefined,
 				});
 			}
+			await utils.profiles.me.invalidate();
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar nome:", error);
@@ -64,6 +68,8 @@ export default function BasicProfileName() {
 			title="Nome e apelido"
 			description="Defina seu nome e como quer que outras pessoas se referiram a você"
 			handleSave={handleSave}
+			isSaving={isSaving}
+			isDirty={isDirty}
 		>
 			<View className="gap-4">
 				<Controller

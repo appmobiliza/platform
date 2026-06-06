@@ -11,7 +11,9 @@ export default function BasicProfile() {
 	const role = useUserRole();
 	const isScholar = role === "scholar";
 
-	const { data: userData, isLoading } = trpc.profiles.me.useQuery();
+	const { data: userData, isLoading } = trpc.profiles.me.useQuery(undefined, {
+		staleTime: 60_000,
+	});
 
 	if (isLoading || !userData) {
 		return (

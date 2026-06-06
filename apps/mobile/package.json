@@ -3,7 +3,6 @@
 	"main": "expo-router/entry",
 	"version": "1.0.0",
 	"dependencies": {
-		"better-auth": "1.6.11",
 		"@better-auth/expo": "1.6.11",
 		"@expo-google-fonts/atkinson-hyperlegible-next": "^0.4.1",
 		"@expo-google-fonts/google-sans-flex": "^0.4.3",
@@ -13,6 +12,7 @@
 		"@maplibre/maplibre-react-native": "^11.3.2",
 		"@mobiliza/contracts": "workspace:*",
 		"@rn-primitives/avatar": "^1.4.0",
+		"@rn-primitives/dialog": "^1.4.0",
 		"@rn-primitives/label": "^1.4.0",
 		"@rn-primitives/slot": "^1.4.0",
 		"@rn-primitives/switch": "^1.4.0",
@@ -21,6 +21,7 @@
 		"@trpc/client": "^11.17.0",
 		"@trpc/react-query": "^11.17.0",
 		"@turf/turf": "^7.3.5",
+		"better-auth": "1.6.11",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"expo": "~56.0.8",

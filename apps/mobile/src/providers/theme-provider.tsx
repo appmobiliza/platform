@@ -1,6 +1,6 @@
 import { VariableContextProvider } from "nativewind";
 import { useEffect } from "react";
-import { Appearance, View } from "react-native";
+import { Appearance, Platform, View } from "react-native";
 
 import { THEME, useThemeVariables } from "@/lib/theme";
 import { useThemePreference } from "@/lib/theme-store";
@@ -13,10 +13,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 	const bgColor = THEME[colorScheme].background;
 
 	useEffect(() => {
-		if (preference === "system") {
-			Appearance.setColorScheme("unspecified");
+		if (Platform.OS === "web") {
+			if (preference === "system") {
+				document.documentElement.style.colorScheme = "";
+			} else {
+				document.documentElement.style.colorScheme = preference;
+			}
 		} else {
-			Appearance.setColorScheme(preference);
+			if (preference === "system") {
+				Appearance.setColorScheme("unspecified");
+			} else {
+				Appearance.setColorScheme(preference);
+			}
 		}
 	}, [preference]);
 
