@@ -136,6 +136,10 @@ export function useSyncSessionCache() {
  *
  * Durante o carregamento inicial da sessão (isPending do Better Auth),
  * usa o cache síncrono do MMKV como fallback para evitar flash de tela.
+ *
+ * A re-renderização após `clearUserCache()` é garantida pelo
+ * `useSyncExternalStore` em `useHasProfile`, que dispara quando
+ * `notifyHasProfileListeners()` é chamado.
  */
 export function useIsLoggedIn(): boolean {
 	const { data: session, isPending } = authClient.useSession();
@@ -143,6 +147,12 @@ export function useIsLoggedIn(): boolean {
 	// Fallback síncrono durante carregamento do SecureStore
 	if (isPending) {
 		return storage.getString(CACHE_KEYS.userRole) !== undefined;
+	}
+
+	// Cache limpo → considera deslogado, mesmo que a query ainda não
+	// tenha atualizado (ex.: logo após signOut)
+	if (storage.getString(CACHE_KEYS.userRole) === undefined) {
+		return false;
 	}
 
 	return session !== null;
