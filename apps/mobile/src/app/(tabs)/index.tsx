@@ -11,6 +11,7 @@ import { SearchBar } from "@/components/search-bar";
 import { Text } from "@/components/ui/text";
 
 import { useUserRole } from "@/lib/auth-store";
+import { haversineMeters } from "@/lib/distance";
 import { setNearestPoint } from "@/lib/location-store";
 
 import { Logo } from "@/assets/logo";
@@ -33,23 +34,6 @@ const newsItems = [
 		link: "https://example.com/noticias/semana-ciencia",
 	},
 ];
-
-function calculateDistance(
-	lat1: number,
-	lon1: number,
-	lat2: number,
-	lon2: number,
-): number {
-	const R = 6371e3;
-	const φ1 = (lat1 * Math.PI) / 180;
-	const φ2 = (lat2 * Math.PI) / 180;
-	const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-	const Δλ = ((lon2 - lon1) * Math.PI) / 180;
-	const x =
-		Math.sin(Δφ / 2) ** 2 +
-		Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
-	return 2 * R * Math.asin(Math.sqrt(x));
-}
 
 function StudentHome() {
 	const insets = useSafeAreaInsets();
@@ -80,7 +64,7 @@ function StudentHome() {
 					let closestPoint = ufalPoints[0];
 					if (!closestPoint) return;
 
-					let minDistance = calculateDistance(
+					let minDistance = haversineMeters(
 						userLat,
 						userLng,
 						closestPoint.latitude,
@@ -90,7 +74,7 @@ function StudentHome() {
 					for (let i = 1; i < ufalPoints.length; i++) {
 						const point = ufalPoints[i];
 						if (!point) continue;
-						const dist = calculateDistance(
+						const dist = haversineMeters(
 							userLat,
 							userLng,
 							point.latitude,
