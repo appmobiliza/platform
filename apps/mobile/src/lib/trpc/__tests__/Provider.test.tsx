@@ -1,5 +1,5 @@
 import { render } from "@testing-library/react-native";
-import { splitLink, wsLink } from "@trpc/client";
+import { httpBatchLink } from "@trpc/client";
 import { Text } from "react-native";
 
 import { trpc } from "../client";
@@ -7,9 +7,6 @@ import { TRPCProvider } from "../Provider";
 
 jest.mock("@trpc/client", () => ({
 	httpBatchLink: jest.fn(() => "mock-http-link"),
-	wsLink: jest.fn(() => "mock-ws-link"),
-	splitLink: jest.fn((_config) => "mock-split-link"),
-	createWSClient: jest.fn(() => "mock-ws-client"),
 }));
 
 jest.mock("../client", () => ({
@@ -20,7 +17,7 @@ jest.mock("../client", () => ({
 }));
 
 describe("TRPCProvider Configuration", () => {
-	it("should configure splitLink with wsLink for subscriptions", () => {
+	it("should configure httpBatchLink for all operations", () => {
 		// Arrange
 		const TestComponent = () => <Text>Test</Text>;
 
@@ -35,15 +32,11 @@ describe("TRPCProvider Configuration", () => {
 		expect(trpc.createClient).toHaveBeenCalled();
 		const _config = (trpc.createClient as jest.Mock).mock.calls[0][0];
 
-		// Deve ter chamado o splitLink no factory dos links
-		expect(splitLink).toHaveBeenCalled();
+		// Deve ter passado o httpBatchLink na lista de links
+		expect(httpBatchLink).toHaveBeenCalled();
 
-		const splitLinkArgs = (splitLink as jest.Mock).mock.calls[0][0];
-		expect(splitLinkArgs.condition).toBeDefined(); // Deve ter uma function condition
-		expect(splitLinkArgs.true).toBe("mock-ws-link");
-		expect(splitLinkArgs.false).toBe("mock-http-link");
-
-		// E o wsLink deve ter sido configurado com a porta do WebSocket
-		expect(wsLink).toHaveBeenCalled();
+		const httpBatchLinkArgs = (httpBatchLink as jest.Mock).mock.calls[0][0];
+		expect(httpBatchLinkArgs.url).toContain("/trpc");
+		expect(httpBatchLinkArgs.headers).toBeDefined();
 	});
 });
