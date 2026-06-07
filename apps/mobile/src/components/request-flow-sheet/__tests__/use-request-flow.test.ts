@@ -8,14 +8,22 @@ jest.mock("expo-router", () => ({
 	useRouter: () => ({ back: jest.fn() }),
 }));
 
+// Mock do módulo de realtime — getRealtimeClient retorna um cliente mock
+const mockClient = {
+	subscribe: jest.fn(() => jest.fn()),
+	disconnect: jest.fn(),
+};
+
+jest.mock("@/lib/realtime", () => ({
+	getRealtimeClient: jest.fn(() => Promise.resolve(mockClient)),
+	disconnectRealtime: jest.fn(),
+}));
+
 jest.mock("@/lib/trpc/client", () => ({
 	trpc: {
 		requests: {
 			create: {
 				useMutation: jest.fn(),
-			},
-			onStatusChange: {
-				useSubscription: jest.fn(),
 			},
 		},
 	},
@@ -29,10 +37,6 @@ describe("useRequestFlow Logic Integration", () => {
 			mutateAsync: mockMutateAsync,
 			isPending: false,
 		});
-
-		(
-			trpc.requests.onStatusChange.useSubscription as jest.Mock
-		).mockImplementation(() => {});
 
 		const { result } = renderHook(() => useRequestFlow());
 

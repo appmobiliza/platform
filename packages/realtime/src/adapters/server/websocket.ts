@@ -4,6 +4,7 @@ import type WS from "ws";
 import type { Server as WSServer } from "ws";
 
 import type {
+	ClientCredentials,
 	RealtimeAdapter,
 	RealtimePayload,
 	Unsubscribe,
@@ -132,6 +133,15 @@ export class WebSocketRealtimeAdapter implements RealtimeAdapter {
 		});
 
 		this.wss = null;
+	}
+
+	async getClientCredentials(): Promise<ClientCredentials> {
+		return {
+			provider: "websocket",
+			config: {
+				url: this.options.url,
+			},
+		};
 	}
 
 	/** Número de clientes WebSocket conectados — útil para métricas */

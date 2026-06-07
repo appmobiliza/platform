@@ -187,6 +187,8 @@ export type NewScholarWeeklySchedule =
 	typeof scholarWeeklySchedule.$inferInsert;
 export type ExtraShiftRequest = typeof extraShiftRequest.$inferSelect;
 export type NewExtraShiftRequest = typeof extraShiftRequest.$inferInsert;
+export type ScholarShiftLog = typeof scholarShiftLog.$inferSelect;
+export type NewScholarShiftLog = typeof scholarShiftLog.$inferInsert;
 
 // ─── Relations ───────────────────────────────────────────────────────────────
 
@@ -212,6 +214,7 @@ export const scholarProfileRelations = relations(
 		attendances: many(serviceAttendance),
 		weeklySchedule: many(scholarWeeklySchedule),
 		extraShiftRequests: many(extraShiftRequest),
+		shiftLogs: many(scholarShiftLog),
 	}),
 );
 
@@ -235,6 +238,60 @@ export const extraShiftRequestRelations = relations(
 		approvedBy: one(user, {
 			fields: [extraShiftRequest.approvedById],
 			references: [user.id],
+		}),
+	}),
+);
+
+/**
+ * Registro de início/fim de turno do bolsista.
+ *
+ * Cada vez que o bolsista inicia seu turno no app, um registro é criado
+ * com o timestamp de início. Ao encerrar, o timestamp de fim é preenchido.
+ *
+ * Isso permite:
+ * - Saber se o bolsista está ativamente trabalhando
+ * - Calcular horas trabalhadas por dia/período
+ * - Validar se o bolsista pode receber solicitações
+ */
+export const scholarShiftLog = pgTable(
+	"scholar_shift_log",
+	{
+		id: text("id").primaryKey(),
+
+		scholarProfileId: text("scholar_profile_id")
+			.notNull()
+			.references(() => scholarProfile.id, { onDelete: "cascade" }),
+
+		/*
+		 * Data do turno (YYYY-MM-DD).
+		 */
+		date: text("date").notNull(),
+
+		shift: scholarShiftEnum("shift").notNull(),
+
+		/*
+		 * Timestamp de quando o bolsista iniciou o turno.
+		 */
+		startedAt: timestamp("started_at").notNull().defaultNow(),
+
+		/*
+		 * Timestamp de quando o bolsista encerrou o turno.
+		 * Null enquanto o turno estiver em andamento.
+		 */
+		endedAt: timestamp("ended_at"),
+
+		createdAt: timestamp("created_at").notNull().defaultNow(),
+		updatedAt: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [unique().on(table.scholarProfileId, table.date, table.shift)],
+);
+
+export const scholarShiftLogRelations = relations(
+	scholarShiftLog,
+	({ one }) => ({
+		scholarProfile: one(scholarProfile, {
+			fields: [scholarShiftLog.scholarProfileId],
+			references: [scholarProfile.id],
 		}),
 	}),
 );

@@ -1,4 +1,6 @@
 export type Place = {
+	/** Database ID from campus_location, resolved at runtime */
+	id?: string;
 	name: string;
 	abbreviation?: string;
 	latitude: number;

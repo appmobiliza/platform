@@ -14,9 +14,9 @@ import { Text } from "@/components/ui/text";
 import { useUserRole } from "@/lib/auth-store";
 import { haversineMeters } from "@/lib/distance";
 import { setNearestPoint } from "@/lib/location-store";
+import { trpc } from "@/lib/trpc/client";
 
 import { Logo } from "@/assets/logo";
-import { ufalPoints } from "@/constants/locations";
 
 const newsItems = [
 	{
@@ -40,6 +40,9 @@ function StudentHome() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
 
+	// Fetch campus locations from the DB (source of truth)
+	const { data: campusLocations = [] } = trpc.locations.list.useQuery();
+
 	useFocusEffect(
 		useCallback(() => {
 			const setupLocation = async () => {
@@ -60,9 +63,9 @@ function StudentHome() {
 					const userLat = position.coords.latitude;
 					const userLng = position.coords.longitude;
 
-					if (ufalPoints.length === 0) return;
+					if (campusLocations.length === 0) return;
 
-					let closestPoint = ufalPoints[0];
+					let closestPoint = campusLocations[0];
 					if (!closestPoint) return;
 
 					let minDistance = haversineMeters(
@@ -72,8 +75,8 @@ function StudentHome() {
 						closestPoint.longitude,
 					);
 
-					for (let i = 1; i < ufalPoints.length; i++) {
-						const point = ufalPoints[i];
+					for (let i = 1; i < campusLocations.length; i++) {
+						const point = campusLocations[i];
 						if (!point) continue;
 						const dist = haversineMeters(
 							userLat,
@@ -89,7 +92,7 @@ function StudentHome() {
 
 					setNearestPoint({
 						name: closestPoint.name,
-						abbreviation: closestPoint.abbrev,
+						abbreviation: closestPoint.abbreviation ?? undefined,
 						latitude: closestPoint.latitude,
 						longitude: closestPoint.longitude,
 					});
@@ -99,7 +102,7 @@ function StudentHome() {
 			};
 
 			setupLocation();
-		}, [router]),
+		}, [router, campusLocations]),
 	);
 
 	return (

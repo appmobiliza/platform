@@ -5,4 +5,5 @@ export * from "./metrics";
 export * from "./notifications";
 export * from "./profiles";
 export * from "./requests";
+export * from "./settings";
 export * from "./validation";

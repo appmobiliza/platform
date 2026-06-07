@@ -77,7 +77,7 @@ export async function createRealtimeAdapter(): Promise<RealtimeAdapter> {
 
 			throw new Error(
 				`[realtime] Provider desconhecido: "${exhaustive}". ` +
-					"Valores aceitos: supabase | websocket | ably | pusher | mock",
+				"Valores aceitos: supabase | websocket | ably | pusher | mock",
 			);
 		}
 	}
@@ -96,6 +96,7 @@ export { MockRealtimeAdapter } from "./adapters/server/mock";
 export type {
 	AblyAdapterOptions,
 	AblyClientAdapterOptions,
+	ClientCredentials,
 	PusherAdapterOptions,
 	RealtimeAdapter,
 	RealtimeClientAdapter,

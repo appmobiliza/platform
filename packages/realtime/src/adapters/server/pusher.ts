@@ -1,4 +1,5 @@
 import type {
+	ClientCredentials,
 	PusherAdapterOptions,
 	RealtimeAdapter,
 	RealtimePayload,
@@ -35,8 +36,10 @@ export class PusherRealtimeAdapter implements RealtimeAdapter {
 		string,
 		Map<string, Set<(data: RealtimePayload) => void>>
 	>();
+	private options: PusherAdapterOptions;
 
 	constructor(options: PusherAdapterOptions) {
+		this.options = options;
 		const Pusher = require("pusher") as typeof import("pusher");
 		this.pusher = new Pusher({
 			appId: options.appId,
@@ -88,5 +91,15 @@ export class PusherRealtimeAdapter implements RealtimeAdapter {
 	async disconnect(): Promise<void> {
 		this.localListeners.clear();
 		// Pusher HTTP API não mantém conexão persistente — nada a fechar
+	}
+
+	async getClientCredentials(): Promise<ClientCredentials> {
+		return {
+			provider: "pusher",
+			config: {
+				key: this.options.key,
+				cluster: this.options.cluster,
+			},
+		};
 	}
 }

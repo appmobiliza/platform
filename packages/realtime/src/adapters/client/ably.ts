@@ -1,3 +1,5 @@
+import Ably from "ably";
+
 import type {
 	AblyClientAdapterOptions,
 	RealtimeClientAdapter,
@@ -87,23 +89,23 @@ export class AblyClientAdapter implements RealtimeClientAdapter {
 	private channels = new Map<string, AblyChannel>();
 
 	constructor(options: AblyClientAdapterOptions) {
-		const Ably = require("ably") as typeof import("ably");
+		// Ably runtime rejeita `undefined` para `clientId`,
+		// mas os tipos aceitam. Só passamos se for fornecida.
+		const realtimeOptions: Record<string, unknown> = {
+			environment: options.environment,
+		};
+
+		if (options.clientId !== undefined) {
+			realtimeOptions.clientId = options.clientId;
+		}
 
 		if (options.clientToken) {
-			this.client = new Ably.Realtime({
-				token: options.clientToken,
-				clientId: options.clientId,
-				environment: options.environment,
-			});
+			realtimeOptions.token = options.clientToken;
 		} else {
-			this.client = new Ably.Realtime({
-				authUrl: options.authUrl,
-				clientId: options.clientId,
-				environment: options.environment,
-				// O SDK tentará renovar o token automaticamente antes da expiração
-				autoConnect: true,
-			});
+			realtimeOptions.authUrl = options.authUrl;
 		}
+
+		this.client = new (Ably as any).Realtime(realtimeOptions);
 
 		this.client.connection.on("failed", (stateChange) => {
 			console.error(

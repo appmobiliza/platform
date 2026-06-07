@@ -1,137 +1,403 @@
 /**
  * Generator de localizações do campus.
  *
- * Cria pontos de referência fixos usados como origem/destino nas
- * solicitações de deslocamento. Gera uma mistura de locais reais
- * da UFAL (Campus A.C. Simões) com alguns genéricos adicionais.
+ * Seeds a base de dados com todos os pontos de referência do campus
+ * A.C. Simões (UFAL) — os mesmos que antes estavam como constantes
+ * estáticas no app mobile.
+ *
+ * Apenas os locais reais mapeados são inseridos. Nenhum dado
+ * aleatório/fake é gerado para esta entidade.
  */
 
 import { campusLocation } from "@mobiliza/db/schema";
+
 import { uuidv7 } from "uuidv7";
 
 import { db } from "../lib/db";
-import { faker } from "../lib/faker";
 import type { SeedGenerator } from "../lib/types";
 
-// ─── Locais Predefinidos (UFAL Campus A.C. Simões) ───────────────────────────
+// ─── Locais do Campus A.C. Simões ─────────────────────────────────────────────
+// Fonte original: apps/mobile/src/constants/locations.ts
 
-interface PredefinedLocation {
+interface RawLocation {
 	name: string;
-	abbreviation: string;
-	description: string;
+	abbrev?: string;
 	latitude: number;
 	longitude: number;
 }
 
-const PREDEFINED_LOCATIONS: PredefinedLocation[] = [
+const UFAL_CAMPUS_LOCATIONS: RawLocation[] = [
+	{
+		name: "Faculdade de Direito",
+		abbrev: "FDA",
+		latitude: -9.556961,
+		longitude: -35.77975,
+	},
+	{ name: "Usina Solar", latitude: -9.557387, longitude: -35.780643 },
+	{
+		name: "Ginásio Poliesportivo",
+		latitude: -9.556056,
+		longitude: -35.780252,
+	},
+	{ name: "Reitoria", latitude: -9.556489, longitude: -35.77857 },
+	{
+		name: "Estádio Universitário do IEFE",
+		latitude: -9.55509,
+		longitude: -35.78085,
+	},
+	{ name: "Passarela", latitude: -9.557244, longitude: -35.7808 },
+	{ name: "Pista de Atletismo", latitude: -9.554575, longitude: -35.779683 },
+	{ name: "EDGE Academy", latitude: -9.553472, longitude: -35.779635 },
+	{
+		name: "Faculdade de Medicina",
+		abbrev: "FAMED",
+		latitude: -9.558156,
+		longitude: -35.777125,
+	},
+	{
+		name: "Coordenadoria Institucional de Educação a Distância",
+		abbrev: "CIED",
+		latitude: -9.557605,
+		longitude: -35.777368,
+	},
+	{
+		name: "Faculdade de Odontologia",
+		abbrev: "FOUFAL",
+		latitude: -9.55736,
+		longitude: -35.776762,
+	},
+	{
+		name: "Instituto de Ciências Biológicas e da Saúde",
+		abbrev: "ICBS",
+		latitude: -9.558122,
+		longitude: -35.776111,
+	},
+	{ name: "Banco do Brasil", latitude: -9.555253, longitude: -35.778071 },
+	{ name: "Banco Santander", latitude: -9.554981, longitude: -35.777588 },
+	{ name: "Biblioteconomia", latitude: -9.556327, longitude: -35.776483 },
+	{
+		name: "Centro de Interesse Comunitário",
+		abbrev: "CIC",
+		latitude: -9.554633,
+		longitude: -35.777808,
+	},
+	{
+		name: "Instituto de Ciências Atmosféricas",
+		abbrev: "ICAT",
+		latitude: -9.554551,
+		longitude: -35.776807,
+	},
+	{ name: "Biblioteca Central", latitude: -9.555519, longitude: -35.776608 },
+	{ name: "DCE Cópias", latitude: -9.554879, longitude: -35.776115 },
+	{
+		name: "Centro de Educação",
+		abbrev: "CEDU",
+		latitude: -9.555175,
+		longitude: -35.775735,
+	},
+	{ name: "Praça da Paz", latitude: -9.554825, longitude: -35.775478 },
+	{
+		name: "Faculdade de Nutrição",
+		abbrev: "FANUT",
+		latitude: -9.556639,
+		longitude: -35.775842,
+	},
+	{
+		name: "Escola de Enfermagem",
+		abbrev: "EENF",
+		latitude: -9.556329,
+		longitude: -35.775346,
+	},
+	{
+		name: "Instituto de Ciências Farmacêuticas",
+		abbrev: "ICF",
+		latitude: -9.556557,
+		longitude: -35.775163,
+	},
+	{ name: "ICBS Comedoria", latitude: -9.557976, longitude: -35.774969 },
+	{
+		name: "Farmácia Escola Ufal",
+		latitude: -9.555128,
+		longitude: -35.777875,
+	},
+	{
+		name: "Grupo de Óptica e Nanoscopia",
+		abbrev: "GON",
+		latitude: -9.553906,
+		longitude: -35.776154,
+	},
 	{
 		name: "Instituto de Computação",
-		abbreviation: "IC",
-		description: "Bloco do Instituto de Computação — entrada principal",
-		latitude: -9.5587,
-		longitude: -35.7736,
+		abbrev: "IC",
+		latitude: -9.553181,
+		longitude: -35.776807,
 	},
 	{
-		name: "Restaurante Universitário",
-		abbreviation: "RU",
-		description: "Restaurante Universitário — refeições gratuitas para PcD",
-		latitude: -9.5579,
-		longitude: -35.7741,
+		name: "Núcleo de Excelência em Tecnologias Sociais",
+		abbrev: "NEES",
+		latitude: -9.55365,
+		longitude: -35.77718,
 	},
 	{
-		name: "Biblioteca Central",
-		abbreviation: "BC",
-		description: "Biblioteca Central — rampa de acesso à direita",
-		latitude: -9.5575,
-		longitude: -35.7752,
+		name: "Comunicação Social Bloco A",
+		abbrev: "COS",
+		latitude: -9.553003,
+		longitude: -35.776469,
 	},
 	{
-		name: "Reitoria",
-		abbreviation: "REI",
-		description:
-			"Prédio da Reitoria — entrada adaptada na lateral esquerda",
-		latitude: -9.5568,
-		longitude: -35.7758,
+		name: "Comunicação Social Bloco B",
+		abbrev: "COS",
+		latitude: -9.552498,
+		longitude: -35.77563,
 	},
 	{
-		name: "Hospital Universitário",
-		abbreviation: "HU",
-		description: "Hospital Universitário Professor Alberto Antunes",
-		latitude: -9.5552,
-		longitude: -35.7765,
+		name: "Laboratório de Estruturas e Materiais",
+		abbrev: "LEMA",
+		latitude: -9.552384,
+		longitude: -35.77491,
 	},
 	{
-		name: "Praça da Paz",
-		abbreviation: "PP",
-		description: "Praça da Paz — ponto de encontro central do campus",
-		latitude: -9.5583,
-		longitude: -35.7748,
-	},
-	{
-		name: "Bloco de Salas de Aula",
-		abbreviation: "BSA",
-		description: "Conjunto de salas de aula — rampa no bloco B",
-		latitude: -9.5591,
-		longitude: -35.7731,
+		name: "Laboratório de Sistema de Separação e Otimização de Processos",
+		abbrev: "LASSOP",
+		latitude: -9.553036,
+		longitude: -35.775565,
 	},
 	{
 		name: "Centro de Tecnologia",
-		abbreviation: "CTEC",
-		description: "Centro de Tecnologia — laboratórios de engenharia",
-		latitude: -9.5598,
-		longitude: -35.7725,
+		abbrev: "CTEC",
+		latitude: -9.552113,
+		longitude: -35.774256,
 	},
 	{
-		name: "Ginásio Poliesportivo",
-		abbreviation: "GP",
-		description: "Ginásio Poliesportivo — acesso pela Rua Lateral",
-		latitude: -9.5565,
-		longitude: -35.7729,
+		name: "Centro de Processamento e Estudos de Tecnologia Computacional",
+		abbrev: "CEPETEC",
+		latitude: -9.552988,
+		longitude: -35.776972,
+	},
+	{ name: "Ufa! Lanches", latitude: -9.553791, longitude: -35.775302 },
+	{
+		name: "Lanchonete Rota Certa",
+		latitude: -9.554038,
+		longitude: -35.77516,
+	},
+	{ name: "Passaporte Juliana", latitude: -9.554165, longitude: -35.775417 },
+	{
+		name: "Instituto de Química e Biotecnologia",
+		abbrev: "IQB",
+		latitude: -9.553655,
+		longitude: -35.774757,
 	},
 	{
-		name: "Portaria Principal",
-		abbreviation: "PORT",
-		description: "Portaria principal do campus — guarita de segurança",
-		latitude: -9.5572,
-		longitude: -35.7769,
+		name: "Centro Acadêmico Walmilson Santana",
+		abbrev: "CAWS",
+		latitude: -9.553325,
+		longitude: -35.775164,
 	},
-];
-
-// ─── Categorias para Geração Aleatória ───────────────────────────────────────
-
-const LOCATION_CATEGORIES = [
-	{ prefix: "Bloco", suffix: "de Aulas" },
-	{ prefix: "Laboratório de", suffix: "" },
-	{ prefix: "Departamento de", suffix: "" },
-	{ prefix: "Núcleo de", suffix: "" },
-	{ prefix: "Coordenação de", suffix: "" },
-] as const;
-
-const LOCATION_SUBJECTS = [
-	"Química",
-	"Física",
-	"Biologia",
-	"Matemática",
-	"História",
-	"Geografia",
-	"Letras",
-	"Pedagogia",
-	"Psicologia",
-	"Farmácia",
-	"Odontologia",
-	"Direito",
-	"Economia",
-	"Administração",
-	"Contabilidade",
-	"Engenharia",
-	"Artes",
-	"Educação Física",
-	"Enfermagem",
-	"Medicina",
-	"Nutrição",
-	"Serviço Social",
-	"Filosofia",
-	"Sociologia",
+	{
+		name: "Faculdade de Arquitetura Urbanismo e Design",
+		abbrev: "FAUD",
+		latitude: -9.551069,
+		longitude: -35.774725,
+	},
+	{ name: "Lanchonete do Bira", latitude: -9.551733, longitude: -35.775374 },
+	{
+		name: "Bloco Didático CTEC",
+		abbrev: "CTEC",
+		latitude: -9.550963,
+		longitude: -35.775285,
+	},
+	{
+		name: "Núcleo de Pesquisa Multidisciplinar",
+		abbrev: "SEVERINAO",
+		latitude: -9.552858,
+		longitude: -35.774612,
+	},
+	{
+		name: "Laboratorio de Pesquisa Em Recursos Naturais",
+		abbrev: "SEVERINAO",
+		latitude: -9.5528,
+		longitude: -35.774673,
+	},
+	{
+		name: "Laboratório de RMN do Instituto de Química",
+		abbrev: "NAPRMN",
+		latitude: -9.553209,
+		longitude: -35.774576,
+	},
+	{
+		name: "Núcleo De Desenvolvimento Infantil",
+		abbrev: "NDI",
+		latitude: -9.553231,
+		longitude: -35.773851,
+	},
+	{
+		name: "Laboratório de Computação Científica e Visualização",
+		abbrev: "LCCV",
+		latitude: -9.552634,
+		longitude: -35.77403,
+	},
+	{
+		name: "Campo de futebol do Barcelombra",
+		abbrev: "GAGAO",
+		latitude: -9.552541,
+		longitude: -35.773022,
+	},
+	{
+		name: "Restaurante Universitário",
+		abbrev: "RU",
+		latitude: -9.551901,
+		longitude: -35.77124,
+	},
+	{
+		name: "Residência Universitária Alagoana",
+		abbrev: "RUA",
+		latitude: -9.552571,
+		longitude: -35.770678,
+	},
+	{
+		name: "Instituto de Ciências Humanas Comunicação e Arte",
+		abbrev: "ICHCA",
+		latitude: -9.553278,
+		longitude: -35.772438,
+	},
+	{
+		name: "Centro Acadêmica de Dança Dandara dos Palmares",
+		abbrev: "CADAN",
+		latitude: -9.553621,
+		longitude: -35.77275,
+	},
+	{
+		name: "Bloco 18 João de Deus",
+		latitude: -9.553812,
+		longitude: -35.773599,
+	},
+	{
+		name: "Faculdade de Serviço Social",
+		abbrev: "FSSO",
+		latitude: -9.554052,
+		longitude: -35.774119,
+	},
+	{
+		name: "Faculdade de Economia Administração e Contabilidade",
+		abbrev: "FEAC",
+		latitude: -9.554718,
+		longitude: -35.773854,
+	},
+	{ name: "Polo UAB Maceió", latitude: -9.554526, longitude: -35.773978 },
+	{
+		name: "Centro Acadêmico de Administração",
+		abbrev: "CAADM",
+		latitude: -9.554563,
+		longitude: -35.774091,
+	},
+	{
+		name: "Instituto de Matemática",
+		abbrev: "IM",
+		latitude: -9.555022,
+		longitude: -35.774175,
+	},
+	{
+		name: "IM Velho",
+		abbrev: "IM",
+		latitude: -9.554374,
+		longitude: -35.774988,
+	},
+	{
+		name: "Restaurante do CEDU",
+		abbrev: "CEDU",
+		latitude: -9.555319,
+		longitude: -35.775889,
+	},
+	{ name: "Cedu Copias", latitude: -9.5553, longitude: -35.775699 },
+	{ name: "Creche Cria", latitude: -9.556653, longitude: -35.777328 },
+	{
+		name: "Núcleo de Tecnologia da Informação",
+		abbrev: "NIT",
+		latitude: -9.556998,
+		longitude: -35.778723,
+	},
+	{
+		name: "Pró-reitoria Estudantil",
+		abbrev: "PROEST",
+		latitude: -9.556472,
+		longitude: -35.778294,
+	},
+	{
+		name: "Secretaria Executiva dos Conselhos Superiores",
+		abbrev: "SECS",
+		latitude: -9.556953,
+		longitude: -35.778117,
+	},
+	{
+		name: "Pró-reitoria de Graduação",
+		abbrev: "PROGRAD",
+		latitude: -9.556895,
+		longitude: -35.778082,
+	},
+	{
+		name: "Habeas Papila",
+		abbrev: "FDA",
+		latitude: -9.557459,
+		longitude: -35.779775,
+	},
+	{
+		name: "Comissão Permanente de Vestibular",
+		abbrev: "COPEVE",
+		latitude: -9.557252,
+		longitude: -35.777526,
+	},
+	{
+		name: "Laboratório de Anatomia",
+		latitude: -9.557395,
+		longitude: -35.775506,
+	},
+	{
+		name: "Laboratório de Nutrição e Metabolismo",
+		abbrev: "LANUM",
+		latitude: -9.556763,
+		longitude: -35.775338,
+	},
+	{
+		name: "Laboratório Farmacognosia",
+		latitude: -9.556197,
+		longitude: -35.774805,
+	},
+	{
+		name: "Instituto de Psicologia",
+		abbrev: "IP",
+		latitude: -9.555902,
+		longitude: -35.774068,
+	},
+	{
+		name: "Faculdade de Letras",
+		abbrev: "FALE",
+		latitude: -9.555284,
+		longitude: -35.772977,
+	},
+	{
+		name: "Bloco de Salas de Aula 1",
+		abbrev: "BSA 1",
+		latitude: -9.555112,
+		longitude: -35.772242,
+	},
+	{
+		name: "Bloco de Salas de Aula 2",
+		abbrev: "BSA2",
+		latitude: -9.555667,
+		longitude: -35.771835,
+	},
+	{
+		name: "Instituto de Ciências Sociais",
+		abbrev: "ICS",
+		latitude: -9.555819,
+		longitude: -35.772117,
+	},
+	{
+		name: "Centro de Referência em Recuperação de Áreas Degradadas",
+		abbrev: "CRAD",
+		latitude: -9.554595,
+		longitude: -35.771052,
+	},
 ];
 
 // ─── Generator ────────────────────────────────────────────────────────────────
@@ -141,7 +407,7 @@ export const locationGenerator: SeedGenerator = {
 	dependencies: [],
 
 	async generate(ctx): Promise<void> {
-		// Pula se já existirem localizações (idempotência)
+		// Idempotência: pula se já existirem localizações no banco
 		const existing = await db
 			.select({ id: campusLocation.id })
 			.from(campusLocation)
@@ -151,114 +417,17 @@ export const locationGenerator: SeedGenerator = {
 			return;
 		}
 
-		const total = ctx.config.totalLocations;
-
-		// 1. Locais predefinidos (até o limite)
-		const predefinedCount = Math.min(total, PREDEFINED_LOCATIONS.length);
-		const predefined = PREDEFINED_LOCATIONS.slice(0, predefinedCount);
-
-		const predefinedRows = predefined.map((loc) => ({
+		const rows = UFAL_CAMPUS_LOCATIONS.map((loc) => ({
 			id: uuidv7(),
 			name: loc.name,
-			abbreviation: loc.abbreviation,
-			description: loc.description,
+			...(loc.abbrev ? { abbreviation: loc.abbrev } : {}),
 			latitude: loc.latitude,
 			longitude: loc.longitude,
 			isActive: true,
 		}));
 
-		// 2. Locais gerados (se necessário para completar o total)
-		const remaining = total - predefinedCount;
-		const generatedRows = generateRandomLocations(remaining);
+		await db.insert(campusLocation).values(rows);
 
-		const allRows = [...predefinedRows, ...generatedRows];
-
-		if (allRows.length === 0) {
-			return;
-		}
-
-		await db.insert(campusLocation).values(allRows);
-
-		ctx.counters[this.name] = allRows.length;
+		ctx.counters[this.name] = rows.length;
 	},
 };
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function generateRandomLocations(count: number): Array<{
-	id: string;
-	name: string;
-	abbreviation: string;
-	description: string;
-	latitude: number;
-	longitude: number;
-	isActive: boolean;
-}> {
-	const result: Array<{
-		id: string;
-		name: string;
-		abbreviation: string;
-		description: string;
-		latitude: number;
-		longitude: number;
-		isActive: boolean;
-	}> = [];
-
-	for (let i = 0; i < count; i++) {
-		const category = faker.helpers.arrayElement(LOCATION_CATEGORIES);
-		const subject = faker.helpers.arrayElement(LOCATION_SUBJECTS);
-		const subjectLowered = subject.toLowerCase();
-
-		const name = category.suffix
-			? `${category.prefix} ${subjectLowered} ${category.suffix}`
-			: `${category.prefix} ${subjectLowered}`;
-
-		const abbreviation = generateAbbreviation(subject);
-
-		const description = faker.helpers.arrayElement([
-			`Bloco dedicado ao curso de ${subjectLowered}`,
-			`Laboratórios e salas do curso de ${subjectLowered}`,
-			`Prédio anexo do ${subjectLowered}`,
-			`Andar térreo — salas de ${subjectLowered}`,
-		]);
-
-		result.push({
-			id: uuidv7(),
-			name,
-			abbreviation,
-			description,
-			latitude: randomLatitude(),
-			longitude: randomLongitude(),
-			isActive: true,
-		});
-	}
-
-	return result;
-}
-
-function generateAbbreviation(subject: string): string {
-	// Pega as primeiras letras de cada palavra, até 5 caracteres
-	const words = subject.split(/\s+/);
-	const abbr = words
-		.map((w) => w.charAt(0).toUpperCase())
-		.join("")
-		.slice(0, 5);
-
-	return abbr;
-}
-
-/**
- * Gera latitude aleatória próxima ao Campus A.C. Simões (Maceió).
- * Range: -9.555 a -9.562
- */
-function randomLatitude(): number {
-	return faker.number.float({ min: -9.562, max: -9.555, fractionDigits: 6 });
-}
-
-/**
- * Gera longitude aleatória próxima ao Campus A.C. Simões (Maceió).
- * Range: -35.770 a -35.780
- */
-function randomLongitude(): number {
-	return faker.number.float({ min: -35.78, max: -35.77, fractionDigits: 6 });
-}

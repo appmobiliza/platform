@@ -29,6 +29,28 @@ import { appRouter } from "./router.js";
 
 const app = new Hono();
 
+// ─── Realtime — Credenciais para o cliente ─────────────────────────────────────
+
+/**
+ * Endpoint genérico que retorna as credenciais necessárias para o
+ * client-side (app mobile, frontend web) conectar-se ao mesmo provedor
+ * de realtime configurado no servidor.
+ *
+ * O cliente nunca precisa saber qual provedor está sendo usado —
+ * ele recebe `{ provider, config }` e o `@mobiliza/realtime` resolve
+ * internamente.
+ */
+app.get("/api/realtime/credentials", async (c) => {
+	try {
+		const realtime = await getRealtimeAdapter();
+		const credentials = await realtime.getClientCredentials();
+		return c.json(credentials);
+	} catch (error) {
+		console.error("[realtime] Erro ao obter credenciais:", error);
+		return c.json({ error: "Erro ao obter credenciais de realtime" }, 500);
+	}
+});
+
 // ─── Cron Jobs ────────────────────────────────────────────────────────────────
 
 /**

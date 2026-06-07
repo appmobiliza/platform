@@ -1,3 +1,5 @@
+import { createClient } from "@supabase/supabase-js";
+
 import type {
 	RealtimeClientAdapter,
 	RealtimePayload,
@@ -17,7 +19,6 @@ type RealtimeChannel = import("@supabase/supabase-js").RealtimeChannel;
  *
  * @example
  * ```ts
- * // Em um hook React
  * const adapter = new SupabaseClientAdapter({ url, anonKey })
  *
  * useEffect(() => {
@@ -33,8 +34,6 @@ export class SupabaseClientAdapter implements RealtimeClientAdapter {
 	private channels = new Map<string, RealtimeChannel>();
 
 	constructor(options: SupabaseAdapterOptions) {
-		const { createClient } =
-			require("@supabase/supabase-js") as typeof import("@supabase/supabase-js");
 		this.client = createClient(options.url, options.anonKey);
 	}
 
@@ -55,7 +54,6 @@ export class SupabaseClientAdapter implements RealtimeClientAdapter {
 		}).subscribe();
 
 		return () => {
-			// Remove apenas o handler específico; o canal permanece se houver outros
 			ch.unsubscribe();
 			this.channels.delete(channel);
 		};

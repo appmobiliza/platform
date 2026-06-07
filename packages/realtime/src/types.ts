@@ -14,6 +14,27 @@ export type RealtimePayload = unknown;
  */
 export type Unsubscribe = () => void | Promise<void>;
 
+// ─── Credenciais do cliente ────────────────────────────────────────────────────
+
+/**
+ * Credenciais genéricas que o servidor fornece para o cliente
+ * se conectar ao mesmo provedor de realtime.
+ *
+ * O cliente nunca precisa saber qual provedor está sendo usado —
+ * ele recebe `provider` + `config` de um endpoint genérico e
+ * o `@mobiliza/realtime` cria o adaptador correto internamente.
+ */
+export interface ClientCredentials {
+	/** Identificador do provedor ativo no servidor */
+	provider: RealtimeProvider;
+	/**
+	 * Configuração específica do provedor, no formato que cada
+	 * adaptador client-side (`AblyClientAdapter`, `SupabaseClientAdapter`, etc.)
+	 * espera.
+	 */
+	config: Record<string, string>;
+}
+
 // ─── Interface server-side ────────────────────────────────────────────────────
 
 /**
@@ -64,6 +85,22 @@ export interface RealtimeAdapter {
 	 * Deve ser chamado no shutdown gracioso do servidor.
 	 */
 	disconnect(): Promise<void>;
+
+	/**
+	 * Retorna as credenciais que o **client-side** precisa para se
+	 * conectar ao mesmo provedor de realtime.
+	 *
+	 * Chamado uma vez pelo endpoint `/api/realtime/token` da API.
+	 * O resultado é um objeto genérico — o cliente nunca precisa
+	 * saber qual provedor está por trás.
+	 *
+	 * @example Saída para Ably:
+	 *   { provider: "ably", config: { clientToken: "xV7..." } }
+	 *
+	 * @example Saída para Supabase:
+	 *   { provider: "supabase", config: { url: "...", anonKey: "..." } }
+	 */
+	getClientCredentials(): Promise<ClientCredentials>;
 }
 
 // ─── Interface client-side ────────────────────────────────────────────────────
@@ -126,20 +163,20 @@ export interface AblyAdapterOptions {
  */
 export type AblyClientAdapterOptions =
 	| {
-			/** Token JWT ou Ably Token gerado pelo servidor. Expira — prefira `authUrl`. */
-			clientToken: string;
-			authUrl?: never;
-			clientId?: string;
-			environment?: string;
-	  }
+		/** Token JWT ou Ably Token gerado pelo servidor. Expira — prefira `authUrl`. */
+		clientToken: string;
+		authUrl?: never;
+		clientId?: string;
+		environment?: string;
+	}
 	| {
-			clientToken?: never;
-			/** URL do endpoint da API que retorna um Ably Token Request ou JWT. */
-			authUrl: string;
-			/** ID único do cliente — útil para presença e rastreamento. */
-			clientId?: string;
-			environment?: string;
-	  };
+		clientToken?: never;
+		/** URL do endpoint da API que retorna um Ably Token Request ou JWT. */
+		authUrl: string;
+		/** ID único do cliente — útil para presença e rastreamento. */
+		clientId?: string;
+		environment?: string;
+	};
 
 export interface WebSocketAdapterOptions {
 	/** URL completa do servidor WS, ex.: `"ws://localhost:4001"` */

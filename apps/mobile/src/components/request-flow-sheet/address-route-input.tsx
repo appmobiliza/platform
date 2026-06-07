@@ -20,24 +20,39 @@ import { useUnstableNativeVariable } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
 import { FromMarker, ToMarker } from "@/assets/route";
-import { ufalPoints } from "@/constants/locations";
 
 import { PlaceCard } from "../place-card";
+import type { Place } from "./types";
 
 const CURRENT_LOCATION = "__current_location__" as const;
 
-type UfalPoint = (typeof ufalPoints)[number];
+type LocationItem = {
+	name: string;
+	latitude: number;
+	longitude: number;
+	abbreviation?: string;
+	/** Alias for `abbreviation` used by suggestion rendering */
+	abbrev?: string;
+};
+
 type SuggestionItem = {
 	distance?: string;
 	distanceMeters?: number;
 } & (
-	| { id: typeof CURRENT_LOCATION; name: "Sua posição atual"; abbrev: null }
-	| (UfalPoint & { id: string })
+	| {
+			id: typeof CURRENT_LOCATION;
+			name: "Sua posição atual";
+			abbrev: null;
+			latitude: never;
+			longitude: never;
+	  }
+	| (LocationItem & { id: string })
 );
 
 export type AddressRouteInputProps = {
-	origin: { name?: string; abbreviation?: string } | null;
-	destination: { name?: string; abbreviation?: string } | null;
+	origin: Place | null;
+	destination: Place | null;
+	locations: LocationItem[];
 	onSelectOrigin: (name: string, isCurrentLocation: boolean) => void;
 	onSelectDestination: (name: string) => void;
 	className?: string;
@@ -47,14 +62,9 @@ const CURRENT_LOCATION_ITEM = {
 	id: CURRENT_LOCATION,
 	name: "Sua posição atual",
 	abbrev: null,
+	latitude: undefined as never,
+	longitude: undefined as never,
 } as const satisfies SuggestionItem;
-
-// ── O(1) lookup map built once at module level ─────────────────────
-const ufalPointsByName = new Map(ufalPoints.map((p) => [p.name, p]));
-
-function findPoint(name: string): UfalPoint | undefined {
-	return ufalPointsByName.get(name);
-}
 
 // ── Sub-components ─────────────────────────────────────────────────
 
@@ -85,6 +95,7 @@ const SuggestionRow = memo(function SuggestionRow({
 				className: isCurrentLocation
 					? "bg-primary rounded-full p-3 w-10"
 					: "w-10",
+				color: isCurrentLocation ? undefined : "--foreground",
 			}}
 			className={cn("p-4 border-b border-border rounded-lg", {
 				"bg-input border-none": isSelected,
@@ -148,6 +159,7 @@ function RouteInput({
 function AddressRouteInput({
 	origin,
 	destination,
+	locations,
 	onSelectOrigin,
 	onSelectDestination,
 	className,
@@ -192,14 +204,22 @@ function AddressRouteInput({
 		}
 	}, [activeField]);
 
+	// Build a lookup map from the locations prop
+	const locationsByName = useMemo(
+		() => new Map(locations.map((p) => [p.name, p])),
+		[locations],
+	);
+
 	// Stable reference points — only recompute when selections change,
 	// not on every keystroke.
 	const referencePoints = useMemo(
 		() => ({
-			origin: origin?.name ? findPoint(origin.name) : undefined,
-			dest: destination?.name ? findPoint(destination.name) : undefined,
+			origin: origin?.name ? locationsByName.get(origin.name) : undefined,
+			dest: destination?.name
+				? locationsByName.get(destination.name)
+				: undefined,
 		}),
-		[origin, destination],
+		[origin, destination, locationsByName],
 	);
 
 	// Remembers the last sorted order so post-selection renders reuse it
@@ -207,6 +227,8 @@ function AddressRouteInput({
 	const stableSuggestionsRef = useRef<SuggestionItem[]>([]);
 
 	const suggestions = useMemo<SuggestionItem[]>(() => {
+		if (locations.length === 0) return [];
+
 		const query = (
 			activeField === "origin" ? originQuery : destinationQuery
 		)
@@ -223,12 +245,14 @@ function AddressRouteInput({
 					? "origin"
 					: "destination");
 
-		const points: SuggestionItem[] = ufalPoints
+		const points: SuggestionItem[] = locations
 			.filter(
 				(p) =>
 					!query ||
 					p.name.toLowerCase().includes(query) ||
-					(p.abbrev?.toLowerCase().includes(query) ?? false),
+					(p.abbrev ?? p.abbreviation ?? "")
+						.toLowerCase()
+						.includes(query),
 			)
 			.filter((p) => {
 				// Always exclude the opposite field's selection
@@ -327,6 +351,7 @@ function AddressRouteInput({
 		origin,
 		destination,
 		referencePoints,
+		locations,
 	]);
 
 	const handleSelectSuggestion = useCallback(

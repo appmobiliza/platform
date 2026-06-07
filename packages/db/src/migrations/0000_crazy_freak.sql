@@ -137,6 +137,18 @@ CREATE TABLE "scholar_profile" (
 	CONSTRAINT "scholar_profile_cpf_unique" UNIQUE("cpf")
 );
 --> statement-breakpoint
+CREATE TABLE "scholar_shift_log" (
+	"id" text PRIMARY KEY NOT NULL,
+	"scholar_profile_id" text NOT NULL,
+	"date" text NOT NULL,
+	"shift" "scholar_shift" NOT NULL,
+	"started_at" timestamp DEFAULT now() NOT NULL,
+	"ended_at" timestamp,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "scholar_shift_log_scholar_profile_id_date_shift_unique" UNIQUE("scholar_profile_id","date","shift")
+);
+--> statement-breakpoint
 CREATE TABLE "scholar_weekly_schedule" (
 	"id" text PRIMARY KEY NOT NULL,
 	"scholar_profile_id" text NOT NULL,
@@ -202,6 +214,24 @@ CREATE TABLE "service_request" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "app_settings" (
+	"key" text PRIMARY KEY NOT NULL,
+	"value" jsonb NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "shift_definition" (
+	"id" text PRIMARY KEY NOT NULL,
+	"shift" "scholar_shift" NOT NULL,
+	"day_of_week" "day_of_week" NOT NULL,
+	"start_time" text NOT NULL,
+	"end_time" text NOT NULL,
+	"is_enabled" boolean DEFAULT true NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "shift_definition_shift_day_of_week_unique" UNIQUE("shift","day_of_week")
+);
+--> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "audio_message" ADD CONSTRAINT "audio_message_request_id_service_request_id_fk" FOREIGN KEY ("request_id") REFERENCES "public"."service_request"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -212,6 +242,7 @@ ALTER TABLE "favorite_route" ADD CONSTRAINT "favorite_route_destination_location
 ALTER TABLE "extra_shift_request" ADD CONSTRAINT "extra_shift_request_scholar_profile_id_scholar_profile_id_fk" FOREIGN KEY ("scholar_profile_id") REFERENCES "public"."scholar_profile"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "extra_shift_request" ADD CONSTRAINT "extra_shift_request_approved_by_id_user_id_fk" FOREIGN KEY ("approved_by_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "scholar_profile" ADD CONSTRAINT "scholar_profile_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "scholar_shift_log" ADD CONSTRAINT "scholar_shift_log_scholar_profile_id_scholar_profile_id_fk" FOREIGN KEY ("scholar_profile_id") REFERENCES "public"."scholar_profile"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "scholar_weekly_schedule" ADD CONSTRAINT "scholar_weekly_schedule_scholar_profile_id_scholar_profile_id_fk" FOREIGN KEY ("scholar_profile_id") REFERENCES "public"."scholar_profile"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "student_disability" ADD CONSTRAINT "student_disability_student_profile_id_student_profile_id_fk" FOREIGN KEY ("student_profile_id") REFERENCES "public"."student_profile"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "student_profile" ADD CONSTRAINT "student_profile_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

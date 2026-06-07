@@ -12,8 +12,6 @@ import { Text } from "@/components/ui/text";
 import { useAppColorScheme } from "@/lib/use-app-color-scheme";
 import { cn } from "@/lib/utils";
 
-import { ufalPoints } from "@/constants/locations";
-
 import { AddressRouteInput } from "./address-route-input";
 import { SheetFrame, StageSheet } from "./components";
 import { SearchIndicator } from "./seach-indicator";
@@ -24,11 +22,15 @@ function RequestFlowSheet() {
 	const isDark = colorScheme === "dark";
 
 	const {
+		campusLocationItems,
+		campusLocationsByName,
+		confirmRequest,
 		destinationRef,
 		destinationSelectionRef,
 		destination,
 		dismissAndExit,
 		handleDismiss,
+		isCreating,
 		message,
 		setOrigin,
 		origin,
@@ -105,7 +107,9 @@ function RequestFlowSheet() {
 						<>
 							<Button
 								onPress={() => transitionTo("start-confirm")}
-								disabled={destination === null}
+								disabled={
+									destination === null || origin === null
+								}
 							>
 								<Text>Confirmar destino</Text>
 							</Button>
@@ -118,28 +122,25 @@ function RequestFlowSheet() {
 					<AddressRouteInput
 						origin={origin}
 						destination={destination}
+						locations={campusLocationItems}
 						onSelectOrigin={(name, isCurrent) => {
 							if (isCurrent) return; // origin já vem do GPS via useRequestFlow
-							const point = ufalPoints.find(
-								(p) => p.name === name,
-							);
+							const point = campusLocationsByName.get(name);
 							if (point) {
 								setOrigin({
 									name: point.name,
-									abbreviation: point.abbrev,
+									abbreviation: point.abbreviation,
 									latitude: point.latitude,
 									longitude: point.longitude,
 								});
 							}
 						}}
 						onSelectDestination={(name) => {
-							const point = ufalPoints.find(
-								(p) => p.name === name,
-							);
+							const point = campusLocationsByName.get(name);
 							if (point) {
 								setDestination({
 									name: point.name,
-									abbreviation: point.abbrev,
+									abbreviation: point.abbreviation,
 									latitude: point.latitude,
 									longitude: point.longitude,
 								});
@@ -159,8 +160,19 @@ function RequestFlowSheet() {
 					title="Confirme seu ponto de partida"
 					footer={
 						<>
-							<Button onPress={() => transitionTo("searching")}>
-								<Text>Confirmar</Text>
+							<Button
+								onPress={() => confirmRequest()}
+								disabled={!origin || !destination || isCreating}
+							>
+								<Text>
+									{isCreating ? "Criando..." : "Confirmar"}
+								</Text>
+								{isCreating && (
+									<ActivityIndicator
+										size={16}
+										color="white"
+									/>
+								)}
 							</Button>
 							<Button variant="outline" onPress={dismissAndExit}>
 								<Text>Cancelar</Text>
@@ -174,6 +186,7 @@ function RequestFlowSheet() {
 						title={origin?.abbreviation ?? origin?.name ?? ""}
 						description={`${origin?.abbreviation ? `${origin?.abbreviation} - ` : ""}${origin?.name ?? ""}`}
 						variant="default"
+						icon={{ as: MapPin, color: "--foreground" }}
 					>
 						<Button
 							variant="inverted"

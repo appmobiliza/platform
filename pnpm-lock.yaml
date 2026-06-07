@@ -118,6 +118,9 @@ importers:
       '@mobiliza/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@mobiliza/realtime':
+        specifier: workspace:*
+        version: link:../../packages/realtime
       '@rn-primitives/avatar':
         specifier: ^1.4.0
         version: 1.4.0(react-native-web@0.21.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-native@0.85.3(@babel/core@7.29.7)(@react-native/jest-preset@0.85.3(@babel/core@7.29.7)(react@19.2.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.16)(react@19.2.3))(react@19.2.3)
@@ -148,6 +151,9 @@ importers:
       '@turf/turf':
         specifier: ^7.3.5
         version: 7.3.5
+      ably:
+        specifier: ^2.21.0
+        version: 2.21.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       better-auth:
         specifier: 1.6.11
         version: 1.6.11(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@neondatabase/serverless@1.1.0)(expo-sqlite@56.0.4(expo@56.0.8)(react-native@0.85.3(@babel/core@7.29.7)(@react-native/jest-preset@0.85.3(@babel/core@7.29.7)(react@19.2.3))(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.16)(react@19.2.3))(react@19.2.3))(kysely@0.28.17))(next@16.2.6(@babel/core@7.29.7)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -13412,6 +13418,21 @@ snapshots:
   '@xmldom/xmldom@0.9.10': {}
 
   abab@2.0.6: {}
+
+  ably@2.21.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
+    dependencies:
+      '@ably/msgpack-js': 0.4.1
+      dequal: 2.0.3
+      fastestsmallesttextencoderdecoder: 1.0.22
+      got: 11.8.6
+      ulid: 2.4.0
+      ws: 8.21.0
+    optionalDependencies:
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   ably@2.21.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
     dependencies:

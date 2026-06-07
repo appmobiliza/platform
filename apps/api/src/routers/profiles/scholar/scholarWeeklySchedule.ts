@@ -18,6 +18,14 @@ export const scholarWeeklySchedule = scholarProcedure
 
 		if (!profile) throw new TRPCError({ code: "NOT_FOUND" });
 
+		if (!profile.isActive) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message:
+					"Não é possível editar sua escala enquanto estiver inativo. Contate o gestor.",
+			});
+		}
+
 		const profileId = profile.id;
 
 		await db.transaction(async (tx) => {

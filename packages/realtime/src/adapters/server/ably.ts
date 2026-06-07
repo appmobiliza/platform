@@ -7,6 +7,7 @@ import type {
 
 import type {
 	AblyAdapterOptions,
+	ClientCredentials,
 	RealtimeAdapter,
 	RealtimePayload,
 	Unsubscribe,
@@ -15,7 +16,7 @@ import type {
 export class AblyRealtimeAdapter implements RealtimeAdapter {
 	private channels = new Map<string, RealtimeChannel>();
 
-	private constructor(private client: Realtime) {}
+	private constructor(private client: Realtime) { }
 
 	static async create(
 		options: AblyAdapterOptions,
@@ -77,6 +78,19 @@ export class AblyRealtimeAdapter implements RealtimeAdapter {
 		);
 
 		this.client.close();
+	}
+
+	async getClientCredentials(): Promise<ClientCredentials> {
+		const tokenDetails = await this.client.auth.requestToken({
+			capability: { "*": ["subscribe"] },
+		});
+
+		return {
+			provider: "ably",
+			config: {
+				clientToken: tokenDetails.token ?? "",
+			},
+		};
 	}
 
 	private getOrCreateChannel(channel: string): RealtimeChannel {
