@@ -1,4 +1,4 @@
-import { ClockFading } from "lucide-react-native";
+import { ClockAlert, ClockFading } from "lucide-react-native";
 import { useCallback } from "react";
 import { ActivityIndicator, FlatList, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -7,6 +7,7 @@ import { FeaturedHistoryCard } from "@/components/featured-history-card";
 import { ScholarHistory } from "@/components/scholar/history";
 import { SimpleHistoryItem } from "@/components/simple-history-item";
 import { StatusMessage } from "@/components/status-message";
+import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
@@ -39,6 +40,7 @@ function StudentHistory() {
 				item.originLocation?.name ?? item.originLocationId;
 			const createdAt = new Date(item.createdAt);
 			const subtitle = formatDateTime(createdAt);
+			const isUnattended = item.status === "unattended";
 
 			return (
 				<SimpleHistoryItem
@@ -48,6 +50,18 @@ function StudentHistory() {
 					title={originName}
 					subtitle={subtitle}
 					href={`/history/${item.id}`}
+					trailing={
+						isUnattended ? (
+							<Badge variant="destructive">
+								<Icon
+									icon={ClockAlert}
+									size={12}
+									color="--destructive-foreground"
+								/>
+								<Text className="text-xs">Pendente</Text>
+							</Badge>
+						) : undefined
+					}
 				/>
 			);
 		},
@@ -106,24 +120,27 @@ function StudentHistory() {
 										new Date(featured.createdAt),
 									)}
 									href={`/history/${featured.id}`}
+									status={featured.status}
 								/>
 							</View>
 						) : null}
 					</View>
 				}
 				ListEmptyComponent={
-					<StatusMessage
-						className="mt-48 max-w-2/3 mx-auto"
-						icon={
-							<Icon
-								icon={ClockFading}
-								size={48}
-								color="--foreground"
-							/>
-						}
-						title="Por enquanto está vazio..."
-						description="Faça sua primeira solicitação para que ela apareça aqui!"
-					/>
+					featured ? null : (
+						<StatusMessage
+							className="mt-48 max-w-2/3 mx-auto"
+							icon={
+								<Icon
+									icon={ClockFading}
+									size={48}
+									color="--foreground"
+								/>
+							}
+							title="Por enquanto está vazio..."
+							description="Faça sua primeira solicitação para que ela apareça aqui!"
+						/>
+					)
 				}
 				ListFooterComponent={
 					isFetchingNextPage ? (

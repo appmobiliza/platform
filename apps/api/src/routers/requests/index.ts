@@ -10,6 +10,7 @@ import { cancel } from "./student/cancel.js";
 import { create } from "./student/create.js";
 import { rate } from "./student/rate.js";
 import { studentHistory } from "./student/studentHistory.js";
+import { markUnattended } from "./student/unattended.js";
 
 /**
  * Router de solicitações de deslocamento modularizado.
@@ -18,6 +19,7 @@ import { studentHistory } from "./student/studentHistory.js";
 export const requestsRouter = router({
 	create,
 	cancel,
+	markUnattended,
 	accept,
 	start,
 	complete,

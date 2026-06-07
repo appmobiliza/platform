@@ -57,7 +57,6 @@ describe("Security: PII Leak in requests.pending", () => {
 			userId: scholarUser.id,
 			course: "Matemática",
 			campus: "Campus A.C. Simões",
-			shift: "morning",
 			gender: "prefer_not_to_say",
 			isAvailable: true,
 			enrollment: "654321",

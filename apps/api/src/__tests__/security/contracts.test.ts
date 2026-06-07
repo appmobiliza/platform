@@ -1,4 +1,4 @@
-import { UpdateScholarSchema, UpdateStudentSchema } from "@mobiliza/contracts";
+import { UpdateStudentSchema } from "@mobiliza/contracts";
 
 import { describe, expect, test } from "@jest/globals";
 
@@ -9,10 +9,5 @@ describe("Contracts: Profile Updates", () => {
 
 		const invalid = UpdateStudentSchema.safeParse({ phone: "123" });
 		expect(invalid.success).toBe(false);
-	});
-
-	test("UpdateScholarSchema should allow shift updates", () => {
-		const valid = UpdateScholarSchema.safeParse({ shift: "afternoon" });
-		expect(valid.success).toBe(true);
 	});
 });

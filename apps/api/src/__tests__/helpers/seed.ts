@@ -110,7 +110,6 @@ export async function seedScholarProfile(
 			campus: "Campus A.C. Simões",
 			phone: "82111112222",
 			cpf: cpfSuffix,
-			shift: "morning",
 			gender: "male",
 			isAvailable: false,
 			isActive: true,

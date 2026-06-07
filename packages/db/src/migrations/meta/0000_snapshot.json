@@ -1,5 +1,5 @@
 {
-  "id": "3503d241-3dfb-42a2-9ff4-8a69c2034217",
+  "id": "3c60a045-aa5d-4f6b-97c5-25dcb8296205",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -542,7 +542,7 @@
           "name": "abbreviation",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "description": {
           "name": "description",
@@ -840,6 +840,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "course": {
+          "name": "course",
+          "type": "course",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
         "phone": {
           "name": "phone",
           "type": "text",
@@ -873,19 +880,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
-        },
-        "course": {
-          "name": "course",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "shift": {
-          "name": "shift",
-          "type": "scholar_shift",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
         },
         "cpf": {
           "name": "cpf",
@@ -1209,6 +1203,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "course": {
+          "name": "course",
+          "type": "course",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
         "phone": {
           "name": "phone",
           "type": "text",
@@ -1242,13 +1243,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
-        },
-        "course": {
-          "name": "course",
-          "type": "course",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
         },
         "shift": {
           "name": "shift",

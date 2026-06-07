@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
-import { Clock, RotateCcw, Star } from "lucide-react-native";
+import { Clock, ClockAlert, RotateCcw, Star } from "lucide-react-native";
 import { useMemo } from "react";
 import { ActivityIndicator, View } from "react-native";
 
@@ -48,6 +48,10 @@ function StudentHistoryDetails() {
 	const title = `${originName} → ${destinationName}`;
 	const subtitle = formatDateTime(new Date(request.createdAt));
 
+	const isUnattended = request.status === "unattended";
+	const isCancelled = request.status === "cancelled";
+
+	// Para unattended/cancelled não há attendance
 	const attendance = request.attendance;
 	const scholarUser = attendance?.scholarProfile?.user;
 	const scholarName = scholarUser?.name ?? "Bolsista";
@@ -63,47 +67,74 @@ function StudentHistoryDetails() {
 		? Math.round(durationSeconds / 60)
 		: null;
 
+	// Para solicitações não atendidas, mostrar um badge de status
+	const statusBadge = isUnattended ? (
+		<Badge variant="destructive">
+			<Icon
+				icon={ClockAlert}
+				size={14}
+				color="--destructive-foreground"
+			/>
+			<Text>Não atendida</Text>
+		</Badge>
+	) : isCancelled ? (
+		<Badge variant="secondary">
+			<Text>Cancelada</Text>
+		</Badge>
+	) : durationMinutes ? (
+		<Badge>
+			<Icon icon={Clock} size={14} color="--primary-foreground" />
+			<Text>{durationMinutes}m</Text>
+		</Badge>
+	) : null;
+
 	return (
 		<HistoryDetailLayout
 			title={title}
 			subtitle={subtitle}
-			mapBadges={
-				<>
-					{durationMinutes ? (
-						<Badge>
-							<Icon
-								icon={Clock}
-								size={14}
-								color="--primary-foreground"
-							/>
-							<Text>{durationMinutes}m</Text>
-						</Badge>
-					) : null}
-				</>
-			}
+			mapBadges={statusBadge}
 			profile={
-				<View className="flex-row items-center gap-3">
-					<Avatar alt={`Avatar de ${scholarName}`}>
-						{scholarUser?.image ? (
-							<AvatarImage
-								source={{
-									uri: scholarUser.image,
-								}}
+				isUnattended || isCancelled ? (
+					<View className="flex-row items-center gap-3 py-3">
+						<View className="size-10 items-center justify-center rounded-full bg-muted">
+							<Icon
+								icon={ClockAlert}
+								size={20}
+								color="--muted-foreground"
 							/>
-						) : null}
-						<AvatarFallback>
-							<Text>{scholarInitials}</Text>
-						</AvatarFallback>
-					</Avatar>
-					<View className="flex-1">
-						<Text className="font-medium text-sm">
-							Atendido por{" "}
-							<Text className="font-semibold text-sm">
-								{scholarName}
+						</View>
+						<View className="flex-1">
+							<Text className="font-medium text-sm text-muted-foreground">
+								{isUnattended
+									? "Nenhum contribuinte aceitou a solicitação"
+									: "Solicitação cancelada"}
 							</Text>
-						</Text>
+						</View>
 					</View>
-				</View>
+				) : (
+					<View className="flex-row items-center gap-3">
+						<Avatar alt={`Avatar de ${scholarName}`}>
+							{scholarUser?.image ? (
+								<AvatarImage
+									source={{
+										uri: scholarUser.image,
+									}}
+								/>
+							) : null}
+							<AvatarFallback>
+								<Text>{scholarInitials}</Text>
+							</AvatarFallback>
+						</Avatar>
+						<View className="flex-1">
+							<Text className="font-medium text-sm">
+								Atendido por{" "}
+								<Text className="font-semibold text-sm">
+									{scholarName}
+								</Text>
+							</Text>
+						</View>
+					</View>
+				)
 			}
 			route={{
 				className: "w-full",
@@ -127,21 +158,8 @@ function StudentHistoryDetails() {
 				},
 			}}
 		>
-			<View className="gap-3 w-full">
-				<Button className="rounded-full w-full text-white">
-					<Icon icon={Star} size={18} color="--primary-foreground" />
-					<Text>Avaliar</Text>
-				</Button>
-
-				<Button className="rounded-full w-full text-white">
-					<Icon
-						icon={RotateCcw}
-						size={18}
-						color="--primary-foreground"
-					/>
-					<Text>Reagendar</Text>
-				</Button>
-			</View>
+			{/* Ações opcionais para solicitações não atendidas/canceladas
+			podem ser adicionadas aqui no futuro */}
 		</HistoryDetailLayout>
 	);
 }

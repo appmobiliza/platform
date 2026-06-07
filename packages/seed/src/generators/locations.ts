@@ -17,7 +17,6 @@ import { db } from "../lib/db";
 import type { SeedGenerator } from "../lib/types";
 
 // ─── Locais do Campus A.C. Simões ─────────────────────────────────────────────
-// Fonte original: apps/mobile/src/constants/locations.ts
 
 interface RawLocation {
 	name: string;

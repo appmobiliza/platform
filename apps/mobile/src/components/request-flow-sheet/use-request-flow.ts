@@ -4,9 +4,30 @@ import * as React from "react";
 
 import { getNearestPoint } from "@/lib/location-store";
 import { getRealtimeClient } from "@/lib/realtime";
+import {
+	cancelAllNotifications,
+	showAcceptedNotification,
+	showSearchingNotification,
+	showUnattendedNotification,
+} from "@/lib/request-notifications";
+import {
+	clearRequestState,
+	getRequestState,
+	setRequestState,
+} from "@/lib/request-store";
 import { trpc } from "@/lib/trpc/client";
 
 import type { Place, Stage } from "./types";
+
+/**
+ * Tempo máximo de espera no "searching" antes de considerar a
+ * solicitação como não atendida (unattended).
+ *
+ * Este timeout é o mecanismo PRINCIPAL de detecção de não-atendimento.
+ * O backend possui um timeout adicional via CRON (`maxServiceRequestTime`)
+ * como fallup para evitar que solicitações fiquem "pending" para sempre.
+ */
+const SEARCH_TIMEOUT_MS = 60_000; // 60 seconds
 
 function useRequestFlow() {
 	const router = useRouter();
@@ -43,6 +64,12 @@ function useRequestFlow() {
 	const [destination, setDestination] = React.useState<Place | null>(null);
 	const [message, setMessage] = React.useState("");
 
+	// Estado da busca
+	const [searchState, setSearchState] = React.useState<
+		"idle" | "searching" | "unattended" | "error"
+	>("idle");
+	const [elapsedSeconds, setElapsedSeconds] = React.useState(0);
+
 	// Fetch campus locations from the API (source of truth after seed)
 	const { data: campusLocations = [] } = trpc.locations.list.useQuery();
 
@@ -54,6 +81,13 @@ function useRequestFlow() {
 	// Mutação para criar a solicitação no backend
 	const { mutateAsync: createRequest, isPending: isCreating } =
 		trpc.requests.create.useMutation();
+
+	// Mutação para marcar como não atendida
+	const { mutateAsync: markUnattended } =
+		trpc.requests.markUnattended.useMutation();
+
+	// Mutação para cancelar manualmente
+	const { mutateAsync: cancelRequest } = trpc.requests.cancel.useMutation();
 
 	const openStage = React.useCallback(
 		(stage: Stage) => {
@@ -75,20 +109,147 @@ function useRequestFlow() {
 	);
 
 	// Referência para armazenar a função de cancelamento da inscrição
-	// realtime, para poder limpá-la ao desmontar ou ao mudar de request.
 	const realtimeUnsubRef = React.useRef<(() => void) | null>(null);
+
+	// Timer refs
+	const timerIntervalRef = React.useRef<ReturnType<
+		typeof setInterval
+	> | null>(null);
+	const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	const clearTimers = React.useCallback(() => {
+		if (timerIntervalRef.current) {
+			clearInterval(timerIntervalRef.current);
+			timerIntervalRef.current = null;
+		}
+		if (timeoutRef.current) {
+			clearTimeout(timeoutRef.current);
+			timeoutRef.current = null;
+		}
+	}, []);
+
+	// ─── Persistência de estado ─────────────────────────────────────────────
+
+	// Persiste sempre que os valores relevantes mudam
+	React.useEffect(() => {
+		if (activeRequestId) {
+			setRequestState({
+				activeRequestId,
+				searchState,
+				stage: activeStageRef.current,
+				origin,
+				destination,
+				message,
+				requestCreatedAt: Date.now(),
+			});
+		} else {
+			clearRequestState();
+		}
+	}, [activeRequestId, searchState, origin, destination, message]);
+
+	// ─── Restauração de sessão ──────────────────────────────────────────────
+	//
+	// Quando o hook monta (app reaberto), verifica se há um estado persistido
+	// de uma sessão anterior. Se houver, consulta o backend para saber o
+	// status atual da request e restaura o fluxo.
+
+	const persistedState = getRequestState();
+	const hasPersistedRequest =
+		persistedState.activeRequestId && persistedState.searchState !== "idle";
+
+	const {
+		data: historyData,
+		isLoading: isHistoryLoading,
+	} = trpc.requests.studentHistory.useInfiniteQuery(
+		{ limit: 50 },
+		{ enabled: hasPersistedRequest },
+	);
+
+	// Guarda se já processamos a restauração
+	const restorationDoneRef = React.useRef(false);
+
+	React.useEffect(() => {
+		if (!hasPersistedRequest || restorationDoneRef.current) return;
+		if (isHistoryLoading) return; // ainda carregando
+		restorationDoneRef.current = true;
+
+		const requestId = persistedState.activeRequestId!;
+
+		// Restaura dados de localização
+		if (persistedState.origin) setOrigin(persistedState.origin);
+		if (persistedState.destination)
+			setDestination(persistedState.destination);
+		if (persistedState.message) setMessage(persistedState.message);
+
+		// Busca a request atual no histórico
+		const allItems = historyData?.pages.flatMap((p) => p.items) ?? [];
+		const current = allItems.find((item) => item.id === requestId);
+
+		if (!current) {
+			// Request não encontrada — limpamos o estado
+			clearRequestState();
+			return;
+		}
+
+		const status: string = current.status;
+
+		if (
+			status === "accepted" ||
+			status === "ongoing" ||
+			status === "completed"
+		) {
+			// Já foi aceito enquanto estávamos fora — vai direto pra trip
+			setActiveRequestId(requestId);
+			setSearchState("idle");
+			openStage("trip");
+		} else if (status === "unattended") {
+			setActiveRequestId(requestId);
+			setSearchState("unattended");
+			openStage("searching");
+		} else if (status === "cancelled") {
+			clearRequestState();
+		} else {
+			// Ainda "pending" — restaura a busca
+			setActiveRequestId(requestId);
+
+			if (persistedState.searchState === "unattended") {
+				setSearchState("unattended");
+			} else {
+				setSearchState("searching");
+				if (persistedState.requestCreatedAt) {
+					const elapsed = Math.floor(
+						(Date.now() - persistedState.requestCreatedAt) / 1000,
+					);
+					setElapsedSeconds(elapsed);
+				}
+			}
+
+			openStage("searching");
+		}
+	}, [
+		hasPersistedRequest,
+		persistedState,
+		historyData,
+		isHistoryLoading,
+		openStage,
+	]);
 
 	/**
 	 * Creates the service request in the backend and transitions to "searching".
 	 *
-	 * When called without arguments, resolves the campus_location database IDs
-	 * from the current `origin` / `destination` state by fetching the locations
-	 * list from the API — this is the normal UI flow.
-	 *
-	 * Tests/direct usage may pass explicit IDs to skip the API round-trip.
+	 * Transiciona imediatamente para a UI de busca antes mesmo da requisição
+	 * HTTP, para uma experiência mais fluida.
 	 */
 	const confirmRequest = React.useCallback(
 		async (originId?: string, destinationId?: string) => {
+			// Transiciona imediatamente para "searching" antes mesmo da requisição
+			setSearchState("searching");
+			setElapsedSeconds(0);
+			transitionTo("searching");
+
+			// Mostra notificação persistente
+			showSearchingNotification();
+
 			// Resolve location IDs from the API when not provided explicitly
 			if (!originId || !destinationId) {
 				if (!origin || !destination) {
@@ -126,23 +287,45 @@ function useRequestFlow() {
 					notes: message,
 				});
 				setActiveRequestId(result.id);
-				transitionTo("searching");
 			} catch (error) {
 				console.error("Erro ao criar solicitação", error);
-				// Idealmente mostrar um Toast de erro aqui
+				setSearchState("error");
+				clearTimers();
+				cancelAllNotifications();
 			}
 		},
 		[createRequest, message, transitionTo, origin, destination, utils],
 	);
 
 	const exitFlow = React.useCallback(() => {
+		clearTimers();
+		setSearchState("idle");
+		setElapsedSeconds(0);
+		setActiveRequestId(null);
+		clearRequestState();
+		cancelAllNotifications();
 		router.back();
-	}, [router]);
+	}, [router, clearTimers]);
 
 	const dismissAndExit = React.useCallback(() => {
 		queuedStageRef.current = null;
+
+		// Se estava na busca *ativa*, cancela no backend
+		const stage = activeStageRef.current;
+		if (
+			stage === "searching" &&
+			activeRequestId &&
+			searchState === "searching"
+		) {
+			cancelRequest({ requestId: activeRequestId });
+		}
+
+		clearTimers();
+		setSearchState("idle");
+		setElapsedSeconds(0);
+		cancelAllNotifications();
 		refs[activeStageRef.current].current?.dismiss();
-	}, [refs]);
+	}, [refs, activeRequestId, cancelRequest, clearTimers, searchState]);
 
 	const handleDismiss = React.useCallback(
 		(stage: Stage) => {
@@ -175,11 +358,55 @@ function useRequestFlow() {
 		[exitFlow, openStage, refs],
 	);
 
+	// ─── Timer de elapsed + timeout da busca ─────────────────────────────────
+
+	React.useEffect(() => {
+		if (searchState !== "searching") return;
+
+		// Contagem de segundos decorridos
+		timerIntervalRef.current = setInterval(() => {
+			setElapsedSeconds((prev) => prev + 1);
+		}, 1000);
+
+		return () => {
+			clearTimers();
+		};
+	}, [searchState, clearTimers]);
+
+	// Timeout real para unattended
+	React.useEffect(() => {
+		if (searchState !== "searching" || !activeRequestId) return;
+
+		// Se o tempo já decorrido ultrapassou o limite, marca imediatamente
+		// (útil quando a restauração de sessão encontra um request já vencido)
+		if (elapsedSeconds >= SEARCH_TIMEOUT_MS / 1000) {
+			setSearchState("unattended");
+			clearTimers();
+			showUnattendedNotification();
+			markUnattended({ requestId: activeRequestId });
+			return;
+		}
+
+		const remainingMs = SEARCH_TIMEOUT_MS - elapsedSeconds * 1000;
+
+		timeoutRef.current = setTimeout(() => {
+			setSearchState("unattended");
+			clearTimers();
+			showUnattendedNotification();
+
+			// Marca como não atendida no backend
+			markUnattended({ requestId: activeRequestId });
+		}, remainingMs);
+
+		return () => {
+			if (timeoutRef.current) {
+				clearTimeout(timeoutRef.current);
+				timeoutRef.current = null;
+			}
+		};
+	}, [searchState, activeRequestId, elapsedSeconds, markUnattended, clearTimers]);
+
 	// ─── Inscrição em eventos de realtime ──────────────────────────────────
-	//
-	// Quando `activeRequestId` é definido (após criar a solicitação),
-	// inscreve-se no canal `request:{id}` para receber atualizações
-	// sobre o status do atendimento em tempo real.
 
 	React.useEffect(() => {
 		if (!activeRequestId) return;
@@ -191,8 +418,12 @@ function useRequestFlow() {
 			const client = await getRealtimeClient();
 			if (cancelled) return;
 
-			// Handler central que gerencia as transições de estado
 			const onAccepted = () => {
+				clearTimers();
+				setSearchState("idle");
+				setElapsedSeconds(0);
+				cancelAllNotifications();
+				showAcceptedNotification();
 				transitionTo("trip");
 			};
 
@@ -206,21 +437,47 @@ function useRequestFlow() {
 				exitFlow();
 			};
 
-			// Inscreve nos eventos relevantes
-			const unsubAccepted = client.subscribe(channel, "request:accepted", onAccepted);
-			const unsubStarted = client.subscribe(channel, "request:started", () => {
-				// Atualização de status — pode ser usada para mostrar
-				// "a caminho" na UI futuramente
-			});
-			const unsubCompleted = client.subscribe(channel, "request:completed", onCompleted);
-			const unsubCancelled = client.subscribe(channel, "request:cancelled", onCancelled);
+			const onUnattended = () => {
+				setSearchState("unattended");
+				clearTimers();
+				cancelAllNotifications();
+				showUnattendedNotification();
+			};
 
-			// Agrupa o cleanup em uma única função
+			const unsubAccepted = client.subscribe(
+				channel,
+				"request:accepted",
+				onAccepted,
+			);
+			const unsubStarted = client.subscribe(
+				channel,
+				"request:started",
+				() => {
+					// Atualização de status
+				},
+			);
+			const unsubCompleted = client.subscribe(
+				channel,
+				"request:completed",
+				onCompleted,
+			);
+			const unsubCancelled = client.subscribe(
+				channel,
+				"request:cancelled",
+				onCancelled,
+			);
+			const unsubUnattended = client.subscribe(
+				channel,
+				"request:unattended",
+				onUnattended,
+			);
+
 			const unsubscribe = () => {
 				unsubAccepted();
 				unsubStarted();
 				unsubCompleted();
 				unsubCancelled();
+				unsubUnattended();
 			};
 
 			realtimeUnsubRef.current = unsubscribe;
@@ -233,7 +490,7 @@ function useRequestFlow() {
 			realtimeUnsubRef.current?.();
 			realtimeUnsubRef.current = null;
 		};
-	}, [activeRequestId, exitFlow, transitionTo]);
+	}, [activeRequestId, exitFlow, transitionTo, clearTimers]);
 
 	// Initialize origin from the nearest point calculated on the Home screen
 	React.useEffect(() => {
@@ -243,8 +500,12 @@ function useRequestFlow() {
 		}
 	}, []);
 
+	// Only open the initial stage if we are NOT restoring a session
 	React.useEffect(() => {
-		openStage("destination-selection");
+		if (!hasPersistedRequest) {
+			openStage("destination-selection");
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [openStage]);
 
 	// Map API locations → LocationItem format for AddressRouteInput
@@ -255,13 +516,11 @@ function useRequestFlow() {
 				latitude: loc.latitude,
 				longitude: loc.longitude,
 				abbreviation: loc.abbreviation ?? undefined,
-				// Alias for suggestion rendering (which expects `abbrev`)
 				abbrev: loc.abbreviation ?? undefined,
 			})),
 		[campusLocations],
 	);
 
-	// O(1) lookup by name for the callbacks
 	const campusLocationsByName = React.useMemo(
 		() => new Map(campusLocationItems.map((l) => [l.name, l])),
 		[campusLocationItems],
@@ -281,6 +540,8 @@ function useRequestFlow() {
 		handleDismiss,
 		message,
 		origin,
+		searchState,
+		elapsedSeconds,
 		setOrigin,
 		refs,
 		searchingRef,

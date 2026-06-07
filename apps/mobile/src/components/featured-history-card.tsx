@@ -1,8 +1,8 @@
 import { Link } from "expo-router";
-import { RotateCcw, Star } from "lucide-react-native";
+import { ClockAlert } from "lucide-react-native";
 import { Text, View } from "react-native";
 
-import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 
 // import MapView from "@/components/ui/map";
 
@@ -10,13 +10,17 @@ interface FeaturedHistoryCardProps {
 	title: string;
 	date: string;
 	href: string;
+	status?: string;
 }
 
 export const FeaturedHistoryCard = ({
 	title,
 	date,
 	href,
+	status,
 }: FeaturedHistoryCardProps) => {
+	const isUnattended = status === "unattended";
+
 	return (
 		<Link href={href} push asChild>
 			<View
@@ -39,25 +43,32 @@ export const FeaturedHistoryCard = ({
 					pitchEnabled={false}
 					rotateEnabled={false}
 				/> */}
+					{isUnattended && (
+						<View className="flex-1 items-center justify-center">
+							<Icon
+								icon={ClockAlert}
+								size={48}
+								color="--muted-foreground"
+							/>
+						</View>
+					)}
 				</View>
-				<View className="bg-primary p-4">
+				<View
+					className={
+						isUnattended ? "bg-destructive p-4" : "bg-primary p-4"
+					}
+				>
 					<Text className="text-primary-foreground font-bold text-xl">
 						{title}
 					</Text>
 					<Text className="text-primary-foreground/80 text-sm mt-1">
 						{date}
 					</Text>
-
-					<View className="flex-row gap-3 mt-4">
-						<Button className="bg-white text-black hover:bg-foreground active:bg-foreground dark:active:bg-foreground rounded-full">
-							<Star size={16} color="black" />
-							<Text className="font-medium">Avaliar</Text>
-						</Button>
-						<Button className="bg-white text-black hover:bg-foreground active:bg-foreground dark:active:bg-foreground rounded-full">
-							<RotateCcw size={16} color="black" />
-							<Text className="font-medium">Reagendar</Text>
-						</Button>
-					</View>
+					{isUnattended && (
+						<Text className="text-destructive-foreground/80 text-xs mt-1 font-medium">
+							Não atendida — tempo expirado
+						</Text>
+					)}
 				</View>
 			</View>
 		</Link>

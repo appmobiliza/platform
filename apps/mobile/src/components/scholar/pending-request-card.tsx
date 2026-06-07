@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-
 import { Info } from "lucide-react-native";
+import { useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
 import Animated, {
 	Easing,
@@ -18,6 +17,7 @@ import { Text } from "@/components/ui/text";
 import { cn } from "@/lib/utils";
 
 import { AddressRoute } from "../address";
+import { Icon } from "../ui/icon";
 
 export enum ServiceStatus {
 	Pending = "pending",
@@ -31,7 +31,7 @@ export type Service = {
 		name: string;
 		avatarUrl?: string;
 		disability: string;
-		observation: string;
+		observation?: string;
 	};
 	route: {
 		origin: string;
@@ -40,6 +40,7 @@ export type Service = {
 	status: ServiceStatus;
 	startedAt?: Date;
 	finishedAt?: Date;
+	createdAt?: Date;
 };
 
 interface PendingRequestCardProps {
@@ -83,7 +84,22 @@ export function PendingRequestCard({
 		};
 	});
 
-	const currentDate = new Date();
+	const [now, setNow] = useState(() => new Date());
+
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setNow(new Date());
+		}, 30_000);
+
+		return () => clearInterval(interval);
+	}, []);
+
+	const elapsedMinutes = useMemo(() => {
+		if (hasAccepted) return null;
+		const refTime = service.createdAt ?? service.startedAt;
+		if (!refTime) return 0;
+		return Math.floor((now.getTime() - refTime.getTime()) / 60000);
+	}, [hasAccepted, service.createdAt, service.startedAt, now]);
 
 	return (
 		<View className="p-1">
@@ -137,7 +153,7 @@ export function PendingRequestCard({
 					>
 						{hasAccepted
 							? "Em andamento"
-							: `há ${Math.floor((currentDate.getTime() - (service.startedAt?.getTime() ?? currentDate.getTime())) / 60000)} min`}
+							: `há ${elapsedMinutes ?? 0} min`}
 					</Text>
 				</View>
 
@@ -152,23 +168,18 @@ export function PendingRequestCard({
 					size="lg"
 				/>
 
-				<View className="flex-row items-start rounded-sm bg-secondary p-3">
-					<Info
-						size={16}
-						className="mr-2 mt-0.5 text-muted-foreground"
-					/>
-					<Text className="flex-1 text-sm leading-snug text-foreground">
-						{service.student.observation}
-					</Text>
-				</View>
+				{service.student.observation && (
+					<View className="flex-row items-start rounded-sm bg-secondary p-3">
+						<Icon icon={Info} size={16} color="--foreground" />
+						<Text className="flex-1 text-sm leading-snug text-foreground ml-2">
+							{service.student.observation}
+						</Text>
+					</View>
+				)}
 
 				<View className="flex-row gap-3">
 					{!hasAccepted && (
-						<Button
-							variant="outline"
-							onPress={onReject}
-							className="px-6"
-						>
+						<Button variant="outline" onPress={onReject}>
 							<Text className="font-semibold">Recusar</Text>
 						</Button>
 					)}
@@ -177,7 +188,6 @@ export function PendingRequestCard({
 							setHasAccepted(true);
 							onAccept();
 						}}
-						className="flex-1"
 					>
 						<Text className="font-semibold">
 							{hasAccepted

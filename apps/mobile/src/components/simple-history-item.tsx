@@ -1,5 +1,6 @@
 import { Link } from "expo-router";
 import { Clock } from "lucide-react-native";
+import type { ReactNode } from "react";
 import { Pressable, View } from "react-native";
 
 import { Text } from "@/components/ui/text";
@@ -11,6 +12,7 @@ interface SimpleHistoryItemProps {
 	title: string;
 	subtitle: string;
 	href: string;
+	trailing?: ReactNode;
 }
 
 export const SimpleHistoryItem = ({
@@ -18,6 +20,7 @@ export const SimpleHistoryItem = ({
 	title,
 	subtitle,
 	href,
+	trailing,
 }: SimpleHistoryItemProps) => {
 	return (
 		<Link
@@ -48,10 +51,7 @@ export const SimpleHistoryItem = ({
 						{subtitle}
 					</Text>
 				</View>
-				{/* <Button variant={"secondary"} className="rounded-full">
-				<RotateCcw size={16} className="text-secondary-foreground" />
-				<Text className="font-medium">Reagendar</Text>
-			</Button> */}
+				{trailing}
 			</Pressable>
 		</Link>
 	);

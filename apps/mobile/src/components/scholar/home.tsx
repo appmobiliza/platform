@@ -1,4 +1,4 @@
-import { getCurrentShift } from "@mobiliza/contracts";
+import { disabilityTypeLabels, getCurrentShift } from "@mobiliza/contracts";
 
 import { useRouter } from "expo-router";
 import {
@@ -352,13 +352,8 @@ export function ScholarHome() {
 		// Só escuta quando o turno está ativo
 		if (!activeShiftLog) return;
 
-		let unsub: (() => void) | undefined;
-		let cancelled = false;
-
-		getRealtimeClient().then((client) => {
-			if (cancelled) return;
-
-			unsub = client.subscribe("requests:pending", "request:new", () => {
+		const unsubPromise = getRealtimeClient().then((client) => {
+			return client.subscribe("requests:pending", "request:new", () => {
 				// Invalida a query de pendentes para re-buscar
 				// e mostrar a nova solicitação imediatamente
 				utils.requests.pending.invalidate();
@@ -366,8 +361,7 @@ export function ScholarHome() {
 		});
 
 		return () => {
-			cancelled = true;
-			unsub?.();
+			unsubPromise.then((unsub) => unsub());
 		};
 	}, [activeShiftLog, utils.requests.pending]);
 
@@ -416,7 +410,9 @@ export function ScholarHome() {
 				name:
 					req.studentProfile.nickname ??
 					`Estudante ${req.studentProfile.id.slice(0, 4)}`,
-				disability: req.studentProfile.attendanceNotes ?? "PcD",
+				disability: req.studentProfile.disabilities
+					.map((d) => disabilityTypeLabels[d.disabilityType])
+					.join(", "),
 				observation: req.notes ?? "",
 			},
 			route: {
@@ -533,7 +529,6 @@ export function ScholarHome() {
 							onPress={() => setExtraShiftDialogOpen(true)}
 							className="rounded-full px-4 gap-2"
 						>
-							<Calendar size={20} color="currentColor" />
 							<Text>Solicitar turno extra</Text>
 						</Button>
 
@@ -573,10 +568,10 @@ export function ScholarHome() {
 							{isStartingShift ? (
 								<ActivityIndicator size={20} color="white" />
 							) : (
-								<LogIn
-									size={20}
-									color="currentColor"
-									className="text-primary-foreground"
+								<Icon
+									icon={LogIn}
+									size={18}
+									color="--primary-foreground"
 								/>
 							)}
 							<Text className="mb-0.5 text-base font-medium">
@@ -609,14 +604,14 @@ export function ScholarHome() {
 						>
 							{isEndingShift ? (
 								<ActivityIndicator
-									size={20}
+									size={18}
 									color="currentColor"
 								/>
 							) : (
-								<Power
-									size={20}
-									color="currentColor"
-									className="text-foreground"
+								<Icon
+									icon={Power}
+									size={18}
+									color="--foreground"
 								/>
 							)}
 							<Text className="mb-0.5 text-base font-medium">
@@ -637,9 +632,8 @@ export function ScholarHome() {
 							</SectionTitle>
 
 							{pendingServices.length > 0 ? (
-								<FlatList
-									data={pendingServices}
-									renderItem={({ item }) => (
+								<View className="gap-4">
+									{pendingServices.map((item) => (
 										<PendingRequestCard
 											key={item.id}
 											service={item}
@@ -648,9 +642,8 @@ export function ScholarHome() {
 											}
 											onReject={() => undefined}
 										/>
-									)}
-									keyExtractor={(item) => item.id}
-								/>
+									))}
+								</View>
 							) : (
 								<EmptyStateCard>
 									<View className="items-center">

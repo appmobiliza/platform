@@ -31,7 +31,7 @@ export const shiftLogsRouter = router({
 				where: eq(schema.scholarProfile.userId, ctx.session.user.id),
 			});
 
-			if (!profile) throw new TRPCError({ code: "NOT_FOUND" });
+			if (!profile) throw new TRPCError({ code: "NOT_FOUND", message: "Bolsista não encontrado" });
 
 			// Verifica se já existe um turno ativo (sem endedAt) para este bolsista
 			const activeLog = await db.query.scholarShiftLog.findFirst({

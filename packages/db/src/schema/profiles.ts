@@ -29,6 +29,7 @@ const sharedProfileColumns = () => ({
 		.references(() => user.id, { onDelete: "cascade" }),
 	enrollment: text("enrollment").notNull().unique(),
 	campus: campusEnum("campus").notNull(),
+	course: courseEnum("course").notNull(),
 	phone: text("phone").notNull(),
 	gender: genderEnum("gender").notNull(),
 	isActive: boolean("is_active").notNull().default(true),
@@ -42,7 +43,6 @@ const sharedProfileColumns = () => ({
  */
 export const studentProfile = pgTable("student_profile", {
 	...sharedProfileColumns(),
-	course: courseEnum("course").notNull(),
 	shift: studentShiftEnum("shift").notNull(),
 	/*
 	 * Apelido (opcional) do estudante.
@@ -70,8 +70,6 @@ export const studentProfile = pgTable("student_profile", {
  */
 export const scholarProfile = pgTable("scholar_profile", {
 	...sharedProfileColumns(),
-	course: text("course").notNull(),
-	shift: scholarShiftEnum("shift").notNull(),
 	cpf: text("cpf").notNull().unique(),
 
 	/*

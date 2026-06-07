@@ -6,6 +6,7 @@ import {
 	studentProfile,
 	user,
 } from "@mobiliza/db/schema";
+import type { ClientCredentials } from "@mobiliza/realtime";
 
 import { describe, expect, jest, test } from "@jest/globals";
 import { uuidv7 } from "uuidv7";
@@ -91,6 +92,12 @@ describe("Security/Stability: Realtime Outage", () => {
 				subscribe: jest.fn(() => () => { }),
 				unsubscribe: jest.fn(async () => { }),
 				disconnect: jest.fn(async () => { }),
+				getClientCredentials: jest.fn(
+					async (): Promise<ClientCredentials> => ({
+						provider: "ably",
+						config: {},
+					}),
+				),
 			},
 		});
 

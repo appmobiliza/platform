@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-
 import { ScrollView, View } from "react-native";
 
 import { AddressRoute, type AddressRouteProps } from "@/components/address";
@@ -28,7 +27,7 @@ export function HistoryDetailLayout({
 	contentClassName,
 }: HistoryDetailLayoutProps) {
 	return (
-		<View className="flex-1 bg-background gap-4">
+		<View className="flex-1 gap-4">
 			<Header title="Informações" />
 
 			<ScrollView
@@ -58,6 +57,8 @@ export function HistoryDetailLayout({
 				<AddressRoute {...route} />
 
 				{children}
+
+				<View className="w-full h-64 bg-transparent" />
 			</ScrollView>
 		</View>
 	);

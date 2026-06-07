@@ -6,6 +6,7 @@
  */
 
 import type {
+	ClientCredentials,
 	RealtimeAdapter,
 	RealtimeClientAdapter,
 } from "@mobiliza/realtime";
@@ -16,12 +17,16 @@ import { jest } from "@jest/globals";
  * Mock do RealtimeAdapter server-side.
  */
 export class MockRealtimeAdapter implements RealtimeAdapter {
-	publish = jest.fn(async () => {});
+	publish = jest.fn(async () => { });
 	subscribe = jest.fn(() => {
-		return () => {};
+		return () => { };
 	});
-	unsubscribe = jest.fn(async () => {});
-	disconnect = jest.fn(async () => {});
+	unsubscribe = jest.fn(async () => { });
+	disconnect = jest.fn(async () => { });
+	getClientCredentials = jest.fn(async (): Promise<ClientCredentials> => ({
+		provider: "ably",
+		config: {},
+	}));
 }
 
 /**
@@ -29,9 +34,9 @@ export class MockRealtimeAdapter implements RealtimeAdapter {
  */
 export class MockClientRealtimeAdapter implements RealtimeClientAdapter {
 	subscribe = jest.fn(() => {
-		return () => {};
+		return () => { };
 	});
-	disconnect = jest.fn(async () => {});
+	disconnect = jest.fn(async () => { });
 }
 
 // ─── Factory ──────────────────────────────────────────────────────────────────

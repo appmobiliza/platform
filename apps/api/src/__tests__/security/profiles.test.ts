@@ -86,7 +86,6 @@ describe("Profiles: Update Mutations", () => {
 				userId: scholarUser.id,
 				course: "Matemática",
 				campus: "Campus A.C. Simões",
-				shift: "morning",
 				enrollment: `ENROLL_${uuidv7()}`,
 				phone: "82999999999",
 				gender: "prefer_not_to_say",
@@ -109,7 +108,6 @@ describe("Profiles: Update Mutations", () => {
 
 		// 3. Act
 		await caller.profiles.updateScholar({
-			shift: "afternoon",
 			course: "Ciência da Computação",
 		});
 
@@ -119,7 +117,6 @@ describe("Profiles: Update Mutations", () => {
 		});
 
 		expect(updated).toBeDefined();
-		expect(updated?.shift).toBe("afternoon");
 		expect(updated?.course).toBe("Ciência da Computação");
 	});
 });

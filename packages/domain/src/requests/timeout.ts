@@ -26,6 +26,8 @@ export async function notifyUnansweredRequests(
 		Date.now() - timeoutMinutes * 60 * 1000,
 	);
 
+	const now = new Date();
+
 	const unansweredRequests = await db.query.serviceRequest.findMany({
 		where: and(
 			eq(schema.serviceRequest.status, "pending"),
@@ -34,18 +36,52 @@ export async function notifyUnansweredRequests(
 	});
 
 	if (unansweredRequests.length === 0) {
-		return { notified: 0 };
+		return { notified: 0, unattended: 0 };
 	}
 
-	// Notifica o canal dos gestores (admins) para cada solicitação atrasada
-	// Poderíamos agrupar em uma só mensagem, mas por simplicidade enviamos eventos individuais
+	// Marca as solicitações como não atendidas e notifica os canais pertinentes
+	let unattendedCount = 0;
+
 	for (const request of unansweredRequests) {
-		await realtime.publish("admin:alerts", "timeout:request_unanswered", {
-			requestId: request.id,
-			studentProfileId: request.studentProfileId,
-			createdAt: request.createdAt,
-		});
+		await db
+			.update(schema.serviceRequest)
+			.set({ status: "unattended", respondedAt: now, updatedAt: now })
+			.where(eq(schema.serviceRequest.id, request.id));
+
+		// Notifica o estudante via realtime
+		try {
+			await realtime.publish(
+				`request:${request.id}`,
+				"request:unattended",
+				{ requestId: request.id },
+			);
+		} catch (e) {
+			console.error(
+				"[Timeout] Failed to publish request:unattended:",
+				e,
+			);
+		}
+
+		// Notifica os gestores
+		try {
+			await realtime.publish(
+				"admin:alerts",
+				"timeout:request_unanswered",
+				{
+					requestId: request.id,
+					studentProfileId: request.studentProfileId,
+					createdAt: request.createdAt,
+				},
+			);
+		} catch (e) {
+			console.error(
+				"[Timeout] Failed to publish admin alert:",
+				e,
+			);
+		}
+
+		unattendedCount++;
 	}
 
-	return { notified: unansweredRequests.length };
+	return { notified: unansweredRequests.length, unattended: unattendedCount };
 }
