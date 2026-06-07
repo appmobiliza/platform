@@ -10,7 +10,6 @@ import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
 import { AddressRoute } from "@/components/address";
 import { PlaceCard } from "@/components/place-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
@@ -48,6 +47,7 @@ function RequestFlowSheet() {
 		tripRef,
 		searchState,
 		elapsedSeconds,
+		scholarInfo,
 	} = useRequestFlow();
 
 	return (
@@ -345,28 +345,34 @@ function RequestFlowSheet() {
 				>
 					<View className="gap-6 rounded-md border border-border bg-card px-4 py-4">
 						<View className="flex-row items-start gap-4">
-							<Avatar alt="Avatar de X" className="size-12">
-								<AvatarImage
-									source={{
-										uri: "https://github.com/mrzachnugent.png",
-									}}
-								/>
+							<Avatar
+								alt="Avatar do contribuinte"
+								className="size-12"
+							>
+								{scholarInfo?.image ? (
+									<AvatarImage
+										source={{
+											uri: scholarInfo.image,
+										}}
+									/>
+								) : null}
 								<AvatarFallback>
-									<Text>ZN</Text>
+									<Text>
+										{scholarInfo?.name
+											?.split(" ")
+											.map((n) => n[0])
+											.join("")
+											.slice(0, 2)
+											.toUpperCase() ?? ""}
+									</Text>
 								</AvatarFallback>
 							</Avatar>
 							<View className="flex-1 gap-0.5">
 								<View className="flex-row items-center justify-between gap-3">
 									<Text className="text-[16px] font-semibold leading-6 text-foreground">
-										João Carlos
-									</Text>
-									<Text className="text-[14px] leading-5 text-muted-foreground">
-										desde ago/2024
+										{scholarInfo?.name ?? "Contribuinte"}
 									</Text>
 								</View>
-								<Badge variant={"secondary"}>
-									<Text>Matutino</Text>
-								</Badge>
 							</View>
 						</View>
 						<View className="rounded-md bg-secondary px-4">
@@ -389,7 +395,7 @@ function RequestFlowSheet() {
 					<AddressRoute
 						className="bg-input p-4 rounded-lg"
 						from={{
-							label: `ICAT - Instituto de Ciências Atmosféricas`,
+							label: origin?.abbreviation ?? origin?.name ?? "",
 						}}
 						to={{
 							label: destination?.name ?? "",

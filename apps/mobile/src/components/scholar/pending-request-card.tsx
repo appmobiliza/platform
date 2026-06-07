@@ -46,13 +46,11 @@ export type Service = {
 interface PendingRequestCardProps {
 	service: Service;
 	onAccept: () => void;
-	onReject: () => void;
 }
 
 export function PendingRequestCard({
 	service,
 	onAccept,
-	onReject,
 }: PendingRequestCardProps) {
 	const [hasAccepted, setHasAccepted] = useState(false);
 	const opacity = useSharedValue(0.4);
@@ -178,11 +176,6 @@ export function PendingRequestCard({
 				)}
 
 				<View className="flex-row gap-3">
-					{!hasAccepted && (
-						<Button variant="outline" onPress={onReject}>
-							<Text className="font-semibold">Recusar</Text>
-						</Button>
-					)}
 					<Button
 						onPress={() => {
 							setHasAccepted(true);

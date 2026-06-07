@@ -9,6 +9,12 @@ import { storage } from "./storage";
 export type SearchState = "idle" | "searching" | "unattended" | "error";
 export type Stage = "destination" | "destination-selection" | "start-confirm" | "searching" | "trip";
 
+export interface ScholarInfo {
+	id: string;
+	name: string;
+	image: string | null;
+}
+
 interface PersistedRequestState {
 	activeRequestId: string | null;
 	searchState: SearchState;
@@ -17,6 +23,7 @@ interface PersistedRequestState {
 	destination: Place | null;
 	message: string;
 	requestCreatedAt: number | null; // timestamp ms
+	scholar: ScholarInfo | null;
 }
 
 // ─── Storage keys ────────────────────────────────────────────────────────────
@@ -31,6 +38,7 @@ const DEFAULT_STATE: PersistedRequestState = {
 	destination: null,
 	message: "",
 	requestCreatedAt: null,
+	scholar: null,
 };
 
 // ─── Estado em memória (inicializado do MMKV) ────────────────────────────────

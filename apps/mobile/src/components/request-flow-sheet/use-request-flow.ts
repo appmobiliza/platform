@@ -10,6 +10,7 @@ import {
 	showSearchingNotification,
 	showUnattendedNotification,
 } from "@/lib/request-notifications";
+import type { ScholarInfo } from "@/lib/request-store";
 import {
 	clearRequestState,
 	getRequestState,
@@ -78,6 +79,11 @@ function useRequestFlow() {
 		null,
 	);
 
+	// Dados do contribuinte que aceitou (preenchido pelo evento request:accepted)
+	const [scholarInfo, setScholarInfo] = React.useState<ScholarInfo | null>(
+		() => getRequestState().scholar ?? null,
+	);
+
 	// Mutação para criar a solicitação no backend
 	const { mutateAsync: createRequest, isPending: isCreating } =
 		trpc.requests.create.useMutation();
@@ -141,11 +147,12 @@ function useRequestFlow() {
 				destination,
 				message,
 				requestCreatedAt: Date.now(),
+				scholar: scholarInfo,
 			});
 		} else {
 			clearRequestState();
 		}
-	}, [activeRequestId, searchState, origin, destination, message]);
+	}, [activeRequestId, searchState, origin, destination, message, scholarInfo]);
 
 	// ─── Restauração de sessão ──────────────────────────────────────────────
 	//
@@ -157,13 +164,11 @@ function useRequestFlow() {
 	const hasPersistedRequest =
 		persistedState.activeRequestId && persistedState.searchState !== "idle";
 
-	const {
-		data: historyData,
-		isLoading: isHistoryLoading,
-	} = trpc.requests.studentHistory.useInfiniteQuery(
-		{ limit: 50 },
-		{ enabled: hasPersistedRequest },
-	);
+	const { data: historyData, isLoading: isHistoryLoading } =
+		trpc.requests.studentHistory.useInfiniteQuery(
+			{ limit: 50 },
+			{ enabled: hasPersistedRequest },
+		);
 
 	// Guarda se já processamos a restauração
 	const restorationDoneRef = React.useRef(false);
@@ -193,14 +198,38 @@ function useRequestFlow() {
 
 		const status: string = current.status;
 
+		if (status === "completed") {
+			// Já foi concluído enquanto estávamos fora — limpa e sai
+			clearTimers();
+			setSearchState("idle");
+			setElapsedSeconds(0);
+			setActiveRequestId(null);
+			clearRequestState();
+			cancelAllNotifications();
+			router.back();
+			return;
+		}
+
 		if (
 			status === "accepted" ||
-			status === "ongoing" ||
-			status === "completed"
+			status === "ongoing"
 		) {
 			// Já foi aceito enquanto estávamos fora — vai direto pra trip
 			setActiveRequestId(requestId);
 			setSearchState("idle");
+
+			// Restaura scholar do estado persistido ou extrai do histórico
+			if (persistedState.scholar) {
+				setScholarInfo(persistedState.scholar);
+			} else if (current.attendance?.scholarProfile?.user) {
+				const user = current.attendance.scholarProfile.user;
+				setScholarInfo({
+					id: user.id,
+					name: user.name ?? "",
+					image: user.image ?? null,
+				});
+			}
+
 			openStage("trip");
 		} else if (status === "unattended") {
 			setActiveRequestId(requestId);
@@ -404,7 +433,13 @@ function useRequestFlow() {
 				timeoutRef.current = null;
 			}
 		};
-	}, [searchState, activeRequestId, elapsedSeconds, markUnattended, clearTimers]);
+	}, [
+		searchState,
+		activeRequestId,
+		elapsedSeconds,
+		markUnattended,
+		clearTimers,
+	]);
 
 	// ─── Inscrição em eventos de realtime ──────────────────────────────────
 
@@ -418,11 +453,26 @@ function useRequestFlow() {
 			const client = await getRealtimeClient();
 			if (cancelled) return;
 
-			const onAccepted = () => {
+			const onAccepted = (data: unknown) => {
 				clearTimers();
 				setSearchState("idle");
 				setElapsedSeconds(0);
 				cancelAllNotifications();
+
+				// Extrai dados do contribuinte do payload do evento
+				const payload = data as {
+					scholarId?: string;
+					scholarName?: string;
+					scholarImage?: string | null;
+				};
+				if (payload?.scholarId && payload?.scholarName) {
+					setScholarInfo({
+						id: payload.scholarId,
+						name: payload.scholarName,
+						image: payload.scholarImage ?? null,
+					});
+				}
+
 				showAcceptedNotification();
 				transitionTo("trip");
 			};
@@ -540,6 +590,7 @@ function useRequestFlow() {
 		handleDismiss,
 		message,
 		origin,
+		scholarInfo,
 		searchState,
 		elapsedSeconds,
 		setOrigin,

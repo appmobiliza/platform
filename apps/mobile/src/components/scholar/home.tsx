@@ -389,6 +389,23 @@ export function ScholarHome() {
 			},
 		});
 
+	// ─── Aceitar solicitação ────────────────────────────────────────────────
+
+	const { mutate: acceptRequest, isPending: isAccepting } =
+		trpc.requests.accept.useMutation({
+			onSuccess: (_, variables) => {
+				utils.requests.pending.invalidate();
+				router.push(`/travel?requestId=${variables.requestId}`);
+			},
+			onError: (error) => {
+				console.error("[acceptRequest] Erro:", error.message);
+				Alert.alert(
+					"Erro ao aceitar solicitação",
+					error.message ?? "Tente novamente mais tarde.",
+				);
+			},
+		});
+
 	// ─── Determinar estado do turno ──────────────────────────────────────────
 
 	const currentShift = useMemo(
@@ -638,9 +655,10 @@ export function ScholarHome() {
 											key={item.id}
 											service={item}
 											onAccept={() =>
-												router.push("/travel")
+												acceptRequest({
+													requestId: item.id,
+												})
 											}
-											onReject={() => undefined}
 										/>
 									))}
 								</View>

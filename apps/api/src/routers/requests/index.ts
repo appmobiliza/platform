@@ -3,6 +3,7 @@ import { router } from "@mobiliza/trpc";
 import { managerList } from "./manager/managerList.js";
 import { accept } from "./scholar/accept.js";
 import { complete } from "./scholar/complete.js";
+import { getAttendanceById } from "./scholar/getAttendanceById.js";
 import { pending } from "./scholar/pending.js";
 import { scholarHistory } from "./scholar/scholarHistory.js";
 import { start } from "./scholar/start.js";
@@ -28,4 +29,5 @@ export const requestsRouter = router({
 	scholarHistory,
 	pending,
 	managerList,
+	getAttendanceById,
 });

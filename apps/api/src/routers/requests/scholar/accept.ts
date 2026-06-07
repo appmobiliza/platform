@@ -73,6 +73,7 @@ export const accept = scholarProcedure
 						requestId: input.requestId,
 						scholarId: ctx.session.user.id,
 						scholarName: ctx.session.user.name,
+						scholarImage: ctx.session.user.image ?? null,
 					},
 				);
 			} catch (publishError) {

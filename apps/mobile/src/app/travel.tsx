@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { disabilityTypeLabels } from "@mobiliza/contracts";
 
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, Clock } from "lucide-react-native";
-import { ScrollView, View } from "react-native";
+import { ActivityIndicator, Alert, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddressRoute } from "@/components/address";
@@ -10,12 +10,124 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
+import { trpc } from "@/lib/trpc/client";
+
 export default function TravelScreen() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
 
-	// Estado simulando a progressão da viagem: false = "Aguardando encontro", true = "Em andamento"
-	const [isDuring, setIsDuring] = useState(false);
+	const { requestId } = useLocalSearchParams<{ requestId: string }>();
+
+	// ─── Fetch attendance details ─────────────────────────────────────────────
+
+	const {
+		data: attendance,
+		isLoading,
+		error,
+	} = trpc.requests.getAttendanceById.useQuery(
+		{ requestId: requestId ?? "" },
+		{
+			enabled: !!requestId,
+		},
+	);
+
+	// ─── Mutations ────────────────────────────────────────────────────────────
+
+	const utils = trpc.useUtils();
+
+	const { mutate: startAttendance, isPending: isStarting } =
+		trpc.requests.start.useMutation({
+			onSuccess: () => {
+				utils.requests.getAttendanceById.invalidate({ requestId });
+				utils.requests.pending.invalidate();
+			},
+			onError: (error) => {
+				console.error("[startAttendance] Erro:", error.message);
+				Alert.alert(
+					"Erro ao iniciar atendimento",
+					error.message ?? "Tente novamente mais tarde.",
+				);
+			},
+		});
+
+	const { mutate: completeAttendance, isPending: isCompleting } =
+		trpc.requests.complete.useMutation({
+			onSuccess: () => {
+				utils.requests.getAttendanceById.invalidate({ requestId });
+				utils.shiftLogs.getActiveShift.invalidate();
+				router.back();
+			},
+			onError: (error) => {
+				console.error("[completeAttendance] Erro:", error.message);
+				Alert.alert(
+					"Erro ao concluir atendimento",
+					error.message ?? "Tente novamente mais tarde.",
+				);
+			},
+		});
+
+	// ─── Derived data ─────────────────────────────────────────────────────────
+
+	const studentName = attendance?.request?.studentProfile?.user?.name ?? "";
+	const studentInitials = studentName
+		.split(" ")
+		.map((n) => n[0])
+		.join("")
+		.slice(0, 2)
+		.toUpperCase();
+
+	const disability = attendance?.request?.studentProfile?.disabilities
+		?.map((d) => disabilityTypeLabels[d.disabilityType])
+		.join(", ");
+
+	const observation = attendance?.request?.notes ?? "";
+
+	const originName = attendance?.request?.originLocation?.name ?? "";
+	const destinationName =
+		attendance?.request?.destinationLocation?.name ?? "";
+
+	// Determinar se o deslocamento já foi iniciado
+	const isDuring = !!attendance?.startedAt;
+	const hasCompleted = !!attendance?.completedAt;
+
+	// ─── Handlers ─────────────────────────────────────────────────────────────
+
+	const handleStart = () => {
+		if (!requestId) return;
+		startAttendance({ requestId });
+	};
+
+	const handleComplete = () => {
+		if (!requestId) return;
+		completeAttendance({ requestId });
+	};
+
+	// ─── Loading / Error ──────────────────────────────────────────────────────
+
+	if (isLoading) {
+		return (
+			<View className="flex-1 items-center justify-center bg-background">
+				<ActivityIndicator size="large" />
+			</View>
+		);
+	}
+
+	if (error || !attendance) {
+		return (
+			<View className="flex-1 items-center justify-center bg-background px-6">
+				<Text className="text-lg font-bold text-foreground mb-2">
+					Atendimento não encontrado
+				</Text>
+				<Text className="text-muted-foreground text-center mb-6">
+					{error?.message ??
+						"Não foi possível carregar os dados do atendimento."}
+				</Text>
+				<Button onPress={() => router.back()}>
+					<Text>Voltar</Text>
+				</Button>
+			</View>
+		);
+	}
 
 	return (
 		<View className="flex-1 bg-background">
@@ -32,8 +144,8 @@ export default function TravelScreen() {
 						onPress={() => router.back()}
 					/>
 
-					{/* Header Right Content (Avatar and Timer) */}
-					<View className="flex-row items-center">
+					{/* Timer (only while in progress) */}
+					{isDuring && !hasCompleted && (
 						<View className="bg-primary-foreground/20 px-3 py-1.5 rounded-full flex-row items-center">
 							<Clock
 								color="#FFFFFF"
@@ -41,29 +153,31 @@ export default function TravelScreen() {
 								className="mr-1.5"
 							/>
 							<Text className="text-primary-foreground text-sm mb-0.5 font-semibold">
-								{isDuring ? "05:21" : "00:00"}
+								Em andamento
 							</Text>
 						</View>
-					</View>
+					)}
 				</View>
 
 				{/* Student Profile Info */}
 				<View className="flex-row items-center">
 					<Avatar
-						alt="Maria Aparecida's Avatar"
+						alt={`${studentName}'s Avatar`}
 						className="h-16 w-16 mr-4"
 					>
 						<AvatarFallback>
-							<Text>MA</Text>
+							<Text>{studentInitials}</Text>
 						</AvatarFallback>
 					</Avatar>
 					<View>
 						<Text className="font-bold text-2xl text-primary-foreground">
-							Maria Aparecida
+							{studentName}
 						</Text>
-						<Text className="text-primary-foreground/80 font-medium">
-							Deficiência visual
-						</Text>
+						{disability && (
+							<Text className="text-primary-foreground/80 font-medium">
+								{disability}
+							</Text>
+						)}
 					</View>
 				</View>
 			</View>
@@ -80,11 +194,11 @@ export default function TravelScreen() {
 					</Text>
 					<AddressRoute
 						from={{
-							label: "Instituto de Computação",
+							label: originName,
 							description: "Ponto de partida",
 						}}
 						to={{
-							label: "Biblioteca Central",
+							label: destinationName,
 							description: "Destino",
 						}}
 						shouldShowRoute
@@ -93,66 +207,65 @@ export default function TravelScreen() {
 				</View>
 
 				{/* Observation Card */}
-				<View className="bg-card p-4 border border-border rounded-lg">
-					<Text className="text-muted-foreground font-semibold text-xs mb-3 tracking-widest uppercase">
-						OBSERVAÇÃO DO ESTUDANTE
-					</Text>
-					<Text className="text-foreground leading-relaxed font-medium">
-						"Prefere áudio descrição contínua durante todo o
-						percurso."
-					</Text>
-				</View>
-
-				{/* Extra Info during travel */}
-				{isDuring && (
-					<View className="flex-row gap-4 mb-6">
-						<View className="flex-1 bg-card border border-border rounded-lg p-4 items-center justify-center">
-							<Text className="text-muted-foreground text-sm mb-1">
-								Início
-							</Text>
-							<Text className="text-foreground font-bold text-lg">
-								10h17
-							</Text>
-						</View>
-						<View className="flex-1 bg-card border border-border rounded-lg p-4 items-center justify-center">
-							<Text className="text-muted-foreground text-sm mb-1 text-center">
-								Distância restante
-							</Text>
-							<Text className="text-foreground font-bold text-lg">
-								2,1km
-							</Text>
-						</View>
+				{observation && (
+					<View className="bg-card p-4 border border-border rounded-lg">
+						<Text className="text-muted-foreground font-semibold text-xs mb-3 tracking-widest uppercase">
+							OBSERVAÇÃO DO ESTUDANTE
+						</Text>
+						<Text className="text-foreground leading-relaxed font-medium">
+							"{observation}"
+						</Text>
 					</View>
 				)}
 			</ScrollView>
 
 			{/* Footer Actions */}
 			<View className="px-6 pb-8 pt-4 gap-2">
-				{isDuring ? (
+				{hasCompleted ? (
 					<Button
 						size="lg"
 						onPress={() => router.back()}
 						className="w-full rounded-xl py-7"
 					>
-						<Text>Concluir atendimento</Text>
+						<Text>Voltar ao início</Text>
+					</Button>
+				) : isDuring ? (
+					<Button
+						size="lg"
+						onPress={handleComplete}
+						disabled={isCompleting}
+						className="w-full rounded-xl py-7"
+					>
+						{isCompleting ? (
+							<ActivityIndicator size={20} color="white" />
+						) : (
+							<Text>Concluir atendimento</Text>
+						)}
 					</Button>
 				) : (
 					<Button
 						size="lg"
-						onPress={() => setIsDuring(true)}
+						onPress={handleStart}
+						disabled={isStarting}
 						className="w-full rounded-xl py-7"
 					>
-						<Text>Aguardando encontro...</Text>
+						{isStarting ? (
+							<ActivityIndicator size={20} color="white" />
+						) : (
+							<Text>Aguardando encontro...</Text>
+						)}
 					</Button>
 				)}
 
-				<Button
-					variant="outline"
-					className="bg-transparent dark:bg-transparent"
-					size={"lg"}
-				>
-					<Text>Reportar problema</Text>
-				</Button>
+				{!hasCompleted && (
+					<Button
+						variant="outline"
+						className="bg-transparent dark:bg-transparent"
+						size={"lg"}
+					>
+						<Text>Reportar problema</Text>
+					</Button>
+				)}
 			</View>
 		</View>
 	);
