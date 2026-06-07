@@ -1,5 +1,6 @@
 import * as Location from "expo-location";
 import { useFocusEffect, useRouter } from "expo-router";
+import { Clock, MapPin } from "lucide-react-native";
 import { useCallback } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -146,7 +147,7 @@ function StudentHome() {
 							className="flex-1"
 							title="CECA"
 							description="Ontem, 16h12"
-							icon={{ name: "clock" }}
+							icon={{ as: Clock }}
 						/>
 						<PlaceCard
 							className="flex-1"
@@ -174,17 +175,17 @@ function StudentHome() {
 						<PlaceCard
 							title="Restaurante Universitário"
 							description="Último deslocamento há 2 dias"
-							icon={{ name: "map" }}
+							icon={{ as: MapPin }}
 						/>
 						<PlaceCard
 							title="Reitoria"
 							description="Último deslocamento há 6 dias"
-							icon={{ name: "map" }}
+							icon={{ as: MapPin }}
 						/>
 						<PlaceCard
 							title="Biblioteca Central"
 							description="Último deslocamento há 10 dias"
-							icon={{ name: "map" }}
+							icon={{ as: MapPin }}
 						/>
 						<PlaceCard
 							title="Instituto de Computação"

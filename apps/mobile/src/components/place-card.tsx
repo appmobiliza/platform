@@ -1,6 +1,7 @@
-import { Clock, MapPin, Star } from "lucide-react-native";
+import { MapPin } from "lucide-react-native";
 import { Pressable, View } from "react-native";
 
+import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
 import { cn } from "@/lib/utils";
@@ -9,9 +10,10 @@ interface PlaceCardProps {
 	title: string;
 	description: string;
 	icon?: {
-		name: "clock" | "star" | "map";
+		as: React.ComponentType<{ size?: number; color?: string }>;
 		className?: string;
 		label?: string;
+		color?: string;
 	};
 	variant?: "default" | "bordered";
 	className?: string;
@@ -22,15 +24,18 @@ interface PlaceCardProps {
 export const PlaceCard = ({
 	title,
 	description,
-	icon = { name: "map" },
+	icon = { as: MapPin },
 	variant = "bordered",
 	className,
 	onPress,
 	children,
 }: PlaceCardProps) => {
-	const { name, className: iconClassName, label } = icon;
-	const IconComponent =
-		name === "clock" ? Clock : name === "star" ? Star : MapPin;
+	const {
+		as: IconComponent = MapPin,
+		className: iconClassName,
+		label,
+		color,
+	} = icon;
 
 	return (
 		<Pressable
@@ -52,7 +57,11 @@ export const PlaceCard = ({
 						variant === "bordered" && "p-2 rounded-md bg-primary",
 					)}
 				>
-					<IconComponent color="white" size={18} />
+					<Icon
+						icon={IconComponent}
+						color={color ?? "white"}
+						size={18}
+					/>
 					{label && (
 						<Text className="text-xs" numberOfLines={1}>
 							{label}

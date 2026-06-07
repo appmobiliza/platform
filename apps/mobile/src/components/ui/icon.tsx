@@ -11,7 +11,9 @@ interface IconProps {
 
 export function Icon({ icon: IconComponent, color, ...props }: IconProps) {
 	const themeColor = useUnstableNativeVariable(color || "currentColor");
+	const isThemeColor = color?.startsWith("--");
+
 	return (
-		<IconComponent color={color ? themeColor : "currentColor"} {...props} />
+		<IconComponent color={isThemeColor ? themeColor : color} {...props} />
 	);
 }

@@ -1,6 +1,9 @@
 // address-route-input.tsx
 
-import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
+import {
+	BottomSheetFlatList,
+	type BottomSheetFlatListMethods,
+} from "@gorhom/bottom-sheet";
 import { Check, CircleX, MapPin, Navigation, Route } from "lucide-react-native";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
@@ -155,6 +158,7 @@ function AddressRouteInput({
 
 	const originInputRef = useRef<TextInput>(null);
 	const destinationInputRef = useRef<TextInput>(null);
+	const flatListRef = useRef<BottomSheetFlatListMethods>(null);
 
 	const activateOrigin = useCallback(() => setActiveField("origin"), []);
 	const activateDestination = useCallback(
@@ -174,6 +178,16 @@ function AddressRouteInput({
 			destinationInputRef.current?.focus();
 		});
 	}, []);
+
+	// Scroll to top when the user switches between origin/destination fields
+	useEffect(() => {
+		if (activeField !== null) {
+			flatListRef.current?.scrollToOffset({
+				offset: 0,
+				animated: true,
+			});
+		}
+	}, [activeField]);
 
 	// Stable reference points — only recompute when selections change,
 	// not on every keystroke.
@@ -389,6 +403,7 @@ function AddressRouteInput({
 			</View>
 
 			<BottomSheetFlatList
+				ref={flatListRef}
 				data={suggestions}
 				keyExtractor={(item) => item.id}
 				contentContainerClassName={"px-4 py-4"}
