@@ -1,24 +1,20 @@
 import { useRouter } from "expo-router";
-import {
-	Clock,
-	MapPin,
-	Palmtree,
-	Power,
-} from "lucide-react-native";
+import { Clock, MapPin, Palmtree, Power } from "lucide-react-native";
 import { type ReactNode, useMemo, useState } from "react";
 import { FlatList, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 
 import { Logo } from "@/assets/logo";
-import { Badge } from "../ui/badge";
-import { Icon } from "../ui/icon";
+
 import {
 	PendingRequestCard,
 	type Service,
@@ -232,25 +228,20 @@ const historicalServicesMock: Service[] = [
 export function ScholarHome() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
-	const [shiftState, setShiftState] = useState<ShiftState>("off-duty");
+	const [shiftState, setShiftState] = useState<ShiftState>("during");
 
 	// Dados reais do backend
-	const { data: availableRequests = [] } = trpc.requests.available.useQuery(
+	const { data: availableRequests = [] } = trpc.requests.pending.useQuery(
 		undefined,
 		{
 			enabled: shiftState === "during",
 		},
 	);
 
-	// Subscription para atualizações em tempo real
+	// Nota: Atualizações em tempo real serão integradas via RealtimeClientAdapter
+	// (Supabase/Ably/WebSocket) quando implementado.
+	// Por enquanto, as solicitações pendentes são atualizadas manualmente.
 	const utils = trpc.useUtils();
-	trpc.requests.onAvailable.useSubscription(undefined, {
-		enabled: shiftState === "during",
-		onData() {
-			// Quando um evento chega, invalidamos a query para forçar o refetch
-			utils.requests.available.invalidate();
-		},
-	});
 
 	// Transformação de dados do tRPC para o formato esperado pelo componente UI
 	const pendingServices: Service[] = useMemo(() => {

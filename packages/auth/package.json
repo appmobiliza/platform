@@ -14,14 +14,12 @@
 			"default": "./dist/index.js"
 		},
 		"./proxy": {
-			"types": "./dist/proxy.d.ts",
+			"types": "./src/proxy.ts",
 			"default": "./dist/proxy.js"
 		},
 		"./client": {
-			"default": "./dist/client/index.js"
-		},
-		"./client/expo": {
-			"default": "./dist/client/expo.js"
+			"types": "./src/client.ts",
+			"default": "./dist/client.js"
 		},
 		"./server": {
 			"types": "./dist/server.d.ts",

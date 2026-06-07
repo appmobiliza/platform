@@ -26,7 +26,7 @@ export function StepIndicator({ steps, currentStepId }: StepIndicatorProps) {
 							className={cn(
 								"text-sm font-semibold mb-2 text-muted-foreground",
 								isActive &&
-									"text-primary web:dark:brightness-150 native:text-primary-foreground",
+									"web:dark:brightness-150 text-primary",
 							)}
 						>
 							{step.title}
@@ -35,7 +35,7 @@ export function StepIndicator({ steps, currentStepId }: StepIndicatorProps) {
 							className={cn(
 								"h-1 w-full rounded-full bg-muted-foreground",
 								{
-									"bg-primary web:dark:brightness-150 native:bg-primary-foreground":
+									"bg-primary web:dark:brightness-150":
 										isActive,
 								},
 							)}

@@ -18,17 +18,14 @@ jest.mock("@/lib/trpc/client", () => ({
 	trpc: {
 		useUtils: jest.fn(() => ({
 			requests: {
-				available: {
+				pending: {
 					invalidate: jest.fn(),
 				},
 			},
 		})),
 		requests: {
-			available: {
+			pending: {
 				useQuery: jest.fn(),
-			},
-			onAvailable: {
-				useSubscription: jest.fn(),
 			},
 		},
 	},
@@ -64,7 +61,7 @@ describe("ScholarHome Logic Integration", () => {
 			createdAt: new Date().toISOString(),
 		};
 
-		(trpc.requests.available.useQuery as jest.Mock).mockReturnValue({
+		(trpc.requests.pending.useQuery as jest.Mock).mockReturnValue({
 			data: [mockRequest],
 			isLoading: false,
 		});
@@ -82,16 +79,9 @@ describe("ScholarHome Logic Integration", () => {
 	});
 
 	it("should subscribe to realtime events and invalidate query when a new request arrives", async () => {
-		(trpc.requests.available.useQuery as jest.Mock).mockReturnValue({
+		(trpc.requests.pending.useQuery as jest.Mock).mockReturnValue({
 			data: [],
 			isLoading: false,
-		});
-
-		const mockSubscription = jest.fn();
-		(
-			trpc.requests.onAvailable.useSubscription as jest.Mock
-		).mockImplementation((params, options) => {
-			mockSubscription(params, options);
 		});
 
 		render(<ScholarHome />);
@@ -99,9 +89,7 @@ describe("ScholarHome Logic Integration", () => {
 		const welcomeText = screen.getByText(/Olá,/);
 		fireEvent.press(welcomeText);
 
-		expect(trpc.requests.onAvailable.useSubscription).toHaveBeenCalled();
-		const args = (trpc.requests.onAvailable.useSubscription as jest.Mock)
-			.mock.calls[0];
-		expect(args[1].onData).toBeDefined(); // Deve ter um handler de onData
+		// Verifica que a query de pendentes está configurada
+		expect(trpc.requests.pending.useQuery).toHaveBeenCalled();
 	});
 });

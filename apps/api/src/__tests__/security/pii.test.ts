@@ -12,8 +12,8 @@ import { describe, expect, test } from "@jest/globals";
 
 import { appRouter } from "../../router";
 
-describe("Security: PII Leak in requests.available", () => {
-	test("Available requests should not expose student email or full name", async () => {
+describe("Security: PII Leak in requests.pending", () => {
+	test("Pending requests should not expose student email or full name", async () => {
 		// 1. Setup mock data
 		const studentUser = await db
 			.insert(user)

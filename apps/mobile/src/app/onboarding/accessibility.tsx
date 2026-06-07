@@ -94,6 +94,7 @@ export default function AccessibilityInfo() {
 					"Erro",
 					"Não foi possível finalizar seu cadastro. Tente novamente.",
 				);
+				setIsSubmitting(false);
 			}
 		},
 		(errors) => {

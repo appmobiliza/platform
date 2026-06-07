@@ -1,13 +1,13 @@
 "use client";
 
-import { authClient } from "@mobiliza/auth/client";
-
 import { Loader2 } from "lucide-react";
 import Image, { type StaticImageData } from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+
+import { authClient } from "@/lib/auth/client";
 
 type GoogleSignInButtonProps = {
 	googleLogo: StaticImageData;

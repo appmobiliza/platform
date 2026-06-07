@@ -1,7 +1,5 @@
 "use client";
 
-import { authClient } from "@mobiliza/auth/client";
-
 import {
 	BellIcon,
 	EllipsisVertical,
@@ -30,6 +28,7 @@ import {
 } from "@/components/ui/sidebar";
 
 import { useLogout } from "@/hooks/use-logout";
+import { authClient } from "@/lib/auth/client";
 
 export function NavUser() {
 	const { data: session, isPending } = authClient.useSession();

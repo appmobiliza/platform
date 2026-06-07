@@ -4,11 +4,10 @@ import {
 	BottomSheetFlatList,
 	type BottomSheetFlatListMethods,
 } from "@gorhom/bottom-sheet";
-import { Check, CircleX, MapPin, Navigation, Route } from "lucide-react-native";
+import { Check, CircleX, Locate, MapPin } from "lucide-react-native";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
 
-import { StatusMessage } from "@/components/status-message";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
@@ -72,6 +71,7 @@ const SuggestionRow = memo(function SuggestionRow({
 	distance,
 	onPress,
 }: SuggestionRowProps) {
+	const isCurrentLocation = item.id === CURRENT_LOCATION;
 	const handlePress = useCallback(() => onPress(item), [item, onPress]);
 
 	return (
@@ -80,8 +80,11 @@ const SuggestionRow = memo(function SuggestionRow({
 			description={item.name}
 			onPress={handlePress}
 			icon={{
-				name: "map",
+				as: isCurrentLocation ? Locate : MapPin,
 				label: distance,
+				className: isCurrentLocation
+					? "bg-primary rounded-full p-3 w-10"
+					: "w-10",
 			}}
 			className={cn("p-4 border-b border-border rounded-lg", {
 				"bg-input border-none": isSelected,
@@ -406,7 +409,7 @@ function AddressRouteInput({
 				ref={flatListRef}
 				data={suggestions}
 				keyExtractor={(item) => item.id}
-				contentContainerClassName={"px-4 py-4"}
+				contentContainerClassName={"px-2 py-4"}
 				renderItem={renderSuggestion}
 				keyboardShouldPersistTaps="handled"
 				showsVerticalScrollIndicator={false}

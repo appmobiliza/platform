@@ -22,7 +22,7 @@ export const create = protectedProcedure
 			// Notifica bolsistas disponíveis via realtime
 			try {
 				await ctx.realtime.publish(
-					"requests:available",
+					"requests:pending",
 					"request:new",
 					{
 						requestId: request.id,

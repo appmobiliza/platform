@@ -51,6 +51,28 @@ export const auth = betterAuth({
 		},
 	},
 
+	/*
+	 * Linking de contas OAuth a usuários existentes.
+	 *
+	 * O Google é marcado como provedor confiável — quando um usuário faz
+	 * login com Google e o e-mail bate com um usuário local, o Better Auth
+	 * vincula a conta OAuth automaticamente.
+	 *
+	 * A verificação de e-mail local não é exigida porque:
+	 * - Usuários criados por gestores têm emailVerified: true
+	 * - Usuários que entram com Google têm emailVerified: true (retornado
+	 *   pelo próprio Google no OAuth)
+	 *
+	 * trustedProviders garante que o Google seja sempre tratado como
+	 * provedor confiável para linking implícito.
+	 */
+	account: {
+		accountLinking: {
+			enabled: true,
+			trustedProviders: ["google"],
+		},
+	},
+
 	// Futuramente podemos restringir o login apenas para emails do domínio da universidade, mas por enquanto é melhor deixar aberto para facilitar testes e desenvolvimento.
 	// O callback de signIn pode ser reativado quando quisermos implementar essa restrição.
 	/* callbacks: {

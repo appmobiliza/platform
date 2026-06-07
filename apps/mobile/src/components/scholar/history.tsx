@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { Clock } from "lucide-react-native";
+import { Clock, ClockFading } from "lucide-react-native";
 import { useCallback, useMemo } from "react";
 import {
 	ActivityIndicator,
@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { StatusMessage } from "@/components/status-message";
+import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
 import { formatDateLong, getDateKey } from "@/lib/date";
@@ -141,6 +142,14 @@ export function ScholarHistory() {
 				}
 				ListEmptyComponent={
 					<StatusMessage
+						className="mt-48 max-w-2/3 mx-auto"
+						icon={
+							<Icon
+								icon={ClockFading}
+								size={48}
+								color="--foreground"
+							/>
+						}
 						title="Por enquanto está vazio..."
 						description="Os deslocamentos que você atendeu aparecerão aqui!"
 					/>

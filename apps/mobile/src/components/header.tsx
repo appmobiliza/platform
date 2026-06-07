@@ -26,7 +26,7 @@ export function Header({
 }: HeaderProps) {
 	const router = useRouter();
 
-	const showBackButton = Boolean(href !== undefined || onClick);
+	const showBackButton = Boolean(href !== null || onClick);
 
 	const handlePress = () => {
 		if (onClick) {
