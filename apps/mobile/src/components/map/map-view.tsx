@@ -22,7 +22,7 @@ import type { Place, Stage } from "../request-flow-sheet/types";
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const LIGHT_STYLE = "https://tiles.openfreemap.org/styles/liberty";
-const DARK_STYLE = "https://tiles.openfreemap.org/styles/osm-liberty-dark";
+const DARK_STYLE = "https://tiles.openfreemap.org/styles/dark";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -308,11 +308,13 @@ export default function MapView({
 						<Layer
 							id="route-line"
 							type="line"
-							style={{
-								lineColor: primaryColor,
-								lineWidth: routeDashed ? 3 : 4,
-								lineOpacity: 0.9,
-								lineDasharray: routeDashed ? [2, 4] : undefined,
+							paint={{
+								"line-color": primaryColor,
+								"line-width": routeDashed ? 3 : 4,
+								"line-opacity": 0.9,
+								...(routeDashed
+									? { "line-dasharray": [2, 4] }
+									: {}),
 							}}
 						/>
 					</GeoJSONSource>

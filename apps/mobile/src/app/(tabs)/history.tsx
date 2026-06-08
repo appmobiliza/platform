@@ -121,6 +121,18 @@ function StudentHistory() {
 									)}
 									href={`/history/${featured.id}`}
 									status={featured.status}
+									originLatitude={
+										featured.originLocation?.latitude
+									}
+									originLongitude={
+										featured.originLocation?.longitude
+									}
+									destinationLatitude={
+										featured.destinationLocation?.latitude
+									}
+									destinationLongitude={
+										featured.destinationLocation?.longitude
+									}
 								/>
 							</View>
 						) : null}

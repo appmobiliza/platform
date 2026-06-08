@@ -2,15 +2,18 @@ import { Link } from "expo-router";
 import { ClockAlert } from "lucide-react-native";
 import { Text, View } from "react-native";
 
+import MapView from "@/components/map/map-view";
 import { Icon } from "@/components/ui/icon";
-
-// import MapView from "@/components/ui/map";
 
 interface FeaturedHistoryCardProps {
 	title: string;
 	date: string;
 	href: string;
 	status?: string;
+	originLatitude?: number;
+	originLongitude?: number;
+	destinationLatitude?: number;
+	destinationLongitude?: number;
 }
 
 export const FeaturedHistoryCard = ({
@@ -18,8 +21,24 @@ export const FeaturedHistoryCard = ({
 	date,
 	href,
 	status,
+	originLatitude,
+	originLongitude,
+	destinationLatitude,
+	destinationLongitude,
 }: FeaturedHistoryCardProps) => {
 	const isUnattended = status === "unattended";
+	const hasCoords =
+		originLatitude != null &&
+		originLongitude != null &&
+		destinationLatitude != null &&
+		destinationLongitude != null;
+
+	const routePath: Array<[number, number]> | undefined = hasCoords
+		? [
+				[originLongitude!, originLatitude!],
+				[destinationLongitude!, destinationLatitude!],
+			]
+		: undefined;
 
 	return (
 		<Link href={href} push asChild>
@@ -29,28 +48,33 @@ export const FeaturedHistoryCard = ({
 				accessibilityRole="button"
 				className="rounded-lg overflow-hidden mb-6 border border-white shadow-sm"
 			>
-				<View className="h-40 w-full bg-card">
-					{/* <MapView
-					style={{ flex: 1 }}
-					initialRegion={{
-						latitude: -9.5539,
-						longitude: -35.7722, // Approximate UFAL coordinates
-						latitudeDelta: 0.005,
-						longitudeDelta: 0.005,
-					}}
-					scrollEnabled={false}
-					zoomEnabled={false}
-					pitchEnabled={false}
-					rotateEnabled={false}
-				/> */}
+				<View className="h-40 w-full">
+					{hasCoords ? (
+						<MapView
+							routePath={routePath}
+							interactive={false}
+							initialViewState={{
+								latitude:
+									(originLatitude! + destinationLatitude!) /
+									2,
+								longitude:
+									(originLongitude! + destinationLongitude!) /
+									2,
+								zoom: 15,
+							}}
+						/>
+					) : null}
 					{isUnattended && (
-						<View className="flex-1 items-center justify-center">
+						<View className="absolute inset-0 items-center justify-center bg-card">
 							<Icon
 								icon={ClockAlert}
 								size={48}
 								color="--muted-foreground"
 							/>
 						</View>
+					)}
+					{!hasCoords && !isUnattended && (
+						<View className="flex-1 bg-card h-40" />
 					)}
 				</View>
 				<View

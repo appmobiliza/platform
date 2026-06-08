@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
-import { Clock, ClockAlert, RotateCcw, Star } from "lucide-react-native";
+import { Clock, ClockAlert } from "lucide-react-native";
 import { useMemo } from "react";
 import { ActivityIndicator, View } from "react-native";
 
@@ -8,7 +8,6 @@ import { HistoryDetailLayout } from "@/layout/history-details";
 import ScholarHistoryDetails from "@/components/scholar/history-details";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
@@ -88,10 +87,32 @@ function StudentHistoryDetails() {
 		</Badge>
 	) : null;
 
+	const hasLocations =
+		!!request.originLocation?.latitude &&
+		!!request.originLocation?.longitude &&
+		!!request.destinationLocation?.latitude &&
+		!!request.destinationLocation?.longitude;
+
 	return (
 		<HistoryDetailLayout
 			title={title}
 			subtitle={subtitle}
+			mapOrigin={
+				hasLocations
+					? {
+							latitude: request.originLocation!.latitude,
+							longitude: request.originLocation!.longitude,
+						}
+					: null
+			}
+			mapDestination={
+				hasLocations
+					? {
+							latitude: request.destinationLocation!.latitude,
+							longitude: request.destinationLocation!.longitude,
+						}
+					: null
+			}
 			mapBadges={statusBadge}
 			profile={
 				isUnattended || isCancelled ? (

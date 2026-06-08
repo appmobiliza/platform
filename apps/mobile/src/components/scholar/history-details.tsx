@@ -70,10 +70,32 @@ export default function ScholarHistoryDetails({ attendance }: DetailProps) {
 		? new Date(attendance.completedAt)
 		: null;
 
+	const hasLocations =
+		!!request.originLocation?.latitude &&
+		!!request.originLocation?.longitude &&
+		!!request.destinationLocation?.latitude &&
+		!!request.destinationLocation?.longitude;
+
 	return (
 		<HistoryDetailLayout
 			title={title}
 			subtitle={subtitle}
+			mapOrigin={
+				hasLocations
+					? {
+							latitude: request.originLocation!.latitude,
+							longitude: request.originLocation!.longitude,
+						}
+					: null
+			}
+			mapDestination={
+				hasLocations
+					? {
+							latitude: request.destinationLocation!.latitude,
+							longitude: request.destinationLocation!.longitude,
+						}
+					: null
+			}
 			mapBadges={
 				durationMinutes ? (
 					<Badge className="text-primary-foreground">
