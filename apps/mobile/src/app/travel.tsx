@@ -10,6 +10,11 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
+import {
+	clearActiveAttendance,
+	getActiveAttendance,
+	saveActiveAttendance,
+} from "@/lib/active-attendance-store";
 import { trpc } from "@/lib/trpc/client";
 
 export default function TravelScreen() {
@@ -38,8 +43,17 @@ export default function TravelScreen() {
 	const { mutate: startAttendance, isPending: isStarting } =
 		trpc.requests.start.useMutation({
 			onSuccess: () => {
+				// Atualiza o armazenamento local com a data de início
+				const current = getActiveAttendance();
+				if (current) {
+					saveActiveAttendance({
+						...current,
+						startedAt: new Date().toISOString(),
+					});
+				}
 				utils.requests.getAttendanceById.invalidate({ requestId });
 				utils.requests.pending.invalidate();
+				utils.requests.active.invalidate();
 			},
 			onError: (error) => {
 				console.error("[startAttendance] Erro:", error.message);
@@ -50,11 +64,47 @@ export default function TravelScreen() {
 			},
 		});
 
+	const { mutate: reportIssue, isPending: isReporting } =
+		trpc.requests.reportIssue.useMutation({
+			onSuccess: () => {
+				clearActiveAttendance();
+				utils.requests.getAttendanceById.invalidate({ requestId });
+				utils.requests.pending.invalidate();
+				// Zera o cache imediatamente para evitar que o efeito na home
+				// re-salve o atendimento no armazenamento local com dado obsoleto.
+				utils.requests.active.setData(undefined, null);
+				utils.requests.scholarHistory.invalidate();
+				Alert.alert(
+					"Atendimento cancelado",
+					"O deslocamento foi cancelado.",
+				);
+				router.back();
+			},
+			onError: (error) => {
+				console.error("[reportIssue] Erro:", error.message);
+				Alert.alert(
+					"Erro ao reportar problema",
+					error.message ?? "Tente novamente mais tarde.",
+				);
+			},
+		});
+
 	const { mutate: completeAttendance, isPending: isCompleting } =
 		trpc.requests.complete.useMutation({
 			onSuccess: () => {
+				// Remove do armazenamento local ao concluir
+				clearActiveAttendance();
 				utils.requests.getAttendanceById.invalidate({ requestId });
 				utils.shiftLogs.getActiveShift.invalidate();
+				// Zera o cache imediatamente para evitar que o efeito na home
+				// re-salve o atendimento no armazenamento local com dado obsoleto.
+				utils.requests.active.setData(undefined, null);
+				utils.requests.scholarHistory.invalidate();
+				utils.requests.pending.invalidate();
+				Alert.alert(
+					"Atendimento concluído",
+					"O deslocamento foi finalizado com sucesso.",
+				);
 				router.back();
 			},
 			onError: (error) => {
@@ -100,6 +150,22 @@ export default function TravelScreen() {
 	const handleComplete = () => {
 		if (!requestId) return;
 		completeAttendance({ requestId });
+	};
+
+	const handleReportProblem = () => {
+		if (!requestId) return;
+		Alert.alert(
+			"Reportar problema",
+			"Se houver algum problema com este deslocamento, você pode cancelá-lo.",
+			[
+				{ text: "Voltar", style: "cancel" },
+				{
+					text: "Cancelar atendimento",
+					style: "destructive",
+					onPress: () => reportIssue({ requestId }),
+				},
+			],
+		);
 	};
 
 	// ─── Loading / Error ──────────────────────────────────────────────────────
@@ -225,7 +291,7 @@ export default function TravelScreen() {
 					<Button
 						size="lg"
 						onPress={() => router.back()}
-						className="w-full rounded-xl py-7"
+						className="w-full rounded-xl"
 					>
 						<Text>Voltar ao início</Text>
 					</Button>
@@ -234,7 +300,7 @@ export default function TravelScreen() {
 						size="lg"
 						onPress={handleComplete}
 						disabled={isCompleting}
-						className="w-full rounded-xl py-7"
+						className="w-full rounded-xl"
 					>
 						{isCompleting ? (
 							<ActivityIndicator size={20} color="white" />
@@ -247,7 +313,7 @@ export default function TravelScreen() {
 						size="lg"
 						onPress={handleStart}
 						disabled={isStarting}
-						className="w-full rounded-xl py-7"
+						className="w-full rounded-xl"
 					>
 						{isStarting ? (
 							<ActivityIndicator size={20} color="white" />
@@ -262,8 +328,14 @@ export default function TravelScreen() {
 						variant="outline"
 						className="bg-transparent dark:bg-transparent"
 						size={"lg"}
+						onPress={handleReportProblem}
+						disabled={isReporting}
 					>
-						<Text>Reportar problema</Text>
+						{isReporting ? (
+							<ActivityIndicator size={20} color={"white"} />
+						) : (
+							<Text>Reportar problema</Text>
+						)}
 					</Button>
 				)}
 			</View>

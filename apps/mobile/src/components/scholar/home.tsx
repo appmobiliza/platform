@@ -2,8 +2,8 @@ import { disabilityTypeLabels, getCurrentShift } from "@mobiliza/contracts";
 
 import { useRouter } from "expo-router";
 import {
-	Calendar,
 	Clock,
+	Info,
 	LogIn,
 	MapPin,
 	Palmtree,
@@ -15,6 +15,7 @@ import {
 	useCallback,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import {
@@ -33,12 +34,18 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
+import {
+	clearActiveAttendance,
+	saveActiveAttendance,
+	useActiveAttendance,
+} from "@/lib/active-attendance-store";
 import { getRealtimeClient } from "@/lib/realtime";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 
 import { Logo } from "@/assets/logo";
 
+import { AddressRoute } from "../address";
 import {
 	PendingRequestCard,
 	type Service,
@@ -335,6 +342,51 @@ export function ScholarHome() {
 		},
 	);
 
+	// Atendimento ativo do bolsista (se houver)
+	// Busca independentemente do turno para funcionar mesmo se o turno
+	// terminou mas o atendimento ainda está ativo
+	const { data: activeAttendance } = trpc.requests.active.useQuery();
+
+	// Estado persistido do atendimento ativo — exibição instantânea
+	const persistedActive = useActiveAttendance();
+
+	// Ref para capturar persistedActive sem disparar re-render no useEffect
+	const persistedActiveRef = useRef(persistedActive);
+	persistedActiveRef.current = persistedActive;
+
+	// Reconciliação: quando o servidor responde, atualiza o armazenamento local
+	// e limpa se o atendimento não existir mais (ex.: concluído em outro dispositivo)
+	useEffect(() => {
+		// activeAttendance é undefined durante o loading — aguarda resolução
+		if (activeAttendance === undefined) return;
+
+		if (activeAttendance === null) {
+			// Servidor confirmou que não há atendimento ativo — limpa local
+			if (persistedActiveRef.current) {
+				clearActiveAttendance();
+			}
+		} else if (activeAttendance) {
+			saveActiveAttendance({
+				requestId: activeAttendance.requestId,
+				studentName:
+					activeAttendance.request.studentProfile.user?.name ??
+					`Estudante ${activeAttendance.request.studentProfile.id.slice(0, 4)}`,
+				disability: activeAttendance.request.studentProfile.disabilities
+					.map((d) => disabilityTypeLabels[d.disabilityType])
+					.join(", "),
+				observation: activeAttendance.request.notes ?? "",
+				originName: activeAttendance.request.originLocation.name,
+				destinationName:
+					activeAttendance.request.destinationLocation.name,
+				// Timestamps do tRPC já são strings ISO
+				startedAt: activeAttendance.startedAt ?? null,
+				acceptedAt: activeAttendance.acceptedAt,
+			});
+		}
+		// Só depende do activeAttendance para evitar loop de salvamento local
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [activeAttendance]);
+
 	// ─── Estado do diálogo de turno extra ──────────────────────────────────
 
 	const [extraShiftDialogOpen, setExtraShiftDialogOpen] = useState(false);
@@ -394,6 +446,28 @@ export function ScholarHome() {
 	const { mutate: acceptRequest, isPending: isAccepting } =
 		trpc.requests.accept.useMutation({
 			onSuccess: (_, variables) => {
+				// Persiste os dados do atendimento localmente para exibição instantânea
+				// ao voltar para home ou reabrir o app
+				const acceptedRequest = availableRequests.find(
+					(r) => r.id === variables.requestId,
+				);
+				if (acceptedRequest) {
+					saveActiveAttendance({
+						requestId: variables.requestId,
+						studentName:
+							acceptedRequest.studentProfile.nickname ??
+							`Estudante ${acceptedRequest.studentProfile.id.slice(0, 4)}`,
+						disability: acceptedRequest.studentProfile.disabilities
+							.map((d) => disabilityTypeLabels[d.disabilityType])
+							.join(", "),
+						observation: acceptedRequest.notes ?? "",
+						originName: acceptedRequest.originLocation.name,
+						destinationName:
+							acceptedRequest.destinationLocation.name,
+						startedAt: null,
+						acceptedAt: new Date().toISOString(),
+					});
+				}
 				utils.requests.pending.invalidate();
 				router.push(`/travel?requestId=${variables.requestId}`);
 			},
@@ -440,6 +514,101 @@ export function ScholarHome() {
 			createdAt: new Date(req.createdAt),
 		}));
 	}, [availableRequests]);
+
+	// Transformação do atendimento ativo da API para o formato da UI
+	const activeService: Service | null = useMemo(() => {
+		if (!activeAttendance) return null;
+		return {
+			id: activeAttendance.requestId,
+			student: {
+				name:
+					activeAttendance.request.studentProfile.user?.name ??
+					`Estudante ${activeAttendance.request.studentProfile.id.slice(0, 4)}`,
+				disability: activeAttendance.request.studentProfile.disabilities
+					.map((d) => disabilityTypeLabels[d.disabilityType])
+					.join(", "),
+				observation: activeAttendance.request.notes ?? "",
+			},
+			route: {
+				origin: activeAttendance.request.originLocation.name,
+				destination: activeAttendance.request.destinationLocation.name,
+			},
+			status: ServiceStatus.During,
+			startedAt: activeAttendance.startedAt
+				? new Date(activeAttendance.startedAt)
+				: undefined,
+		};
+	}, [activeAttendance]);
+
+	// ─── Histórico de atendimentos do turno atual ───────────────────────────
+
+	const { data: shiftHistory } = trpc.requests.scholarHistory.useQuery(
+		{ limit: 50 },
+		{ enabled: shiftState === "shift_active" },
+	);
+
+	// Filtra apenas os atendimentos concluídos e mapeia para o formato da UI
+	const previousServices: Service[] = useMemo(() => {
+		if (!shiftHistory?.items) return [];
+
+		const shiftStart = activeShiftLog?.startedAt
+			? new Date(activeShiftLog.startedAt).getTime()
+			: 0;
+
+		return shiftHistory.items
+			.filter(
+				(item) =>
+					item.completedAt &&
+					new Date(item.completedAt).getTime() >= shiftStart,
+			)
+			.map((item) => ({
+				id: item.requestId,
+				student: {
+					name:
+						item.request.studentProfile.user?.name ??
+						`Estudante ${item.request.studentProfile.id.slice(0, 4)}`,
+					disability: item.request.studentProfile.disabilities
+						?.map((d) => disabilityTypeLabels[d.disabilityType])
+						.join(", "),
+					observation: item.request.notes ?? "",
+				},
+				route: {
+					origin: item.request.originLocation.name,
+					destination: item.request.destinationLocation.name,
+				},
+				status: ServiceStatus.Concluded,
+				startedAt: item.startedAt
+					? new Date(item.startedAt)
+					: undefined,
+				finishedAt: item.completedAt
+					? new Date(item.completedAt)
+					: undefined,
+			}));
+	}, [shiftHistory, activeShiftLog]);
+
+	// Dados do atendimento ativo vindos do armazenamento local (fallback instantâneo)
+	const persistedActiveService: Service | null = useMemo(() => {
+		if (!persistedActive) return null;
+		return {
+			id: persistedActive.requestId,
+			student: {
+				name: persistedActive.studentName,
+				disability: persistedActive.disability,
+				observation: persistedActive.observation,
+			},
+			route: {
+				origin: persistedActive.originName,
+				destination: persistedActive.destinationName,
+			},
+			status: ServiceStatus.During,
+			startedAt: persistedActive.startedAt
+				? new Date(persistedActive.startedAt)
+				: undefined,
+		};
+	}, [persistedActive]);
+
+	// Usa o dado da API se disponível, senão cai no persistido (instantâneo)
+	const currentActiveService = activeService ?? persistedActiveService;
 
 	// Nome do bolsista
 	const scholarName = useMemo(() => {
@@ -639,51 +808,157 @@ export function ScholarHome() {
 						</Button>
 
 						<View className="gap-4 flex-1">
-							<SectionTitle label="Aguardando resposta">
-								<Badge variant="warning">
-									<Text>
-										{pendingServices.length}
-										{" pendente"}
-									</Text>
-								</Badge>
-							</SectionTitle>
-
-							{pendingServices.length > 0 ? (
+							{/* Atendimento ativo */}
+							{currentActiveService ? (
 								<View className="gap-4">
-									{pendingServices.map((item) => (
-										<PendingRequestCard
-											key={item.id}
-											service={item}
-											onAccept={() =>
-												acceptRequest({
-													requestId: item.id,
-												})
-											}
+									<SectionTitle label="Atendimento em andamento">
+										<Badge variant="info">
+											<Text>ativo</Text>
+										</Badge>
+									</SectionTitle>
+									<View className="border border-info-border bg-card p-5 gap-4 rounded-xl">
+										<View className="flex-row items-start justify-between">
+											<View className="flex-row items-center gap-3">
+												<Avatar
+													alt={`${currentActiveService.student.name}'s Avatar`}
+													className="h-12 w-12"
+												>
+													<AvatarFallback>
+														<Text className="font-bold">
+															{currentActiveService.student.name
+																.split(" ")
+																.map(
+																	(n) => n[0],
+																)
+																.join("")
+																.slice(0, 2)
+																.toUpperCase()}
+														</Text>
+													</AvatarFallback>
+												</Avatar>
+												<View>
+													<Text className="text-base font-bold text-foreground">
+														{
+															currentActiveService
+																.student.name
+														}
+													</Text>
+													<Text className="text-sm text-muted-foreground">
+														{
+															currentActiveService
+																.student
+																.disability
+														}
+													</Text>
+												</View>
+											</View>
+											<Text className="mt-1 text-xs font-semibold text-info-foreground">
+												{currentActiveService.startedAt
+													? "Em andamento"
+													: "Aguardando encontro"}
+											</Text>
+										</View>
+
+										<AddressRoute
+											from={{
+												label: currentActiveService
+													.route.origin,
+											}}
+											to={{
+												label: currentActiveService
+													.route.destination,
+											}}
+											shouldShowRoute
+											size="lg"
 										/>
-									))}
+
+										{currentActiveService.student
+											.observation && (
+											<View className="flex-row items-start rounded-sm bg-secondary p-3">
+												<Icon
+													icon={Info}
+													size={16}
+													color="--foreground"
+												/>
+												<Text className="flex-1 text-sm leading-snug text-foreground ml-2">
+													{
+														currentActiveService
+															.student.observation
+													}
+												</Text>
+											</View>
+										)}
+
+										<View className="flex-row gap-3">
+											<Button
+												onPress={() =>
+													router.push(
+														`/travel?requestId=${currentActiveService.id}`,
+													)
+												}
+												className="w-full"
+											>
+												<Text className="font-semibold">
+													Retomar atendimento
+												</Text>
+											</Button>
+										</View>
+									</View>
 								</View>
 							) : (
-								<EmptyStateCard>
-									<View className="items-center">
-										<Icon
-											icon={Palmtree}
-											color="--foreground"
-											size={56}
-										/>
-										<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
-											Nenhuma solicitação no momento
-										</Text>
-										<Text className="text-center text-base leading-tight text-muted-foreground">
-											Relaxe! Avisaremos você quando
-											alguém precisar de ajuda.
-										</Text>
-									</View>
-								</EmptyStateCard>
+								<>
+									<SectionTitle label="Aguardando resposta">
+										<Badge variant="warning">
+											<Text>
+												{pendingServices.length}
+												{" pendente"}
+											</Text>
+										</Badge>
+									</SectionTitle>
+
+									{pendingServices.length > 0 ? (
+										<View className="gap-4">
+											{pendingServices.map((item) => (
+												<PendingRequestCard
+													key={item.id}
+													service={item}
+													onAccept={() =>
+														acceptRequest({
+															requestId: item.id,
+														})
+													}
+													isAccepting={isAccepting}
+												/>
+											))}
+										</View>
+									) : (
+										<EmptyStateCard>
+											<View className="items-center">
+												<Icon
+													icon={Palmtree}
+													color="--foreground"
+													size={56}
+												/>
+												<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
+													Nenhuma solicitação no
+													momento
+												</Text>
+												<Text className="text-center text-base leading-tight text-muted-foreground">
+													Relaxe! Avisaremos você
+													quando alguém precisar de
+													ajuda.
+												</Text>
+											</View>
+										</EmptyStateCard>
+									)}
+								</>
 							)}
 
-							{/*<PreviousServicesList
-								services={historicalServicesMock}
-							/>*/}
+							{previousServices.length > 0 && (
+								<PreviousServicesList
+									services={previousServices}
+								/>
+							)}
 						</View>
 					</>
 				)}

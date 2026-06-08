@@ -1,6 +1,6 @@
 import { Info } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
-import { View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import Animated, {
 	Easing,
 	useAnimatedStyle,
@@ -13,8 +13,6 @@ import Animated, {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-
-import { cn } from "@/lib/utils";
 
 import { AddressRoute } from "../address";
 import { Icon } from "../ui/icon";
@@ -46,13 +44,14 @@ export type Service = {
 interface PendingRequestCardProps {
 	service: Service;
 	onAccept: () => void;
+	isAccepting?: boolean;
 }
 
 export function PendingRequestCard({
 	service,
 	onAccept,
+	isAccepting = false,
 }: PendingRequestCardProps) {
-	const [hasAccepted, setHasAccepted] = useState(false);
 	const opacity = useSharedValue(0.4);
 
 	useEffect(() => {
@@ -93,29 +92,20 @@ export function PendingRequestCard({
 	}, []);
 
 	const elapsedMinutes = useMemo(() => {
-		if (hasAccepted) return null;
+		if (isAccepting) return null;
 		const refTime = service.createdAt ?? service.startedAt;
 		if (!refTime) return 0;
 		return Math.floor((now.getTime() - refTime.getTime()) / 60000);
-	}, [hasAccepted, service.createdAt, service.startedAt, now]);
+	}, [isAccepting, service.createdAt, service.startedAt, now]);
 
 	return (
 		<View className="p-1">
-			{!hasAccepted && (
-				<Animated.View
-					className="absolute inset-0 rounded-2xl"
-					style={[animatedStyle]}
-				/>
-			)}
+			<Animated.View
+				className="absolute inset-0 rounded-2xl"
+				style={[animatedStyle]}
+			/>
 
-			<View
-				className={cn(
-					"border border-border bg-card p-5 gap-4 rounded-xl",
-					{
-						"border-info-border border-2": hasAccepted,
-					},
-				)}
-			>
+			<View className="border border-border bg-card p-5 gap-4 rounded-xl">
 				<View className="flex-row items-start justify-between">
 					<View className="flex-row items-center gap-3">
 						<Avatar
@@ -142,15 +132,9 @@ export function PendingRequestCard({
 							</Text>
 						</View>
 					</View>
-					<Text
-						className={cn("mt-1 text-xs font-semibold", {
-							"text-warning-foreground":
-								service.status === ServiceStatus.Pending,
-							"text-info-foreground": hasAccepted,
-						})}
-					>
-						{hasAccepted
-							? "Em andamento"
+					<Text className="mt-1 text-xs font-semibold text-warning-foreground">
+						{isAccepting
+							? "Aceitando..."
 							: `há ${elapsedMinutes ?? 0} min`}
 					</Text>
 				</View>
@@ -178,15 +162,19 @@ export function PendingRequestCard({
 				<View className="flex-row gap-3">
 					<Button
 						onPress={() => {
-							setHasAccepted(true);
-							onAccept();
+							if (!isAccepting) {
+								onAccept();
+							}
 						}}
+						disabled={isAccepting}
 					>
-						<Text className="font-semibold">
-							{hasAccepted
-								? "Retomar atendimento"
-								: "Aceitar atendimento"}
-						</Text>
+						{isAccepting ? (
+							<ActivityIndicator size={20} color="white" />
+						) : (
+							<Text className="font-semibold">
+								Aceitar atendimento
+							</Text>
+						)}
 					</Button>
 				</View>
 			</View>

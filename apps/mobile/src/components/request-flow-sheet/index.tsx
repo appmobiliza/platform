@@ -265,7 +265,11 @@ function RequestFlowSheet() {
 					>
 						<View className="items-center gap-4 py-2">
 							<View className="size-16 items-center justify-center rounded-full bg-destructive/20">
-								<ClockAlert size={28} color="--destructive" />
+								<Icon
+									icon={ClockAlert}
+									size={28}
+									color="--destructive"
+								/>
 							</View>
 							<Text className="text-center text-base leading-6 text-foreground">
 								Não foi possível criar sua solicitação.{"\n\n"}
@@ -373,21 +377,6 @@ function RequestFlowSheet() {
 										{scholarInfo?.name ?? "Contribuinte"}
 									</Text>
 								</View>
-							</View>
-						</View>
-						<View className="rounded-md bg-secondary px-4">
-							<View className="flex-row items-center gap-3">
-								<Icon
-									icon={MessageSquareText}
-									size={17}
-									color="--muted-foreground"
-								/>
-								<TextInput
-									className="flex-1 text-base text-foreground"
-									placeholder="Envie uma mensagem"
-									value={message}
-									onChangeText={setMessage}
-								/>
 							</View>
 						</View>
 					</View>

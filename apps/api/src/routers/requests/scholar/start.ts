@@ -1,11 +1,10 @@
 import { RequestIdSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
-import { and, eq } from "@mobiliza/db/drizzle";
+import { and, eq, isNull } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { scholarProcedure } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 
 export const start = scholarProcedure
 	.input(RequestIdSchema)
@@ -36,17 +35,27 @@ export const start = scholarProcedure
 
 		const now = new Date();
 
-		await db.transaction(async (tx) => {
-			await tx
-				.update(schema.serviceRequest)
-				.set({ status: "ongoing", updatedAt: now })
-				.where(eq(schema.serviceRequest.id, input.requestId));
+		// Neon HTTP driver does not support transactions.
+		// Atomicity is achieved via conditional WHERE clauses.
+		await db
+			.update(schema.serviceRequest)
+			.set({ status: "ongoing", updatedAt: now })
+			.where(
+				and(
+					eq(schema.serviceRequest.id, input.requestId),
+					eq(schema.serviceRequest.status, "accepted"),
+				),
+			);
 
-			await tx
-				.update(schema.serviceAttendance)
-				.set({ startedAt: now, updatedAt: now })
-				.where(eq(schema.serviceAttendance.id, attendance.id));
-		});
+		await db
+			.update(schema.serviceAttendance)
+			.set({ startedAt: now, updatedAt: now })
+			.where(
+				and(
+					eq(schema.serviceAttendance.id, attendance.id),
+					isNull(schema.serviceAttendance.startedAt),
+				),
+			);
 
 		try {
 			await ctx.realtime.publish(

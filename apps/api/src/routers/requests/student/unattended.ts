@@ -34,6 +34,12 @@ export const markUnattended = protectedProcedure
 		}
 
 		if (request.status !== "pending") {
+			// Se já está "unattended", é um no-op — evita race condition com o
+			// CRON de timeout do backend ou com múltiplas chamadas concorrentes.
+			if (request.status === "unattended") {
+				return request;
+			}
+
 			throw new TRPCError({
 				code: "BAD_REQUEST",
 				message: `Não é possível marcar como não atendida uma solicitação com status "${request.status}".`,

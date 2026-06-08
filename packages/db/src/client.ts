@@ -9,9 +9,9 @@ import * as schema from "./schema";
  * Cliente HTTP do Neon — compatível com ambientes serverless (Vercel, Cloudflare
  * Workers) e com servidores Node.js tradicionais.
  *
- * Para ambientes com conexões persistentes (servidor dedicado no Railway ou
- * Fly.io), considere trocar para `drizzle-orm/neon-serverless` com WebSocket
- * pool, que oferece melhor performance em alta concorrência.
+ * O driver HTTP não suporta transações. Operações que precisam de atomicidade
+ * usam updates condicionais (ex: `UPDATE ... WHERE status = 'pending'`) no lugar
+ * de transações.
  */
 const sql = neon(apiEnv.DATABASE_URL);
 

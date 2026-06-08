@@ -34,7 +34,16 @@ export async function getScholarHistory(
 				with: {
 					originLocation: true,
 					destinationLocation: true,
-					studentProfile: { with: { user: true } },
+					studentProfile: {
+						with: {
+							user: true,
+							disabilities: {
+								columns: {
+									disabilityType: true,
+								},
+							},
+						},
+					},
 				},
 			},
 		},

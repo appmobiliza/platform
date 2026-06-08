@@ -6,7 +6,6 @@ import { scholarProcedure } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
 import { uuidv7 } from "uuidv7";
-import { z } from "zod";
 
 export const accept = scholarProcedure
 	.input(RequestIdSchema)
@@ -28,63 +27,60 @@ export const accept = scholarProcedure
 			});
 		}
 
-		// Transação atômica para evitar race condition entre bolsistas
-		const result = await db.transaction(async (tx) => {
-			const request = await tx.query.serviceRequest.findFirst({
-				where: and(
+		// Update atômico: só avança se a solicitação ainda estiver "pending".
+		// O WHERE status = 'pending' em conjunto com RETURNING garante que,
+		// mesmo com dois bolsistas aceitando simultaneamente, apenas um
+		// conseguirá — é um lock otimista que dispensa transações.
+		const now = new Date();
+
+		const [request] = await db
+			.update(schema.serviceRequest)
+			.set({ status: "accepted", respondedAt: now, updatedAt: now })
+			.where(
+				and(
 					eq(schema.serviceRequest.id, input.requestId),
 					eq(schema.serviceRequest.status, "pending"),
 				),
+			)
+			.returning();
+
+		if (!request) {
+			throw new TRPCError({
+				code: "NOT_FOUND",
+				message:
+					"Solicitação não encontrada ou já foi aceita por outro bolsista.",
 			});
+		}
 
-			if (!request) {
-				throw new TRPCError({
-					code: "NOT_FOUND",
-					message:
-						"Solicitação não encontrada ou já foi aceita por outro bolsista.",
-				});
-			}
+		// Cria o registro de atendimento
+		const [attendance] = await db
+			.insert(schema.serviceAttendance)
+			.values({
+				id: uuidv7(),
+				requestId: input.requestId,
+				scholarProfileId: scholarProfile.id,
+				acceptedAt: now,
+			})
+			.returning();
 
-			const now = new Date();
-
-			// Atualiza o status da solicitação
-			await tx
-				.update(schema.serviceRequest)
-				.set({ status: "accepted", respondedAt: now, updatedAt: now })
-				.where(eq(schema.serviceRequest.id, input.requestId));
-
-			// Cria o registro de atendimento
-			const [attendance] = await tx
-				.insert(schema.serviceAttendance)
-				.values({
-					id: uuidv7(),
+		// Notifica o estudante via realtime
+		try {
+			await ctx.realtime.publish(
+				`request:${input.requestId}`,
+				"request:accepted",
+				{
 					requestId: input.requestId,
-					scholarProfileId: scholarProfile.id,
-					acceptedAt: now,
-				})
-				.returning();
+					scholarId: ctx.session.user.id,
+					scholarName: ctx.session.user.name,
+					scholarImage: ctx.session.user.image ?? null,
+				},
+			);
+		} catch (publishError) {
+			console.error(
+				"[Realtime] Failed to publish request:accepted event:",
+				publishError,
+			);
+		}
 
-			// Notifica o estudante via realtime
-			try {
-				await ctx.realtime.publish(
-					`request:${input.requestId}`,
-					"request:accepted",
-					{
-						requestId: input.requestId,
-						scholarId: ctx.session.user.id,
-						scholarName: ctx.session.user.name,
-						scholarImage: ctx.session.user.image ?? null,
-					},
-				);
-			} catch (publishError) {
-				console.error(
-					"[Realtime] Failed to publish request:accepted event:",
-					publishError,
-				);
-			}
-
-			return { request: { ...request, status: "accepted" }, attendance };
-		});
-
-		return result;
+		return { request, attendance };
 	});

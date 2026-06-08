@@ -1,6 +1,7 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import * as React from "react";
+import { Alert } from "react-native";
 
 import { getNearestPoint } from "@/lib/location-store";
 import { getRealtimeClient } from "@/lib/realtime";
@@ -161,21 +162,20 @@ function useRequestFlow() {
 	// status atual da request e restaura o fluxo.
 
 	const persistedState = getRequestState();
-	const hasPersistedRequest =
-		persistedState.activeRequestId && persistedState.searchState !== "idle";
-
-	const { data: historyData, isLoading: isHistoryLoading } =
-		trpc.requests.studentHistory.useInfiniteQuery(
-			{ limit: 50 },
-			{ enabled: hasPersistedRequest },
-		);
+	// Restaura também quando estávamos na tela de viagem (trip),
+	// pois nesse estado o searchState é "idle" e não passaria no
+	// filtro abaixo
+	const hasPersistedRequest = !!(
+		persistedState.activeRequestId &&
+		(persistedState.searchState !== "idle" ||
+			persistedState.stage === "trip")
+	);
 
 	// Guarda se já processamos a restauração
 	const restorationDoneRef = React.useRef(false);
 
 	React.useEffect(() => {
 		if (!hasPersistedRequest || restorationDoneRef.current) return;
-		if (isHistoryLoading) return; // ainda carregando
 		restorationDoneRef.current = true;
 
 		const requestId = persistedState.activeRequestId!;
@@ -187,81 +187,82 @@ function useRequestFlow() {
 		if (persistedState.message) setMessage(persistedState.message);
 
 		// Busca a request atual no histórico
-		const allItems = historyData?.pages.flatMap((p) => p.items) ?? [];
-		const current = allItems.find((item) => item.id === requestId);
+		utils.requests.studentHistory
+			.fetchInfinite({ limit: 50 })
+			.then((data) => {
+				const allItems = data.pages.flatMap((p) => p.items);
+				const current = allItems.find((item) => item.id === requestId);
 
-		if (!current) {
-			// Request não encontrada — limpamos o estado
-			clearRequestState();
-			return;
-		}
-
-		const status: string = current.status;
-
-		if (status === "completed") {
-			// Já foi concluído enquanto estávamos fora — limpa e sai
-			clearTimers();
-			setSearchState("idle");
-			setElapsedSeconds(0);
-			setActiveRequestId(null);
-			clearRequestState();
-			cancelAllNotifications();
-			router.back();
-			return;
-		}
-
-		if (
-			status === "accepted" ||
-			status === "ongoing"
-		) {
-			// Já foi aceito enquanto estávamos fora — vai direto pra trip
-			setActiveRequestId(requestId);
-			setSearchState("idle");
-
-			// Restaura scholar do estado persistido ou extrai do histórico
-			if (persistedState.scholar) {
-				setScholarInfo(persistedState.scholar);
-			} else if (current.attendance?.scholarProfile?.user) {
-				const user = current.attendance.scholarProfile.user;
-				setScholarInfo({
-					id: user.id,
-					name: user.name ?? "",
-					image: user.image ?? null,
-				});
-			}
-
-			openStage("trip");
-		} else if (status === "unattended") {
-			setActiveRequestId(requestId);
-			setSearchState("unattended");
-			openStage("searching");
-		} else if (status === "cancelled") {
-			clearRequestState();
-		} else {
-			// Ainda "pending" — restaura a busca
-			setActiveRequestId(requestId);
-
-			if (persistedState.searchState === "unattended") {
-				setSearchState("unattended");
-			} else {
-				setSearchState("searching");
-				if (persistedState.requestCreatedAt) {
-					const elapsed = Math.floor(
-						(Date.now() - persistedState.requestCreatedAt) / 1000,
-					);
-					setElapsedSeconds(elapsed);
+				if (!current) {
+					// Request não encontrada — limpamos o estado
+					clearRequestState();
+					return;
 				}
-			}
 
-			openStage("searching");
-		}
-	}, [
-		hasPersistedRequest,
-		persistedState,
-		historyData,
-		isHistoryLoading,
-		openStage,
-	]);
+				const status: string = current.status;
+
+				if (status === "completed") {
+					// Já foi concluído enquanto estávamos fora — limpa e sai
+					clearTimers();
+					setSearchState("idle");
+					setElapsedSeconds(0);
+					setActiveRequestId(null);
+					clearRequestState();
+					cancelAllNotifications();
+					router.back();
+					return;
+				}
+
+				if (
+					status === "accepted" ||
+					status === "ongoing"
+				) {
+					// Já foi aceito enquanto estávamos fora — vai direto pra trip
+					setActiveRequestId(requestId);
+					setSearchState("idle");
+
+					// Restaura scholar do estado persistido ou extrai do histórico
+					if (persistedState.scholar) {
+						setScholarInfo(persistedState.scholar);
+					} else if (current.attendance?.scholarProfile?.user) {
+						const user = current.attendance.scholarProfile.user;
+						setScholarInfo({
+							id: user.id,
+							name: user.name ?? "",
+							image: user.image ?? null,
+						});
+					}
+
+					openStage("trip");
+				} else if (status === "unattended") {
+					setActiveRequestId(requestId);
+					setSearchState("unattended");
+					openStage("searching");
+				} else if (status === "cancelled") {
+					clearRequestState();
+				} else {
+					// Ainda "pending" — restaura a busca
+					setActiveRequestId(requestId);
+
+					if (persistedState.searchState === "unattended") {
+						setSearchState("unattended");
+					} else {
+						setSearchState("searching");
+						if (persistedState.requestCreatedAt) {
+							const elapsed = Math.floor(
+								(Date.now() - persistedState.requestCreatedAt) / 1000,
+							);
+							setElapsedSeconds(elapsed);
+						}
+					}
+
+					openStage("searching");
+				}
+			})
+			.catch(() => {
+				clearRequestState();
+			});
+	}, [hasPersistedRequest, persistedState, utils, openStage]);
 
 	/**
 	 * Creates the service request in the backend and transitions to "searching".
@@ -479,6 +480,11 @@ function useRequestFlow() {
 
 			const onCompleted = () => {
 				setActiveRequestId(null);
+				utils.requests.studentHistory.invalidate();
+				Alert.alert(
+					"Deslocamento concluído",
+					"Seu deslocamento foi finalizado com sucesso. Obrigado por usar o Mobiliza!",
+				);
 				exitFlow();
 			};
 
@@ -540,7 +546,7 @@ function useRequestFlow() {
 			realtimeUnsubRef.current?.();
 			realtimeUnsubRef.current = null;
 		};
-	}, [activeRequestId, exitFlow, transitionTo, clearTimers]);
+	}, [activeRequestId, exitFlow, transitionTo, clearTimers, utils]);
 
 	// Initialize origin from the nearest point calculated on the Home screen
 	React.useEffect(() => {

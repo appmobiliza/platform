@@ -1,12 +1,12 @@
 import { RequestIdSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
-import { and, eq, isNull } from "@mobiliza/db/drizzle";
+import { and, eq, inArray, isNull } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { scholarProcedure } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
 
-export const complete = scholarProcedure
+export const reportIssue = scholarProcedure
 	.input(RequestIdSchema)
 
 	.mutation(async ({ ctx, input }) => {
@@ -26,33 +26,46 @@ export const complete = scholarProcedure
 			),
 		});
 
-		if (!attendance?.startedAt) {
+		if (!attendance) {
+			throw new TRPCError({
+				code: "NOT_FOUND",
+				message: "Atendimento não encontrado.",
+			});
+		}
+
+		if (attendance.completedAt) {
 			throw new TRPCError({
 				code: "BAD_REQUEST",
-				message: "O deslocamento ainda não foi iniciado.",
+				message: "Este atendimento já foi concluído.",
 			});
 		}
 
 		const now = new Date();
-		const durationSeconds = Math.floor(
-			(now.getTime() - attendance.startedAt.getTime()) / 1000,
-		);
 
 		// Neon HTTP driver does not support transactions.
 		// Atomicity is achieved via conditional WHERE clauses.
-		await db
+		const [updatedRequest] = await db
 			.update(schema.serviceRequest)
-			.set({ status: "completed", updatedAt: now })
+			.set({ status: "cancelled", updatedAt: now })
 			.where(
 				and(
 					eq(schema.serviceRequest.id, input.requestId),
-					eq(schema.serviceRequest.status, "ongoing"),
+					inArray(schema.serviceRequest.status, ["accepted", "ongoing"]),
 				),
-			);
+			)
+			.returning({ id: schema.serviceRequest.id });
+
+		if (!updatedRequest) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message:
+					"Não foi possível cancelar o atendimento. A solicitação pode já ter sido concluída ou cancelada.",
+			});
+		}
 
 		await db
 			.update(schema.serviceAttendance)
-			.set({ completedAt: now, durationSeconds, updatedAt: now })
+			.set({ completedAt: now, updatedAt: now })
 			.where(
 				and(
 					eq(schema.serviceAttendance.id, attendance.id),
@@ -63,15 +76,15 @@ export const complete = scholarProcedure
 		try {
 			await ctx.realtime.publish(
 				`request:${input.requestId}`,
-				"request:completed",
-				{ requestId: input.requestId, durationSeconds },
+				"request:cancelled",
+				{ requestId: input.requestId },
 			);
 		} catch (error) {
 			console.error(
-				"[Realtime] Failed to publish request:completed event:",
+				"[Realtime] Failed to publish request:cancelled event:",
 				error,
 			);
 		}
 
-		return { durationSeconds };
+		return { success: true };
 	});

@@ -5,7 +5,6 @@ import * as schema from "@mobiliza/db/schema";
 import { protectedProcedure } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 
 export const rate = protectedProcedure
 	.input(RateRequestSchema)

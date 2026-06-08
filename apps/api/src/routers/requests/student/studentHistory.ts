@@ -4,8 +4,6 @@ import { and, desc, eq, sql } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { protectedProcedure } from "@mobiliza/trpc";
 
-import { z } from "zod";
-
 export const studentHistory = protectedProcedure
 	.input(PaginationSchema)
 
