@@ -75,18 +75,16 @@ export default function ScholarHistoryDetails({ attendance }: DetailProps) {
 			title={title}
 			subtitle={subtitle}
 			mapBadges={
-				<>
-					{durationMinutes ? (
-						<Badge className="text-primary-foreground">
-							<Icon
-								icon={Clock}
-								size={14}
-								color="--primary-foreground"
-							/>
-							<Text>{durationMinutes}m</Text>
-						</Badge>
-					) : null}
-				</>
+				durationMinutes ? (
+					<Badge className="text-primary-foreground">
+						<Icon
+							icon={Clock}
+							size={14}
+							color="--primary-foreground"
+						/>
+						<Text>{durationMinutes}m</Text>
+					</Badge>
+				) : null
 			}
 			profile={
 				<View className="flex-row items-center gap-3">
