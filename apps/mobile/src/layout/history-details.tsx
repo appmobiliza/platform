@@ -54,6 +54,7 @@ export function HistoryDetailLayout({
 						<MapView
 							routePath={routePath}
 							interactive={false}
+							showUserLocation={false}
 							initialViewState={{
 								latitude:
 									(mapOrigin!.latitude +

@@ -53,6 +53,7 @@ export const FeaturedHistoryCard = ({
 						<MapView
 							routePath={routePath}
 							interactive={false}
+							showUserLocation={false}
 							initialViewState={{
 								latitude:
 									(originLatitude! + destinationLatitude!) /

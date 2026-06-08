@@ -63,6 +63,9 @@ interface MapViewProps {
 
 	/** Whether to show the route as dashed */
 	routeDashed?: boolean;
+
+	/** Whether to show the user's location on the map */
+	showUserLocation?: boolean;
 }
 
 // ─── Default initial view (UFAL campus) ──────────────────────────────────────
@@ -142,12 +145,15 @@ export default function MapView({
 	showCenterMarker = false,
 	routePath,
 	routeDashed = false,
+	showUserLocation = true,
 }: MapViewProps) {
 	const scheme = useAppColorScheme();
 	const { location: userLocation } = useNativeUserLocation();
 	const cameraRef = useRef<CameraRef>(null);
 	const [mapLoaded, setMapLoaded] = useState(false);
 	const [isMoving, setIsMoving] = useState(false);
+
+	const enableUserTracking = showUserLocation && interactive && !routePath;
 
 	const isDark = scheme === "dark";
 
@@ -220,17 +226,22 @@ export default function MapView({
 		return positions;
 	}, [scholarPositions, scholar]);
 
-	// ─── Camera: follow user on first location ──────────────────────────────
+	// ─── Camera: follow user on first location (only when tracking enabled) ──
 
 	useEffect(() => {
-		if (mapLoaded && userLocation && stage !== "trip") {
+		if (
+			enableUserTracking &&
+			mapLoaded &&
+			userLocation &&
+			stage !== "trip"
+		) {
 			cameraRef.current?.flyTo({
 				center: [userLocation.longitude, userLocation.latitude],
 				zoom: 16,
 				duration: 1000,
 			});
 		}
-	}, [mapLoaded, userLocation, stage]);
+	}, [enableUserTracking, mapLoaded, userLocation, stage]);
 
 	// ─── Camera: follow scholar in trip mode ────────────────────────────────
 
@@ -300,7 +311,9 @@ export default function MapView({
 				<Camera ref={cameraRef} initialViewState={cameraInitialState} />
 
 				{/* ── User location puck ────────────────────────────────── */}
-				<UserLocation animated accuracy={false} heading />
+				{showUserLocation && (
+					<UserLocation animated accuracy={false} heading />
+				)}
 
 				{/* ── Route line ─────────────────────────────────────────── */}
 				{showRoute && routeGeoJSON && (

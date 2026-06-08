@@ -73,6 +73,9 @@ interface MapViewProps {
 
 	/** Whether to show the route as dashed */
 	routeDashed?: boolean;
+
+	/** Whether to show the user's location on the map */
+	showUserLocation?: boolean;
 }
 
 // ─── Default initial view (UFAL campus) ──────────────────────────────────────
@@ -97,16 +100,14 @@ export default function MapView({
 	showCenterMarker = false,
 	routePath,
 	routeDashed = false,
+	showUserLocation = true,
 }: MapViewProps) {
 	const scheme = useAppColorScheme();
 	const mapRef = useRef<MapRef>(null);
 	const geolocateRef = useRef<GeolocateControlInstance | null>(null);
 	const [mapLoaded, setMapLoaded] = useState(false);
-	const [userLocation, setUserLocation] = useState<{
-		longitude: number;
-		latitude: number;
-	} | null>(null);
-	void userLocation;
+
+	const enableUserTracking = showUserLocation && interactive && !routePath;
 
 	// ─── Map logic for route/distance calculations ──────────────────────────
 
@@ -124,13 +125,13 @@ export default function MapView({
 		trackUser: true,
 	});
 
-	// ─── Trigger geolocation on load ────────────────────────────────────────
+	// ─── Trigger geolocation on load (only when tracking enabled) ───────────
 
 	useEffect(() => {
-		if (mapLoaded && geolocateRef.current) {
+		if (enableUserTracking && mapLoaded && geolocateRef.current) {
 			geolocateRef.current.trigger();
 		}
-	}, [mapLoaded]);
+	}, [enableUserTracking, mapLoaded]);
 
 	// ─── Center crosshair: report center changes ────────────────────────────
 
@@ -229,20 +230,17 @@ export default function MapView({
 				<GeolocateControl
 					ref={geolocateRef}
 					positionOptions={{ enableHighAccuracy: true }}
-					showUserLocation
+					showUserLocation={enableUserTracking}
 					showAccuracyCircle={false}
 					trackUserLocation={false}
 					style={{ display: "none" }}
 					onGeolocate={(event) => {
-						const coords = {
-							longitude: event.coords.longitude,
-							latitude: event.coords.latitude,
-						};
-						setUserLocation(coords);
-
-						if (stage !== "trip") {
+						if (enableUserTracking) {
 							mapRef.current?.easeTo({
-								center: [coords.longitude, coords.latitude],
+								center: [
+									event.coords.longitude,
+									event.coords.latitude,
+								],
 								zoom: 16,
 								duration: 1000,
 								padding:
