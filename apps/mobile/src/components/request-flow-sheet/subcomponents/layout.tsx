@@ -2,16 +2,17 @@ import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import type * as React from "react";
 import { View } from "react-native";
 
-import { THEME } from "@/lib/theme";
-import { cn } from "@/lib/utils";
-
 import {
 	SheetDescription,
 	SheetFooter,
 	SheetHeader,
 	SheetTitle,
-} from "../ui/sheet";
-import type { Stage } from "./types";
+} from "@/components/ui/sheet";
+
+import { THEME } from "@/lib/theme";
+import { cn } from "@/lib/utils";
+
+import type { Stage } from "../types";
 
 interface SheetFrameProps {
 	title: string;

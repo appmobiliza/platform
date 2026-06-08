@@ -1,25 +1,14 @@
-import {
-	ClockAlert,
-	MapPin,
-	MessageSquareText,
-	Search,
-	Timer,
-} from "lucide-react-native";
-import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
-
-import { AddressRoute } from "@/components/address";
-import { PlaceCard } from "@/components/place-card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/ui/icon";
-import { Text } from "@/components/ui/text";
+import { View } from "react-native";
 
 import { useAppColorScheme } from "@/lib/use-app-color-scheme";
-import { cn } from "@/lib/utils";
 
-import { AddressRouteInput } from "./address-route-input";
-import { SheetFrame, StageSheet } from "./components";
-import { SearchIndicator } from "./seach-indicator";
+import {
+	DestinationSelectionStage,
+	DestinationStage,
+	SearchingStage,
+	StartConfirmStage,
+	TripStage,
+} from "./stages";
 import { useRequestFlow } from "./use-request-flow";
 
 function RequestFlowSheet() {
@@ -50,352 +39,62 @@ function RequestFlowSheet() {
 
 	return (
 		<View className="absolute inset-0" pointerEvents="box-none">
-			<StageSheet
-				stage="destination"
+			<DestinationStage
 				modalRef={destinationRef}
-				onDismiss={handleDismiss}
-				colorScheme={isDark ? "dark" : "light"}
-			>
-				<SheetFrame
-					title="Insira seu destino"
-					description="Arraste o mapa para mover o marcador"
-					headerPosition="center"
-					footer={
-						<Button
-							onPress={() =>
-								transitionTo("destination-selection")
-							}
-						>
-							<Text>
-								{destination ? "Confirmar" : "Selecionar"}{" "}
-								destino
-							</Text>
-						</Button>
-					}
-					shouldWrapChildren
-				>
-					<Pressable
-						className={cn(
-							"justify-between px-3 dark:bg-input/50 border-border dark:border-input flex h-11 w-full min-w-0 flex-row items-center rounded-md border py-1 text-base text-foreground shadow-sm shadow-black/5 sm:h-9 pl-3",
-						)}
-						onPress={() => transitionTo("destination-selection")}
-					>
-						<View className="gap-4 flex-row items-center justify-start">
-							<Icon
-								icon={MapPin}
-								size={20}
-								color="--muted-foreground"
-							/>
-							<Text className="mb">
-								{destination?.name ?? "Digite um destino"}
-							</Text>
-						</View>
-						<Icon
-							icon={Search}
-							size={20}
-							color="--muted-foreground"
-						/>
-					</Pressable>
-				</SheetFrame>
-			</StageSheet>
+				handleDismiss={handleDismiss}
+				isDark={isDark}
+				origin={origin}
+				destination={destination}
+				dismissAndExit={dismissAndExit}
+				transitionTo={transitionTo}
+			/>
 
-			<StageSheet
-				stage="destination-selection"
+			<DestinationSelectionStage
 				modalRef={destinationSelectionRef}
-				onDismiss={handleDismiss}
-				snapPoints={["95%"]}
-				colorScheme={isDark ? "dark" : "light"}
-				panDownToClose
-			>
-				<SheetFrame
-					title="Selecione seu destino"
-					footer={
-						<>
-							<Button
-								onPress={() => transitionTo("start-confirm")}
-								disabled={
-									destination === null || origin === null
-								}
-							>
-								<Text>Confirmar destino</Text>
-							</Button>
-							<Button variant="outline" onPress={dismissAndExit}>
-								<Text>Cancelar</Text>
-							</Button>
-						</>
-					}
-				>
-					<AddressRouteInput
-						origin={origin}
-						destination={destination}
-						locations={campusLocationItems}
-						onSelectOrigin={(name, isCurrent) => {
-							if (isCurrent) return; // origin já vem do GPS via useRequestFlow
-							const point = campusLocationsByName.get(name);
-							if (point) {
-								setOrigin({
-									name: point.name,
-									abbreviation: point.abbreviation,
-									latitude: point.latitude,
-									longitude: point.longitude,
-								});
-							}
-						}}
-						onSelectDestination={(name) => {
-							const point = campusLocationsByName.get(name);
-							if (point) {
-								setDestination({
-									name: point.name,
-									abbreviation: point.abbreviation,
-									latitude: point.latitude,
-									longitude: point.longitude,
-								});
-							}
-						}}
-					/>
-				</SheetFrame>
-			</StageSheet>
+				handleDismiss={handleDismiss}
+				isDark={isDark}
+				destination={destination}
+				origin={origin}
+				campusLocationItems={campusLocationItems}
+				campusLocationsByName={campusLocationsByName}
+				setOrigin={setOrigin}
+				setDestination={setDestination}
+				transitionTo={transitionTo}
+				dismissAndExit={dismissAndExit}
+			/>
 
-			<StageSheet
-				stage="start-confirm"
+			<StartConfirmStage
 				modalRef={startConfirmRef}
-				onDismiss={handleDismiss}
-				colorScheme={isDark ? "dark" : "light"}
-			>
-				<SheetFrame
-					title="Confirme seu ponto de partida"
-					footer={
-						<>
-							<Button
-								onPress={() => confirmRequest()}
-								disabled={!origin || !destination || isCreating}
-							>
-								<Text>
-									{isCreating ? "Criando..." : "Confirmar"}
-								</Text>
-								{isCreating && (
-									<ActivityIndicator
-										size={16}
-										color="white"
-									/>
-								)}
-							</Button>
-							<Button variant="outline" onPress={dismissAndExit}>
-								<Text>Cancelar</Text>
-							</Button>
-						</>
-					}
-					shouldWrapChildren
-				>
-					<PlaceCard
-						className="px-4 py-2 border-none"
-						title={origin?.abbreviation ?? origin?.name ?? ""}
-						description={`${origin?.abbreviation ? `${origin?.abbreviation} - ` : ""}${origin?.name ?? ""}`}
-						variant="default"
-						icon={{ as: MapPin, color: "--foreground" }}
-					>
-						<Button
-							variant="inverted"
-							size="sm"
-							onPress={() =>
-								transitionTo("destination-selection")
-							}
-						>
-							<Text>Alterar</Text>
-						</Button>
-					</PlaceCard>
-				</SheetFrame>
-			</StageSheet>
+				handleDismiss={handleDismiss}
+				isDark={isDark}
+				origin={origin}
+				destination={destination}
+				confirmRequest={confirmRequest}
+				isCreating={isCreating}
+				transitionTo={transitionTo}
+				dismissAndExit={dismissAndExit}
+			/>
 
-			<StageSheet
-				stage="searching"
+			<SearchingStage
 				modalRef={searchingRef}
-				onDismiss={handleDismiss}
-				colorScheme={isDark ? "dark" : "light"}
-			>
-				{searchState === "unattended" ? (
-					<SheetFrame
-						title="Nenhum contribuinte encontrado"
-						footer={
-							<>
-								<Button
-									variant="destructive"
-									onPress={dismissAndExit}
-								>
-									<Text>Fechar</Text>
-								</Button>
-							</>
-						}
-						shouldWrapChildren
-					>
-						<View className="items-center gap-4 py-2">
-							<View className="size-16 items-center justify-center rounded-full bg-destructive/20">
-								<Icon
-									icon={ClockAlert}
-									size={28}
-									color="--destructive-foreground"
-								/>
-							</View>
-							<Text className="text-center text-base leading-6 text-foreground">
-								Nenhum contribuente aceitou sua solicitação no
-								tempo esperado.{"\n\n"}
-								Tente novamente mais tarde ou entre em contato
-								com o NAC.
-							</Text>
-						</View>
+				handleDismiss={handleDismiss}
+				isDark={isDark}
+				searchState={searchState}
+				dismissAndExit={dismissAndExit}
+				origin={origin}
+				destination={destination}
+				elapsedSeconds={elapsedSeconds}
+			/>
 
-						<AddressRoute
-							className="bg-input p-4 rounded-lg gap-4"
-							from={{
-								label:
-									origin?.abbreviation ?? origin?.name ?? "",
-							}}
-							to={{ label: destination?.name ?? "" }}
-						/>
-					</SheetFrame>
-				) : searchState === "error" ? (
-					<SheetFrame
-						title="Erro ao criar solicitação"
-						footer={
-							<>
-								<Button onPress={dismissAndExit}>
-									<Text>Voltar</Text>
-								</Button>
-							</>
-						}
-						shouldWrapChildren
-					>
-						<View className="items-center gap-4 py-2">
-							<View className="size-16 items-center justify-center rounded-full bg-destructive/20">
-								<Icon
-									icon={ClockAlert}
-									size={28}
-									color="--destructive-foreground"
-								/>
-							</View>
-							<Text className="text-center text-base leading-6 text-foreground">
-								Não foi possível criar sua solicitação.{"\n\n"}
-								Verifique sua conexão e tente novamente.
-							</Text>
-						</View>
-					</SheetFrame>
-				) : (
-					<SheetFrame
-						title="Procurando contribuintes..."
-						footer={
-							<>
-								<Button disabled>
-									<Text className="mb-0.5">Procurando</Text>
-									<ActivityIndicator
-										size={16}
-										color="white"
-									/>
-								</Button>
-								<Button
-									variant="outline"
-									onPress={dismissAndExit}
-								>
-									<Text>Cancelar</Text>
-								</Button>
-							</>
-						}
-						shouldWrapChildren
-					>
-						<View className="items-center gap-4 py-2">
-							<SearchIndicator />
-							<View className="flex-row items-center gap-2">
-								<Icon
-									icon={Timer}
-									size={16}
-									color="--muted-foreground"
-								/>
-								<Text className="text-sm text-muted-foreground">
-									{elapsedSeconds < 60
-										? `${elapsedSeconds}s`
-										: `${Math.floor(elapsedSeconds / 60)}m${elapsedSeconds % 60}s`}
-								</Text>
-							</View>
-							<Text className="text-center text-base leading-6 text-foreground">
-								Aguarde um pouco enquanto procuramos. {"\n"}O
-								tempo médio de espera é de 1-10m.
-							</Text>
-						</View>
-
-						<AddressRoute
-							className="bg-input p-4 rounded-lg gap-4"
-							from={{
-								label:
-									origin?.abbreviation ?? origin?.name ?? "",
-							}}
-							to={{ label: destination?.name ?? "" }}
-						/>
-					</SheetFrame>
-				)}
-			</StageSheet>
-
-			<StageSheet
-				stage="trip"
+			<TripStage
 				modalRef={tripRef}
-				onDismiss={handleDismiss}
-				colorScheme={isDark ? "dark" : "light"}
-			>
-				<SheetFrame
-					title="Vá até o ponto de partida"
-					description={`${origin?.abbreviation ? `${origin?.abbreviation} - ` : ""}${origin?.name ?? ""}`}
-					footer={
-						<Button variant="destructive" onPress={dismissAndExit}>
-							<Text>Cancelar deslocamento</Text>
-						</Button>
-					}
-					shouldWrapChildren
-				>
-					<View className="gap-6 rounded-md border border-border bg-card px-4 py-4">
-						<View className="flex-row items-start gap-4">
-							<Avatar
-								alt="Avatar do contribuinte"
-								className="size-12"
-							>
-								{scholarInfo?.image ? (
-									<AvatarImage
-										source={{
-											uri: scholarInfo.image,
-										}}
-									/>
-								) : null}
-								<AvatarFallback>
-									<Text>
-										{scholarInfo?.name
-											?.split(" ")
-											.map((n) => n[0])
-											.join("")
-											.slice(0, 2)
-											.toUpperCase() ?? ""}
-									</Text>
-								</AvatarFallback>
-							</Avatar>
-							<View className="flex-1 gap-0.5">
-								<View className="flex-row items-center justify-between gap-3">
-									<Text className="text-[16px] font-semibold leading-6 text-foreground">
-										{scholarInfo?.name ?? "Contribuinte"}
-									</Text>
-								</View>
-							</View>
-						</View>
-					</View>
-
-					<AddressRoute
-						className="bg-input p-4 rounded-lg"
-						from={{
-							label: origin?.abbreviation ?? origin?.name ?? "",
-						}}
-						to={{
-							label: destination?.name ?? "",
-						}}
-						maxLines={2}
-						shouldShowRoute
-					/>
-				</SheetFrame>
-			</StageSheet>
+				handleDismiss={handleDismiss}
+				isDark={isDark}
+				origin={origin}
+				destination={destination}
+				scholarInfo={scholarInfo}
+				dismissAndExit={dismissAndExit}
+			/>
 		</View>
 	);
 }

@@ -8,6 +8,7 @@ import { Check, CircleX, Locate, MapPin } from "lucide-react-native";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
 
+import { PlaceCard } from "@/components/place-card";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
@@ -21,8 +22,7 @@ import { cn } from "@/lib/utils";
 
 import { FromMarker, ToMarker } from "@/assets/route";
 
-import { PlaceCard } from "../place-card";
-import type { Place } from "./types";
+import type { Place } from "../types";
 
 const CURRENT_LOCATION = "__current_location__" as const;
 
