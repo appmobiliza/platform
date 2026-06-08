@@ -80,6 +80,20 @@ export async function notifyUnansweredRequests(
 			);
 		}
 
+		// Notifica os bolsistas para remover a solicitação da lista de pendentes
+		try {
+			await realtime.publish(
+				"requests:pending",
+				"request:unattended",
+				{ requestId: request.id },
+			);
+		} catch (e) {
+			console.error(
+				"[Timeout] Failed to publish request:unattended to pending channel:",
+				e,
+			);
+		}
+
 		unattendedCount++;
 	}
 

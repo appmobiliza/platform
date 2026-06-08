@@ -82,5 +82,19 @@ export const accept = scholarProcedure
 			);
 		}
 
+		// Notifica os demais bolsistas para remover a solicitação da lista de pendentes
+		try {
+			await ctx.realtime.publish(
+				"requests:pending",
+				"request:accepted",
+				{ requestId: input.requestId },
+			);
+		} catch (publishError) {
+			console.error(
+				"[Realtime] Failed to publish request:accepted to pending channel:",
+				publishError,
+			);
+		}
+
 		return { request, attendance };
 	});

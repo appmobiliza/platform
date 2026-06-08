@@ -21,6 +21,7 @@ export enum ServiceStatus {
 	Pending = "pending",
 	During = "during",
 	Concluded = "concluded",
+	Cancelled = "cancelled",
 }
 
 export type Service = {
@@ -166,6 +167,7 @@ export function PendingRequestCard({
 								onAccept();
 							}
 						}}
+						className="w-full"
 						disabled={isAccepting}
 					>
 						{isAccepting ? (

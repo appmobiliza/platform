@@ -36,12 +36,10 @@ function RequestFlowSheet() {
 		dismissAndExit,
 		handleDismiss,
 		isCreating,
-		message,
 		setOrigin,
 		origin,
 		searchingRef,
 		setDestination,
-		setMessage,
 		startConfirmRef,
 		transitionTo,
 		tripRef,
@@ -232,7 +230,11 @@ function RequestFlowSheet() {
 					>
 						<View className="items-center gap-4 py-2">
 							<View className="size-16 items-center justify-center rounded-full bg-destructive/20">
-								<ClockAlert size={28} color="--destructive" />
+								<Icon
+									icon={ClockAlert}
+									size={28}
+									color="--destructive-foreground"
+								/>
 							</View>
 							<Text className="text-center text-base leading-6 text-foreground">
 								Nenhum contribuente aceitou sua solicitação no
@@ -268,7 +270,7 @@ function RequestFlowSheet() {
 								<Icon
 									icon={ClockAlert}
 									size={28}
-									color="--destructive"
+									color="--destructive-foreground"
 								/>
 							</View>
 							<Text className="text-center text-base leading-6 text-foreground">

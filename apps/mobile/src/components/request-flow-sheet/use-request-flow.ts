@@ -96,6 +96,33 @@ function useRequestFlow() {
 	// Mutação para cancelar manualmente
 	const { mutateAsync: cancelRequest } = trpc.requests.cancel.useMutation();
 
+	// ─── Guarda idempotente para evitar cancelamentos duplicados ──────────────
+	//
+	// Como as chamadas de cancelamento são fire-and-forget e podem vir de
+	// múltiplos caminhos (dismissAndExit, handleDismiss, cleanup de desmonte),
+	// esta ref garante que o cancelamento só seja enviado uma vez por request.
+	const cancelRequestedRef = React.useRef(false);
+
+	// Reseta o guard sempre que um novo requestId for definido
+	React.useEffect(() => {
+		cancelRequestedRef.current = false;
+		void activeRequestId;
+	}, [activeRequestId]);
+
+	const safeCancelRequest = React.useCallback(
+		(requestId: string) => {
+			if (cancelRequestedRef.current) return;
+			cancelRequestedRef.current = true;
+			cancelRequest({ requestId }).catch((err) => {
+				console.error(
+					"[useRequestFlow] Failed to cancel request:",
+					err,
+				);
+			});
+		},
+		[cancelRequest],
+	);
+
 	const openStage = React.useCallback(
 		(stage: Stage) => {
 			activeStageRef.current = stage;
@@ -135,6 +162,34 @@ function useRequestFlow() {
 		}
 	}, []);
 
+	// ─── Cancela requisição ativa ao desmontar ─────────────────────────────
+	//
+	// Quando o usuário navega para trás (botão de voltar ou gesto) enquanto
+	// está na busca ativa, o componente desmonta sem passar pelo handleDismiss.
+	// Este efeito garante que a solicitação seja cancelada no backend.
+	const cancelOnUnmountRef = React.useRef(false);
+	cancelOnUnmountRef.current =
+		!!activeRequestId && searchState === "searching";
+
+	const setCancelOnUnmountFalse = React.useCallback(() => {
+		cancelOnUnmountRef.current = false;
+	}, []);
+
+	const activeRequestIdRef = React.useRef(activeRequestId);
+	activeRequestIdRef.current = activeRequestId;
+
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	React.useEffect(() => {
+		return () => {
+			if (
+				cancelOnUnmountRef.current &&
+				activeRequestIdRef.current
+			) {
+				safeCancelRequest(activeRequestIdRef.current);
+			}
+		};
+	}, []);
+
 	// ─── Persistência de estado ─────────────────────────────────────────────
 
 	// Persiste sempre que os valores relevantes mudam
@@ -143,7 +198,7 @@ function useRequestFlow() {
 			setRequestState({
 				activeRequestId,
 				searchState,
-				stage: activeStageRef.current,
+				stage: activeStage,
 				origin,
 				destination,
 				message,
@@ -153,7 +208,7 @@ function useRequestFlow() {
 		} else {
 			clearRequestState();
 		}
-	}, [activeRequestId, searchState, origin, destination, message, scholarInfo]);
+	}, [activeRequestId, searchState, activeStage, origin, destination, message, scholarInfo]);
 
 	// ─── Restauração de sessão ──────────────────────────────────────────────
 	//
@@ -334,8 +389,9 @@ function useRequestFlow() {
 		setActiveRequestId(null);
 		clearRequestState();
 		cancelAllNotifications();
+		setCancelOnUnmountFalse();
 		router.back();
-	}, [router, clearTimers]);
+	}, [router, clearTimers, setCancelOnUnmountFalse]);
 
 	const dismissAndExit = React.useCallback(() => {
 		queuedStageRef.current = null;
@@ -347,7 +403,7 @@ function useRequestFlow() {
 			activeRequestId &&
 			searchState === "searching"
 		) {
-			cancelRequest({ requestId: activeRequestId });
+			safeCancelRequest(activeRequestId);
 		}
 
 		clearTimers();
@@ -355,7 +411,7 @@ function useRequestFlow() {
 		setElapsedSeconds(0);
 		cancelAllNotifications();
 		refs[activeStageRef.current].current?.dismiss();
-	}, [refs, activeRequestId, cancelRequest, clearTimers, searchState]);
+	}, [refs, activeRequestId, safeCancelRequest, clearTimers, searchState]);
 
 	const handleDismiss = React.useCallback(
 		(stage: Stage) => {
@@ -382,10 +438,19 @@ function useRequestFlow() {
 					return;
 				}
 
+				// Cancela a solicitação no backend se o usuário fechou a busca
+				if (
+					stage === "searching" &&
+					activeRequestId &&
+					searchState === "searching"
+				) {
+					safeCancelRequest(activeRequestId);
+				}
+
 				exitFlow();
 			}
 		},
-		[exitFlow, openStage, refs],
+		[exitFlow, openStage, refs, activeRequestId, safeCancelRequest, searchState],
 	);
 
 	// ─── Timer de elapsed + timeout da busca ─────────────────────────────────

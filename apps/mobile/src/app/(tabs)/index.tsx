@@ -1,7 +1,7 @@
 import * as Location from "expo-location";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Clock, MapPin } from "lucide-react-native";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -36,14 +36,45 @@ const newsItems = [
 	},
 ];
 
+const getPosition = async () => {
+	// 1. Last known position — instant, no device settings dependency
+	const last = await Location.getLastKnownPositionAsync({
+		maxAge: 5 * 60 * 1000, // accept up to 5 min old
+		requiredAccuracy: 5000, // meters, loose enough for campus-level use
+	});
+	console.log(
+		`Last known position: ${last?.coords.latitude}, ${last?.coords.longitude}`,
+	);
+	if (last) return last;
+
+	// 2. Live fix — try descending accuracy until one works
+	for (const accuracy of [
+		Location.Accuracy.Balanced,
+		Location.Accuracy.Low,
+		Location.Accuracy.Lowest,
+	]) {
+		try {
+			console.log(`Trying accuracy: ${accuracy}`);
+			return await Location.getCurrentPositionAsync({ accuracy });
+		} catch {
+			// try next tier
+		}
+	}
+
+	throw new Error("Unable to determine location");
+};
+
 function StudentHome() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
 
 	// Fetch campus locations from the DB (source of truth)
 	const { data: campusLocations = [] } = trpc.locations.list.useQuery();
+	const campusLocationsRef = useRef(campusLocations);
+	campusLocationsRef.current = campusLocations;
 
 	useFocusEffect(
+		// biome-ignore lint/correctness/useExhaustiveDependencies: campusLocations is stable
 		useCallback(() => {
 			const setupLocation = async () => {
 				const { status } =
@@ -56,9 +87,7 @@ function StudentHome() {
 
 				// Permissão concedida — calcula o ponto UFAL mais próximo
 				try {
-					const position = await Location.getCurrentPositionAsync({
-						accuracy: Location.Accuracy.Balanced,
-					});
+					const position = await getPosition();
 
 					const userLat = position.coords.latitude;
 					const userLng = position.coords.longitude;
@@ -102,7 +131,7 @@ function StudentHome() {
 			};
 
 			setupLocation();
-		}, [router, campusLocations]),
+		}, [router]),
 	);
 
 	return (
@@ -142,8 +171,8 @@ function StudentHome() {
 					<PlaceCard
 						title="Restaurante Universitário"
 						description="Hoje, 12h35"
-						icon={{ name: "star" }}
 						className="mb-3"
+						icon={{ as: Clock }}
 					/>
 					<View className="flex-row gap-3">
 						<PlaceCard
@@ -156,7 +185,7 @@ function StudentHome() {
 							className="flex-1"
 							title="IQB"
 							description="Há 2 dias, 16h24"
-							icon={{ name: "clock" }}
+							icon={{ as: Clock }}
 						/>
 					</View>
 				</View>
@@ -193,7 +222,7 @@ function StudentHome() {
 						<PlaceCard
 							title="Instituto de Computação"
 							description="Último deslocamento há 12 dias"
-							icon={{ name: "map" }}
+							icon={{ as: MapPin }}
 						/>
 					</View>
 				</View>

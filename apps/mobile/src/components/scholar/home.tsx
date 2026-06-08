@@ -22,6 +22,7 @@ import {
 	ActivityIndicator,
 	Alert,
 	FlatList,
+	Pressable,
 	ScrollView,
 	View,
 } from "react-native";
@@ -76,7 +77,7 @@ const shiftLabels: Record<string, string> = {
 
 function EmptyStateCard({ children }: { children: ReactNode }) {
 	return (
-		<View className="flex-1 items-center justify-center rounded-2xl border border-border p-6">
+		<View className="items-center justify-center rounded-2xl border border-border p-6 min-h-[220px]">
 			{children}
 		</View>
 	);
@@ -116,6 +117,7 @@ function ShiftPill({ label, time }: { label: string; time: string }) {
 }
 
 function PreviousServicesList({ services }: { services?: Service[] }) {
+	const router = useRouter();
 	const previousServices = services ?? [];
 
 	return (
@@ -153,64 +155,80 @@ function PreviousServicesList({ services }: { services?: Service[] }) {
 							: undefined;
 
 					return (
-						<View className="rounded-md border border-border bg-card p-4">
-							<View className="mb-4 flex-row items-center justify-between">
-								<View className="flex-row items-center gap-3">
-									<Avatar
-										alt={`Avatar de ${item.student.name}`}
-										className="h-12 w-12"
-									>
-										<AvatarFallback>
-											<Text className="font-bold">
-												{initials}
+						<Pressable
+							onPress={() => router.push(`/history/${item.id}`)}
+						>
+							<View className="rounded-md border border-border bg-card p-4">
+								<View className="mb-4 flex-row items-center justify-between">
+									<View className="flex-row items-center gap-3">
+										<Avatar
+											alt={`Avatar de ${item.student.name}`}
+											className="h-12 w-12"
+										>
+											<AvatarFallback>
+												<Text className="font-bold">
+													{initials}
+												</Text>
+											</AvatarFallback>
+										</Avatar>
+										<View>
+											<Text className="text-base font-bold text-foreground">
+												{item.student.name}
 											</Text>
-										</AvatarFallback>
-									</Avatar>
-									<View>
-										<Text className="text-base font-bold text-foreground">
-											{item.student.name}
+											<Text className="text-sm text-muted-foreground">
+												{item.student.disability}
+											</Text>
+										</View>
+									</View>
+									<Badge
+										variant={
+											item.status ===
+											ServiceStatus.Cancelled
+												? "destructive"
+												: "success"
+										}
+									>
+										<Text>
+											{item.status ===
+											ServiceStatus.Cancelled
+												? "Cancelado"
+												: "Concluído"}
 										</Text>
+									</Badge>
+								</View>
+
+								<View className="flex-row items-center justify-between border-t border-border gap-6 pt-3">
+									<View className="flex-row items-center gap-1 flex-1">
+										<Icon
+											icon={MapPin}
+											color="--foreground"
+											size={16}
+										/>
+										<Text
+											className="flex-1 text-sm text-muted-foreground"
+											numberOfLines={1}
+											ellipsizeMode="tail"
+										>
+											{item.route.origin} →{" "}
+											{item.route.destination}
+										</Text>
+									</View>
+									<View className="flex-row items-center gap-1">
+										<Icon
+											icon={Clock}
+											color="--foreground"
+											size={16}
+										/>
 										<Text className="text-sm text-muted-foreground">
-											{item.student.disability}
+											{finishedTime}
+											{durationMinutes
+												? ` - ${durationMinutes}m`
+												: ""}
 										</Text>
 									</View>
 								</View>
-								<Badge variant="success">
-									<Text>Concluído</Text>
-								</Badge>
 							</View>
-
-							<View className="flex-row items-center justify-between border-t border-border gap-6 pt-3">
-								<View className="flex-row items-center gap-1 flex-1">
-									<Icon
-										icon={MapPin}
-										color="--foreground"
-										size={16}
-									/>
-									<Text
-										className="flex-1 text-sm text-muted-foreground"
-										numberOfLines={1}
-										ellipsizeMode="tail"
-									>
-										{item.route.origin} →{" "}
-										{item.route.destination}
-									</Text>
-								</View>
-								<View className="flex-row items-center gap-1">
-									<Icon
-										icon={Clock}
-										color="--foreground"
-										size={16}
-									/>
-									<Text className="text-sm text-muted-foreground">
-										{finishedTime}
-										{durationMinutes
-											? ` - ${durationMinutes}m`
-											: ""}
-									</Text>
-								</View>
-							</View>
-						</View>
+						</Pressable>
 					);
 				}}
 			/>
@@ -405,11 +423,50 @@ export function ScholarHome() {
 		if (!activeShiftLog) return;
 
 		const unsubPromise = getRealtimeClient().then((client) => {
-			return client.subscribe("requests:pending", "request:new", () => {
-				// Invalida a query de pendentes para re-buscar
-				// e mostrar a nova solicitação imediatamente
-				utils.requests.pending.invalidate();
-			});
+			const unsubNew = client.subscribe(
+				"requests:pending",
+				"request:new",
+				() => {
+					// Invalida a query de pendentes para re-buscar
+					// e mostrar a nova solicitação imediatamente
+					utils.requests.pending.invalidate();
+				},
+			);
+
+			const unsubAccepted = client.subscribe(
+				"requests:pending",
+				"request:accepted",
+				() => {
+					// Outro bolsista aceitou — remove da lista
+					utils.requests.pending.invalidate();
+				},
+			);
+
+			const unsubCancelled = client.subscribe(
+				"requests:pending",
+				"request:cancelled",
+				() => {
+					// Solicitação foi cancelada pelo estudante —
+					// invalida a lista para removê-la da UI
+					utils.requests.pending.invalidate();
+				},
+			);
+
+			const unsubUnattended = client.subscribe(
+				"requests:pending",
+				"request:unattended",
+				() => {
+					// Solicitação expirou — remove da lista
+					utils.requests.pending.invalidate();
+				},
+			);
+
+			return () => {
+				unsubNew();
+				unsubAccepted();
+				unsubCancelled();
+				unsubUnattended();
+			};
 		});
 
 		return () => {
@@ -547,7 +604,7 @@ export function ScholarHome() {
 		{ enabled: shiftState === "shift_active" },
 	);
 
-	// Filtra apenas os atendimentos concluídos e mapeia para o formato da UI
+	// Filtra atendimentos concluídos/cancelados do turno e mapeia para o formato da UI
 	const previousServices: Service[] = useMemo(() => {
 		if (!shiftHistory?.items) return [];
 
@@ -562,7 +619,7 @@ export function ScholarHome() {
 					new Date(item.completedAt).getTime() >= shiftStart,
 			)
 			.map((item) => ({
-				id: item.requestId,
+				id: item.id,
 				student: {
 					name:
 						item.request.studentProfile.user?.name ??
@@ -576,13 +633,16 @@ export function ScholarHome() {
 					origin: item.request.originLocation.name,
 					destination: item.request.destinationLocation.name,
 				},
-				status: ServiceStatus.Concluded,
 				startedAt: item.startedAt
 					? new Date(item.startedAt)
 					: undefined,
 				finishedAt: item.completedAt
 					? new Date(item.completedAt)
 					: undefined,
+				status:
+					item.request.status === "cancelled"
+						? ServiceStatus.Cancelled
+						: ServiceStatus.Concluded,
 			}));
 	}, [shiftHistory, activeShiftLog]);
 
@@ -654,7 +714,10 @@ export function ScholarHome() {
 	const isLoading = isLoadingShift;
 
 	return (
-		<ScrollView contentContainerClassName="flex-1 bg-background gap-4">
+		<ScrollView
+			contentContainerClassName="grow bg-background gap-4"
+			showsHorizontalScrollIndicator={false}
+		>
 			<View
 				className="bg-primary px-4 pb-4 gap-4"
 				style={{ paddingTop: insets.top + 24 }}

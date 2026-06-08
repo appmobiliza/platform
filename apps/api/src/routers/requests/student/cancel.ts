@@ -51,6 +51,7 @@ export const cancel = protectedProcedure
 			.where(eq(schema.serviceRequest.id, input.requestId))
 			.returning();
 
+		// Notifica o estudante via realtime
 		try {
 			await ctx.realtime.publish(
 				`request:${input.requestId}`,
@@ -60,6 +61,20 @@ export const cancel = protectedProcedure
 		} catch (error) {
 			console.error(
 				"[Realtime] Failed to publish request:cancelled event:",
+				error,
+			);
+		}
+
+		// Notifica os bolsistas disponíveis para remover a solicitação da lista
+		try {
+			await ctx.realtime.publish(
+				"requests:pending",
+				"request:cancelled",
+				{ requestId: input.requestId },
+			);
+		} catch (error) {
+			console.error(
+				"[Realtime] Failed to publish request:cancelled to pending channel:",
 				error,
 			);
 		}

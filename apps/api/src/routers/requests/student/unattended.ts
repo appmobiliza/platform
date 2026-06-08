@@ -69,5 +69,19 @@ export const markUnattended = protectedProcedure
 			);
 		}
 
+		// Notifica os bolsistas disponíveis para remover a solicitação da lista
+		try {
+			await ctx.realtime.publish(
+				"requests:pending",
+				"request:unattended",
+				{ requestId: input.requestId },
+			);
+		} catch (error) {
+			console.error(
+				"[Realtime] Failed to publish request:unattended to pending channel:",
+				error,
+			);
+		}
+
 		return updated;
 	});
