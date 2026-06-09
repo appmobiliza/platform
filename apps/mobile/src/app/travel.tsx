@@ -1,21 +1,27 @@
 import { disabilityTypeLabels } from "@mobiliza/contracts";
 
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft, Clock } from "lucide-react-native";
+import { ChevronLeft, Clock, MapIcon } from "lucide-react-native";
+import { useMemo, useState } from "react";
 import { ActivityIndicator, Alert, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddressRoute } from "@/components/address";
+import MapView from "@/components/map/map-view";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
+import { useOsrmRoute } from "@/hooks/use-osrm-route";
+import { useUserLocation } from "@/hooks/use-user-location";
 import {
 	clearActiveAttendance,
 	getActiveAttendance,
 	saveActiveAttendance,
 } from "@/lib/active-attendance-store";
+import { haversineMeters } from "@/lib/distance";
 import { trpc } from "@/lib/trpc/client";
+import { cn } from "@/lib/utils";
 
 export default function TravelScreen() {
 	const insets = useSafeAreaInsets();
@@ -43,7 +49,6 @@ export default function TravelScreen() {
 	const { mutate: startAttendance, isPending: isStarting } =
 		trpc.requests.start.useMutation({
 			onSuccess: () => {
-				// Atualiza o armazenamento local com a data de início
 				const current = getActiveAttendance();
 				if (current) {
 					saveActiveAttendance({
@@ -70,8 +75,6 @@ export default function TravelScreen() {
 				clearActiveAttendance();
 				utils.requests.getAttendanceById.invalidate({ requestId });
 				utils.requests.pending.invalidate();
-				// Zera o cache imediatamente para evitar que o efeito na home
-				// re-salve o atendimento no armazenamento local com dado obsoleto.
 				utils.requests.active.setData(undefined, null);
 				utils.requests.scholarHistory.invalidate();
 				Alert.alert(
@@ -92,12 +95,9 @@ export default function TravelScreen() {
 	const { mutate: completeAttendance, isPending: isCompleting } =
 		trpc.requests.complete.useMutation({
 			onSuccess: () => {
-				// Remove do armazenamento local ao concluir
 				clearActiveAttendance();
 				utils.requests.getAttendanceById.invalidate({ requestId });
 				utils.shiftLogs.getActiveShift.invalidate();
-				// Zera o cache imediatamente para evitar que o efeito na home
-				// re-salve o atendimento no armazenamento local com dado obsoleto.
 				utils.requests.active.setData(undefined, null);
 				utils.requests.scholarHistory.invalidate();
 				utils.requests.pending.invalidate();
@@ -136,9 +136,83 @@ export default function TravelScreen() {
 	const destinationName =
 		attendance?.request?.destinationLocation?.name ?? "";
 
+	const originCoords = attendance?.request?.originLocation
+		? {
+				latitude: attendance.request.originLocation.latitude,
+				longitude: attendance.request.originLocation.longitude,
+			}
+		: null;
+
+	const destinationCoords = attendance?.request?.destinationLocation
+		? {
+				latitude: attendance.request.destinationLocation.latitude,
+				longitude: attendance.request.destinationLocation.longitude,
+			}
+		: null;
+
 	// Determinar se o deslocamento já foi iniciado
 	const isDuring = !!attendance?.startedAt;
 	const hasCompleted = !!attendance?.completedAt;
+
+	// ─── Scholar location tracking ────────────────────────────────────────────
+
+	const userLocation = useUserLocation({ enabled: !hasCompleted });
+
+	// ─── Distances ────────────────────────────────────────────────────────────
+
+	const distanceToOrigin = useMemo(() => {
+		if (!userLocation || !originCoords) return null;
+		return haversineMeters(
+			userLocation.latitude,
+			userLocation.longitude,
+			originCoords.latitude,
+			originCoords.longitude,
+		);
+	}, [userLocation, originCoords]);
+
+	const distanceToDestination = useMemo(() => {
+		if (!userLocation || !destinationCoords) return null;
+		return haversineMeters(
+			userLocation.latitude,
+			userLocation.longitude,
+			destinationCoords.latitude,
+			destinationCoords.longitude,
+		);
+	}, [userLocation, destinationCoords]);
+
+	const isCloseToStudent =
+		distanceToOrigin !== null && distanceToOrigin <= 100;
+	const isFarFromDestination =
+		isDuring &&
+		distanceToDestination !== null &&
+		distanceToDestination > 100;
+
+	// ─── Map state ────────────────────────────────────────────────────────────
+
+	const [showMap, setShowMap] = useState(false);
+
+	// ─── Route path for map (OSRM) ────────────────────────────────────────
+
+	const routeTarget = useMemo(() => {
+		if (!isDuring) return originCoords;
+		return destinationCoords;
+	}, [isDuring, originCoords, destinationCoords]);
+
+	const { route: osrmRoute } = useOsrmRoute({
+		origin:
+			showMap && userLocation
+				? [userLocation.longitude, userLocation.latitude]
+				: null,
+		destination:
+			showMap && routeTarget
+				? [routeTarget.longitude, routeTarget.latitude]
+				: null,
+		enabled: showMap && !!userLocation && !!routeTarget,
+	});
+
+	const routePath = osrmRoute?.geometry.coordinates as
+		| Array<[number, number]>
+		| undefined;
 
 	// ─── Handlers ─────────────────────────────────────────────────────────────
 
@@ -150,6 +224,52 @@ export default function TravelScreen() {
 	const handleComplete = () => {
 		if (!requestId) return;
 		completeAttendance({ requestId });
+	};
+
+	const handleRequest = () => {
+		if (hasCompleted) {
+			router.back();
+			return;
+		}
+
+		if (isDuring) {
+			// Concluir atendimento
+			if (isFarFromDestination) {
+				Alert.alert(
+					"Atenção",
+					"Você ainda está distante do destino. Deseja concluir o atendimento mesmo assim?",
+					[
+						{ text: "Cancelar", style: "cancel" },
+						{
+							text: "Concluir",
+							style: "destructive",
+							onPress: handleComplete,
+						},
+					],
+				);
+			} else {
+				handleComplete();
+			}
+			return;
+		}
+
+		// Iniciar atendimento
+		if (!isCloseToStudent) {
+			Alert.alert(
+				"Atenção",
+				"Você ainda está distante do estudante. Deseja iniciar o atendimento mesmo assim?",
+				[
+					{ text: "Cancelar", style: "cancel" },
+					{
+						text: "Iniciar",
+						style: "destructive",
+						onPress: handleStart,
+					},
+				],
+			);
+		} else {
+			handleStart();
+		}
 	};
 
 	const handleReportProblem = () => {
@@ -167,6 +287,21 @@ export default function TravelScreen() {
 			],
 		);
 	};
+
+	// ─── Button derived props ─────────────────────────────────────────────────
+
+	const isPending = isStarting || isCompleting;
+
+	let buttonText: string;
+	if (hasCompleted) {
+		buttonText = "Voltar ao início";
+	} else if (isDuring) {
+		buttonText = "Concluir atendimento";
+	} else if (isCloseToStudent) {
+		buttonText = "Iniciar atendimento";
+	} else {
+		buttonText = "Aguardando encontro...";
+	}
 
 	// ─── Loading / Error ──────────────────────────────────────────────────────
 
@@ -283,56 +418,81 @@ export default function TravelScreen() {
 						</Text>
 					</View>
 				)}
+
+				{/* Map area when toggled */}
+				{showMap && (
+					<View className="h-64 rounded-lg overflow-hidden border border-border">
+						<MapView
+							stage="trip"
+							origin={
+								originCoords
+									? {
+											name: originName,
+											latitude: originCoords.latitude,
+											longitude: originCoords.longitude,
+										}
+									: undefined
+							}
+							destination={
+								destinationCoords
+									? {
+											name: destinationName,
+											latitude:
+												destinationCoords.latitude,
+											longitude:
+												destinationCoords.longitude,
+										}
+									: undefined
+							}
+							routePath={routePath}
+							showUserLocation
+							interactive={false}
+						/>
+					</View>
+				)}
 			</ScrollView>
 
 			{/* Footer Actions */}
 			<View className="px-6 pb-8 pt-4 gap-2">
-				{hasCompleted ? (
+				{/* Map toggle */}
+				{!hasCompleted && (
 					<Button
-						size="lg"
-						onPress={() => router.back()}
+						variant="outline"
+						size="sm"
+						onPress={() => setShowMap((prev) => !prev)}
 						className="w-full rounded-xl"
 					>
-						<Text>Voltar ao início</Text>
-					</Button>
-				) : isDuring ? (
-					<Button
-						size="lg"
-						onPress={handleComplete}
-						disabled={isCompleting}
-						className="w-full rounded-xl"
-					>
-						{isCompleting ? (
-							<ActivityIndicator size={20} color="white" />
-						) : (
-							<Text>Concluir atendimento</Text>
-						)}
-					</Button>
-				) : (
-					<Button
-						size="lg"
-						onPress={handleStart}
-						disabled={isStarting}
-						className="w-full rounded-xl"
-					>
-						{isStarting ? (
-							<ActivityIndicator size={20} color="white" />
-						) : (
-							<Text>Aguardando encontro...</Text>
-						)}
+						<MapIcon size={16} color="--primary" className="mr-2" />
+						<Text>{showMap ? "Ocultar mapa" : "Ver no mapa"}</Text>
 					</Button>
 				)}
+
+				{/* Main action button (unified) */}
+				<Button
+					size="lg"
+					onPress={handleRequest}
+					disabled={isPending}
+					className={cn("w-full rounded-xl", {
+						"opacity-50": isDuring && isFarFromDestination,
+					})}
+				>
+					{isPending ? (
+						<ActivityIndicator size={20} color="white" />
+					) : (
+						<Text>{buttonText}</Text>
+					)}
+				</Button>
 
 				{!hasCompleted && (
 					<Button
 						variant="outline"
 						className="bg-transparent dark:bg-transparent"
-						size={"lg"}
+						size="lg"
 						onPress={handleReportProblem}
 						disabled={isReporting}
 					>
 						{isReporting ? (
-							<ActivityIndicator size={20} color={"white"} />
+							<ActivityIndicator size={20} color="white" />
 						) : (
 							<Text>Reportar problema</Text>
 						)}

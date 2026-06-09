@@ -1,7 +1,6 @@
-import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -11,14 +10,16 @@ import type { Place } from "@/components/request-flow-sheet/types";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
+import { useOsrmRoute } from "@/hooks/use-osrm-route";
 import { useScholarPositions } from "@/hooks/use-scholar-positions";
 import { useScholarTripPosition } from "@/hooks/use-scholar-trip-position";
+import { useUserLocation } from "@/hooks/use-user-location";
 import {
 	getCachedCampusLocations,
 	setNearestPoint,
 } from "@/lib/location-store";
 import { findNearestCampusLocation } from "@/lib/map-utils";
-import { fetchOSRMRoute, formatDuration } from "@/lib/osrm";
+import { formatDuration } from "@/lib/osrm";
 import { useRequestState } from "@/lib/request-store";
 
 const BACK_ALLOWED_DESTINATIONS = [
@@ -74,131 +75,39 @@ export default function RequestScreen() {
 
 	// ─── User location (for trip routes) ────────────────────────────────────
 
-	const [userLocation, setUserLocation] = useState<{
-		latitude: number;
-		longitude: number;
-	} | null>(null);
-
-	useEffect(() => {
-		if (stage !== "trip") {
-			setUserLocation(null);
-			return;
-		}
-
-		let subscription: Location.LocationSubscription | null = null;
-		let cancelled = false;
-
-		const startWatching = async () => {
-			const { status } =
-				await Location.requestForegroundPermissionsAsync();
-			if (status !== "granted" || cancelled) return;
-
-			subscription = await Location.watchPositionAsync(
-				{
-					accuracy: Location.Accuracy.High,
-					timeInterval: 5000,
-					distanceInterval: 10,
-				},
-				(newLocation) => {
-					if (!cancelled) {
-						setUserLocation({
-							latitude: newLocation.coords.latitude,
-							longitude: newLocation.coords.longitude,
-						});
-					}
-				},
-			);
-		};
-
-		startWatching();
-
-		return () => {
-			cancelled = true;
-			if (subscription) {
-				subscription.remove();
-			}
-		};
-	}, [stage]);
+	const userLocation = useUserLocation({ enabled: stage === "trip" });
 
 	// ─── Route path for map (OSRM) ────────────────────────────────────────
 
-	const [routePath, setRoutePath] = useState<
-		Array<[number, number]> | undefined
-	>(undefined);
-	const [scholarDistance, setScholarDistance] = useState<string | null>(null);
-
-	useEffect(() => {
-		if (stage !== "trip") {
-			setRoutePath(undefined);
-			setScholarDistance(null);
-			return;
-		}
-
-		let cancelled = false;
-
-		const computeRoute = async () => {
-			if (!isOngoing && scholarPosition && origin) {
-				// Not ongoing → route from scholar to origin
-				const result = await fetchOSRMRoute(
-					[scholarPosition.longitude, scholarPosition.latitude],
-					[origin.longitude, origin.latitude],
-					"foot",
-				);
-
-				if (cancelled) return;
-
-				if (result) {
-					setRoutePath(
-						result.geometry.coordinates as Array<[number, number]>,
-					);
-					setScholarDistance(formatDuration(result.duration));
-				} else {
-					setRoutePath(undefined);
-					setScholarDistance(null);
-				}
-			} else if (isOngoing && destination) {
-				// Ongoing → route from user/origin to destination
-				const from = userLocation
+	const { route: osrmRoute } = useOsrmRoute({
+		origin:
+			!isOngoing && scholarPosition
+				? ([scholarPosition.longitude, scholarPosition.latitude] as [
+						number,
+						number,
+					])
+				: isOngoing && userLocation
 					? [userLocation.longitude, userLocation.latitude]
-					: origin
+					: isOngoing && origin
 						? [origin.longitude, origin.latitude]
-						: null;
+						: null,
+		destination:
+			!isOngoing && origin
+				? [origin.longitude, origin.latitude]
+				: isOngoing && destination
+					? [destination.longitude, destination.latitude]
+					: null,
+		enabled:
+			stage === "trip" &&
+			((!isOngoing && !!scholarPosition && !!origin) ||
+				(isOngoing && !!destination)),
+	});
 
-				if (from) {
-					const result = await fetchOSRMRoute(
-						from as [number, number],
-						[destination.longitude, destination.latitude],
-						"foot",
-					);
+	const routePath: Array<[number, number]> | undefined = osrmRoute?.geometry
+		.coordinates as Array<[number, number]> | undefined;
 
-					if (cancelled) return;
-
-					if (result) {
-						setRoutePath(
-							result.geometry.coordinates as Array<
-								[number, number]
-							>,
-						);
-					} else {
-						setRoutePath(undefined);
-					}
-				}
-			} else {
-				setRoutePath(undefined);
-				setScholarDistance(null);
-			}
-		};
-
-		computeRoute();
-
-		// Re-fetch every 30 seconds
-		const interval = setInterval(computeRoute, 30_000);
-
-		return () => {
-			cancelled = true;
-			clearInterval(interval);
-		};
-	}, [stage, isOngoing, scholarPosition, origin, destination, userLocation]);
+	const scholarDistance =
+		!isOngoing && osrmRoute ? formatDuration(osrmRoute.duration) : null;
 
 	// ─── Destination mode: find nearest point when center changes ──────────
 

@@ -1,7 +1,6 @@
 import { getCurrentShift, scholarShiftLabels } from "@mobiliza/contracts";
 
-import * as Location from "expo-location";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { View } from "react-native";
 
 import { AddressRoute } from "@/components/address";
@@ -10,10 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
+import { useOsrmRoute } from "@/hooks/use-osrm-route";
+import { useUserLocation } from "@/hooks/use-user-location";
 import { formatShortDate } from "@/lib/date";
 import { haversineMeters } from "@/lib/distance";
 import type { ScholarPosition } from "@/lib/map-utils";
-import { fetchOSRMRoute, formatArrivalTime, formatDuration } from "@/lib/osrm";
+import { formatArrivalTime, formatDuration } from "@/lib/osrm";
 import type { ScholarInfo } from "@/lib/request-store";
 
 import { SheetFrame, StageSheet } from "../subcomponents/layout";
@@ -29,49 +30,6 @@ function getDisplayShift(scholar: ScholarInfo | null): string {
 	// Usa o turno informado no payload, ou fallback para o turno atual baseado no horário
 	const shift = scholar?.shift ?? getCurrentShift();
 	return scholarShiftLabels[shift as keyof typeof scholarShiftLabels];
-}
-
-// ─── Hook for user location ──────────────────────────────────────────────────────
-
-function useUserLocation() {
-	const [location, setLocation] = useState<{
-		latitude: number;
-		longitude: number;
-	} | null>(null);
-
-	useEffect(() => {
-		let subscription: Location.LocationSubscription | null = null;
-
-		const startWatching = async () => {
-			const { status } =
-				await Location.requestForegroundPermissionsAsync();
-			if (status !== "granted") return;
-
-			subscription = await Location.watchPositionAsync(
-				{
-					accuracy: Location.Accuracy.High,
-					timeInterval: 5000,
-					distanceInterval: 10,
-				},
-				(newLocation) => {
-					setLocation({
-						latitude: newLocation.coords.latitude,
-						longitude: newLocation.coords.longitude,
-					});
-				},
-			);
-		};
-
-		startWatching();
-
-		return () => {
-			if (subscription) {
-				subscription.remove();
-			}
-		};
-	}, []);
-
-	return location;
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────────
@@ -91,124 +49,80 @@ function TripStage({
 
 	// ── Compute distance from user to origin ───────────────────────────────
 
-	const distanceToOrigin =
-		userLocation && origin
-			? haversineMeters(
-					userLocation.latitude,
-					userLocation.longitude,
-					origin.latitude,
-					origin.longitude,
-				)
-			: null;
+	const distanceToOrigin = useMemo(() => {
+		if (!userLocation || !origin) return null;
+		return haversineMeters(
+			userLocation.latitude,
+			userLocation.longitude,
+			origin.latitude,
+			origin.longitude,
+		);
+	}, [userLocation, origin]);
 
 	const isFarFromOrigin =
 		distanceToOrigin !== null && distanceToOrigin > 1000;
 
 	// ── Scholar ETA (route from scholar to origin) ────────────────────────
 
-	const [scholarEta, setScholarEta] = useState<string | null>(null);
+	const { route: scholarRoute } = useOsrmRoute({
+		origin: scholarPosition
+			? [scholarPosition.longitude, scholarPosition.latitude]
+			: null,
+		destination: origin ? [origin.longitude, origin.latitude] : null,
+		enabled: !isOngoing && !!scholarPosition && !!origin,
+	});
 
-	useEffect(() => {
-		if (isOngoing || !scholarPosition || !origin) {
-			setScholarEta(null);
-			return;
+	const scholarEta = useMemo<string | null>(() => {
+		if (scholarRoute) return formatDuration(scholarRoute.duration);
+
+		// Fallback when OSRM fails: straight-line distance / walking speed
+		if (scholarPosition && origin && !isOngoing) {
+			const distance = haversineMeters(
+				scholarPosition.latitude,
+				scholarPosition.longitude,
+				origin.latitude,
+				origin.longitude,
+			);
+			return formatDuration(distance / 1.4);
 		}
 
-		let cancelled = false;
-
-		const fetchEta = async () => {
-			const result = await fetchOSRMRoute(
-				[scholarPosition.longitude, scholarPosition.latitude],
-				[origin.longitude, origin.latitude],
-				"foot",
-			);
-
-			if (cancelled) return;
-
-			if (result) {
-				setScholarEta(formatDuration(result.duration));
-			} else {
-				// Fallback: estimate from straight-line distance
-				const distance = haversineMeters(
-					scholarPosition.latitude,
-					scholarPosition.longitude,
-					origin.latitude,
-					origin.longitude,
-				);
-				// walking speed ~1.4 m/s
-				const estimatedSeconds = distance / 1.4;
-				setScholarEta(formatDuration(estimatedSeconds));
-			}
-		};
-
-		fetchEta();
-
-		// Re-fetch every 30 seconds to keep ETA fresh
-		const interval = setInterval(fetchEta, 30_000);
-
-		return () => {
-			cancelled = true;
-			clearInterval(interval);
-		};
-	}, [isOngoing, scholarPosition, origin]);
+		return null;
+	}, [scholarRoute, scholarPosition, origin, isOngoing]);
 
 	// ── Destination ETA (route from user/origin to destination) ───────────
 
-	const [destinationEta, setDestinationEta] = useState<string | null>(null);
+	const destFrom = useMemo<[number, number] | null>(() => {
+		if (userLocation)
+			return [userLocation.longitude, userLocation.latitude];
+		if (origin) return [origin.longitude, origin.latitude];
+		return null;
+	}, [userLocation, origin]);
 
-	useEffect(() => {
-		if (!isOngoing || !destination) {
-			setDestinationEta(null);
-			return;
+	const { route: destinationRoute } = useOsrmRoute({
+		origin: destFrom,
+		destination: destination
+			? [destination.longitude, destination.latitude]
+			: null,
+		enabled: isOngoing && !!destFrom && !!destination,
+	});
+
+	const destinationEta = useMemo<string | null>(() => {
+		if (destinationRoute)
+			return formatArrivalTime(destinationRoute.duration);
+
+		// Fallback when OSRM fails
+		if (destFrom && destination && isOngoing) {
+			const distance = haversineMeters(
+				destFrom[1],
+				destFrom[0],
+				destination.latitude,
+				destination.longitude,
+			);
+			return formatArrivalTime(distance / 1.4);
 		}
 
-		let cancelled = false;
-
-		const fetchEta = async () => {
-			const from = userLocation
-				? ([userLocation.longitude, userLocation.latitude] as [
-						number,
-						number,
-					])
-				: origin
-					? ([origin.longitude, origin.latitude] as [number, number])
-					: null;
-
-			if (!from) return;
-
-			const result = await fetchOSRMRoute(
-				from,
-				[destination.longitude, destination.latitude],
-				"foot",
-			);
-
-			if (cancelled) return;
-
-			if (result) {
-				setDestinationEta(formatArrivalTime(result.duration));
-			} else {
-				// Fallback: estimate from straight-line distance
-				const distance = haversineMeters(
-					from[1],
-					from[0],
-					destination.latitude,
-					destination.longitude,
-				);
-				const estimatedSeconds = distance / 1.4;
-				setDestinationEta(formatArrivalTime(estimatedSeconds));
-			}
-		};
-
-		fetchEta();
-
-		// Re-fetch every 30 seconds
-		const interval = setInterval(fetchEta, 30_000);
-
-		return () => {
-			cancelled = true;
-			clearInterval(interval);
-		};
-	}, [isOngoing, destination, origin, userLocation]);
+		return null;
+	}, [destinationRoute, destFrom, destination, isOngoing]);
 
 	// ── Derive title / description / accessory ────────────────────────────
 
