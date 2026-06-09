@@ -223,16 +223,6 @@ export default function MapView({
 			};
 		}
 
-		console.log("[MapView] routeGeoJSON:", result ? "set" : "null", {
-			stage,
-			coordCount: result?.geometry?.coordinates?.length,
-			firstCoord: result?.geometry?.coordinates?.[0],
-			lastCoord:
-				result?.geometry?.coordinates?.[
-					(result?.geometry?.coordinates?.length ?? 1) - 1
-				],
-		});
-
 		return result;
 	}, [routePath, stage, origin, destination, userLocation]);
 

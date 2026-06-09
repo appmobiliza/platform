@@ -153,47 +153,36 @@ export default function RequestScreen() {
 	// Route path: prefer OSRM route, fallback to a meaningful straight line
 	// so the map never shows origin→destination when we need user→origin.
 	const routePath = useMemo<Array<[number, number]> | undefined>(() => {
+		// Only compute routes for stages where a line should be drawn
+		if (stage !== "start-confirm" && stage !== "trip") return undefined;
+
 		let path: Array<[number, number]> | undefined;
 
-		if (osrmRoute?.geometry?.coordinates?.length >= 2) {
+		if (
+			osrmRoute?.geometry?.coordinates &&
+			osrmRoute.geometry.coordinates.length >= 2
+		) {
 			path = osrmRoute.geometry.coordinates as Array<[number, number]>;
-			console.log(
-				"[RequestScreen] routePath: using OSRM route (",
-				path.length,
-				" points)",
-			);
 		} else if (!isOngoing && isFarFromOrigin && userLocation && origin) {
 			path = [
 				[userLocation.longitude, userLocation.latitude],
 				[origin.longitude, origin.latitude],
 			];
-			console.log("[RequestScreen] routePath: fallback user→origin");
 		} else if (!isOngoing && !isFarFromOrigin && origin && destination) {
 			path = [
 				[origin.longitude, origin.latitude],
 				[destination.longitude, destination.latitude],
 			];
-			console.log(
-				"[RequestScreen] routePath: fallback origin→destination",
-			);
 		} else if (isOngoing && userLocation && destination) {
 			path = [
 				[userLocation.longitude, userLocation.latitude],
 				[destination.longitude, destination.latitude],
 			];
-			console.log("[RequestScreen] routePath: fallback user→destination");
-		} else {
-			console.log("[RequestScreen] routePath: none —", {
-				isOngoing,
-				isFarFromOrigin,
-				hasUser: !!userLocation,
-				hasOrigin: !!origin,
-				hasDest: !!destination,
-			});
 		}
 
 		return path;
 	}, [
+		stage,
 		osrmRoute,
 		isOngoing,
 		isFarFromOrigin,
