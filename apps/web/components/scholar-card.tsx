@@ -1,5 +1,3 @@
-import type { ScholarShiftValues } from "@mobiliza/contracts";
-
 import { ScholarDetailsTrigger } from "@/components/details";
 import { ProgressWithLabel } from "@/components/progress-with-label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,7 +15,6 @@ const MONTHLY_HOURS_GOAL = 40;
 const STATUS_LABEL: Record<CachedScholar["status"], string> = {
 	available: "Disponível",
 	busy: "Em atendimento",
-	off_shift: "Fora do turno",
 	pending: "Pendente",
 };
 
@@ -27,22 +24,8 @@ const STATUS_VARIANT: Record<
 > = {
 	available: "success",
 	busy: "warning",
-	off_shift: "destructive",
 	pending: "secondary",
 };
-
-function getShiftLabel(shift: ScholarShiftValues) {
-	switch (shift) {
-		case "morning":
-			return "Manhã";
-		case "afternoon":
-			return "Tarde";
-		case "night":
-			return "Noite";
-		default:
-			return shift;
-	}
-}
 
 export function ScholarCard({ scholar }: { scholar: CachedScholar }) {
 	return (
@@ -63,10 +46,7 @@ export function ScholarCard({ scholar }: { scholar: CachedScholar }) {
 							{scholar.user.name}
 						</p>
 						<p className="text-sm text-muted-foreground">
-							{getShiftLabel(
-								scholar.profile.shift as ScholarShiftValues,
-							)}{" "}
-							• {scholar.profile.course}
+							{scholar.profile.course}
 						</p>
 					</div>
 				</div>

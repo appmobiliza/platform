@@ -1,7 +1,5 @@
 "use client";
 
-import { getCurrentShift } from "@mobiliza/contracts";
-
 import { DetailsSidebar } from "@/components/details/details-sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +27,6 @@ const chartConfig = {
 const STATUS_LABEL: Record<CachedScholar["status"], string> = {
 	available: "Disponível",
 	busy: "Em atendimento",
-	off_shift: "Fora do turno",
 	pending: "Pendente",
 };
 
@@ -39,34 +36,8 @@ const STATUS_VARIANT: Record<
 > = {
 	available: "success",
 	busy: "warning",
-	off_shift: "destructive",
 	pending: "secondary",
 };
-
-function getShiftLabel(shift: string) {
-	switch (shift) {
-		case "morning":
-			return "Manhã";
-		case "afternoon":
-			return "Tarde";
-		case "night":
-			return "Noite";
-		default:
-			return shift;
-	}
-}
-
-function getScholarStatus(scholar: CachedScholar) {
-	if (scholar.profile.shift !== getCurrentShift()) {
-		return "off_shift";
-	}
-
-	if (scholar.profile.isAvailable) {
-		return "available";
-	}
-
-	return "unavailable";
-}
 
 function ScholarDetailsContent({ scholar }: { scholar: CachedScholar }) {
 	return (
@@ -221,14 +192,9 @@ export function ScholarDetailsSidebar() {
 							</div>
 						</div>
 
-						<div className="flex items-center gap-2 flex-row">
-							<Badge variant={STATUS_VARIANT[scholar.status]}>
-								{STATUS_LABEL[scholar.status]}
-							</Badge>
-							<Badge variant={"secondary"}>
-								{getShiftLabel(scholar.profile.shift)}
-							</Badge>
-						</div>
+						<Badge variant={STATUS_VARIANT[scholar.status]}>
+							{STATUS_LABEL[scholar.status]}
+						</Badge>
 					</div>
 				)
 			}

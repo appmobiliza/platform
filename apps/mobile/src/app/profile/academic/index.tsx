@@ -40,10 +40,11 @@ export default function AcademicProfile() {
 				<SettingsButton
 					title="Turno"
 					label={
-						studentShiftLabels[profile?.shift ?? ""] ||
-						"Não informado"
+						studentShiftLabels[
+							userData.studentProfile?.shift ?? ""
+						] || "Não informado"
 					}
-					href={`/profile/academic/shift?shift=${encodeURIComponent(profile?.shift ?? "")}`}
+					href={`/profile/academic/shift?shift=${encodeURIComponent(userData.studentProfile?.shift ?? "")}`}
 				/>
 			)}
 			<SettingsButton

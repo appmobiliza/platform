@@ -1,7 +1,5 @@
 "use client";
 
-import { scholarShiftLabels } from "@mobiliza/contracts";
-
 import { Frown, Search, XIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
@@ -14,8 +12,6 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { CachedScholar } from "@/lib/cached-data";
 
-import { ComboboxMultiple } from "./combobox-multiple";
-
 // ─── Helpers ────────────────────────────────────────────────────────────
 
 type StatusFilter = "all" | "active" | "inactive";
@@ -25,15 +21,6 @@ function matchesStatus(scholar: CachedScholar, filter: StatusFilter): boolean {
 	return filter === "active"
 		? scholar.profile.isActive
 		: !scholar.profile.isActive;
-}
-
-function matchesShifts(
-	scholar: CachedScholar,
-	selectedShifts: string[],
-): boolean {
-	if (selectedShifts.length === 0) return true;
-	const shiftKey = scholar.profile.shift;
-	return shiftKey != null && selectedShifts.includes(shiftKey);
 }
 
 // ─── Component ──────────────────────────────────────────────────────────
@@ -51,61 +38,7 @@ export function ScholarsListClient({ initialData }: Props) {
 	// ── State ─────────────────────────────────────────────────────────
 	const [rawQuery, setRawQuery] = useState("");
 	const [selectedStatus, setSelectedStatus] = useState<StatusFilter>("all");
-	const [selectedShifts, setSelectedShifts] = useState<string[]>([]);
-
 	const debouncedQuery = useDebounce(rawQuery, 250);
-
-	// ── Combobox value sync ───────────────────────────────────────────
-	// When no shift is selected, the combobox shows "Todos os turnos"
-	// internally. We keep `selectedShifts` as the raw array of keys.
-	// The combobox receives `value` as the labels (so it reflects the UI),
-	// and `onValueChange` syncs back to keys.
-	const comboboxItems = useMemo(
-		() =>
-			Object.entries(scholarShiftLabels).map(([value, label]) => ({
-				id: value,
-				label,
-			})),
-		[],
-	);
-
-	const comboboxValue = useMemo(
-		() =>
-			selectedShifts.length === 0
-				? ["Todos os turnos"]
-				: selectedShifts.map(
-						(s) =>
-							scholarShiftLabels[
-								s as keyof typeof scholarShiftLabels
-							] ?? s,
-					),
-		[selectedShifts],
-	);
-
-	const handleComboboxChange = useCallback((nextLabels: string[]) => {
-		// "Todos os turnos" means no selection
-		if (nextLabels.includes("Todos os turnos")) {
-			setSelectedShifts([]);
-			return;
-		}
-
-		// Map labels back to keys
-		const labelToKey = Object.fromEntries(
-			Object.entries(scholarShiftLabels).map(([k, v]) => [v, k]),
-		);
-
-		const keys = nextLabels
-			.map((l) => labelToKey[l])
-			.filter(Boolean) as string[];
-
-		// If all shifts are selected, treat as "todos"
-		if (keys.length === Object.keys(scholarShiftLabels).length) {
-			setSelectedShifts([]);
-			return;
-		}
-
-		setSelectedShifts(keys);
-	}, []);
 
 	// ── Handlers ──────────────────────────────────────────────────────
 	const handleQueryChange = useCallback(
@@ -133,7 +66,6 @@ export function ScholarsListClient({ initialData }: Props) {
 
 		return initialData.scholars.filter((scholar) => {
 			if (!matchesStatus(scholar, selectedStatus)) return false;
-			if (!matchesShifts(scholar, selectedShifts)) return false;
 			if (!query) return true;
 
 			return [
@@ -143,7 +75,7 @@ export function ScholarsListClient({ initialData }: Props) {
 				scholar.profile.campus,
 			].some((value) => value.toLowerCase().includes(query));
 		});
-	}, [initialData.scholars, debouncedQuery, selectedStatus, selectedShifts]);
+	}, [initialData.scholars, debouncedQuery, selectedStatus]);
 
 	// ── Render ────────────────────────────────────────────────────────
 	return (
@@ -172,15 +104,6 @@ export function ScholarsListClient({ initialData }: Props) {
 						</Button>
 					)}
 				</div>
-
-				{/* Shifts */}
-				<ComboboxMultiple
-					className="w-full md:max-w-sm"
-					items={comboboxItems}
-					allLabel="Todos os turnos"
-					value={comboboxValue}
-					onValueChange={handleComboboxChange}
-				/>
 
 				{/* Status toggle */}
 				<div className="md:pr-6">
