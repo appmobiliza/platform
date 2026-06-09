@@ -971,12 +971,14 @@ export function ScholarHome() {
 							) : (
 								<>
 									<SectionTitle label="Aguardando resposta">
-										<Badge variant="warning">
-											<Text>
-												{pendingServices.length}
-												{" pendente"}
-											</Text>
-										</Badge>
+										{pendingServices.length > 0 && (
+											<Badge variant="warning">
+												<Text>
+													{pendingServices.length}
+													{" pendente"}
+												</Text>
+											</Badge>
+										)}
 									</SectionTitle>
 
 									{pendingServices.length > 0 ? (

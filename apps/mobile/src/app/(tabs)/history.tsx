@@ -1,5 +1,5 @@
 import { ClockAlert, ClockFading } from "lucide-react-native";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { ActivityIndicator, FlatList, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -30,9 +30,12 @@ function StudentHistory() {
 			},
 		);
 
-	const allItems = data?.pages.flatMap((page) => page.items) ?? [];
+	const allItems = useMemo(
+		() => data?.pages.flatMap((page) => page.items) ?? [],
+		[data],
+	);
 	const featured = allItems[0];
-	const rest = allItems.slice(1);
+	const rest = useMemo(() => allItems.slice(1), [allItems]);
 
 	const renderItem = useCallback(
 		({ item, index }: { item: (typeof rest)[number]; index: number }) => {
@@ -40,7 +43,7 @@ function StudentHistory() {
 				item.originLocation?.name ?? item.originLocationId;
 			const createdAt = new Date(item.createdAt);
 			const subtitle = formatDateTime(createdAt);
-			const isUnattended = item.status === "unattended";
+			// const isUnattended = item.status === "unattended";
 
 			return (
 				<SimpleHistoryItem
@@ -50,18 +53,18 @@ function StudentHistory() {
 					title={originName}
 					subtitle={subtitle}
 					href={`/history/${item.id}`}
-					trailing={
-						isUnattended ? (
-							<Badge variant="destructive">
-								<Icon
-									icon={ClockAlert}
-									size={12}
-									color="--destructive-foreground"
-								/>
-								<Text className="text-xs">Pendente</Text>
-							</Badge>
-						) : undefined
-					}
+					// trailing={
+					// 	isUnattended ? (
+					// 		<Badge variant="destructive">
+					// 			<Icon
+					// 				icon={ClockAlert}
+					// 				size={12}
+					// 				color="--destructive-foreground"
+					// 			/>
+					// 			<Text className="text-xs">Pendente</Text>
+					// 		</Badge>
+					// 	) : undefined
+					// }
 				/>
 			);
 		},

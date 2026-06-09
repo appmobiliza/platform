@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-
 import { Search } from "lucide-react-native";
+import { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { useAccessibilityPreferences } from "@/hooks/use-accessibility-preferences";
@@ -36,7 +35,7 @@ function SearchBarContent({
 			accessibilityHint={accessibilityHint}
 			className="w-full"
 		>
-			<View className="relative h-14 w-full flex-row items-center rounded-full border border-border bg-input px-4 shadow-sm shadow-black/5 dark:border-transparent dark:bg-input/50">
+			<View className="relative h-14 w-full flex-row items-center rounded-full border border-border bg-card px-4 shadow-sm shadow-black/5 dark:border-transparent dark:bg-input/50">
 				<Icon
 					icon={Search}
 					size={20}

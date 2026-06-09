@@ -20,7 +20,7 @@ interface SheetFrameProps {
 	headerPosition?: "start" | "center";
 	accessory?: React.ReactNode;
 	children: React.ReactNode;
-	footer: React.ReactNode;
+	footer?: React.ReactNode;
 	shouldWrapChildren?: boolean;
 }
 
@@ -61,9 +61,11 @@ function SheetFrame({
 			) : (
 				children
 			)}
-			<SheetFooter className="gap-3 border-t border-border px-4 pb-6 pt-3">
-				{footer}
-			</SheetFooter>
+			{footer && (
+				<SheetFooter className="gap-3 border-t border-border px-4 pb-6 pt-3">
+					{footer}
+				</SheetFooter>
+			)}
 		</>
 	);
 }

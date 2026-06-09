@@ -1,9 +1,9 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { Clock } from "lucide-react-native";
+import { useLocalSearchParams } from "expo-router";
 import { useMemo } from "react";
-import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
+import { ActivityIndicator, FlatList, View } from "react-native";
 
 import { Header } from "@/components/header";
+import { SimpleHistoryItem } from "@/components/simple-history-item";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Text } from "@/components/ui/text";
 
@@ -16,7 +16,6 @@ export default function ScholarShiftDetails() {
 	useLightStatusBar();
 
 	const { id: dateKey } = useLocalSearchParams<{ id: string }>();
-	const router = useRouter();
 
 	const { data, isLoading } = trpc.requests.scholarHistory.useInfiniteQuery(
 		{ limit: 50 },
@@ -106,46 +105,33 @@ export default function ScholarShiftDetails() {
 						: "--:--";
 
 					return (
-						<Pressable
-							onPress={() => router.push(`/history/${item.id}`)}
+						<SimpleHistoryItem
 							className={cn(
-								"flex-row items-center p-5 gap-4 border-b border-border",
-								index === dayAttendances.length - 1 &&
-									"border-transparent",
+								index === dayAttendances.length - 1
+									? ""
+									: "border-b",
 							)}
-						>
-							<View className="flex-row items-start flex-1">
-								<View className="bg-primary p-4 rounded-sm items-center justify-center mr-4">
-									<Clock size={20} color="white" />
-								</View>
-								<View className="flex-1 mr-2">
-									<Text
-										className="font-bold text-foreground text-lg"
-										numberOfLines={2}
+							title={title}
+							subtitle={`${startTime} - ${endTime}`}
+							href={`/history/${item.id}`}
+							trailing={
+								<View className="flex-row items-center justify-start max-w-2/3">
+									<Avatar
+										alt={`Avatar de ${studentName}`}
+										className="mr-2"
 									>
-										{title}
-									</Text>
-									<Text className="text-muted-foreground text-sm font-medium">
-										{startTime} - {endTime}
+										<AvatarFallback>
+											<Text className="text-xs font-bold">
+												{studentInitials}
+											</Text>
+										</AvatarFallback>
+									</Avatar>
+									<Text className="font-medium text-sm text-foreground">
+										{studentName.split(" ")[0]}
 									</Text>
 								</View>
-							</View>
-							<View className="flex-row items-center justify-start min-w-1/3">
-								<Avatar
-									alt={`Avatar de ${studentName}`}
-									className="mr-2"
-								>
-									<AvatarFallback>
-										<Text className="text-xs font-bold">
-											{studentInitials}
-										</Text>
-									</AvatarFallback>
-								</Avatar>
-								<Text className="font-medium text-sm text-foreground">
-									{studentName}
-								</Text>
-							</View>
-						</Pressable>
+							}
+						/>
 					);
 				}}
 				ListEmptyComponent={

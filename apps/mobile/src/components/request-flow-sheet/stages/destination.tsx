@@ -68,7 +68,7 @@ function DestinationStage({
 			>
 				<Pressable
 					className={cn(
-						"justify-between px-3 dark:bg-input/50 border-border dark:border-input flex w-full min-w-0 flex-row items-center rounded-md border py-1 text-base text-foreground shadow-sm shadow-black/5 sm:h-9 pl-3",
+						"justify-between px-3 dark:bg-input/50 border-border dark:border-input min-h-11 flex w-full min-w-0 flex-row items-center rounded-md border py-1 text-base text-foreground shadow-sm shadow-black/5 sm:h-9 pl-3",
 					)}
 					onPress={() => transitionTo("route-selection")}
 				>

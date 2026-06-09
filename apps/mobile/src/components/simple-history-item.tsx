@@ -33,7 +33,7 @@ export const SimpleHistoryItem = ({
 			<Pressable
 				android_ripple={{ color: "rgba(0, 0, 0, 0.25)" }}
 				className={cn(
-					"flex-row items-center py-4 px-6 gap-4 border-border flex-1 active:bg-accent/50 android:active:bg-transparent transition-colors",
+					"flex-row items-center py-4 px-6 gap-4 border-border active:bg-accent/50 android:active:bg-transparent transition-colors",
 					className,
 				)}
 			>
@@ -43,7 +43,7 @@ export const SimpleHistoryItem = ({
 				<View className="flex-1">
 					<Text
 						className="text-foreground font-bold text-lg"
-						numberOfLines={2}
+						numberOfLines={3}
 					>
 						{title}
 					</Text>
@@ -51,7 +51,7 @@ export const SimpleHistoryItem = ({
 						{subtitle}
 					</Text>
 				</View>
-				{trailing}
+				{trailing ? <View className="shrink-0">{trailing}</View> : null}
 			</Pressable>
 		</Link>
 	);

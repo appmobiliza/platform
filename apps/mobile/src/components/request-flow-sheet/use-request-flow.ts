@@ -277,10 +277,13 @@ function useRequestFlow() {
 						setScholarInfo(persistedState.scholar);
 					} else if (current.attendance?.scholarProfile?.user) {
 						const user = current.attendance.scholarProfile.user;
+						const profile = current.attendance.scholarProfile;
 						setScholarInfo({
 							id: user.id,
 							name: user.name ?? "",
 							image: user.image ?? null,
+							createdAt: profile.createdAt ? new Date(profile.createdAt).toISOString() : null,
+							shift: null, // será obtido via getCurrentShift() no componente
 						});
 					}
 
@@ -531,12 +534,16 @@ function useRequestFlow() {
 					scholarId?: string;
 					scholarName?: string;
 					scholarImage?: string | null;
+					scholarCreatedAt?: string | null;
+					scholarShift?: string | null;
 				};
 				if (payload?.scholarId && payload?.scholarName) {
 					setScholarInfo({
 						id: payload.scholarId,
 						name: payload.scholarName,
 						image: payload.scholarImage ?? null,
+						createdAt: payload.scholarCreatedAt ?? null,
+						shift: payload.scholarShift ?? null,
 					});
 				}
 

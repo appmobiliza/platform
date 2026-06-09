@@ -17,6 +17,21 @@ const monthNames = [
 	"dezembro",
 ] as const;
 
+const monthAbbrNames = [
+	"jan",
+	"fev",
+	"mar",
+	"abr",
+	"mai",
+	"jun",
+	"jul",
+	"ago",
+	"set",
+	"out",
+	"nov",
+	"dez",
+] as const;
+
 /**
  * Format a date as "1 de agosto"
  */
@@ -49,6 +64,21 @@ export function formatTimeRange(start: Date, end: Date): string {
 	const fmt = (d: Date) =>
 		`${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
 	return `${fmt(start)} - ${fmt(end)}`;
+}
+
+/**
+ * Format a date ISO string as abbreviated month/year, e.g. "mar/2025"
+ */
+export function formatShortDate(isoString: string | null): string {
+	if (!isoString) return "";
+	try {
+		const date = new Date(isoString);
+		const month = monthAbbrNames[date.getMonth()];
+		const year = date.getFullYear();
+		return `${month}/${year}`;
+	} catch {
+		return "";
+	}
 }
 
 /**

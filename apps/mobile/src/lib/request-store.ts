@@ -13,6 +13,8 @@ export interface ScholarInfo {
 	id: string;
 	name: string;
 	image: string | null;
+	createdAt: string | null; // ISO string da data de cadastro do bolsista
+	shift: string | null; // turno atual ("morning" | "afternoon" | "night")
 }
 
 interface PersistedRequestState {

@@ -1,6 +1,6 @@
 import { RequestIdSchema } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db";
-import { and, eq } from "@mobiliza/db/drizzle";
+import { and, eq, isNull } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
 import { scholarProcedure } from "@mobiliza/trpc";
 
@@ -26,6 +26,14 @@ export const accept = scholarProcedure
 					"Você está marcado como indisponível. Ative sua disponibilidade antes de aceitar solicitações.",
 			});
 		}
+
+		// Busca o turno ativo do bolsista para incluir no evento
+		const activeShiftLog = await db.query.scholarShiftLog.findFirst({
+			where: and(
+				eq(schema.scholarShiftLog.scholarProfileId, scholarProfile.id),
+				isNull(schema.scholarShiftLog.endedAt),
+			),
+		});
 
 		// Update atômico: só avança se a solicitação ainda estiver "pending".
 		// O WHERE status = 'pending' em conjunto com RETURNING garante que,
@@ -73,6 +81,8 @@ export const accept = scholarProcedure
 					scholarId: ctx.session.user.id,
 					scholarName: ctx.session.user.name,
 					scholarImage: ctx.session.user.image ?? null,
+					scholarCreatedAt: scholarProfile.createdAt?.toISOString() ?? null,
+					scholarShift: activeShiftLog?.shift ?? null,
 				},
 			);
 		} catch (publishError) {
