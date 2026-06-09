@@ -1,4 +1,5 @@
 import type {
+	ClientCredentials,
 	RealtimeAdapter,
 	RealtimePayload,
 	Unsubscribe,
@@ -74,6 +75,13 @@ export class MockRealtimeAdapter implements RealtimeAdapter {
 	async disconnect(): Promise<void> {
 		this.listeners.clear();
 		this.published = [];
+	}
+
+	async getClientCredentials(): Promise<ClientCredentials> {
+		return {
+			provider: "mock",
+			config: {},
+		};
 	}
 
 	/** Limpa o histórico de publicações entre testes */

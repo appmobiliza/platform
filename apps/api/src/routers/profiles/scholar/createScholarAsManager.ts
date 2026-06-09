@@ -35,6 +35,7 @@ export const createScholarAsManager = managerProcedure
 				id: uuidv7(),
 				name,
 				email: normalizedEmail,
+				emailVerified: true,
 				role: "scholar",
 			})
 			.returning();

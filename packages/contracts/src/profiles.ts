@@ -136,8 +136,8 @@ export type ReviewExtraShiftRequestInput = z.infer<
 
 export const InsertStudentSchema = z.object({
 	...SharedProfileSchema,
-	course: z.enum(courseValues),
-	shift: z.enum(studentShiftValues),
+	course: z.enum(courseValues, { error: "Curso deve ser selecionado" }),
+	shift: z.enum(studentShiftValues, { error: "Turno deve ser selecionado" }),
 	nickname: z.string().optional(),
 	attendanceNotes: z.string().optional(),
 	simplifiedInterface: z.boolean().optional(),
@@ -148,4 +148,6 @@ export const InsertStudentSchema = z.object({
 		.min(1, { message: "Tipo de deficiência deve ser selecionado" }),
 });
 
-export const UpdateStudentSchema = InsertStudentSchema.partial();
+export const UpdateStudentSchema = InsertStudentSchema.partial().extend({
+	name: z.string().min(1, "Nome é obrigatório").optional(),
+});

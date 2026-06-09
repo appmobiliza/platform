@@ -11,15 +11,15 @@
 			"default": "./dist/index.js"
 		},
 		"./client": {
-			"types": "./dist/client.d.ts",
+			"types": "./src/client.ts",
 			"default": "./dist/client.js"
 		},
 		"./drizzle": {
-			"types": "./dist/drizzle.d.ts",
+			"types": "./src/drizzle.ts",
 			"default": "./dist/drizzle.js"
 		},
 		"./schema": {
-			"types": "./dist/schema/index.d.ts",
+			"types": "./src/schema/index.ts",
 			"default": "./dist/schema/index.js"
 		}
 	},

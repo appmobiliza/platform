@@ -12,7 +12,6 @@ import {
 	campusValues,
 	courseValues,
 	genderValues,
-	scholarShiftValues,
 } from "@mobiliza/contracts";
 import type { NewScholarProfile } from "@mobiliza/db/schema";
 import { scholarProfile, user } from "@mobiliza/db/schema";
@@ -81,7 +80,6 @@ function generateScholarProfile(userId: string): NewScholarProfile {
 		campus: faker.helpers.arrayElement([...campusValues]),
 		phone: generatePhone(),
 		cpf: generateCPF(),
-		shift: faker.helpers.arrayElement([...scholarShiftValues]),
 		gender: faker.helpers.arrayElement([...genderValues]),
 		isAvailable,
 		isActive: faker.datatype.boolean(0.9),

@@ -5,9 +5,11 @@
  * incluindo cache de informações do usuário em MMKV para acesso rápido.
  */
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
+import { Platform } from "react-native";
 
 import { toSessionUser } from "@/types/session";
+
 import { authClient } from "./auth-client";
 import { storage } from "./storage";
 
@@ -42,15 +44,16 @@ export function cacheUserInfo(user: {
 	if (user.image) {
 		storage.set(CACHE_KEYS.userImage, user.image);
 	} else {
-		storage.delete(CACHE_KEYS.userImage);
+		storage.remove(CACHE_KEYS.userImage);
 	}
 	storage.set(CACHE_KEYS.userRole, user.role);
 }
 
 export function clearUserCache() {
 	for (const key of Object.values(CACHE_KEYS)) {
-		storage.delete(key);
+		storage.remove(key);
 	}
+	notifyHasProfileListeners();
 }
 
 export function getCachedUser() {
@@ -65,8 +68,32 @@ export function getCachedUser() {
 	};
 }
 
+// ─── Reactive subscriptions ───────────────────────────────────────────────────
+
+/**
+ * Conjunto de callbacks que o React (via `useSyncExternalStore`) registra
+ * para saber quando o valor de `hasProfile` mudar. Quando `setHasProfile`
+ * é chamado, todos os listeners são notificados e o React re-renderiza
+ * os componentes que consomem este valor.
+ */
+const hasProfileListeners = new Set<() => void>();
+
+function subscribeToHasProfile(callback: () => void): () => void {
+	hasProfileListeners.add(callback);
+	return () => {
+		hasProfileListeners.delete(callback);
+	};
+}
+
+function notifyHasProfileListeners(): void {
+	for (const listener of hasProfileListeners) {
+		listener();
+	}
+}
+
 export function setHasProfile(value: boolean) {
 	storage.set(CACHE_KEYS.hasProfile, String(value));
+	notifyHasProfileListeners();
 }
 
 export function getHasProfile(): boolean {
@@ -76,10 +103,43 @@ export function getHasProfile(): boolean {
 // ─── Hooks ────────────────────────────────────────────────────────────────────
 
 /**
+ * Sincroniza a sessão do Better Auth para o cache (localStorage) na web.
+ *
+ * Em OAuth (Google), o login causa um redirect completo do navegador,
+ * destruindo o contexto JS antes de `cacheUserInfo` ser chamado em
+ * `auth.tsx`. Este hook garante que o cache seja preenchido sempre
+ * que a sessão for restaurada (cookie persistente), rodando apenas
+ * em plataforma web.
+ */
+export function useSyncSessionCache() {
+	const { data: session, isPending } = authClient.useSession();
+
+	useEffect(() => {
+		if (Platform.OS !== "web") return;
+		if (isPending || !session?.user) return;
+
+		const user = toSessionUser(session.user as Record<string, unknown>);
+		if (!user) return;
+
+		cacheUserInfo({
+			id: user.id,
+			name: user.name,
+			email: user.email,
+			image: user.image,
+			role: user.role,
+		});
+	}, [session, isPending]);
+}
+
+/**
  * Indica se o usuário está autenticado.
  *
  * Durante o carregamento inicial da sessão (isPending do Better Auth),
  * usa o cache síncrono do MMKV como fallback para evitar flash de tela.
+ *
+ * A re-renderização após `clearUserCache()` é garantida pelo
+ * `useSyncExternalStore` em `useHasProfile`, que dispara quando
+ * `notifyHasProfileListeners()` é chamado.
  */
 export function useIsLoggedIn(): boolean {
 	const { data: session, isPending } = authClient.useSession();
@@ -87,6 +147,12 @@ export function useIsLoggedIn(): boolean {
 	// Fallback síncrono durante carregamento do SecureStore
 	if (isPending) {
 		return storage.getString(CACHE_KEYS.userRole) !== undefined;
+	}
+
+	// Cache limpo → considera deslogado, mesmo que a query ainda não
+	// tenha atualizado (ex.: logo após signOut)
+	if (storage.getString(CACHE_KEYS.userRole) === undefined) {
+		return false;
 	}
 
 	return session !== null;
@@ -140,11 +206,22 @@ export function useUser() {
  *
  * - Scholars sempre têm perfil (criado pelo gestor).
  * - Students têm perfil após finalizar o onboarding.
+ *
+ * Usa `useSyncExternalStore` para que o React re-renderize sempre que
+ * `setHasProfile` for chamado em outro componente (ex.: onboarding), evitando
+ * que o `Stack.Protected` em `_layout.tsx` fique com o valor desatualizado.
  */
 export function useHasProfile(): boolean {
 	const role = useUserRole();
 
+	const hasProfile = useSyncExternalStore(
+		subscribeToHasProfile,
+		getHasProfile,
+		getHasProfile,
+	);
+
+	// Scholars always have a profile (created by the manager)
 	if (role === UserRole.Scholar) return true;
 
-	return getHasProfile();
+	return hasProfile;
 }

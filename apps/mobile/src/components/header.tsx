@@ -11,28 +11,53 @@ interface HeaderProps {
 	title?: string;
 	description?: string;
 	size?: "default" | "small";
-	allowBack?: boolean;
+	href?: "back" | string;
+	onClick?: () => void;
+	isDisabled?: boolean;
 }
 
 export function Header({
-	allowBack = true,
 	title,
 	description,
 	size = "default",
+	href = "back",
+	onClick,
+	isDisabled,
 }: HeaderProps) {
 	const router = useRouter();
 
+	const showBackButton = Boolean(href !== null || onClick);
+
+	const handlePress = () => {
+		if (onClick) {
+			onClick();
+			return;
+		}
+
+		if (!href) {
+			return;
+		}
+
+		if (href === "back") {
+			router.back();
+			return;
+		}
+
+		router.push(href);
+	};
+
 	return (
-		<View className="gap-4 pt-12 px-4">
-			{allowBack && (
-				<Pressable onPress={() => router.back()}>
+		<View className="gap-4 px-4 pt-12">
+			{showBackButton ? (
+				<Pressable onPress={handlePress} disabled={isDisabled}>
 					<Icon
 						icon={ArrowLeftToLine}
 						size={32}
 						color="--foreground"
 					/>
 				</Pressable>
-			)}
+			) : null}
+
 			<View className="gap-1">
 				{title ? (
 					<Text
@@ -44,6 +69,7 @@ export function Header({
 						{title}
 					</Text>
 				) : null}
+
 				{description ? <Text>{description}</Text> : null}
 			</View>
 		</View>

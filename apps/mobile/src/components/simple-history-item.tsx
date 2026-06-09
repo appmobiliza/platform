@@ -1,5 +1,6 @@
 import { Link } from "expo-router";
 import { Clock } from "lucide-react-native";
+import type { ReactNode } from "react";
 import { Pressable, View } from "react-native";
 
 import { Text } from "@/components/ui/text";
@@ -11,6 +12,7 @@ interface SimpleHistoryItemProps {
 	title: string;
 	subtitle: string;
 	href: string;
+	trailing?: ReactNode;
 }
 
 export const SimpleHistoryItem = ({
@@ -18,6 +20,7 @@ export const SimpleHistoryItem = ({
 	title,
 	subtitle,
 	href,
+	trailing,
 }: SimpleHistoryItemProps) => {
 	return (
 		<Link
@@ -30,7 +33,7 @@ export const SimpleHistoryItem = ({
 			<Pressable
 				android_ripple={{ color: "rgba(0, 0, 0, 0.25)" }}
 				className={cn(
-					"flex-row items-center py-4 px-6 gap-4 border-border flex-1 active:bg-accent/50 android:active:bg-transparent transition-colors",
+					"flex-row items-center py-4 px-6 gap-4 border-border active:bg-accent/50 android:active:bg-transparent transition-colors",
 					className,
 				)}
 			>
@@ -40,7 +43,7 @@ export const SimpleHistoryItem = ({
 				<View className="flex-1">
 					<Text
 						className="text-foreground font-bold text-lg"
-						numberOfLines={2}
+						numberOfLines={3}
 					>
 						{title}
 					</Text>
@@ -48,10 +51,7 @@ export const SimpleHistoryItem = ({
 						{subtitle}
 					</Text>
 				</View>
-				{/* <Button variant={"secondary"} className="rounded-full">
-				<RotateCcw size={16} className="text-secondary-foreground" />
-				<Text className="font-medium">Reagendar</Text>
-			</Button> */}
+				{trailing ? <View className="shrink-0">{trailing}</View> : null}
 			</Pressable>
 		</Link>
 	);

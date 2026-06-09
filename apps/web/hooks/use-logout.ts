@@ -1,10 +1,10 @@
 "use client";
 
-import { authClient } from "@mobiliza/auth/client";
-
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+
+import { authClient } from "@/lib/auth/client";
 
 export function useLogout() {
 	const router = useRouter();

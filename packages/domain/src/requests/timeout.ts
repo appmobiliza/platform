@@ -4,33 +4,98 @@ import type { RealtimeAdapter } from "@mobiliza/realtime";
 
 import { and, eq, lt } from "drizzle-orm";
 
+/**
+ * Tempo limite padrão (fallback) em minutos para solicitações sem resposta.
+ * Usado quando não há configuração no banco.
+ */
+const DEFAULT_TIMEOUT_MINUTES = 5;
+
 export async function notifyUnansweredRequests(
 	db: Database,
 	realtime: RealtimeAdapter,
 ) {
-	// Tempo limite = 5 minutos atrás
-	const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+	// Tenta carregar o tempo limite configurado no banco
+	const setting = await db.query.appSettings.findFirst({
+		where: eq(schema.appSettings.key, "maxServiceRequestTime"),
+	});
+
+	const timeoutMinutes =
+		(setting?.value as number | undefined) ?? DEFAULT_TIMEOUT_MINUTES;
+
+	const threshold = new Date(
+		Date.now() - timeoutMinutes * 60 * 1000,
+	);
+
+	const now = new Date();
 
 	const unansweredRequests = await db.query.serviceRequest.findMany({
 		where: and(
 			eq(schema.serviceRequest.status, "pending"),
-			lt(schema.serviceRequest.createdAt, fiveMinutesAgo),
+			lt(schema.serviceRequest.createdAt, threshold),
 		),
 	});
 
 	if (unansweredRequests.length === 0) {
-		return { notified: 0 };
+		return { notified: 0, unattended: 0 };
 	}
 
-	// Notifica o canal dos gestores (admins) para cada solicitação atrasada
-	// Poderíamos agrupar em uma só mensagem, mas por simplicidade enviamos eventos individuais
+	// Marca as solicitações como não atendidas e notifica os canais pertinentes
+	let unattendedCount = 0;
+
 	for (const request of unansweredRequests) {
-		await realtime.publish("admin:alerts", "timeout:request_unanswered", {
-			requestId: request.id,
-			studentProfileId: request.studentProfileId,
-			createdAt: request.createdAt,
-		});
+		await db
+			.update(schema.serviceRequest)
+			.set({ status: "unattended", respondedAt: now, updatedAt: now })
+			.where(eq(schema.serviceRequest.id, request.id));
+
+		// Notifica o estudante via realtime
+		try {
+			await realtime.publish(
+				`request:${request.id}`,
+				"request:unattended",
+				{ requestId: request.id },
+			);
+		} catch (e) {
+			console.error(
+				"[Timeout] Failed to publish request:unattended:",
+				e,
+			);
+		}
+
+		// Notifica os gestores
+		try {
+			await realtime.publish(
+				"admin:alerts",
+				"timeout:request_unanswered",
+				{
+					requestId: request.id,
+					studentProfileId: request.studentProfileId,
+					createdAt: request.createdAt,
+				},
+			);
+		} catch (e) {
+			console.error(
+				"[Timeout] Failed to publish admin alert:",
+				e,
+			);
+		}
+
+		// Notifica os bolsistas para remover a solicitação da lista de pendentes
+		try {
+			await realtime.publish(
+				"requests:pending",
+				"request:unattended",
+				{ requestId: request.id },
+			);
+		} catch (e) {
+			console.error(
+				"[Timeout] Failed to publish request:unattended to pending channel:",
+				e,
+			);
+		}
+
+		unattendedCount++;
 	}
 
-	return { notified: unansweredRequests.length };
+	return { notified: unansweredRequests.length, unattended: unattendedCount };
 }

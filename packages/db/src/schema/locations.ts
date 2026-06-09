@@ -32,7 +32,7 @@ export const campusLocation = pgTable("campus_location", {
 	 * Abreviação usada em listagens compactas e no histórico de atendimentos.
 	 * Ex: "IC", "RU", "Biblioteca"
 	 */
-	abbreviation: text("abbreviation").notNull(),
+	abbreviation: text("abbreviation"),
 
 	/*
 	 * Descrição de como chegar ao local ou referências úteis para

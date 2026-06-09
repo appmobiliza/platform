@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
-
 import { Info } from "lucide-react-native";
-import { View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { ActivityIndicator, View } from "react-native";
 import Animated, {
 	Easing,
 	useAnimatedStyle,
@@ -15,14 +14,14 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
-import { cn } from "@/lib/utils";
-
 import { AddressRoute } from "../address";
+import { Icon } from "../ui/icon";
 
 export enum ServiceStatus {
 	Pending = "pending",
 	During = "during",
 	Concluded = "concluded",
+	Cancelled = "cancelled",
 }
 
 export type Service = {
@@ -31,7 +30,7 @@ export type Service = {
 		name: string;
 		avatarUrl?: string;
 		disability: string;
-		observation: string;
+		observation?: string;
 	};
 	route: {
 		origin: string;
@@ -40,20 +39,20 @@ export type Service = {
 	status: ServiceStatus;
 	startedAt?: Date;
 	finishedAt?: Date;
+	createdAt?: Date;
 };
 
 interface PendingRequestCardProps {
 	service: Service;
 	onAccept: () => void;
-	onReject: () => void;
+	isAccepting?: boolean;
 }
 
 export function PendingRequestCard({
 	service,
 	onAccept,
-	onReject,
+	isAccepting = false,
 }: PendingRequestCardProps) {
-	const [hasAccepted, setHasAccepted] = useState(false);
 	const opacity = useSharedValue(0.4);
 
 	useEffect(() => {
@@ -83,25 +82,32 @@ export function PendingRequestCard({
 		};
 	});
 
-	const currentDate = new Date();
+	const [now, setNow] = useState(() => new Date());
+
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setNow(new Date());
+		}, 1000);
+
+		return () => clearInterval(interval);
+	}, []);
+
+	const elapsedSeconds = useMemo(() => {
+		if (isAccepting) return null;
+		const refTime = service.createdAt ?? service.startedAt;
+		if (!refTime) return 0;
+		const diffMs = now.getTime() - refTime.getTime();
+		return Math.max(0, Math.floor(diffMs / 1000));
+	}, [isAccepting, service.createdAt, service.startedAt, now]);
 
 	return (
 		<View className="p-1">
-			{!hasAccepted && (
-				<Animated.View
-					className="absolute inset-0 rounded-2xl"
-					style={[animatedStyle]}
-				/>
-			)}
+			<Animated.View
+				className="absolute inset-0 rounded-2xl"
+				style={[animatedStyle]}
+			/>
 
-			<View
-				className={cn(
-					"border border-border bg-card p-5 gap-4 rounded-xl",
-					{
-						"border-info-border border-2": hasAccepted,
-					},
-				)}
-			>
+			<View className="border border-border bg-card p-5 gap-4 rounded-xl">
 				<View className="flex-row items-start justify-between">
 					<View className="flex-row items-center gap-3">
 						<Avatar
@@ -128,16 +134,12 @@ export function PendingRequestCard({
 							</Text>
 						</View>
 					</View>
-					<Text
-						className={cn("mt-1 text-xs font-semibold", {
-							"text-warning-foreground":
-								service.status === ServiceStatus.Pending,
-							"text-info-foreground": hasAccepted,
-						})}
-					>
-						{hasAccepted
-							? "Em andamento"
-							: `há ${Math.floor((currentDate.getTime() - (service.startedAt?.getTime() ?? currentDate.getTime())) / 60000)} min`}
+					<Text className="mt-1 text-xs font-semibold text-warning-foreground">
+						{isAccepting
+							? "Aceitando..."
+							: elapsedSeconds !== null && elapsedSeconds < 60
+								? `há ${elapsedSeconds}s`
+								: `há ${elapsedSeconds !== null ? Math.floor(elapsedSeconds / 60) : 0}min`}
 					</Text>
 				</View>
 
@@ -152,38 +154,32 @@ export function PendingRequestCard({
 					size="lg"
 				/>
 
-				<View className="flex-row items-start rounded-sm bg-secondary p-3">
-					<Info
-						size={16}
-						className="mr-2 mt-0.5 text-muted-foreground"
-					/>
-					<Text className="flex-1 text-sm leading-snug text-foreground">
-						{service.student.observation}
-					</Text>
-				</View>
+				{service.student.observation && (
+					<View className="flex-row items-start rounded-sm bg-secondary p-3">
+						<Icon icon={Info} size={16} color="--foreground" />
+						<Text className="flex-1 text-sm leading-snug text-foreground ml-2">
+							{service.student.observation}
+						</Text>
+					</View>
+				)}
 
 				<View className="flex-row gap-3">
-					{!hasAccepted && (
-						<Button
-							variant="outline"
-							onPress={onReject}
-							className="px-6"
-						>
-							<Text className="font-semibold">Recusar</Text>
-						</Button>
-					)}
 					<Button
 						onPress={() => {
-							setHasAccepted(true);
-							onAccept();
+							if (!isAccepting) {
+								onAccept();
+							}
 						}}
-						className="flex-1"
+						className="w-full"
+						disabled={isAccepting}
 					>
-						<Text className="font-semibold">
-							{hasAccepted
-								? "Retomar atendimento"
-								: "Aceitar atendimento"}
-						</Text>
+						{isAccepting ? (
+							<ActivityIndicator size={20} color="white" />
+						) : (
+							<Text className="font-semibold">
+								Aceitar atendimento
+							</Text>
+						)}
 					</Button>
 				</View>
 			</View>

@@ -29,6 +29,28 @@ import { appRouter } from "./router.js";
 
 const app = new Hono();
 
+// ─── Realtime — Credenciais para o cliente ─────────────────────────────────────
+
+/**
+ * Endpoint genérico que retorna as credenciais necessárias para o
+ * client-side (app mobile, frontend web) conectar-se ao mesmo provedor
+ * de realtime configurado no servidor.
+ *
+ * O cliente nunca precisa saber qual provedor está sendo usado —
+ * ele recebe `{ provider, config }` e o `@mobiliza/realtime` resolve
+ * internamente.
+ */
+app.get("/api/realtime/credentials", async (c) => {
+	try {
+		const realtime = await getRealtimeAdapter();
+		const credentials = await realtime.getClientCredentials();
+		return c.json(credentials);
+	} catch (error) {
+		console.error("[realtime] Erro ao obter credenciais:", error);
+		return c.json({ error: "Erro ao obter credenciais de realtime" }, 500);
+	}
+});
+
 // ─── Cron Jobs ────────────────────────────────────────────────────────────────
 
 /**
@@ -91,22 +113,33 @@ app.on(["GET", "POST"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 
 // ─── tRPC ─────────────────────────────────────────────────────────────────────
 
-app.use(
-	"/trpc/*",
-	trpcServer({
-		router: appRouter,
-		createContext: (_opts, c) => createTRPCContext(c, getSession),
+/**
+ * Registra o tRPC nas duas variantes de rota:
+ * - `/trpc/*` → chamadas individuais a procedures (ex.: /trpc/profiles.me)
+ * - `/trpc`   → requisições batch (httpBatchLink), que POSTAM para /trpc
+ *                sem subpath adicional, com os paths das procedures no body
+ */
+const trpcHandler = trpcServer({
+	router: appRouter,
+	createContext: (_opts, c) => createTRPCContext(c, getSession),
 
-		onError:
-			apiEnv.NODE_ENV === "development"
-				? ({ path, error }) => {
-						console.error(
-							`[tRPC error] ${path ?? "unknown"}:`,
-							error,
-						);
-					}
-				: undefined,
-	}),
-);
+	onError:
+		apiEnv.NODE_ENV === "development"
+			? ({ path, error }) => {
+				// Ignora probes no endpoint raiz (sem path)
+				if (!path && error.code === "NOT_FOUND") return;
+				console.error(
+					`[tRPC error] ${path ?? "unknown"}:`,
+					error,
+				);
+			}
+			: undefined,
+});
+
+app.use("/trpc", async (c, next) => {
+	console.log("Agent:", c.req.header("User-Agent"), "IP:", c.req.header("User-Agent"));
+	return trpcHandler(c, next);
+});
+app.use("/trpc/*", trpcHandler);
 
 export default app;

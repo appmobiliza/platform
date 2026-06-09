@@ -5,6 +5,7 @@
  * procedures protegidas.
  */
 
+import type { ClientCredentials } from "@mobiliza/realtime";
 import type { Session, TRPCContext } from "@mobiliza/trpc";
 
 import { jest } from "@jest/globals";
@@ -33,6 +34,10 @@ export function createMockTRPCContext(
 			subscribe: jest.fn(() => () => { }),
 			unsubscribe: jest.fn(async () => { }),
 			disconnect: jest.fn(async () => { }),
+			getClientCredentials: jest.fn(async (): Promise<ClientCredentials> => ({
+				provider: "ably",
+				config: {},
+			})),
 		},
 		headers: new Headers(),
 		...overrides,
@@ -47,6 +52,10 @@ export function createNullSessionContext(): TRPCContext {
 			subscribe: jest.fn(() => () => { }),
 			unsubscribe: jest.fn(async () => { }),
 			disconnect: jest.fn(async () => { }),
+			getClientCredentials: jest.fn(async (): Promise<ClientCredentials> => ({
+				provider: "ably",
+				config: {},
+			})),
 		},
 		headers: new Headers(),
 	};

@@ -17,7 +17,7 @@ export const trpc = createTRPCReact<AppRouter>();
  * Útil para tipar componentes baseados em respostas da API.
  *
  * @example
- * type RequestOutput = RouterOutputs['requests']['available'][number];
+ * type RequestOutput = RouterOutputs['requests']['pending'][number];
  */
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 

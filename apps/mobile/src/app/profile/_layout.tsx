@@ -11,11 +11,7 @@ export default function ProfileLayout() {
 	const isScholar = role === "scholar";
 	const primary = useUnstableNativeVariable("--primary") as string;
 
-	const theme = isScholar
-		? SCHOLAR_THEME
-		: colorScheme === "dark"
-			? THEME.dark
-			: THEME.light;
+	const theme = isScholar ? SCHOLAR_THEME[colorScheme] : THEME[colorScheme];
 
 	const headerConfig = {
 		headerStyle: {
@@ -36,8 +32,6 @@ export default function ProfileLayout() {
 					headerShown: false,
 				}}
 			>
-				<Stack.Screen name="index" options={{ headerShown: false }} />
-
 				{/* Básico */}
 				<Stack.Screen
 					name="basic/index"

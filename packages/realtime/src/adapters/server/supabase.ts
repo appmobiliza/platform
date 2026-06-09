@@ -1,4 +1,5 @@
 import type {
+	ClientCredentials,
 	RealtimeAdapter,
 	RealtimePayload,
 	SupabaseAdapterOptions,
@@ -27,12 +28,16 @@ type RealtimeChannel = import("@supabase/supabase-js").RealtimeChannel;
 export class SupabaseRealtimeAdapter implements RealtimeAdapter {
 	private client: SupabaseClient;
 	private channels = new Map<string, RealtimeChannel>();
+	private supabaseUrl: string;
+	private supabaseAnonKey: string;
 
 	constructor(options: SupabaseAdapterOptions) {
 		// Importação dinâmica para não quebrar o bundle quando o Supabase não
 		// está instalado (ex.: quem usa o adaptador WebSocket)
 		const { createClient } =
 			require("@supabase/supabase-js") as typeof import("@supabase/supabase-js");
+		this.supabaseUrl = options.url;
+		this.supabaseAnonKey = options.anonKey;
 		this.client = createClient(options.url, options.anonKey, {
 			realtime: {
 				params: { eventsPerSecond: 10 },
@@ -95,6 +100,16 @@ export class SupabaseRealtimeAdapter implements RealtimeAdapter {
 			),
 		);
 		this.channels.clear();
+	}
+
+	async getClientCredentials(): Promise<ClientCredentials> {
+		return {
+			provider: "supabase",
+			config: {
+				url: this.supabaseUrl,
+				anonKey: this.supabaseAnonKey,
+			},
+		};
 	}
 
 	private getOrCreateChannel(channel: string): RealtimeChannel {

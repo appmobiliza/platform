@@ -4,14 +4,17 @@ import * as schema from "@mobiliza/db/schema";
 import { protectedProcedure } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 
 export const me = protectedProcedure
 	.query(async ({ ctx }) => {
 		const user = await db.query.user.findFirst({
 			where: eq(schema.user.id, ctx.session.user.id),
 			with: {
-				studentProfile: true,
+				studentProfile: {
+					with: {
+						disabilities: true,
+					},
+				},
 				scholarProfile: true,
 			},
 		});

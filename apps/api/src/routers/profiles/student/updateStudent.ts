@@ -22,7 +22,15 @@ export const updateStudent = protectedProcedure
 			});
 		}
 
-		const { disabilityTypes, ...profileData } = input;
+		const { name, disabilityTypes, ...profileData } = input;
+
+		// Atualiza o nome do usuário se informado
+		if (name) {
+			await db
+				.update(schema.user)
+				.set({ name, updatedAt: new Date() })
+				.where(eq(schema.user.id, ctx.session.user.id));
+		}
 
 		// Atualiza os campos do perfil, se houver
 		if (Object.keys(profileData).length > 0) {

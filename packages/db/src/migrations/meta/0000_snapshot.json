@@ -1,5 +1,5 @@
 {
-  "id": "f77a2f36-8983-468b-9530-683b94e843da",
+  "id": "3c60a045-aa5d-4f6b-97c5-25dcb8296205",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -542,7 +542,7 @@
           "name": "abbreviation",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "description": {
           "name": "description",
@@ -840,6 +840,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "course": {
+          "name": "course",
+          "type": "course",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
         "phone": {
           "name": "phone",
           "type": "text",
@@ -873,19 +880,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
-        },
-        "course": {
-          "name": "course",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "shift": {
-          "name": "shift",
-          "type": "scholar_shift",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
         },
         "cpf": {
           "name": "cpf",
@@ -938,6 +932,95 @@
           "nullsNotDistinct": false,
           "columns": [
             "cpf"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.scholar_shift_log": {
+      "name": "scholar_shift_log",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "scholar_profile_id": {
+          "name": "scholar_profile_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "date": {
+          "name": "date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "shift": {
+          "name": "shift",
+          "type": "scholar_shift",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "ended_at": {
+          "name": "ended_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "scholar_shift_log_scholar_profile_id_scholar_profile_id_fk": {
+          "name": "scholar_shift_log_scholar_profile_id_scholar_profile_id_fk",
+          "tableFrom": "scholar_shift_log",
+          "tableTo": "scholar_profile",
+          "columnsFrom": [
+            "scholar_profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "scholar_shift_log_scholar_profile_id_date_shift_unique": {
+          "name": "scholar_shift_log_scholar_profile_id_date_shift_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "scholar_profile_id",
+            "date",
+            "shift"
           ]
         }
       },
@@ -1120,6 +1203,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "course": {
+          "name": "course",
+          "type": "course",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
         "phone": {
           "name": "phone",
           "type": "text",
@@ -1153,13 +1243,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
-        },
-        "course": {
-          "name": "course",
-          "type": "course",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
         },
         "shift": {
           "name": "shift",
@@ -1449,6 +1532,113 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.app_settings": {
+      "name": "app_settings",
+      "schema": "",
+      "columns": {
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.shift_definition": {
+      "name": "shift_definition",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "shift": {
+          "name": "shift",
+          "type": "scholar_shift",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "day_of_week": {
+          "name": "day_of_week",
+          "type": "day_of_week",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "start_time": {
+          "name": "start_time",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "end_time": {
+          "name": "end_time",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_enabled": {
+          "name": "is_enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "shift_definition_shift_day_of_week_unique": {
+          "name": "shift_definition_shift_day_of_week_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "shift",
+            "day_of_week"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

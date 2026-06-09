@@ -1,9 +1,11 @@
-import { Appearance, Pressable, Text } from "react-native";
+import { Pressable, Text } from "react-native";
+
+import { getThemePreference, setThemePreference } from "@/lib/theme-store";
 
 function toggleTheme() {
-	const current = Appearance.getColorScheme();
+	const current = getThemePreference();
 
-	Appearance.setColorScheme(current === "dark" ? "light" : "dark");
+	setThemePreference(current === "dark" ? "light" : "dark");
 }
 
 export function ThemeToggle() {

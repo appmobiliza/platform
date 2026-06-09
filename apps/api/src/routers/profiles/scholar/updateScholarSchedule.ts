@@ -6,7 +6,6 @@ import { managerProcedure } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
 import { uuidv7 } from "uuidv7";
-import { z } from "zod";
 
 export const updateScholarSchedule = managerProcedure
 	.input(UpdateScholarScheduleSchema)
@@ -14,12 +13,20 @@ export const updateScholarSchedule = managerProcedure
 	.mutation(async ({ input }) => {
 		const { scholarId, entries } = input;
 
-		// Verifica se o bolsista existe
+		// Verifica se o bolsista existe e está ativo
 		const profile = await db.query.scholarProfile.findFirst({
 			where: eq(schema.scholarProfile.id, scholarId),
 		});
 
 		if (!profile) throw new TRPCError({ code: "NOT_FOUND" });
+
+		if (!profile.isActive) {
+			throw new TRPCError({
+				code: "FORBIDDEN",
+				message:
+					"Não é possível editar a escala de um bolsista inativo.",
+			});
+		}
 
 		await db.transaction(async (tx) => {
 			// Remove todas as entradas atuais

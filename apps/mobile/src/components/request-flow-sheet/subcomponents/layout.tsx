@@ -2,16 +2,17 @@ import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import type * as React from "react";
 import { View } from "react-native";
 
-import { THEME } from "@/lib/theme";
-import { cn } from "@/lib/utils";
-
 import {
 	SheetDescription,
 	SheetFooter,
 	SheetHeader,
 	SheetTitle,
-} from "../ui/sheet";
-import type { Stage } from "./types";
+} from "@/components/ui/sheet";
+
+import { THEME } from "@/lib/theme";
+import { cn } from "@/lib/utils";
+
+import type { Stage } from "../types";
 
 interface SheetFrameProps {
 	title: string;
@@ -19,7 +20,7 @@ interface SheetFrameProps {
 	headerPosition?: "start" | "center";
 	accessory?: React.ReactNode;
 	children: React.ReactNode;
-	footer: React.ReactNode;
+	footer?: React.ReactNode;
 	shouldWrapChildren?: boolean;
 }
 
@@ -60,9 +61,11 @@ function SheetFrame({
 			) : (
 				children
 			)}
-			<SheetFooter className="gap-3 border-t border-border px-4 pb-6 pt-3">
-				{footer}
-			</SheetFooter>
+			{footer && (
+				<SheetFooter className="gap-3 border-t border-border px-4 pb-6 pt-3">
+					{footer}
+				</SheetFooter>
+			)}
 		</>
 	);
 }

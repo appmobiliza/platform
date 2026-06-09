@@ -1,31 +1,61 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
+import { Alert } from "react-native";
 
 import ProfileLayout from "@/layout/profile";
 
 import { Field } from "@/components/ui/field";
 import { MaskedInput } from "@/components/ui/masked-input";
 
+import { useUserRole } from "@/lib/auth-store";
+import { trpc } from "@/lib/trpc/client";
+
 import { type ProfilePhoneInput, ProfilePhoneSchema } from "@/schemas";
 
 export default function BasicProfilePhone() {
 	const router = useRouter();
+	const role = useUserRole();
+	const isScholar = role === "scholar";
+
+	const { phone } = useLocalSearchParams<{ phone?: string }>();
+
+	const updateStudent = trpc.profiles.updateStudent.useMutation();
+	const updateScholar = trpc.profiles.updateScholar.useMutation();
+	const utils = trpc.useUtils();
+
+	const isSaving = updateStudent.isPending || updateScholar.isPending;
 
 	const {
 		control,
 		handleSubmit,
-		formState: { errors },
+		reset,
+		formState: { errors, isDirty },
 	} = useForm<ProfilePhoneInput>({
 		resolver: zodResolver(ProfilePhoneSchema),
 		defaultValues: {
-			phone: "",
+			phone: phone ?? "",
 		},
 		mode: "onTouched",
 	});
 
-	const handleSave = handleSubmit(() => {
-		router.back();
+	const handleSave = handleSubmit(async (data) => {
+		try {
+			if (isScholar) {
+				await updateScholar.mutateAsync({ phone: data.phone });
+			} else {
+				await updateStudent.mutateAsync({ phone: data.phone });
+			}
+			await utils.profiles.me.invalidate();
+			reset(data);
+			router.back();
+		} catch (error) {
+			console.error("Erro ao salvar telefone:", error);
+			Alert.alert(
+				"Erro",
+				"Não foi possível salvar as alterações. Tente novamente.",
+			);
+		}
 	});
 
 	return (
@@ -33,6 +63,8 @@ export default function BasicProfilePhone() {
 			title="Número de telefone"
 			description="Este é seu número de telefone principal, usado para contato e recuperação de conta."
 			handleSave={handleSave}
+			isSaving={isSaving}
+			isDirty={isDirty}
 		>
 			<Controller
 				control={control}

@@ -1,13 +1,13 @@
 "use client";
 
-import { authClient } from "@mobiliza/auth/client";
-
 import { Loader2 } from "lucide-react";
 import Image, { type StaticImageData } from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+
+import { authClient } from "@/lib/auth/client";
 
 type GoogleSignInButtonProps = {
 	googleLogo: StaticImageData;
@@ -23,6 +23,7 @@ export function GoogleSignInButton({ googleLogo }: GoogleSignInButtonProps) {
 			await authClient.signIn.social({
 				provider: "google",
 				callbackURL: `${process.env.NEXT_PUBLIC_WEB_URL}/`,
+				errorCallbackURL: `${process.env.NEXT_PUBLIC_WEB_URL}/auth`,
 			});
 		} catch (error) {
 			console.error("Erro ao fazer login com Google:", error);

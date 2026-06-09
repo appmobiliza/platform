@@ -27,6 +27,14 @@ type Handler = (data: RealtimePayload) => void;
 export class MockClientAdapter implements RealtimeClientAdapter {
 	private listeners = new Map<string, Map<string, Set<Handler>>>();
 
+	async publish(
+		_channel: string,
+		_event: string,
+		_data: RealtimePayload,
+	): Promise<void> {
+		// Mock — no-op, não faz nada em testes
+	}
+
 	subscribe(channel: string, event: string, handler: Handler): Unsubscribe {
 		if (!this.listeners.has(channel)) {
 			this.listeners.set(channel, new Map());

@@ -1,62 +1,119 @@
 import * as Location from "expo-location";
 import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback } from "react";
+import { Clock, MapPin } from "lucide-react-native";
+import { useCallback, useEffect, useRef } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { NewsCarousel } from "@/components/news-carousel";
 import { PlaceCard } from "@/components/place-card";
+import type { Place } from "@/components/request-flow-sheet/types";
 import { ScholarHome } from "@/components/scholar/home";
 import { SearchBar } from "@/components/search-bar";
 import { Text } from "@/components/ui/text";
 
 import { useUserRole } from "@/lib/auth-store";
-import { setNearestPoint } from "@/lib/location-store";
+import { haversineMeters } from "@/lib/distance";
+import {
+	getCachedCampusLocations,
+	setCachedCampusLocations,
+	setNearestPoint,
+} from "@/lib/location-store";
+import { getRequestState } from "@/lib/request-store";
+import { trpc } from "@/lib/trpc/client";
 
 import { Logo } from "@/assets/logo";
-import { ufalPoints } from "@/constants/locations";
 
 const newsItems = [
 	{
-		image: "https://picsum.photos/seed/sapos2/600/300",
+		image: "https://noticias.ufal.br/transparencia/noticias/2026/4/exposicao-itinerante-sobre-anfibios-chega-a-biblioteca-central-em-abril/.jpeg/@@images/image",
 		label: "28 de abril: Exposição itinerante sobre anfíbios chega à Biblioteca Central",
-		link: "https://example.com/noticias/anfibios",
+		link: "https://noticias.ufal.br/transparencia/noticias/2026/4/exposicao-itinerante-sobre-anfibios-chega-a-biblioteca-central-em-abril",
 	},
 	{
-		image: "https://picsum.photos/seed/mobilidade1/600/300",
-		label: "Nova rota experimental liga o campus ao terminal em horários de pico",
-		link: "https://example.com/noticias/rota-experimental",
+		image: "https://noticias.ufal.br/estudante/noticias/2026/4/ufal-amplia-acoes-de-acessibilidade-na-pos-para-estudantes-surdos/@@images/image-768-16882703fa5e1d332539198d6adc0c8a.jpeg",
+		label: "Ufal amplia ações de acessibilidade na pós para estudantes surdos",
+		link: "https://noticias.ufal.br/estudante/noticias/2026/4/ufal-amplia-acoes-de-acessibilidade-na-pos-para-estudantes-surdos",
 	},
 	{
-		image: "https://picsum.photos/seed/ciencia2/600/300",
-		label: "Semana de ciência e tecnologia abre inscrições para oficinas gratuitas",
-		link: "https://example.com/noticias/semana-ciencia",
+		image: "https://noticias.ufal.br/estudante/noticias/2026/3/ufal-abre-inscricoes-para-bolsistas-do-nucleo-de-acessibilidade-em-maceio/@@images/image-768-814377bd74e9a631339192ff98626ae6.jpeg",
+		label: "Ufal abre inscrições para bolsistas do Núcleo de Acessibilidade em Maceió",
+		link: "https://noticias.ufal.br/estudante/noticias/2026/3/ufal-abre-inscricoes-para-bolsistas-do-nucleo-de-acessibilidade-em-maceio",
 	},
 ];
 
-function calculateDistance(
-	lat1: number,
-	lon1: number,
-	lat2: number,
-	lon2: number,
-): number {
-	const R = 6371e3;
-	const φ1 = (lat1 * Math.PI) / 180;
-	const φ2 = (lat2 * Math.PI) / 180;
-	const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-	const Δλ = ((lon2 - lon1) * Math.PI) / 180;
-	const x =
-		Math.sin(Δφ / 2) ** 2 +
-		Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
-	return 2 * R * Math.asin(Math.sqrt(x));
-}
+const getPosition = async () => {
+	// 1. Last known position — instant, no device settings dependency
+	const last = await Location.getLastKnownPositionAsync({
+		maxAge: 5 * 60 * 1000, // accept up to 5 min old
+		requiredAccuracy: 5000, // meters, loose enough for campus-level use
+	});
+	// console.log(
+	// 	`Last known position: ${last?.coords.latitude}, ${last?.coords.longitude}`,
+	// );
+	if (last) return last;
+
+	// 2. Live fix — try descending accuracy until one works
+	for (const accuracy of [
+		Location.Accuracy.Balanced,
+		Location.Accuracy.Low,
+		Location.Accuracy.Lowest,
+	]) {
+		try {
+			// console.log(`Trying accuracy: ${accuracy}`);
+			return await Location.getCurrentPositionAsync({ accuracy });
+		} catch {
+			// try next tier
+		}
+	}
+
+	throw new Error("Unable to determine location");
+};
 
 function StudentHome() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
 
+	const navigateWithDestination = useCallback(
+		(destination: string) => {
+			router.push({
+				pathname: "/request",
+				params: { destination },
+			});
+		},
+		[router],
+	);
+
+	// Fetch campus locations from the DB (source of truth)
+	const { data: campusLocations = [] } = trpc.locations.list.useQuery(
+		undefined,
+		{
+			staleTime: 30 * 60 * 1000, // 30 min — campus data rarely changes
+			gcTime: 60 * 60 * 1000, // keep in cache for 1h even if unused
+		},
+	);
+	const campusLocationsRef = useRef(campusLocations);
+	campusLocationsRef.current = campusLocations;
+
+	// Persist campus locations across app sessions
+	useEffect(() => {
+		if (campusLocations.length > 0) {
+			setCachedCampusLocations(campusLocations as Place[]);
+		}
+	}, [campusLocations]);
+
 	useFocusEffect(
 		useCallback(() => {
+			// ─── Restore ongoing trip if one was in progress ────────────────
+			const persisted = getRequestState();
+			const hasOngoingRequest =
+				persisted.activeRequestId && persisted.stage === "trip";
+
+			if (hasOngoingRequest) {
+				router.replace("/request");
+				return;
+			}
+
 			const setupLocation = async () => {
 				const { status } =
 					await Location.getForegroundPermissionsAsync();
@@ -68,29 +125,36 @@ function StudentHome() {
 
 				// Permissão concedida — calcula o ponto UFAL mais próximo
 				try {
-					const position = await Location.getCurrentPositionAsync({
-						accuracy: Location.Accuracy.Balanced,
-					});
+					const position = await getPosition();
 
 					const userLat = position.coords.latitude;
 					const userLng = position.coords.longitude;
 
-					if (ufalPoints.length === 0) return;
+					// console.log("User position:", userLat, userLng);
 
-					let closestPoint = ufalPoints[0];
-					if (!closestPoint) return;
+					const locations =
+						campusLocationsRef.current.length > 0
+							? campusLocationsRef.current
+							: getCachedCampusLocations(); // ← instant from MMKV
+					if (locations.length === 0) return;
 
-					let minDistance = calculateDistance(
+					let closestPoint = locations[0];
+					if (!closestPoint) {
+						console.warn("No campus locations available");
+						return;
+					}
+
+					let minDistance = haversineMeters(
 						userLat,
 						userLng,
 						closestPoint.latitude,
 						closestPoint.longitude,
 					);
 
-					for (let i = 1; i < ufalPoints.length; i++) {
-						const point = ufalPoints[i];
+					for (let i = 1; i < locations.length; i++) {
+						const point = locations[i];
 						if (!point) continue;
-						const dist = calculateDistance(
+						const dist = haversineMeters(
 							userLat,
 							userLng,
 							point.latitude,
@@ -104,7 +168,7 @@ function StudentHome() {
 
 					setNearestPoint({
 						name: closestPoint.name,
-						abbreviation: closestPoint.abbrev,
+						abbreviation: closestPoint.abbreviation ?? undefined,
 						latitude: closestPoint.latitude,
 						longitude: closestPoint.longitude,
 					});
@@ -154,21 +218,26 @@ function StudentHome() {
 					<PlaceCard
 						title="Restaurante Universitário"
 						description="Hoje, 12h35"
-						icon={{ name: "star" }}
 						className="mb-3"
+						icon={{ as: Clock }}
+						onPress={() =>
+							navigateWithDestination("Restaurante Universitário")
+						}
 					/>
 					<View className="flex-row gap-3">
 						<PlaceCard
 							className="flex-1"
-							title="CECA"
+							title="CEDU"
 							description="Ontem, 16h12"
-							icon={{ name: "clock" }}
+							icon={{ as: Clock }}
+							onPress={() => navigateWithDestination("CEDU")}
 						/>
 						<PlaceCard
 							className="flex-1"
-							title="IQB"
+							title="ICBS"
 							description="Há 2 dias, 16h24"
-							icon={{ name: "clock" }}
+							icon={{ as: Clock }}
+							onPress={() => navigateWithDestination("ICBS")}
 						/>
 					</View>
 				</View>
@@ -190,22 +259,36 @@ function StudentHome() {
 						<PlaceCard
 							title="Restaurante Universitário"
 							description="Último deslocamento há 2 dias"
-							icon={{ name: "map" }}
+							icon={{ as: MapPin }}
+							onPress={() =>
+								navigateWithDestination(
+									"Restaurante Universitário",
+								)
+							}
 						/>
 						<PlaceCard
 							title="Reitoria"
 							description="Último deslocamento há 6 dias"
-							icon={{ name: "map" }}
+							icon={{ as: MapPin }}
+							onPress={() => navigateWithDestination("Reitoria")}
 						/>
 						<PlaceCard
 							title="Biblioteca Central"
 							description="Último deslocamento há 10 dias"
-							icon={{ name: "map" }}
+							icon={{ as: MapPin }}
+							onPress={() =>
+								navigateWithDestination("Biblioteca Central")
+							}
 						/>
 						<PlaceCard
 							title="Instituto de Computação"
 							description="Último deslocamento há 12 dias"
-							icon={{ name: "map" }}
+							icon={{ as: MapPin }}
+							onPress={() =>
+								navigateWithDestination(
+									"Instituto de Computação",
+								)
+							}
 						/>
 					</View>
 				</View>

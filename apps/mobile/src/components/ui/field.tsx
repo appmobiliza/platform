@@ -1,5 +1,4 @@
 import * as React from "react";
-
 import { View } from "react-native";
 
 import { Label } from "@/components/ui/label";
@@ -167,7 +166,7 @@ function Field({
 				className={cn(
 					"gap-1.5",
 					orientation === "horizontal" &&
-						"flex-row items-center gap-3",
+						"flex-row items-center web:justify-between gap-3",
 					orientation === "responsive" &&
 						"@container/field flex-col gap-3",
 					className,

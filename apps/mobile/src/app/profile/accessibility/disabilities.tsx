@@ -1,35 +1,74 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
+import { Alert } from "react-native";
 
 import ProfileLayout from "@/layout/profile";
 
 import BoxOptions from "@/components/box-options";
+
+import { type RouterInputs, trpc } from "@/lib/trpc/client";
 
 import {
 	type ProfileDisabilitiesInput,
 	ProfileDisabilitiesSchema,
 } from "@/schemas";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type UpdateStudentDisabilitiesInput = NonNullable<
+	RouterInputs["profiles"]["updateStudent"]["disabilityTypes"]
+>;
+
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
-export default function AcademicProfileCourse() {
+export default function AccessibilityDisabilities() {
 	const router = useRouter();
+
+	const { disabilityTypes: disabilityTypesRaw } = useLocalSearchParams<{
+		disabilityTypes?: string;
+	}>();
+
+	const updateStudent = trpc.profiles.updateStudent.useMutation();
+	const utils = trpc.useUtils();
+
+	const parsedDisabilityTypes = disabilityTypesRaw
+		? (JSON.parse(
+				disabilityTypesRaw,
+			) as ProfileDisabilitiesInput["disabilityTypes"])
+		: [];
+
+	const isSaving = updateStudent.isPending;
 
 	const {
 		control,
 		handleSubmit,
-		formState: { errors },
+		reset,
+		formState: { errors, isDirty },
 	} = useForm<ProfileDisabilitiesInput>({
 		resolver: zodResolver(ProfileDisabilitiesSchema),
 		defaultValues: {
-			disabilityTypes: undefined,
+			disabilityTypes: parsedDisabilityTypes,
 		},
 		mode: "onTouched",
 	});
 
-	const handleSave = handleSubmit(() => {
-		router.back();
+	const handleSave = handleSubmit(async (data) => {
+		try {
+			await updateStudent.mutateAsync({
+				disabilityTypes:
+					data.disabilityTypes as UpdateStudentDisabilitiesInput,
+			});
+			await utils.profiles.me.invalidate();
+			reset(data);
+			router.back();
+		} catch (error) {
+			console.error("Erro ao salvar tipos de deficiência:", error);
+			Alert.alert(
+				"Erro",
+				"Não foi possível salvar as alterações. Tente novamente.",
+			);
+		}
 	});
 
 	return (
@@ -37,6 +76,8 @@ export default function AcademicProfileCourse() {
 			title="Tipo de deficiência"
 			description="Selecione uma ou mais opções com base em suas necessidades de acessibilidade"
 			handleSave={handleSave}
+			isSaving={isSaving}
+			isDirty={isDirty}
 		>
 			<Controller
 				control={control}

@@ -34,7 +34,9 @@ export function requireEnvVar<
 	return value;
 }
 
-export async function loadEnv(path: string) {
-	const dotenv = await import("dotenv");
-	dotenv.config({ path });
+import { config } from "dotenv";
+
+export function loadEnv(path: string = "../../.env") {
+  if (process.env.NODE_ENV === "production") return;
+  config({ path });
 }

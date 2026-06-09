@@ -1,7 +1,3 @@
-import {
-	getCurrentShift,
-	type scholarShiftValues,
-} from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { aliasedTable, and, eq, gte, sql } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
@@ -10,14 +6,9 @@ import { managerProcedure } from "@mobiliza/trpc";
 function getScholarDashboardStatus(profile: {
 	isActive: boolean;
 	isAvailable: boolean;
-	shift: (typeof scholarShiftValues)[number];
 }) {
 	if (!profile.isActive) {
 		return "pending" as const;
-	}
-
-	if (profile.shift !== getCurrentShift()) {
-		return "off_shift" as const;
 	}
 
 	if (profile.isAvailable) {
@@ -177,7 +168,7 @@ export const scholarDashboard = managerProcedure
 		}
 
 		const scholarsWithStatus = scholars.map((profile) => {
-			const status = getScholarDashboardStatus({ ...profile, shift: profile.shift });
+			const status = getScholarDashboardStatus(profile);
 			const scholarId = profile.id;
 			const stats = grouped.get(scholarId);
 			const totalDurationSeconds = stats?.totalDurationSeconds ?? 0;
@@ -206,7 +197,6 @@ export const scholarDashboard = managerProcedure
 					course: profile.course,
 					campus: profile.campus,
 					phone: profile.phone,
-					shift: profile.shift,
 					isAvailable: profile.isAvailable,
 					isActive: profile.isActive,
 				},

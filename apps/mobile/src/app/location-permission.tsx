@@ -1,8 +1,7 @@
-import { useState } from "react";
-
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { CircleAlert } from "lucide-react-native";
+import { useState } from "react";
 import { ActivityIndicator, Linking, Pressable, View } from "react-native";
 
 import { Header } from "@/components/header";
@@ -41,7 +40,7 @@ export default function LocationPermission() {
 
 	return (
 		<View className="flex-1">
-			<Header allowBack={false} />
+			<Header href={null} />
 
 			<View className="flex-1 px-6 pt-36 pb-8 justify-between">
 				<View>

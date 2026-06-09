@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { loadEnv, optionalString, requireEnvVar } from "./shared";
 
-await loadEnv("../../.env");
+loadEnv();
 
 export const realtimeEnv = createEnv({
 	server: {

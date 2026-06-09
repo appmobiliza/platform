@@ -1,21 +1,20 @@
 import {
 	BottomSheetFlatList,
 	type BottomSheetFlatListMethods,
-	BottomSheetScrollView,
 	BottomSheetTextInput,
-	BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import { ChevronDown } from "lucide-react-native";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { type FlatList, InteractionManager, View } from "react-native";
+import { ChevronDown, SearchIcon } from "lucide-react-native";
+import { useMemo, useRef, useState } from "react";
+import { Platform, TextInput, View } from "react-native";
 
 import { cn } from "@/lib/utils";
 
 import type { SelectOption } from "@/types";
+
 import { Button } from "./button";
 import { Field } from "./field";
 import { Icon } from "./icon";
-import { Input, inputClassName, inputNativeClassName } from "./input";
+import { inputClassName, inputNativeClassName } from "./input";
 import {
 	Sheet,
 	SheetContent,
@@ -39,6 +38,8 @@ interface SelectFieldProps {
 }
 
 const ITEM_HEIGHT = 54;
+
+const SearchInput = Platform.OS === "web" ? TextInput : BottomSheetTextInput;
 
 function SelectField({
 	label,
@@ -135,16 +136,26 @@ function SelectField({
 
 					{searchable ? (
 						<View className="px-4 pt-3 pb-3 border-b border-border">
-							<BottomSheetTextInput
-								placeholder="Pesquisar"
-								value={searchQuery}
-								onChangeText={setSearchQuery}
-								className={cn(
-									inputClassName,
-									inputNativeClassName,
-								)}
-								aria-label="Pesquisar opções"
-							/>
+							<View className="flex-row items-center relative">
+								<View className="absolute left-3 top-1/2 -translate-y-1/2">
+									<Icon
+										icon={SearchIcon}
+										size={18}
+										color="--muted-foreground"
+									/>
+								</View>
+								<SearchInput
+									placeholder="Pesquisar"
+									value={searchQuery}
+									onChangeText={setSearchQuery}
+									className={cn(
+										"flex-1 pl-10!",
+										inputClassName,
+										inputNativeClassName,
+									)}
+									aria-label="Pesquisar opções"
+								/>
+							</View>
 						</View>
 					) : null}
 

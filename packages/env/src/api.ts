@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { commaSeparatedOrigins, loadEnv, nodeEnvSchema, optionalString } from "./shared";
 
-await loadEnv("../../.env");
+loadEnv();
 
 export const apiEnv = createEnv({
 	server: {

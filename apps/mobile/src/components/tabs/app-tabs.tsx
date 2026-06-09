@@ -8,58 +8,28 @@ export default function AppTabs() {
 	const colorScheme = useAppColorScheme();
 	const role = useUserRole();
 
-	const bgColor =
-		colorScheme === "dark" ? THEME.dark.background : THEME.light.background;
-
-	// Scholar Specific Overrides
 	const isScholar = role === "scholar";
+	const theme = isScholar ? SCHOLAR_THEME[colorScheme] : THEME[colorScheme];
 
-	const barColor = isScholar
-		? SCHOLAR_THEME.bar.background
-		: colorScheme === "dark"
-			? THEME.dark.bar.background
-			: THEME.light.bar.background;
-
-	const labelColor = isScholar
-		? SCHOLAR_THEME.bar.label
-		: colorScheme === "dark"
-			? THEME.dark.bar.label
-			: THEME.light.bar.label;
-
-	const indicatorColor = isScholar
-		? SCHOLAR_THEME.bar.indicator
-		: colorScheme === "dark"
-			? THEME.dark.bar.indicator
-			: THEME.light.bar.indicator;
-
-	const iconColor = isScholar
-		? SCHOLAR_THEME.bar.icon
-		: colorScheme === "dark"
-			? THEME.dark.bar.icon
-			: THEME.light.bar.icon;
-
-	const rippleColor = isScholar
-		? SCHOLAR_THEME.bar.ripple
-		: colorScheme === "dark"
-			? THEME.dark.bar.ripple
-			: THEME.light.bar.ripple;
+	const bgColor = THEME[colorScheme].background;
+	const { bar } = theme;
 
 	return (
 		<NativeTabs
-			backgroundColor={barColor}
-			indicatorColor={indicatorColor}
+			backgroundColor={bar.background}
+			indicatorColor={bar.indicator}
 			iconColor={{
-				default: iconColor.default,
-				selected: iconColor.selected,
+				default: bar.icon.default,
+				selected: bar.icon.selected,
 			}}
-			rippleColor={rippleColor}
+			rippleColor={bar.ripple}
 			labelStyle={{
 				default: {
-					color: labelColor.default,
+					color: bar.label.default,
 					fontWeight: "bold",
 				},
 				selected: {
-					color: labelColor.selected,
+					color: bar.label.selected,
 					fontWeight: "bold",
 				},
 			}}

@@ -1,121 +1,222 @@
-import { Clock, Cloud, Footprints, RotateCcw, Star } from "lucide-react-native";
-import { View } from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import { Clock, ClockAlert } from "lucide-react-native";
+import { useMemo } from "react";
+import { ActivityIndicator, View } from "react-native";
 
 import { HistoryDetailLayout } from "@/layout/history-details";
 
 import ScholarHistoryDetails from "@/components/scholar/history-details";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
 import { useLightStatusBar } from "@/hooks/use-light-status-bar";
 import { useUserRole } from "@/lib/auth-store";
+import { formatDateTime, formatTime } from "@/lib/date";
+import { trpc } from "@/lib/trpc/client";
 
 function StudentHistoryDetails() {
 	useLightStatusBar();
 
+	const { id } = useLocalSearchParams<{ id: string }>();
+
+	const { data } = trpc.requests.studentHistory.useInfiniteQuery(
+		{ limit: 50 },
+		{
+			getNextPageParam: (lastPage) => lastPage.nextCursor,
+		},
+	);
+
+	const request = useMemo(() => {
+		if (!data) return null;
+		const allItems = data.pages.flatMap((page) => page.items);
+		return allItems.find((item) => item.id === id) ?? null;
+	}, [data, id]);
+
+	if (!request) {
+		return (
+			<View className="flex-1 bg-background items-center justify-center">
+				<ActivityIndicator size="large" />
+			</View>
+		);
+	}
+
+	const originName = request.originLocation?.name ?? "Origem";
+	const destinationName = request.destinationLocation?.name ?? "Destino";
+	const title = `${originName} → ${destinationName}`;
+	const subtitle = formatDateTime(new Date(request.createdAt));
+
+	const isUnattended = request.status === "unattended";
+	const isCancelled = request.status === "cancelled";
+
+	// Para unattended/cancelled não há attendance
+	const attendance = request.attendance;
+	const scholarUser = attendance?.scholarProfile?.user;
+	const scholarName = scholarUser?.name ?? "Bolsista";
+	const scholarInitials = scholarName
+		.split(" ")
+		.map((n) => n[0])
+		.join("")
+		.slice(0, 2)
+		.toUpperCase();
+
+	const durationSeconds = attendance?.durationSeconds ?? null;
+	const durationMinutes = durationSeconds
+		? Math.round(durationSeconds / 60)
+		: null;
+
+	// Para solicitações não atendidas, mostrar um badge de status
+	const statusBadge = isUnattended ? (
+		<Badge variant="destructive">
+			<Icon
+				icon={ClockAlert}
+				size={14}
+				color="--destructive-foreground"
+			/>
+			<Text>Não atendida</Text>
+		</Badge>
+	) : isCancelled ? (
+		<Badge variant="secondary">
+			<Text>Cancelada</Text>
+		</Badge>
+	) : durationMinutes ? (
+		<Badge>
+			<Icon icon={Clock} size={14} color="--primary-foreground" />
+			<Text>{durationMinutes}m</Text>
+		</Badge>
+	) : null;
+
+	const hasLocations =
+		!!request.originLocation?.latitude &&
+		!!request.originLocation?.longitude &&
+		!!request.destinationLocation?.latitude &&
+		!!request.destinationLocation?.longitude;
+
 	return (
 		<HistoryDetailLayout
-			title="CAC - Pista da UFAL"
-			subtitle="6 de agosto • 19h"
-			mapBadges={
-				<>
-					<Badge>
-						<Icon
-							icon={Footprints}
-							size={14}
-							color="--primary-foreground"
-						/>
-						<Text>2,1km</Text>
-					</Badge>
-					<Badge>
-						<Icon
-							icon={Clock}
-							size={14}
-							color="--primary-foreground"
-						/>
-						<Text>29m</Text>
-					</Badge>
-				</>
+			title={title}
+			subtitle={subtitle}
+			mapOrigin={
+				hasLocations
+					? {
+							latitude: request.originLocation!.latitude,
+							longitude: request.originLocation!.longitude,
+						}
+					: null
 			}
+			mapDestination={
+				hasLocations
+					? {
+							latitude: request.destinationLocation!.latitude,
+							longitude: request.destinationLocation!.longitude,
+						}
+					: null
+			}
+			mapBadges={statusBadge}
 			profile={
-				<View className="flex-row items-center gap-3">
-					<Avatar alt="Zach Nugent's Avatar">
-						<AvatarImage
-							source={{
-								uri: "https://github.com/meninocoiso.png",
-							}}
-						/>
-						<AvatarFallback>
-							<Text>ZN</Text>
-						</AvatarFallback>
-					</Avatar>
-					<View className="flex-1">
-						<Text className="font-medium text-sm">
-							Atendido por{" "}
-							<Text className="font-semibold text-sm">
-								João Carlos
+				isUnattended || isCancelled ? (
+					<View className="flex-row items-center gap-3 py-3">
+						<View className="size-10 items-center justify-center rounded-full bg-muted">
+							<Icon
+								icon={ClockAlert}
+								size={20}
+								color="--muted-foreground"
+							/>
+						</View>
+						<View className="flex-1">
+							<Text className="font-medium text-sm text-muted-foreground">
+								{isUnattended
+									? "Nenhum contribuinte aceitou a solicitação"
+									: "Solicitação cancelada"}
 							</Text>
-						</Text>
+						</View>
 					</View>
-					<Badge
-						variant="secondary"
-						className="px-2 py-0.5 text-foreground"
-					>
-						<Icon icon={Cloud} size={14} color="--foreground" />
-						<Text>Manhã</Text>
-					</Badge>
-				</View>
+				) : (
+					<View className="flex-row items-center gap-3">
+						<Avatar alt={`Avatar de ${scholarName}`}>
+							{scholarUser?.image ? (
+								<AvatarImage
+									source={{
+										uri: scholarUser.image,
+									}}
+								/>
+							) : null}
+							<AvatarFallback>
+								<Text>{scholarInitials}</Text>
+							</AvatarFallback>
+						</Avatar>
+						<View className="flex-1">
+							<Text className="font-medium text-sm">
+								Atendido por{" "}
+								<Text className="font-semibold text-sm">
+									{scholarName}
+								</Text>
+							</Text>
+						</View>
+					</View>
+				)
 			}
 			route={{
 				className: "w-full",
 				from: {
-					label: "CAC - Centro de Artes e Cultura",
+					label: originName,
 					className: "px-3 py-4",
 					children: (
 						<Text className="text-xs font-medium text-muted-foreground">
-							8:04 PM
+							{formatTime(new Date(request.createdAt))}
 						</Text>
 					),
 				},
 				to: {
-					label: "Pista da UFAL",
+					label: destinationName,
 					className: "px-3 py-4",
-					children: (
+					children: attendance?.completedAt ? (
 						<Text className="text-xs font-medium text-muted-foreground">
-							8:33 PM
+							{formatTime(new Date(attendance.completedAt))}
 						</Text>
-					),
+					) : null,
 				},
 			}}
 		>
-			<View className="gap-3 w-full">
-				<Button className="rounded-full w-full text-white">
-					<Icon icon={Star} size={18} color="--primary-foreground" />
-					<Text>Avaliar</Text>
-				</Button>
-
-				<Button className="rounded-full w-full text-white">
-					<Icon
-						icon={RotateCcw}
-						size={18}
-						color="--primary-foreground"
-					/>
-					<Text>Reagendar</Text>
-				</Button>
-			</View>
+			{/* Ações opcionais para solicitações não atendidas/canceladas
+			podem ser adicionadas aqui no futuro */}
 		</HistoryDetailLayout>
 	);
 }
 
 export default function HistoryDetails() {
 	const role = useUserRole();
+	const { id } = useLocalSearchParams<{ id: string }>();
 
-	return role === "scholar" ? (
-		<ScholarHistoryDetails />
-	) : (
-		<StudentHistoryDetails />
+	if (role === "scholar") {
+		return <ScholarHistoryDetailsPage id={id} />;
+	}
+
+	return <StudentHistoryDetails />;
+}
+
+function ScholarHistoryDetailsPage({ id }: { id: string }) {
+	const { data } = trpc.requests.scholarHistory.useInfiniteQuery(
+		{ limit: 50 },
+		{
+			getNextPageParam: (lastPage) => lastPage.nextCursor,
+		},
 	);
+
+	const attendance = useMemo(() => {
+		if (!data) return null;
+		const allItems = data.pages.flatMap((page) => page.items);
+		return allItems.find((item) => item.id === id) ?? null;
+	}, [data, id]);
+
+	if (!attendance) {
+		return (
+			<View className="flex-1 bg-background items-center justify-center">
+				<ActivityIndicator size="large" />
+			</View>
+		);
+	}
+
+	return <ScholarHistoryDetails attendance={attendance} />;
 }

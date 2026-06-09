@@ -29,6 +29,8 @@ import { metricsRouter } from "./routers/metrics.js";
 import { notificationsRouter } from "./routers/notifications.js";
 import { profilesRouter } from "./routers/profiles/index.js";
 import { requestsRouter } from "./routers/requests/index.js";
+import { settingsRouter } from "./routers/settings.js";
+import { shiftLogsRouter } from "./routers/shift-logs.js";
 
 export const appRouter = router({
 	requests: requestsRouter,
@@ -37,6 +39,8 @@ export const appRouter = router({
 	notifications: notificationsRouter,
 	metrics: metricsRouter,
 	favorites: favoritesRouter,
+	settings: settingsRouter,
+	shiftLogs: shiftLogsRouter,
 });
 
 export type AppRouter = typeof appRouter;

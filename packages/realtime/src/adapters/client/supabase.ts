@@ -1,3 +1,5 @@
+import { createClient } from "@supabase/supabase-js";
+
 import type {
 	RealtimeClientAdapter,
 	RealtimePayload,
@@ -11,13 +13,14 @@ type RealtimeChannel = import("@supabase/supabase-js").RealtimeChannel;
 /**
  * Adaptador **client-side** para o Supabase Realtime.
  *
- * Usado no React Native e no Next.js para receber eventos em tempo real.
- * Usa Broadcast (many-to-many, sem persistência) para escutar eventos
- * publicados pelo servidor.
+ * Usado no React Native e no Next.js para receber e enviar eventos
+ * em tempo real sem depender de um SDK específico.
+ *
+ * O publish client-side é usado exclusivamente para eventos leves e
+ * não-críticos como atualização de posição geográfica.
  *
  * @example
  * ```ts
- * // Em um hook React
  * const adapter = new SupabaseClientAdapter({ url, anonKey })
  *
  * useEffect(() => {
@@ -33,9 +36,43 @@ export class SupabaseClientAdapter implements RealtimeClientAdapter {
 	private channels = new Map<string, RealtimeChannel>();
 
 	constructor(options: SupabaseAdapterOptions) {
-		const { createClient } =
-			require("@supabase/supabase-js") as typeof import("@supabase/supabase-js");
 		this.client = createClient(options.url, options.anonKey);
+	}
+
+	async publish(
+		channel: string,
+		event: string,
+		data: RealtimePayload,
+	): Promise<void> {
+		try {
+			const ch = this.ensureChannel(channel);
+			const result = await ch.send({
+				type: "broadcast",
+				event,
+				payload: data,
+			});
+			if (result !== "ok") {
+				console.warn(
+					`[SupabaseClientAdapter] Publish to ${channel}/${event}: ${result}`,
+				);
+			}
+		} catch (error) {
+			console.error(
+				`[SupabaseClientAdapter] Failed to publish to ${channel}/${event}:`,
+				error,
+			);
+		}
+	}
+
+	private ensureChannel(channel: string): RealtimeChannel {
+		if (!this.channels.has(channel)) {
+			const ch = this.client.channel(channel, {
+				config: { broadcast: { self: true } },
+			});
+			ch.subscribe();
+			this.channels.set(channel, ch);
+		}
+		return this.channels.get(channel)!;
 	}
 
 	subscribe(
@@ -43,19 +80,13 @@ export class SupabaseClientAdapter implements RealtimeClientAdapter {
 		event: string,
 		handler: (data: RealtimePayload) => void,
 	): Unsubscribe {
-		if (!this.channels.has(channel)) {
-			const ch = this.client.channel(channel);
-			this.channels.set(channel, ch);
-		}
-
-		const ch = this.channels.get(channel)!;
+		const ch = this.ensureChannel(channel);
 
 		ch.on("broadcast", { event }, ({ payload }) => {
 			handler(payload as RealtimePayload);
 		}).subscribe();
 
 		return () => {
-			// Remove apenas o handler específico; o canal permanece se houver outros
 			ch.unsubscribe();
 			this.channels.delete(channel);
 		};

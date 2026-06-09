@@ -1,5 +1,7 @@
 import { apiEnv } from "@mobiliza/env/api";
 
+console.log(apiEnv);
+
 import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({

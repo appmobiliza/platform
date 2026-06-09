@@ -2,8 +2,8 @@ import { db } from "@mobiliza/db/client";
 import { managerProcedure } from "@mobiliza/trpc";
 
 function getRouteLabel(request: {
-	originLocation?: { abbreviation: string; name: string } | null;
-	destinationLocation?: { abbreviation: string; name: string } | null;
+	originLocation?: { abbreviation: string | null; name: string } | null;
+	destinationLocation?: { abbreviation: string | null; name: string } | null;
 }) {
 	const origin =
 		request.originLocation?.abbreviation ||

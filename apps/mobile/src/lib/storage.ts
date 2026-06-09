@@ -1,17 +1,46 @@
-// Web fallback: in-memory storage (MMKV is native-only)
-const webStore = new Map<string, string>();
+// Web fallback: localStorage (MMKV is native-only)
+const PREFIX = 'mobiliza_';
+
+function buildKey(key: string): string {
+	return `${PREFIX}${key}`;
+}
 
 export const storage = {
 	getString(key: string): string | undefined {
-		return webStore.get(key);
+		try {
+			return localStorage.getItem(buildKey(key)) ?? undefined;
+		} catch {
+			return undefined;
+		}
 	},
 	set(key: string, value: string): void {
-		webStore.set(key, value);
+		try {
+			localStorage.setItem(buildKey(key), value);
+		} catch {
+			// Storage may be full or unavailable
+		}
 	},
-	delete(key: string): void {
-		webStore.delete(key);
+	remove(key: string): void {
+		try {
+			localStorage.removeItem(buildKey(key));
+		} catch {
+			// ignore
+		}
 	},
 	clearAll(): void {
-		webStore.clear();
+		try {
+			const keysToRemove: string[] = [];
+			for (let i = 0; i < localStorage.length; i++) {
+				const k = localStorage.key(i);
+				if (k?.startsWith(PREFIX)) {
+					keysToRemove.push(k);
+				}
+			}
+			keysToRemove.forEach((k) => {
+				localStorage.removeItem(k);
+			});
+		} catch {
+			// ignore
+		}
 	},
 };
