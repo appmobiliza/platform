@@ -162,16 +162,19 @@ export default function TravelScreen() {
 	const userLocation = useUserLocation({ enabled: !hasCompleted });
 
 	// ─── Broadcast scholar position to realtime channels ─────────────────────
-	// Student sees this during the trip via useScholarTripPosition
+	// Student sees this during the trip via useScholarTripPosition.
+	// Stops when the trip is "ongoing" (scholar clicked "iniciar atendimento").
 	usePositionBroadcaster({
-		enabled: !!requestId && !hasCompleted,
+		enabled: !!requestId && !hasCompleted && !isDuring,
 		location: userLocation,
-		requestId,
+		channel: `request:${requestId}`,
+		event: "request:position",
 	});
 
 	// ─── Subscribe to student position (so scholar can see student on map) ────
+	// Only relevant before the trip is ongoing (student walking to origin).
 	const { studentPosition } = useStudentTripPosition({
-		enabled: !!requestId && !hasCompleted,
+		enabled: !!requestId && !hasCompleted && !isDuring,
 		requestId,
 	});
 

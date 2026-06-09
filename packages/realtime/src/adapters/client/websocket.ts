@@ -37,6 +37,18 @@ export class WebSocketClientAdapter implements RealtimeClientAdapter {
 	private ws: WebSocket | null = null;
 	private options: Required<WebSocketAdapterOptions>;
 	private listeners = new Map<string, Map<string, Set<Handler>>>();
+
+	async publish(
+		channel: string,
+		event: string,
+		data: RealtimePayload,
+	): Promise<void> {
+		if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+		this.ws.send(
+			JSON.stringify({ channel, event, data } satisfies InternalMessage),
+		);
+	}
+
 	private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 	private intentionalDisconnect = false;
 

@@ -78,6 +78,15 @@ type Handler = (data: RealtimePayload) => void;
 export class AblyClientAdapter implements RealtimeClientAdapter {
 	private client: AblyRealtimeInstance;
 
+	async publish(
+		channel: string,
+		event: string,
+		data: RealtimePayload,
+	): Promise<void> {
+		const ch = this.getOrCreateChannel(channel);
+		ch.publish(event, data);
+	}
+
 	/**
 	 * Canal → evento → Set de handlers registrados.
 	 * Mantido separado do objeto de canal do Ably para permitir

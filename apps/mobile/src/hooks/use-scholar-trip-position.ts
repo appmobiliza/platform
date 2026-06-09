@@ -67,7 +67,7 @@ export function useScholarTripPosition({
 					};
 
 					setScholarPosition({
-						id: payload.scholarId,
+						id: payload.scholarId ?? requestId,
 						latitude: payload.latitude,
 						longitude: payload.longitude,
 						heading: payload.heading,

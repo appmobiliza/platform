@@ -32,12 +32,12 @@ export class MockRealtimeAdapter implements RealtimeAdapter {
 /**
  * Mock do RealtimeClientAdapter client-side.
  */
-export class MockClientRealtimeAdapter implements RealtimeClientAdapter {
-	subscribe = jest.fn(() => {
-		return () => { };
-	});
-	disconnect = jest.fn(async () => { });
-}
+// export class MockClientRealtimeAdapter implements RealtimeClientAdapter {
+// subscribe = jest.fn(() => {
+// return () => { };
+// });
+// disconnect = jest.fn(async () => { });
+// }
 
 // ─── Factory ──────────────────────────────────────────────────────────────────
 

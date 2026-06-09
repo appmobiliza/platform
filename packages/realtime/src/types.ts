@@ -108,13 +108,26 @@ export interface RealtimeAdapter {
 /**
  * Contrato que todo adaptador **client-side** deve implementar.
  *
- * Usado pelo app React Native e pelo frontend Next.js para receber
- * eventos em tempo real sem depender de um SDK específico.
+ * Usado pelo app React Native e pelo frontend Next.js para receber e
+ * enviar eventos em tempo real sem depender de um SDK específico.
  *
- * O client-side não publica diretamente — mutações passam pela API REST.
- * (Caso seja necessário no futuro, `publish` pode ser adicionado aqui.)
+ * O publish client-side é usado exclusivamente para eventos leves e
+ * não-críticos como atualização de posição geográfica — mutações
+ * que alteram estado no backend continuam passando pela API REST.
  */
 export interface RealtimeClientAdapter {
+	/**
+	 * Publica `data` no `channel` sob o nome de evento `event`.
+	 *
+	 * Usado para broadcasting de dados não-críticos diretamente entre
+	 * clientes sem passar pelo servidor HTTP.
+	 */
+	publish(
+		channel: string,
+		event: string,
+		data: RealtimePayload,
+	): Promise<void>;
+
 	/**
 	 * Inscreve-se em eventos `event` do `channel`.
 	 *

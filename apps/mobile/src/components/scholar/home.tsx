@@ -238,42 +238,6 @@ function PreviousServicesList({ services }: { services?: Service[] }) {
 	);
 }
 
-// Mantemos o mock apenas para o histórico por enquanto
-const historicalServicesMock: Service[] = [
-	{
-		id: "2",
-		student: {
-			name: "João Victor",
-			disability: "Mobilidade reduzida",
-			observation:
-				"Solicitou apoio para trajeto com menor circulação de pessoas",
-		},
-		route: {
-			origin: "Reitoria",
-			destination: "Restaurante Universitário",
-		},
-		status: ServiceStatus.Concluded,
-		startedAt: new Date(Date.now() - 45 * 60 * 1000),
-		finishedAt: new Date(Date.now() - 15 * 60 * 1000),
-	},
-	{
-		id: "3",
-		student: {
-			name: "Camila Souza",
-			disability: "Deficiência auditiva",
-			observation:
-				"Necessita comunicação visual clara durante o percurso",
-		},
-		route: {
-			origin: "Centro de Vivência",
-			destination: "Faculdade de Letras",
-		},
-		status: ServiceStatus.Concluded,
-		startedAt: new Date(Date.now() - 45 * 60 * 1000),
-		finishedAt: new Date(Date.now() - 15 * 60 * 1000),
-	},
-];
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 /**
@@ -361,6 +325,8 @@ export function ScholarHome() {
 	usePositionBroadcaster({
 		enabled: !!activeShiftLog,
 		location: scholarLocation,
+		channel: "scholar:positions",
+		event: "position",
 	});
 
 	// Solicitações pendentes (só busca quando o turno está ativo)

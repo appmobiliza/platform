@@ -82,7 +82,7 @@ export class AblyRealtimeAdapter implements RealtimeAdapter {
 
 	async getClientCredentials(): Promise<ClientCredentials> {
 		const tokenDetails = await this.client.auth.requestToken({
-			capability: { "*": ["subscribe"] },
+			capability: { "*": ["subscribe", "publish"] },
 		});
 
 		return {

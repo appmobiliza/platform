@@ -73,7 +73,7 @@ export function useStudentTripPosition({
 					};
 
 					setStudentPosition({
-						id: payload.studentId,
+						id: payload.studentId ?? requestId,
 						latitude: payload.latitude,
 						longitude: payload.longitude,
 						heading: payload.heading,

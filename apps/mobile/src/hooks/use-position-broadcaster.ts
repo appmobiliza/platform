@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import { trpc } from "@/lib/trpc/client";
+import { getRealtimeClient } from "@/lib/realtime";
 
 import type { Coordinates } from "./use-user-location";
 
@@ -13,35 +13,37 @@ interface UsePositionBroadcasterOptions {
 	/** The user's current geographic position (from useUserLocation) */
 	location: Coordinates | null;
 
-	/** If set, position will be published to the request channel as well */
-	requestId?: string | null;
+	/**
+	 * Channel to broadcast position to.
+	 *
+	 * - `"scholar:positions"` → student sees scholar during search
+	 * - `"request:{requestId}"` → other party sees during trip
+	 */
+	channel: string;
+
+	/** Event name for the broadcast (default: `"position"`) */
+	event?: string;
+
+	/** Additional payload fields (e.g. `{ scholarId, studentId, heading }`) */
+	payload?: Record<string, unknown>;
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 /**
- * Broadcast the user's position to realtime channels so other users can
+ * Broadcast the user's position to a realtime channel so other users can
  * see them on the map.
  *
- * - **Scholars**: position is published to `scholar:positions` (visible to
- *   all students during search) and, if `requestId` is set, to
- *   `request:{requestId}` (visible to the specific student during a trip).
- * - **Students**: position is published to `request:{requestId}` (visible
- *   to the scholar during a trip).
- *
- * The actual broadcasting happens through the `requests.updatePosition` tRPC
- * mutation, which decides which channels to publish to based on the user's
- * role.
- *
- * Position updates are automatically throttled by the caller's
- * `useUserLocation` hook (default: every 5s / 10m movement).
+ * Position is published directly from the client via the realtime adapter
+ * (no HTTP round-trip). Only sends when the coordinate actually changes.
  */
 export function usePositionBroadcaster({
 	enabled,
 	location,
-	requestId,
+	channel,
+	event = "position",
+	payload = {},
 }: UsePositionBroadcasterOptions) {
-	const updatePosition = trpc.requests.updatePosition.useMutation();
 	const lastSentRef = useRef<{ lat: number; lng: number } | null>(null);
 
 	useEffect(() => {
@@ -61,10 +63,12 @@ export function usePositionBroadcaster({
 			lng: location.longitude,
 		};
 
-		updatePosition.mutate({
-			latitude: location.latitude,
-			longitude: location.longitude,
-			requestId: requestId ?? undefined,
+		getRealtimeClient().then((client) => {
+			client.publish(channel, event, {
+				latitude: location.latitude,
+				longitude: location.longitude,
+				...payload,
+			});
 		});
-	}, [enabled, location, requestId, updatePosition]);
+	}, [enabled, location, channel, event, payload]);
 }

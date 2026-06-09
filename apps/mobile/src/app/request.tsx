@@ -80,10 +80,12 @@ export default function RequestScreen() {
 	const userLocation = useUserLocation({ enabled: stage === "trip" });
 
 	// ─── Broadcast student position to scholar during trip ───────────────────
+	// Only relevant before the trip is ongoing (scholar hasn't started).
 	usePositionBroadcaster({
-		enabled: stage === "trip",
+		enabled: stage === "trip" && !isOngoing,
 		location: userLocation,
-		requestId: activeRequestId,
+		channel: `request:${activeRequestId}`,
+		event: "student:position",
 	});
 
 	// ── Distance from user to origin ───────────────────────────────────────
