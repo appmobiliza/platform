@@ -56,15 +56,16 @@ export function SearchingStep({
 					</View>
 
 					<AddressRoute
-						className="bg-card border border-border p-4 rounded-lg"
+						className="bg-card border border-border p-4 rounded-lg gap-3"
 						from={{ label: originName }}
 						to={{ label: destinationName }}
+						shouldShowRoute
 					/>
 
 					<Button
 						variant="destructive"
 						size="lg"
-						className="py-6"
+						className="h-16"
 						onPress={onCancel}
 						accessible
 						accessibilityRole="button"

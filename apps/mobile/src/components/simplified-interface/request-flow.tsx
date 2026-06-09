@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AccessibilityInfo } from "react-native";
 
 import { useSpeechDestination } from "@/hooks/use-speech-destination";
+import { getRealtimeClient } from "@/lib/realtime";
 import { trpc } from "@/lib/trpc/client";
 
 import type { SpeechDestinationResult } from "@/types/location";
@@ -11,8 +12,10 @@ import type { Place } from "../request-flow-sheet/types";
 import {
 	ConfirmStep,
 	type FlowStage,
+	InTransitStep,
 	ListeningStep,
 	RequestErrorStep,
+	ScholarFoundStep,
 	SearchingStep,
 	toCampusLocation,
 	UnattendedStep,
@@ -40,13 +43,22 @@ export function AccessibleRequestFlow({
 		"idle" | "searching" | "unattended" | "error"
 	>("idle");
 	const [elapsedSeconds, setElapsedSeconds] = useState(0);
+	const [activeRequestId, setActiveRequestId] = useState<string | null>(null);
+	const [scholarInfo, setScholarInfo] = useState<{
+		id: string;
+		name: string;
+		image: string | null;
+	} | null>(null);
+	const [startedAt, setStartedAt] = useState<string | null>(null);
 
 	const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 	const hasStartedListening = useRef(false);
+	const realtimeUnsubRef = useRef<(() => void) | null>(null);
 
 	// ─── Dependencies ────────────────────────────────────────────────────
 
 	const createRequest = trpc.requests.create.useMutation();
+	const cancelRequest = trpc.requests.cancel.useMutation();
 	const utils = trpc.useContext();
 
 	// Map Place[] → CampusLocation[] for the speech hook
@@ -157,13 +169,137 @@ export function AccessibleRequestFlow({
 		}
 	}, [stage, searchState]);
 
-	// ─── Cleanup timer on unmount ────────────────────────────────────────
+	const clearTimer = useCallback(() => {
+		if (timerRef.current) {
+			clearInterval(timerRef.current);
+			timerRef.current = null;
+		}
+	}, []);
+
+	// ─── Cleanup timer and realtime sub on unmount ────────────────────────
 
 	useEffect(() => {
 		return () => {
 			if (timerRef.current) clearInterval(timerRef.current);
+			realtimeUnsubRef.current?.();
+			realtimeUnsubRef.current = null;
 		};
 	}, []);
+
+	// ─── Realtime subscription ──────────────────────────────────────────
+
+	useEffect(() => {
+		if (!activeRequestId) return;
+
+		const channel = `request:${activeRequestId}`;
+		let cancelled = false;
+
+		const setup = async () => {
+			const client = await getRealtimeClient();
+			if (cancelled) return;
+
+			const onAccepted = (data: unknown) => {
+				// Extract scholar info from event payload
+				const payload = data as {
+					scholarId?: string;
+					scholarName?: string;
+					scholarImage?: string | null;
+				};
+
+				if (payload?.scholarId && payload?.scholarName) {
+					setScholarInfo({
+						id: payload.scholarId,
+						name: payload.scholarName,
+						image: payload.scholarImage ?? null,
+					});
+				}
+
+				clearTimer();
+				setSearchState("idle");
+				setElapsedSeconds(0);
+				setStage("scholar-found");
+
+				AccessibilityInfo.announceForAccessibility(
+					"Bolsista encontrado. Aguarde enquanto o bolsista vai ao seu encontro.",
+				);
+			};
+
+			const onUnattended = () => {
+				setSearchState("unattended");
+				if (timerRef.current) {
+					clearInterval(timerRef.current);
+					timerRef.current = null;
+				}
+			};
+
+			const onStarted = () => {
+				setStartedAt(
+					new Date().toLocaleTimeString("pt-BR", {
+						hour: "2-digit",
+						minute: "2-digit",
+					}),
+				);
+				setStage("in-transit");
+
+				AccessibilityInfo.announceForAccessibility(
+					"Deslocamento em andamento.",
+				);
+			};
+
+			const onCompleted = () => {
+				setActiveRequestId(null);
+				reset();
+				router.back();
+			};
+
+			const onCancelled = () => {
+				setActiveRequestId(null);
+				router.back();
+			};
+
+			const unsubAccepted = client.subscribe(
+				channel,
+				"request:accepted",
+				onAccepted,
+			);
+			const unsubStarted = client.subscribe(
+				channel,
+				"request:started",
+				onStarted,
+			);
+			const unsubCompleted = client.subscribe(
+				channel,
+				"request:completed",
+				onCompleted,
+			);
+			const unsubUnattended = client.subscribe(
+				channel,
+				"request:unattended",
+				onUnattended,
+			);
+			const unsubCancelled = client.subscribe(
+				channel,
+				"request:cancelled",
+				onCancelled,
+			);
+
+			realtimeUnsubRef.current = () => {
+				unsubAccepted();
+				unsubStarted();
+				unsubCompleted();
+				unsubUnattended();
+				unsubCancelled();
+			};
+		};
+
+		setup();
+
+		return () => {
+			cancelled = true;
+			realtimeUnsubRef.current?.();
+			realtimeUnsubRef.current = null;
+		};
+	}, [activeRequestId, router, reset, clearTimer]);
 
 	// ─── Handlers ────────────────────────────────────────────────────────
 
@@ -195,8 +331,7 @@ export function AccessibleRequestFlow({
 			});
 
 			if (result.id) {
-				// TODO: Subscribe to real-time events when realtime infra is integrated
-				// For now, we stay on the searching screen.
+				setActiveRequestId(result.id);
 			}
 		} catch {
 			setSearchState("error");
@@ -215,9 +350,16 @@ export function AccessibleRequestFlow({
 	}, [reset]);
 
 	const handleBack = useCallback(() => {
+		// Cancel request on backend if there's an active one
+		if (activeRequestId) {
+			cancelRequest.mutate({ requestId: activeRequestId });
+		}
+		setActiveRequestId(null);
+		realtimeUnsubRef.current?.();
+		realtimeUnsubRef.current = null;
 		reset();
 		router.back();
-	}, [reset, router]);
+	}, [reset, router, activeRequestId, cancelRequest]);
 
 	const handleRetry = useCallback(() => {
 		hasStartedListening.current = false;
@@ -266,6 +408,29 @@ export function AccessibleRequestFlow({
 					elapsedSeconds={elapsedSeconds}
 					originName={originName}
 					destinationName={destinationName}
+					onCancel={handleBack}
+				/>
+			);
+
+		case "scholar-found":
+			return (
+				<ScholarFoundStep
+					scholarName={scholarInfo?.name ?? "Contribuinte"}
+					scholarImage={scholarInfo?.image ?? null}
+					originName={originName}
+					destinationName={destinationName}
+					onCancel={handleBack}
+				/>
+			);
+
+		case "in-transit":
+			return (
+				<InTransitStep
+					scholarName={scholarInfo?.name ?? "Contribuinte"}
+					scholarImage={scholarInfo?.image ?? null}
+					originName={originName}
+					destinationName={destinationName}
+					startedAt={startedAt ?? "--:--"}
 					onCancel={handleBack}
 				/>
 			);

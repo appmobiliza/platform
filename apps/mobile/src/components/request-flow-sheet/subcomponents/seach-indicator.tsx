@@ -1,6 +1,5 @@
-import { useEffect } from "react";
-
 import { UserRoundSearch } from "lucide-react-native";
+import { useEffect } from "react";
 import { View } from "react-native";
 import Animated, {
 	useAnimatedStyle,
@@ -10,7 +9,13 @@ import Animated, {
 	withTiming,
 } from "react-native-reanimated";
 
-export function SearchIndicator() {
+import { cn } from "@/lib/utils";
+
+interface Props {
+	size?: "default" | "lg";
+}
+
+export function SearchIndicator({ size = "default" }: Props) {
 	// const scale = useSharedValue(1);
 
 	// useEffect(() => {
@@ -29,14 +34,30 @@ export function SearchIndicator() {
 	// }));
 
 	return (
-		<View className="relative size-16 items-center justify-center">
-			<View className="absolute size-16 rounded-full bg-primary/50 animate-ping" />
+		<View
+			className={cn("relative size-16 items-center justify-center", {
+				"size-24": size === "lg",
+			})}
+		>
+			<View
+				className={cn(
+					"absolute size-16 rounded-full bg-primary/50 animate-ping",
+					{
+						"size-24": size === "lg",
+					},
+				)}
+			/>
 
 			<Animated.View
-				className="size-16 items-center justify-center rounded-full bg-primary"
+				className={cn(
+					"size-16 items-center justify-center rounded-full bg-primary",
+					{
+						"size-24": size === "lg",
+					},
+				)}
 				// style={animatedStyle}
 			>
-				<UserRoundSearch size={28} color="white" />
+				<UserRoundSearch size={size === "lg" ? 36 : 28} color="white" />
 			</Animated.View>
 		</View>
 	);
