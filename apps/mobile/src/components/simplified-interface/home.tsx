@@ -1,342 +1,124 @@
-/**
- * Exemplo de uso do useSpeechDestination com origem automática por GPS.
- *
- * Fluxo:
- *  1. A tela resolve a localização atual via geofencing (hook externo)
- *  2. Estudante toca "Falar destino" e diz apenas para onde quer ir
- *  3. Hook preenche origem automaticamente com o local detectado pelo GPS
- *  4. Destino é extraído da fala via fuzzy match
- */
+import { LocateFixed, MapPin, MousePointer2 } from "lucide-react-native";
+import { Pressable, ScrollView, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import type { Place } from "@/components/request-flow-sheet/types";
+import { Icon } from "@/components/ui/icon";
+import { Text } from "@/components/ui/text";
 
-import { useSpeechDestination } from "@/hooks/use-speech-destination";
+import { PlaceCard } from "../place-card";
 
-import type { CampusLocation } from "@/types/location";
-
-// ─── Locais de exemplo — viriam do seu store/DB local ────────────────────────
-
-const CAMPUS_LOCATIONS: CampusLocation[] = [
-	{
-		id: "bib",
-		name: "Biblioteca Central",
-		abbreviations: ["BU", "Bib", "biblioteca"],
-	},
-	{ id: "reit", name: "Reitoria", abbreviations: ["reitoria"] },
-	{ id: "bloco-a", name: "Bloco A", abbreviations: ["bloco a", "BA"] },
-	{ id: "bloco-b", name: "Bloco B", abbreviations: ["bloco b", "BB"] },
-	{
-		id: "ru",
-		name: "Restaurante Universitário",
-		abbreviations: ["RU", "bandejão"],
-	},
-	{
-		id: "nac",
-		name: "NAC",
-		abbreviations: ["nucleo de acessibilidade", "núcleo"],
-	},
-	{
-		id: "ccen",
-		name: "CCEN",
-		abbreviations: ["centro de ciencias exatas", "exatas"],
-	},
-];
-
-// ─── Props ────────────────────────────────────────────────────────────────────
-
-interface SpeechRequestFormProps {
-	/**
-	 * Local atual resolvido por geofencing/GPS.
-	 * Quando null, o hook volta ao modo manual (usuário diz origem e destino).
-	 */
-	currentLocation: CampusLocation | null;
-	/**
-	 * Locais do campus disponíveis para reconhecimento de fala.
-	 * Quando não fornecida, usa uma lista padrão com exemplos.
-	 */
-	locations?: CampusLocation[];
+interface Props {
+	nearestPoint: Place | null;
+	campusLocations: Place[];
 }
 
-// ─── Componente ───────────────────────────────────────────────────────────────
-
-export function SpeechRequestForm({
-	currentLocation,
-	locations: propLocations,
-}: SpeechRequestFormProps) {
-	const activeLocations = propLocations ?? CAMPUS_LOCATIONS;
-
-	const {
-		phase,
-		transcript,
-		origin,
-		destination,
-		originSource,
-		confidence,
-		error,
-		start,
-		reset,
-	} = useSpeechDestination({
-		locations: activeLocations,
-		currentLocation,
-		onResult: ({ origin, destination }) => {
-			console.log("Resultado:", { origin, destination });
-		},
-	});
-
-	const isListening = phase === "listening";
-	const isProcessing = phase === "processing";
-	const isConfirmed = phase === "confirmed";
+export default function SimplifiedHome({
+	nearestPoint,
+	campusLocations,
+}: Props) {
+	const insets = useSafeAreaInsets();
 
 	return (
-		<View style={styles.container}>
-			{/* Origem automática — exibida antes mesmo de o usuário falar */}
-			{currentLocation && (
-				<View
-					style={styles.originBanner}
-					accessible
-					accessibilityLabel={`Sua localização atual: ${currentLocation.name}`}
-				>
-					<Text style={styles.originBannerLabel}>Você está em</Text>
-					<View style={styles.originBannerRow}>
-						<Text style={styles.originBannerName}>
-							{currentLocation.name}
-						</Text>
-						<View style={styles.gpsBadge} accessible={false}>
-							<Text style={styles.gpsBadgeText}>GPS</Text>
+		<ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+			<View
+				className="bg-primary pb-8 px-4 flex justify-start items-start mb-8"
+				style={{
+					paddingTop: insets.top + 64,
+				}}
+			>
+				<Text className="uppercase text-lg font-semibold mb-2">
+					OLÁ, PEDRO
+				</Text>
+				<Text className="text-4xl font-extrabold">
+					Para onde vamos?
+				</Text>
+			</View>
+			<View className="p-4 gap-4">
+				<View className="bg-card rounded-lg p-4 flex-row items-center justify-between gap-4 border border-border">
+					<View className="flex-1 gap-4 flex-row items-center justify-start">
+						<View className="items-center justify-center gap-1 p-4 rounded-md bg-primary">
+							<Icon
+								icon={LocateFixed}
+								color={"white"}
+								size={28}
+							/>
+						</View>
+						<View className="flex-1">
+							<Text
+								className="font-medium text-base uppercase text-muted-foreground"
+								numberOfLines={1}
+							>
+								Você está em
+							</Text>
+							<Text
+								className="text-xl mt-0.5 font-extrabold"
+								numberOfLines={3}
+							>
+								{nearestPoint?.name}
+							</Text>
 						</View>
 					</View>
 				</View>
-			)}
 
-			{/* Botão principal de fala */}
-			<Pressable
-				style={[
-					styles.micButton,
-					isListening && styles.micButtonActive,
-				]}
-				onPress={isListening ? undefined : start}
-				accessible
-				accessibilityRole="button"
-				accessibilityLabel={
-					isListening
-						? "Ouvindo. Aguarde ou toque para cancelar."
-						: currentLocation
-							? `Falar destino. Origem já definida: ${currentLocation.name}.`
-							: "Falar destino. Toque para ditar origem e destino."
-				}
-				accessibilityState={{ busy: isListening || isProcessing }}
-				accessibilityHint={
-					currentLocation
-						? "Diga apenas para onde quer ir."
-						: "Diga de onde você está e para onde quer ir."
-				}
-			>
-				<Text style={styles.micIcon}>{isListening ? "⏹" : "🎤"}</Text>
-				<Text style={styles.micLabel}>
-					{isListening
-						? "Ouvindo..."
-						: isProcessing
-							? "Processando..."
-							: "Falar destino"}
-				</Text>
-			</Pressable>
-
-			{/* Transcrição em tempo real */}
-			{transcript.length > 0 && (
-				<View
-					accessibilityLiveRegion="polite"
-					accessibilityLabel={`Transcrição: ${transcript}`}
-				>
-					<Text style={styles.transcriptLabel}>Transcrição</Text>
-					<Text style={styles.transcript}>{transcript}</Text>
-				</View>
-			)}
-
-			{/* Resultado */}
-			{isConfirmed && (
-				<View style={styles.resultBlock}>
-					{/* Origem */}
-					<View style={styles.fieldRow}>
-						<Text style={styles.fieldLabel}>Origem</Text>
-						{origin ? (
-							<View style={styles.fieldValueRow}>
-								<Text
-									style={styles.fieldValue}
-									accessible
-									accessibilityLabel={`Origem: ${origin.location.name}${originSource === "gps" ? ", detectada por GPS" : ""}`}
-								>
-									{origin.location.name}
-								</Text>
-								{originSource === "gps" && (
-									<View
-										style={styles.gpsBadge}
-										accessible={false}
-									>
-										<Text style={styles.gpsBadgeText}>
-											GPS
-										</Text>
-									</View>
-								)}
-							</View>
-						) : (
-							<Text style={styles.fieldMissing}>
-								Não informada
+				<Pressable className="bg-primary rounded-lg p-4 flex-row items-center justify-between gap-4 border border-border active:opacity-70">
+					<View className="flex-1 gap-4 flex-row items-center justify-start">
+						<View className="items-center justify-center gap-1 p-4 rounded-md bg-white/20">
+							<Icon
+								icon={MousePointer2}
+								color={"white"}
+								size={28}
+							/>
+						</View>
+						<View className="flex-1">
+							<Text className="text-3xl font-extrabold mr-8">
+								Solicitar deslocamento
 							</Text>
-						)}
-					</View>
-
-					{/* Destino */}
-					<View style={styles.fieldRow}>
-						<Text style={styles.fieldLabel}>Destino</Text>
-						{destination ? (
 							<Text
-								style={styles.fieldValue}
-								accessible
-								accessibilityLabel={`Destino: ${destination.location.name}`}
+								className="font-medium text-base"
+								numberOfLines={1}
 							>
-								{destination.location.name}
+								Escolha o destino
 							</Text>
-						) : (
-							<Text style={styles.fieldMissing}>
-								Não identificado
-							</Text>
-						)}
+						</View>
 					</View>
+				</Pressable>
 
-					{/* Confiança — só exibe para destino reconhecido por voz */}
-					{confidence && (
-						<Text
-							style={[
-								styles.confidence,
-								confidence === "high" && styles.confidenceHigh,
-								confidence === "medium" &&
-									styles.confidenceMedium,
-								confidence === "low" && styles.confidenceLow,
-							]}
-							accessibilityLabel={`Confiança do reconhecimento: ${
-								confidence === "high"
-									? "alta"
-									: confidence === "medium"
-										? "média"
-										: "baixa"
-							}`}
-						>
-							{confidence === "high"
-								? "✓ Reconhecido com alta confiança"
-								: confidence === "medium"
-									? "~ Confiança média — verifique os campos"
-									: "✗ Baixa confiança — tente novamente"}
-						</Text>
-					)}
-
-					<View style={styles.actions}>
-						<Pressable
-							style={styles.resetButton}
-							onPress={reset}
-							accessible
-							accessibilityRole="button"
-							accessibilityLabel="Tentar novamente"
-						>
-							<Text style={styles.resetLabel}>
-								Tentar novamente
-							</Text>
-						</Pressable>
-					</View>
-				</View>
-			)}
-
-			{/* Erro */}
-			{phase === "error" && (
-				<Text
-					style={styles.errorText}
-					accessible
-					accessibilityRole="alert"
-					accessibilityLabel={`Erro: ${error ?? "tente novamente"}`}
-				>
-					{error ?? "Não foi possível reconhecer. Tente novamente."}
+				<Text className="text-2xl font-extrabold mt-4">
+					Rotas recentes
 				</Text>
-			)}
-		</View>
+
+				<View className="flex-col gap-3">
+					<PlaceCard
+						size="accessibility"
+						title="Restaurante Universitário"
+						description="Último deslocamento há 2 dias"
+						icon={{ as: MapPin }}
+						onPress={() => {}}
+					/>
+					<PlaceCard
+						size="accessibility"
+						title="Reitoria"
+						description="Último deslocamento há 6 dias"
+						icon={{ as: MapPin }}
+						onPress={() => {}}
+					/>
+					<PlaceCard
+						size="accessibility"
+						title="Biblioteca Central"
+						description="Último deslocamento há 10 dias"
+						icon={{ as: MapPin }}
+						onPress={() => {}}
+					/>
+					<PlaceCard
+						size="accessibility"
+						title="Instituto de Computação"
+						description="Último deslocamento há 12 dias"
+						icon={{ as: MapPin }}
+						onPress={() => {}}
+					/>
+				</View>
+			</View>
+		</ScrollView>
 	);
 }
-
-// ─── Estilos ──────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-	container: { gap: 16, padding: 20 },
-
-	originBanner: {
-		backgroundColor: "#E1F5EE",
-		borderRadius: 10,
-		padding: 14,
-		gap: 2,
-	},
-	originBannerLabel: { fontSize: 12, color: "#0F6E56" },
-	originBannerRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-	originBannerName: {
-		fontSize: 16,
-		fontWeight: "500",
-		color: "#085041",
-		flex: 1,
-	},
-
-	gpsBadge: {
-		backgroundColor: "#9FE1CB",
-		borderRadius: 4,
-		paddingHorizontal: 6,
-		paddingVertical: 2,
-	},
-	gpsBadgeText: { fontSize: 11, fontWeight: "500", color: "#085041" },
-
-	micButton: {
-		minHeight: 72,
-		backgroundColor: "#005E65",
-		borderRadius: 12,
-		alignItems: "center",
-		justifyContent: "center",
-		gap: 8,
-		flexDirection: "row",
-		paddingHorizontal: 24,
-	},
-	micButtonActive: { backgroundColor: "#032F32" },
-	micIcon: { fontSize: 24 },
-	micLabel: { color: "#fff", fontSize: 18, fontWeight: "500" },
-
-	transcriptLabel: { fontSize: 12, color: "#888", marginBottom: 4 },
-	transcript: { fontSize: 16, fontStyle: "italic", color: "#444" },
-
-	resultBlock: { gap: 12 },
-	fieldRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 8,
-		paddingVertical: 8,
-		borderBottomWidth: 1,
-		borderBottomColor: "#e5e5e5",
-	},
-	fieldValueRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		gap: 6,
-		flex: 1,
-	},
-	fieldLabel: { fontSize: 14, color: "#666", minWidth: 72 },
-	fieldValue: { fontSize: 16, fontWeight: "500", color: "#111" },
-	fieldMissing: { fontSize: 16, color: "#999", fontStyle: "italic" },
-
-	confidence: { fontSize: 13, marginTop: 4 },
-	confidenceHigh: { color: "#1D9E75" },
-	confidenceMedium: { color: "#BA7517" },
-	confidenceLow: { color: "#A32D2D" },
-
-	actions: { flexDirection: "row", gap: 12, marginTop: 8 },
-	resetButton: {
-		paddingVertical: 12,
-		paddingHorizontal: 20,
-		borderRadius: 8,
-		borderWidth: 1,
-		borderColor: "#ccc",
-	},
-	resetLabel: { fontSize: 15, color: "#333" },
-	errorText: { color: "#A32D2D", fontSize: 15 },
-});

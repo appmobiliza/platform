@@ -1,6 +1,5 @@
 import { Info } from "lucide-react-native";
-import { useState } from "react";
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddressRoute } from "../address";
@@ -10,14 +9,19 @@ import { Button } from "../ui/button";
 import { Icon } from "../ui/icon";
 import { Text } from "../ui/text";
 
-interface Step {
+export interface AcessibleRequestStep {
 	subtitle?: string;
 	title: string;
 	note: string | React.ReactNode;
 	children: React.ReactNode;
 }
 
-function FlowStep({ title, note, children, subtitle }: Step) {
+export function FlowStep({
+	title,
+	note,
+	children,
+	subtitle,
+}: AcessibleRequestStep) {
 	const insets = useSafeAreaInsets();
 
 	return (
@@ -46,7 +50,7 @@ function FlowStep({ title, note, children, subtitle }: Step) {
 	);
 }
 
-const Step1: Step = {
+const Step1: AcessibleRequestStep = {
 	subtitle: "Estamos ouvindo seu pedido",
 	title: "Diga para onde deseja ir",
 	note: "Para voltar à página inicial, fique em silêncio ou diga “cancelar” ",
@@ -70,7 +74,7 @@ const Step1: Step = {
 	),
 };
 
-const Step2: Step = {
+const Step2: AcessibleRequestStep = {
 	subtitle: "Confirma pra gente:",
 	title: "Você deseja ir de RU para Biblioteca Central?",
 	note: "Selecione o botão abaixo de 'sim' ou 'não' para confirmar sua escolha.",
@@ -89,7 +93,7 @@ const Step2: Step = {
 	),
 };
 
-const Step3: Step = {
+const Step3: AcessibleRequestStep = {
 	subtitle: "Por favor, aguarde",
 	title: "Procurando contribuintes...",
 	note: "Para voltar à página inicial, selecione o botão 'cancelar solicitação' abaixo",
@@ -115,7 +119,7 @@ const Step3: Step = {
 	),
 };
 
-const Step4: Step = {
+const Step4: AcessibleRequestStep = {
 	subtitle: "Bolsista encontrado!",
 	title: "Você será atendido por",
 	note: (
@@ -170,32 +174,65 @@ const Step4: Step = {
 				}}
 				to={{ label: destination?.name ?? "" }}
 			/>
-
-			<Button
-				className="text-2xl font-medium py-4 px-8"
-				variant={"destructive"}
-			>
-				<Text>Cancelar solicitação</Text>
-			</Button>
 		</>
 	),
 };
 
-export function RequestFlow() {
-	const insets = useSafeAreaInsets();
-
-	const [currentStep, setCurrentStep] = useState<Step>(Step1);
-
-	return (
-		<ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-			<View
-				className="bg-primary pb-16 px-4 flex justify-center items-center mb-8"
-				style={{
-					paddingTop: insets.top + 64,
-				}}
-			>
-				<FlowStep {...currentStep} />
+const Step5: AcessibleRequestStep = {
+	subtitle: "Em trajeto para",
+	title: "Biblioteca Central",
+	children: (
+		<>
+			<View className="flex-row items-start gap-4">
+				<Avatar alt="Avatar do contribuinte" className="size-12">
+					{scholarInfo?.image ? (
+						<AvatarImage
+							source={{
+								uri: scholarInfo.image,
+							}}
+						/>
+					) : null}
+					<AvatarFallback>
+						<Text>
+							{scholarInfo?.name
+								?.split(" ")
+								.map((n) => n[0])
+								.join("")
+								.slice(0, 2)
+								.toUpperCase() ?? ""}
+						</Text>
+					</AvatarFallback>
+				</Avatar>
+				<View className="flex-1 gap-0.5">
+					<View className="flex-row items-center justify-between gap-3">
+						<Text className="text-[16px] font-semibold leading-6 text-foreground">
+							{scholarInfo?.name ?? "Contribuinte"}
+						</Text>
+					</View>
+				</View>
 			</View>
-		</ScrollView>
-	);
-}
+
+			<AddressRoute
+				className="bg-input p-4 rounded-lg gap-4"
+				from={{
+					label: origin?.abbreviation ?? origin?.name ?? "",
+				}}
+				to={{ label: destination?.name ?? "" }}
+			/>
+
+			<View className="w-full flex flex-col items-center justify-center gap-3 bg-input">
+				<Text className="text-muted-foreground text-xl font-medium">
+					Início
+				</Text>
+				<Text className="font-semibold text-2xl">10h17</Text>
+			</View>
+
+			<View className="w-full flex flex-col items-center justify-center gap-3 bg-input">
+				<Text className="text-muted-foreground text-xl font-medium">
+					Distância restante
+				</Text>
+				<Text className="font-semibold text-2xl">2,1km</Text>
+			</View>
+		</>
+	),
+};

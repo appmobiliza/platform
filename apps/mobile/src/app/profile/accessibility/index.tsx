@@ -11,6 +11,7 @@ import { trpc } from "@/lib/trpc/client";
 export default function AccessibilityProfile() {
 	const { data: userData, isLoading } = trpc.profiles.me.useQuery();
 	const updateStudent = trpc.profiles.updateStudent.useMutation();
+	const utils = trpc.useUtils();
 
 	const studentProfile = userData?.studentProfile;
 
@@ -22,6 +23,7 @@ export default function AccessibilityProfile() {
 		setSimplifiedInterface(value);
 		try {
 			await updateStudent.mutateAsync({ simplifiedInterface: value });
+			await utils.profiles.me.invalidate();
 		} catch (error) {
 			console.error("Erro ao salvar interface simplificada:", error);
 			setSimplifiedInterface(!value);

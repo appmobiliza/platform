@@ -10,7 +10,8 @@ import { PlaceCard } from "@/components/place-card";
 import type { Place } from "@/components/request-flow-sheet/types";
 import { ScholarHome } from "@/components/scholar/home";
 import { SearchBar } from "@/components/search-bar";
-import { SpeechRequestForm } from "@/components/simplified-interface/home";
+import SimplifiedHome from "@/components/simplified-interface/home";
+import { SpeechRequestForm } from "@/components/simplified-interface/old-home";
 import { Text } from "@/components/ui/text";
 
 import { useUserRole } from "@/lib/auth-store";
@@ -211,54 +212,6 @@ function StudentHome({ insets }: StudentHomeProps) {
 	);
 }
 
-type SimplifiedHomeProps = {
-	insets: {
-		top: number;
-		bottom: number;
-		left: number;
-		right: number;
-	};
-	nearestPoint: Place | null;
-	campusLocations: Place[];
-};
-
-function SimplifiedHome({
-	insets,
-	nearestPoint,
-	campusLocations,
-}: SimplifiedHomeProps) {
-	const toCampusLocation = useCallback(
-		(place: Place): CampusLocation => ({
-			id: place.id ?? "",
-			name: place.name,
-			abbreviations: place.abbreviation
-				? [place.abbreviation]
-				: undefined,
-		}),
-		[],
-	);
-
-	return (
-		<ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-			<View
-				className="bg-primary pb-16 px-4 flex justify-center items-center mb-8"
-				style={{
-					paddingTop: insets.top + 64,
-				}}
-			>
-				<Logo height={30} width={188} />
-			</View>
-
-			<SpeechRequestForm
-				currentLocation={
-					nearestPoint ? toCampusLocation(nearestPoint) : null
-				}
-				locations={campusLocations.map(toCampusLocation)}
-			/>
-		</ScrollView>
-	);
-}
-
 export default function Home() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
@@ -363,7 +316,6 @@ export default function Home() {
 	if (role === "student" && simplifiedInterface) {
 		return (
 			<SimplifiedHome
-				insets={insets}
 				nearestPoint={nearestPoint}
 				campusLocations={campusLocations}
 			/>
