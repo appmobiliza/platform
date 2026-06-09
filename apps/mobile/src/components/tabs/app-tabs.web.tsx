@@ -16,11 +16,7 @@ function DefaultAppTabs() {
 	const colorScheme = useAppColorScheme();
 	const role = useUserRole();
 	const isScholar = role === "scholar";
-	const theme = isScholar
-		? SCHOLAR_THEME
-		: colorScheme === "dark"
-			? THEME.dark
-			: THEME.light;
+	const theme = isScholar ? SCHOLAR_THEME[colorScheme] : THEME[colorScheme];
 
 	const isHomeActive = pathname === "/";
 	const isHistoryActive = pathname.startsWith("/history");

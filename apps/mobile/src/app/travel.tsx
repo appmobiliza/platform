@@ -10,6 +10,7 @@ import { AddressRoute } from "@/components/address";
 import MapView from "@/components/map/map-view";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
 import { useOsrmRoute } from "@/hooks/use-osrm-route";
@@ -446,7 +447,6 @@ export default function TravelScreen() {
 							}
 							routePath={routePath}
 							showUserLocation
-							interactive={false}
 						/>
 					</View>
 				)}
@@ -462,8 +462,10 @@ export default function TravelScreen() {
 						onPress={() => setShowMap((prev) => !prev)}
 						className="w-full rounded-xl"
 					>
-						<MapIcon size={16} color="--primary" className="mr-2" />
-						<Text>{showMap ? "Ocultar mapa" : "Ver no mapa"}</Text>
+						<Icon icon={MapIcon} size={16} color="--primary" />
+						<Text className="ml-2">
+							{showMap ? "Ocultar mapa" : "Ver no mapa"}
+						</Text>
 					</Button>
 				)}
 

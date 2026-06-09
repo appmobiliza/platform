@@ -1,4 +1,5 @@
 import type { ColorSchemeName } from "react-native";
+
 import { useUserRole } from "./auth-store";
 
 export type ThemeColors = {
@@ -65,24 +66,46 @@ export const THEME: ThemeConfig = {
 	unspecified: {},
 };
 
-export const SCHOLAR_THEME: ThemeColors = {
-	primary: "#0A2540",
-	background: "#0F1313",
-	card: "#1A1F1F",
-	muted: "#A3A3A3",
-	bar: {
-		background: "#1A1F1F",
-		label: {
-			default: "#A3A3A3",
-			selected: "#60A5FA",
+export const SCHOLAR_THEME: ThemeConfig = {
+	light: {
+		primary: "#005E65",
+		background: "#F8F8F8",
+		card: "#FFFFFF",
+		muted: "#737373",
+		bar: {
+			background: "#1A2121",
+			label: {
+				default: "#3F4849",
+				selected: "#4B799F",
+			},
+			icon: {
+				default: "#09090B",
+				selected: "#E6F4F5",
+			},
+			indicator: "#003765",
+			ripple: "rgba(22, 29, 29, 0.08)",
 		},
-		icon: {
-			default: "#A3A3A3",
-			selected: "#FFFFFF",
-		},
-		indicator: "#0A2540",
-		ripple: "rgba(255, 255, 255, 0.1)",
 	},
+	dark: {
+		primary: "#0A2540",
+		background: "#0F1313",
+		card: "#1A1F1F",
+		muted: "#A3A3A3",
+		bar: {
+			background: "#1A1F1F",
+			label: {
+				default: "#A3A3A3",
+				selected: "#60A5FA",
+			},
+			icon: {
+				default: "#A3A3A3",
+				selected: "#FFFFFF",
+			},
+			indicator: "#0A2540",
+			ripple: "rgba(255, 255, 255, 0.1)",
+		},
+	},
+	unspecified: {},
 };
 
 export const useUnstableNativeVariable = (name: string) => `var(${name})`;
@@ -95,7 +118,5 @@ const scholarTheme = {
 
 export function useThemeVariables() {
 	const role = useUserRole();
-	return role === "scholar"
-		? scholarTheme
-		: {};
+	return role === "scholar" ? scholarTheme : {};
 }

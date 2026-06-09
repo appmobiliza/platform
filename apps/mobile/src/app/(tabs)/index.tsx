@@ -74,6 +74,16 @@ function StudentHome() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
 
+	const navigateWithDestination = useCallback(
+		(destination: string) => {
+			router.push({
+				pathname: "/request",
+				params: { destination },
+			});
+		},
+		[router],
+	);
+
 	// Fetch campus locations from the DB (source of truth)
 	const { data: campusLocations = [] } = trpc.locations.list.useQuery(
 		undefined,
@@ -210,19 +220,24 @@ function StudentHome() {
 						description="Hoje, 12h35"
 						className="mb-3"
 						icon={{ as: Clock }}
+						onPress={() =>
+							navigateWithDestination("Restaurante Universitário")
+						}
 					/>
 					<View className="flex-row gap-3">
 						<PlaceCard
 							className="flex-1"
-							title="CECA"
+							title="CEDU"
 							description="Ontem, 16h12"
 							icon={{ as: Clock }}
+							onPress={() => navigateWithDestination("CEDU")}
 						/>
 						<PlaceCard
 							className="flex-1"
-							title="IQB"
+							title="ICBS"
 							description="Há 2 dias, 16h24"
 							icon={{ as: Clock }}
+							onPress={() => navigateWithDestination("ICBS")}
 						/>
 					</View>
 				</View>
@@ -245,21 +260,35 @@ function StudentHome() {
 							title="Restaurante Universitário"
 							description="Último deslocamento há 2 dias"
 							icon={{ as: MapPin }}
+							onPress={() =>
+								navigateWithDestination(
+									"Restaurante Universitário",
+								)
+							}
 						/>
 						<PlaceCard
 							title="Reitoria"
 							description="Último deslocamento há 6 dias"
 							icon={{ as: MapPin }}
+							onPress={() => navigateWithDestination("Reitoria")}
 						/>
 						<PlaceCard
 							title="Biblioteca Central"
 							description="Último deslocamento há 10 dias"
 							icon={{ as: MapPin }}
+							onPress={() =>
+								navigateWithDestination("Biblioteca Central")
+							}
 						/>
 						<PlaceCard
 							title="Instituto de Computação"
 							description="Último deslocamento há 12 dias"
 							icon={{ as: MapPin }}
+							onPress={() =>
+								navigateWithDestination(
+									"Instituto de Computação",
+								)
+							}
 						/>
 					</View>
 				</View>

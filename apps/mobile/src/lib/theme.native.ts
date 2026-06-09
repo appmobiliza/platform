@@ -67,24 +67,46 @@ export const THEME: ThemeConfig = {
 	unspecified: {},
 };
 
-export const SCHOLAR_THEME: ThemeColors = {
-	primary: "#0A2540",
-	background: "#0F1313",
-	card: "#1A1F1F",
-	muted: "#A3A3A3",
-	bar: {
-		background: "#1A1F1F",
-		label: {
-			default: "#A3A3A3",
-			selected: "#60A5FA",
+export const SCHOLAR_THEME: ThemeConfig = {
+	dark: {
+		primary: "#0A2540",
+		background: "#0F1313",
+		card: "#1A1F1F",
+		muted: "#A3A3A3",
+		bar: {
+			background: "#1A1F1F",
+			label: {
+				default: "#A3A3A3",
+				selected: "#60A5FA",
+			},
+			icon: {
+				default: "#A3A3A3",
+				selected: "#FFFFFF",
+			},
+			indicator: "#0A2540",
+			ripple: "rgba(255, 255, 255, 0.1)",
 		},
-		icon: {
-			default: "#A3A3A3",
-			selected: "#FFFFFF",
-		},
-		indicator: "#0A2540",
-		ripple: "rgba(255, 255, 255, 0.1)",
 	},
+	light: {
+		primary: "#005E65",
+		background: "#F8F8F8",
+		card: "#FFFFFF",
+		muted: "#737373",
+		bar: {
+			background: "#ededed",
+			label: {
+				default: "#3F4849",
+				selected: "#4A6365",
+			},
+			icon: {
+				default: "#3F4849",
+				selected: "#324B4E",
+			},
+			indicator: "#CCE8EA",
+			ripple: "rgba(22, 29, 29, 0.08)",
+		},
+	},
+	unspecified: {},
 };
 
 export const useUnstableNativeVariable = (name: string) =>

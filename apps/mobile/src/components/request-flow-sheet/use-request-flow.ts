@@ -1,5 +1,5 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import * as React from "react";
 import { Alert } from "react-native";
 
@@ -64,6 +64,12 @@ function useRequestFlow() {
 
 	const [origin, setOrigin] = React.useState<Place | null>(null);
 	const [destination, setDestination] = React.useState<Place | null>(null);
+
+	// ─── Pre-set destination from URL query param (from PlaceCard on Home) ──
+	const { destination: destinationParam } = useLocalSearchParams<{
+		destination?: string;
+	}>();
+	const preselectedDestRef = React.useRef(destinationParam ?? undefined);
 	const [message, setMessage] = React.useState("");
 
 	// Estado da busca
@@ -637,14 +643,6 @@ function useRequestFlow() {
 		}
 	}, []);
 
-	// Only open the initial stage if we are NOT restoring a session
-	React.useEffect(() => {
-		if (!hasPersistedRequest) {
-			openStage("route-selection");
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [openStage]);
-
 	// Map API locations → LocationItem format for AddressRouteInput
 	const campusLocationItems = React.useMemo(
 		() =>
@@ -662,6 +660,50 @@ function useRequestFlow() {
 		() => new Map(campusLocationItems.map((l) => [l.name, l])),
 		[campusLocationItems],
 	);
+
+	// ─── Auto-set destination when a name was passed via URL (from Home PlaceCard) ──
+	//
+	// Inserted before the stage-opening openStage call so the sheet presents
+	// with the destination already filled.
+	React.useEffect(() => {
+		const name = preselectedDestRef.current;
+		if (!name || destination) return;
+
+		// Try exact name match first, then abbreviation match
+		const byName = campusLocationsByName.get(name);
+		if (byName) {
+			setDestination({
+				name: byName.name,
+				abbreviation: byName.abbreviation,
+				latitude: byName.latitude,
+				longitude: byName.longitude,
+			});
+			preselectedDestRef.current = undefined;
+			return;
+		}
+
+		// Fallback to matching by abbreviation
+		const byAbbrev = campusLocationItems.find(
+			(l) => l.abbreviation?.toLowerCase() === name.toLowerCase(),
+		);
+		if (byAbbrev) {
+			setDestination({
+				name: byAbbrev.name,
+				abbreviation: byAbbrev.abbreviation,
+				latitude: byAbbrev.latitude,
+				longitude: byAbbrev.longitude,
+			});
+			preselectedDestRef.current = undefined;
+		}
+	}, [destination, campusLocationsByName, campusLocationItems]);
+
+	// Only open the initial stage if we are NOT restoring a session
+	React.useEffect(() => {
+		if (!hasPersistedRequest) {
+			openStage("route-selection");
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [openStage]);
 
 	return {
 		activeStage,
