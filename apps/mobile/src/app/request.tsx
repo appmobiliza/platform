@@ -17,6 +17,12 @@ import { findNearestCampusLocation } from "@/lib/map-utils";
 import { useRequestState } from "@/lib/request-store";
 import { trpc } from "@/lib/trpc/client";
 
+const BACK_ALLOWED_DESTINATIONS = [
+	"destination",
+	"destination-selection",
+	"start-confirm",
+];
+
 export default function RequestScreen() {
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
@@ -99,8 +105,7 @@ export default function RequestScreen() {
 					paddingTop: insets.top + 24,
 				}}
 			>
-				{(stage === "destination" ||
-					stage === "destination-selection") && (
+				{BACK_ALLOWED_DESTINATIONS.includes(stage) && (
 					<Pressable
 						className="shrink-0 p-3 bg-secondary rounded-full shadow-sm shadow-secondary/20 mt-4"
 						onPress={() => router.back()}

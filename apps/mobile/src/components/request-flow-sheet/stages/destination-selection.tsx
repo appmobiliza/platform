@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
+import { setNearestPoint } from "@/lib/location-store";
+
 import { AddressRouteInput } from "../subcomponents/address-route-input";
 import { SheetFrame, StageSheet } from "../subcomponents/layout";
 import type { Place, Stage } from "../types";
@@ -57,7 +59,11 @@ function DestinationSelectionStage({
 					<>
 						<Button
 							onPress={() => transitionTo("start-confirm")}
-							disabled={destination === null || origin === null}
+							disabled={
+								destination === null ||
+								origin === null ||
+								destination === origin
+							}
 						>
 							<Text>Confirmar destino</Text>
 						</Button>
@@ -86,6 +92,7 @@ function DestinationSelectionStage({
 					onSelectDestination={(name) => {
 						const point = campusLocationsByName.get(name);
 						if (point) {
+							setNearestPoint(null);
 							setDestination({
 								name: point.name,
 								abbreviation: point.abbreviation,
