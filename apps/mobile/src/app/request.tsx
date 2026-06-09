@@ -12,10 +12,12 @@ import { Text } from "@/components/ui/text";
 
 import { useScholarPositions } from "@/hooks/use-scholar-positions";
 import { useScholarTripPosition } from "@/hooks/use-scholar-trip-position";
-import { setNearestPoint } from "@/lib/location-store";
+import {
+	getCachedCampusLocations,
+	setNearestPoint,
+} from "@/lib/location-store";
 import { findNearestCampusLocation } from "@/lib/map-utils";
 import { useRequestState } from "@/lib/request-store";
-import { trpc } from "@/lib/trpc/client";
 
 const BACK_ALLOWED_DESTINATIONS = [
 	"destination",
@@ -34,17 +36,15 @@ export default function RequestScreen() {
 
 	// ─── Campus locations for nearest-point detection ───────────────────────
 
-	const { data: campusLocations = [] } = trpc.locations.list.useQuery();
-
 	const campusLocationItems = useMemo(
 		() =>
-			campusLocations.map((loc) => ({
+			getCachedCampusLocations().map((loc) => ({
 				name: loc.name,
 				latitude: loc.latitude,
 				longitude: loc.longitude,
 				abbreviation: loc.abbreviation ?? undefined,
 			})),
-		[campusLocations],
+		[],
 	);
 
 	// ─── Scholar real-time positions (searching stage) ──────────────────────

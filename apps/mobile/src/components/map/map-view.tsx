@@ -6,6 +6,7 @@ import {
 	Layer,
 	Map as MapViewNative,
 	Marker,
+	type StyleSpecification,
 	UserLocation,
 } from "@maplibre/maplibre-react-native";
 import * as Location from "expo-location";
@@ -21,8 +22,12 @@ import type { Place, Stage } from "../request-flow-sheet/types";
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
+import _dark from "@/assets/map-styles/dark.json";
+
+const dark = _dark as StyleSpecification;
+
 const LIGHT_STYLE = "https://tiles.openfreemap.org/styles/liberty";
-const DARK_STYLE = "https://tiles.openfreemap.org/styles/dark";
+const DARK_STYLE = dark;
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
