@@ -85,6 +85,11 @@ function useRequestFlow() {
 		() => getRequestState().scholar ?? null,
 	);
 
+	// Se o deslocamento já está em andamento (scholar pegou o aluno e está a caminho do destino)
+	const [isOngoing, setIsOngoing] = React.useState<boolean>(
+		() => getRequestState().isOngoing ?? false,
+	);
+
 	// Mutação para criar a solicitação no backend
 	const { mutateAsync: createRequest, isPending: isCreating } =
 		trpc.requests.create.useMutation();
@@ -203,8 +208,9 @@ function useRequestFlow() {
 			message,
 			requestCreatedAt: activeRequestId ? Date.now() : null,
 			scholar: scholarInfo,
+			isOngoing,
 		});
-	}, [activeRequestId, searchState, activeStage, origin, destination, message, scholarInfo]);
+	}, [activeRequestId, searchState, activeStage, origin, destination, message, scholarInfo, isOngoing]);
 
 	// ─── Restauração de sessão ──────────────────────────────────────────────
 	//
@@ -271,6 +277,7 @@ function useRequestFlow() {
 					// Já foi aceito enquanto estávamos fora — vai direto pra trip
 					setActiveRequestId(requestId);
 					setSearchState("idle");
+					setIsOngoing(status === "ongoing");
 
 					// Restaura scholar do estado persistido ou extrai do histórico
 					if (persistedState.scholar) {
@@ -386,6 +393,7 @@ function useRequestFlow() {
 		setSearchState("idle");
 		setElapsedSeconds(0);
 		setActiveRequestId(null);
+		setIsOngoing(false);
 		clearRequestState();
 		cancelAllNotifications();
 		setCancelOnUnmountFalse();
@@ -582,7 +590,7 @@ function useRequestFlow() {
 				channel,
 				"request:started",
 				() => {
-					// Atualização de status
+					setIsOngoing(true);
 				},
 			);
 			const unsubCompleted = client.subscribe(
@@ -670,6 +678,7 @@ function useRequestFlow() {
 		message,
 		origin,
 		scholarInfo,
+		isOngoing,
 		searchState,
 		elapsedSeconds,
 		setOrigin,

@@ -11,7 +11,7 @@ import {
 } from "@maplibre/maplibre-react-native";
 import * as Location from "expo-location";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { type NativeSyntheticEvent, View } from "react-native";
+import { type NativeSyntheticEvent, Text, View } from "react-native";
 
 import type { ScholarPosition } from "@/lib/map-utils";
 import { useAppColorScheme } from "@/lib/use-app-color-scheme";
@@ -71,6 +71,9 @@ interface MapViewProps {
 
 	/** Whether to show the user's location on the map */
 	showUserLocation?: boolean;
+
+	/** Distance string to display above the scholar marker (e.g. "6 min") */
+	scholarDistance?: string | null;
 }
 
 // ─── Default initial view (UFAL campus) ──────────────────────────────────────
@@ -151,6 +154,7 @@ export default function MapView({
 	routePath,
 	routeDashed = false,
 	showUserLocation = true,
+	scholarDistance,
 }: MapViewProps) {
 	const scheme = useAppColorScheme();
 	const { location: userLocation } = useNativeUserLocation();
@@ -373,29 +377,43 @@ export default function MapView({
 				)}
 
 				{/* ── Scholar positions ─────────────────────────────────── */}
-				{allScholarPositions.map((sp) => (
-					<Marker
-						key={sp.id}
-						id={`scholar-${sp.id}`}
-						lngLat={[sp.longitude, sp.latitude]}
-						anchor="center"
-					>
-						<View
-							className="size-5 rounded-full bg-primary border-2 border-white"
-							style={
-								sp.heading !== undefined
-									? {
-											transform: [
-												{
-													rotate: `${sp.heading}deg`,
-												},
-											],
-										}
-									: undefined
-							}
-						/>
-					</Marker>
-				))}
+				{allScholarPositions.map((sp) => {
+					const isPrimaryScholar =
+						scholar?.id === sp.id && scholarDistance;
+
+					return (
+						<Marker
+							key={sp.id}
+							id={`scholar-${sp.id}`}
+							lngLat={[sp.longitude, sp.latitude]}
+							anchor="bottom"
+						>
+							<View className="items-center">
+								{isPrimaryScholar ? (
+									<View className="bg-primary rounded-md px-2 py-0.5 mb-1">
+										<Text className="text-primary-foreground text-xs font-semibold">
+											{scholarDistance}
+										</Text>
+									</View>
+								) : null}
+								<View
+									className="size-5 rounded-full bg-primary border-2 border-white"
+									style={
+										sp.heading !== undefined
+											? {
+													transform: [
+														{
+															rotate: `${sp.heading}deg`,
+														},
+													],
+												}
+											: undefined
+									}
+								/>
+							</View>
+						</Marker>
+					);
+				})}
 			</MapViewNative>
 
 			{/* ── Center crosshair (destination mode) ────────────────────── */}

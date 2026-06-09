@@ -1,6 +1,7 @@
+import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -17,6 +18,7 @@ import {
 	setNearestPoint,
 } from "@/lib/location-store";
 import { findNearestCampusLocation } from "@/lib/map-utils";
+import { fetchOSRMRoute, formatDuration } from "@/lib/osrm";
 import { useRequestState } from "@/lib/request-store";
 
 const BACK_ALLOWED_DESTINATIONS = [
@@ -31,8 +33,14 @@ export default function RequestScreen() {
 
 	// ─── Current request state ──────────────────────────────────────────────
 
-	const { stage, searchState, origin, destination, activeRequestId } =
-		useRequestState();
+	const {
+		stage,
+		searchState,
+		origin,
+		destination,
+		activeRequestId,
+		isOngoing,
+	} = useRequestState();
 
 	// ─── Campus locations for nearest-point detection ───────────────────────
 
@@ -64,6 +72,134 @@ export default function RequestScreen() {
 		positionEvent: "request:position",
 	});
 
+	// ─── User location (for trip routes) ────────────────────────────────────
+
+	const [userLocation, setUserLocation] = useState<{
+		latitude: number;
+		longitude: number;
+	} | null>(null);
+
+	useEffect(() => {
+		if (stage !== "trip") {
+			setUserLocation(null);
+			return;
+		}
+
+		let subscription: Location.LocationSubscription | null = null;
+		let cancelled = false;
+
+		const startWatching = async () => {
+			const { status } =
+				await Location.requestForegroundPermissionsAsync();
+			if (status !== "granted" || cancelled) return;
+
+			subscription = await Location.watchPositionAsync(
+				{
+					accuracy: Location.Accuracy.High,
+					timeInterval: 5000,
+					distanceInterval: 10,
+				},
+				(newLocation) => {
+					if (!cancelled) {
+						setUserLocation({
+							latitude: newLocation.coords.latitude,
+							longitude: newLocation.coords.longitude,
+						});
+					}
+				},
+			);
+		};
+
+		startWatching();
+
+		return () => {
+			cancelled = true;
+			if (subscription) {
+				subscription.remove();
+			}
+		};
+	}, [stage]);
+
+	// ─── Route path for map (OSRM) ────────────────────────────────────────
+
+	const [routePath, setRoutePath] = useState<
+		Array<[number, number]> | undefined
+	>(undefined);
+	const [scholarDistance, setScholarDistance] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (stage !== "trip") {
+			setRoutePath(undefined);
+			setScholarDistance(null);
+			return;
+		}
+
+		let cancelled = false;
+
+		const computeRoute = async () => {
+			if (!isOngoing && scholarPosition && origin) {
+				// Not ongoing → route from scholar to origin
+				const result = await fetchOSRMRoute(
+					[scholarPosition.longitude, scholarPosition.latitude],
+					[origin.longitude, origin.latitude],
+					"foot",
+				);
+
+				if (cancelled) return;
+
+				if (result) {
+					setRoutePath(
+						result.geometry.coordinates as Array<[number, number]>,
+					);
+					setScholarDistance(formatDuration(result.duration));
+				} else {
+					setRoutePath(undefined);
+					setScholarDistance(null);
+				}
+			} else if (isOngoing && destination) {
+				// Ongoing → route from user/origin to destination
+				const from = userLocation
+					? [userLocation.longitude, userLocation.latitude]
+					: origin
+						? [origin.longitude, origin.latitude]
+						: null;
+
+				if (from) {
+					const result = await fetchOSRMRoute(
+						from as [number, number],
+						[destination.longitude, destination.latitude],
+						"foot",
+					);
+
+					if (cancelled) return;
+
+					if (result) {
+						setRoutePath(
+							result.geometry.coordinates as Array<
+								[number, number]
+							>,
+						);
+					} else {
+						setRoutePath(undefined);
+					}
+				}
+			} else {
+				setRoutePath(undefined);
+				setScholarDistance(null);
+			}
+		};
+
+		computeRoute();
+
+		// Re-fetch every 30 seconds
+		const interval = setInterval(computeRoute, 30_000);
+
+		return () => {
+			cancelled = true;
+			clearInterval(interval);
+		};
+	}, [stage, isOngoing, scholarPosition, origin, destination, userLocation]);
+
 	// ─── Destination mode: find nearest point when center changes ──────────
 
 	const handleCenterChanged = useCallback(
@@ -93,6 +229,8 @@ export default function RequestScreen() {
 				destination={destination}
 				scholar={scholarPosition}
 				scholarPositions={allScholarPositions}
+				routePath={routePath}
+				scholarDistance={scholarDistance}
 				showCenterMarker={stage === "destination"}
 				onCenterChanged={
 					stage === "destination" ? handleCenterChanged : undefined
@@ -124,7 +262,7 @@ export default function RequestScreen() {
 				</View>
 			</View>
 
-			<RequestFlowSheet />
+			<RequestFlowSheet scholarPosition={scholarPosition} />
 		</View>
 	);
 }

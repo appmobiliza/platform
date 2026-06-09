@@ -76,6 +76,9 @@ interface MapViewProps {
 
 	/** Whether to show the user's location on the map */
 	showUserLocation?: boolean;
+
+	/** Distance string to display above the scholar marker (e.g. "6 min") */
+	scholarDistance?: string | null;
 }
 
 // ─── Default initial view (UFAL campus) ──────────────────────────────────────
@@ -101,6 +104,7 @@ export default function MapView({
 	routePath,
 	routeDashed = false,
 	showUserLocation = true,
+	scholarDistance,
 }: MapViewProps) {
 	const scheme = useAppColorScheme();
 	const mapRef = useRef<MapRef>(null);
@@ -318,16 +322,30 @@ export default function MapView({
 				)}
 
 				{/* ── Scholar positions (searching / trip) ───────────────── */}
-				{allScholarPositions.map((sp) => (
-					<Marker
-						key={sp.id}
-						longitude={sp.longitude}
-						latitude={sp.latitude}
-						anchor="center"
-					>
-						<ScholarDot heading={sp.heading} />
-					</Marker>
-				))}
+				{allScholarPositions.map((sp) => {
+					const isPrimaryScholar =
+						scholar?.id === sp.id && scholarDistance;
+
+					return (
+						<Marker
+							key={sp.id}
+							longitude={sp.longitude}
+							latitude={sp.latitude}
+							anchor="bottom"
+						>
+							<View className="items-center">
+								{isPrimaryScholar ? (
+									<View className="bg-primary rounded-md px-2 py-0.5 mb-1">
+										<Text className="text-primary-foreground text-xs font-semibold">
+											{scholarDistance}
+										</Text>
+									</View>
+								) : null}
+								<ScholarDot heading={sp.heading} />
+							</View>
+						</Marker>
+					);
+				})}
 			</MapGL>
 
 			{/* ── Center crosshair (destination mode) ────────────────────── */}

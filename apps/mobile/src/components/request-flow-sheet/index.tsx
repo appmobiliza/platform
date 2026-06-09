@@ -1,5 +1,6 @@
 import { View } from "react-native";
 
+import type { ScholarPosition } from "@/lib/map-utils";
 import { useAppColorScheme } from "@/lib/use-app-color-scheme";
 
 import {
@@ -11,7 +12,11 @@ import {
 } from "./stages";
 import { useRequestFlow } from "./use-request-flow";
 
-function RequestFlowSheet() {
+interface RequestFlowSheetProps {
+	scholarPosition?: ScholarPosition | null;
+}
+
+function RequestFlowSheet({ scholarPosition }: RequestFlowSheetProps) {
 	const colorScheme = useAppColorScheme();
 	const isDark = colorScheme === "dark";
 
@@ -35,6 +40,7 @@ function RequestFlowSheet() {
 		searchState,
 		elapsedSeconds,
 		scholarInfo,
+		isOngoing,
 	} = useRequestFlow();
 
 	return (
@@ -94,6 +100,8 @@ function RequestFlowSheet() {
 				origin={origin}
 				destination={destination}
 				scholarInfo={scholarInfo}
+				isOngoing={isOngoing}
+				scholarPosition={scholarPosition}
 				dismissAndExit={dismissAndExit}
 			/>
 		</View>

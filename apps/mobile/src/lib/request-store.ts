@@ -26,6 +26,7 @@ interface PersistedRequestState {
 	message: string;
 	requestCreatedAt: number | null; // timestamp ms
 	scholar: ScholarInfo | null;
+	isOngoing: boolean;
 }
 
 // ─── Storage keys ────────────────────────────────────────────────────────────
@@ -41,6 +42,7 @@ const DEFAULT_STATE: PersistedRequestState = {
 	message: "",
 	requestCreatedAt: null,
 	scholar: null,
+	isOngoing: false,
 };
 
 // ─── Estado em memória (inicializado do MMKV) ────────────────────────────────
