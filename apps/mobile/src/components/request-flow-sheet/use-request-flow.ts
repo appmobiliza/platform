@@ -194,20 +194,16 @@ function useRequestFlow() {
 
 	// Persiste sempre que os valores relevantes mudam
 	React.useEffect(() => {
-		if (activeRequestId) {
-			setRequestState({
-				activeRequestId,
-				searchState,
-				stage: activeStage,
-				origin,
-				destination,
-				message,
-				requestCreatedAt: Date.now(),
-				scholar: scholarInfo,
-			});
-		} else {
-			clearRequestState();
-		}
+		setRequestState({
+			activeRequestId,
+			searchState,
+			stage: activeStage,
+			origin,
+			destination,
+			message,
+			requestCreatedAt: activeRequestId ? Date.now() : null,
+			scholar: scholarInfo,
+		});
 	}, [activeRequestId, searchState, activeStage, origin, destination, message, scholarInfo]);
 
 	// ─── Restauração de sessão ──────────────────────────────────────────────

@@ -186,12 +186,15 @@ function AddressRouteInput({
 		[],
 	);
 
-	// Auto-focus the destination input when the sheet opens
+	// Auto-focus the destination input when the sheet opens (if destination is not already set)
+	// biome-ignore lint/correctness/useExhaustiveDependencies: destination is checked for null, so dependencies are exhaustive
 	useEffect(() => {
-		setActiveField("destination");
-		requestAnimationFrame(() => {
-			destinationInputRef.current?.focus();
-		});
+		if (destination === null) {
+			setActiveField("destination");
+			requestAnimationFrame(() => {
+				destinationInputRef.current?.focus();
+			});
+		}
 	}, []);
 
 	// Scroll to top when the user switches between origin/destination fields

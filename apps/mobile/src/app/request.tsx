@@ -79,13 +79,6 @@ export default function RequestScreen() {
 		[campusLocationItems],
 	);
 
-	// ─── Campus name in header ─────────────────────────────────────────────
-
-	const campusName =
-		origin?.name?.split(",")[0] ??
-		destination?.name?.split(",")[0] ??
-		"Campus A.C Simões";
-
 	return (
 		<View className="flex-1 bg-background overflow-hidden">
 			<MapView
@@ -106,19 +99,22 @@ export default function RequestScreen() {
 					paddingTop: insets.top + 24,
 				}}
 			>
-				<Pressable
-					className="shrink-0 p-3 bg-secondary rounded-full shadow-sm shadow-secondary/20 mt-4"
-					onPress={() => router.back()}
-				>
-					<Icon icon={ArrowLeft} size={24} color="--foreground" />
-				</Pressable>
+				{(stage === "destination" ||
+					stage === "destination-selection") && (
+					<Pressable
+						className="shrink-0 p-3 bg-secondary rounded-full shadow-sm shadow-secondary/20 mt-4"
+						onPress={() => router.back()}
+					>
+						<Icon icon={ArrowLeft} size={24} color="--foreground" />
+					</Pressable>
+				)}
 				<View className="min-w-0 flex-1 gap-1 items-start justify-start">
 					<Text
 						variant={"h1"}
 						className="text-foreground text-left"
 						numberOfLines={2}
 					>
-						{campusName}
+						Campus A.C Simões
 					</Text>
 				</View>
 			</View>

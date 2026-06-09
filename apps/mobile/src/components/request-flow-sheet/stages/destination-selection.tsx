@@ -47,7 +47,7 @@ function DestinationSelectionStage({
 			stage="destination-selection"
 			modalRef={modalRef}
 			onDismiss={handleDismiss}
-			snapPoints={["95%"]}
+			snapPoints={["85%"]}
 			colorScheme={isDark ? "dark" : "light"}
 			panDownToClose
 		>

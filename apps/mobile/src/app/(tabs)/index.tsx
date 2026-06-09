@@ -14,6 +14,7 @@ import { Text } from "@/components/ui/text";
 import { useUserRole } from "@/lib/auth-store";
 import { haversineMeters } from "@/lib/distance";
 import { setNearestPoint } from "@/lib/location-store";
+import { getRequestState } from "@/lib/request-store";
 import { trpc } from "@/lib/trpc/client";
 
 import { Logo } from "@/assets/logo";
@@ -74,8 +75,18 @@ function StudentHome() {
 	campusLocationsRef.current = campusLocations;
 
 	useFocusEffect(
-		// biome-ignore lint/correctness/useExhaustiveDependencies: campusLocations is stable
 		useCallback(() => {
+			// ─── Restore ongoing trip if one was in progress ────────────────
+			const persisted = getRequestState();
+			const hasOngoingRequest =
+				persisted.activeRequestId &&
+				(persisted.searchState !== "idle" ||
+					persisted.stage === "trip");
+			if (hasOngoingRequest) {
+				router.replace("/request");
+				return;
+			}
+
 			const setupLocation = async () => {
 				const { status } =
 					await Location.getForegroundPermissionsAsync();
@@ -92,10 +103,16 @@ function StudentHome() {
 					const userLat = position.coords.latitude;
 					const userLng = position.coords.longitude;
 
-					if (campusLocations.length === 0) return;
+					console.log("User position:", userLat, userLng);
 
-					let closestPoint = campusLocations[0];
-					if (!closestPoint) return;
+					const locations = campusLocationsRef.current; // ← always fresh
+					if (locations.length === 0) return;
+
+					let closestPoint = locations[0];
+					if (!closestPoint) {
+						console.warn("No campus locations available");
+						return;
+					}
 
 					let minDistance = haversineMeters(
 						userLat,
@@ -104,8 +121,8 @@ function StudentHome() {
 						closestPoint.longitude,
 					);
 
-					for (let i = 1; i < campusLocations.length; i++) {
-						const point = campusLocations[i];
+					for (let i = 1; i < locations.length; i++) {
+						const point = locations[i];
 						if (!point) continue;
 						const dist = haversineMeters(
 							userLat,
@@ -118,6 +135,13 @@ function StudentHome() {
 							closestPoint = point;
 						}
 					}
+
+					console.log(
+						"Closest point:",
+						closestPoint,
+						"Distance:",
+						minDistance,
+					);
 
 					setNearestPoint({
 						name: closestPoint.name,

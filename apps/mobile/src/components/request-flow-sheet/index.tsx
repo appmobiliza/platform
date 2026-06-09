@@ -47,6 +47,7 @@ function RequestFlowSheet() {
 				destination={destination}
 				dismissAndExit={dismissAndExit}
 				transitionTo={transitionTo}
+				setDestination={setDestination}
 			/>
 
 			<DestinationSelectionStage

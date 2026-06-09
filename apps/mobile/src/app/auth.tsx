@@ -95,6 +95,8 @@ export default function Auth() {
 				role: user.role,
 			});
 
+			console.log("isScholar: ", user.role === "scholar");
+
 			// Scholar — loga direto (perfil gerenciado pelo gestor)
 			if (user.role === "scholar") {
 				setHasProfile(true);
