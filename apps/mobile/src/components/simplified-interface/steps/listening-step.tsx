@@ -1,6 +1,6 @@
 import { useSpeechRecognitionEvent } from "expo-speech-recognition";
 import { MicIcon, StopCircleIcon } from "lucide-react-native";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import Animated, {
 	Easing,
 	Extrapolation,
@@ -135,13 +135,15 @@ export function ListeningStep({
 						{/* Pulse ring */}
 						<View className="absolute inset-0 justify-center items-center">
 							<Animated.View
-								style={[styles.pulseCircle, pulseStyle]}
+								className="w-32 h-32 rounded-full border-2 border-primary"
+								style={pulseStyle}
 							/>
 						</View>
 						{/* Volume intensity circle */}
 						<View className="absolute inset-0 justify-center items-center">
 							<Animated.View
-								style={[styles.volumeCircle, volumeScaleStyle]}
+								className="w-32 h-32 rounded-full bg-primary/12"
+								style={volumeScaleStyle}
 							/>
 						</View>
 						{/* Microphone button */}
@@ -226,21 +228,3 @@ export function ListeningStep({
 		</View>
 	);
 }
-
-// ─── Styles ───────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-	volumeCircle: {
-		width: 128,
-		height: 128,
-		borderRadius: 64,
-		backgroundColor: "rgba(59, 130, 246, 0.12)",
-	},
-	pulseCircle: {
-		width: 128,
-		height: 128,
-		borderRadius: 64,
-		borderWidth: 2,
-		borderColor: "#3b82f6",
-	},
-});
