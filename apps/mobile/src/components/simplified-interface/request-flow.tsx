@@ -1,96 +1,37 @@
 import { useRouter } from "expo-router";
-import { Info, Timer } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AccessibilityInfo, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AccessibilityInfo } from "react-native";
 
 import { useSpeechDestination } from "@/hooks/use-speech-destination";
 import { trpc } from "@/lib/trpc/client";
 
-import type { CampusLocation, SpeechDestinationResult } from "@/types/location";
+import type { SpeechDestinationResult } from "@/types/location";
 
-import { AddressRoute } from "../address";
-import { SearchIndicator } from "../request-flow-sheet/subcomponents/seach-indicator";
 import type { Place } from "../request-flow-sheet/types";
-import { Button } from "../ui/button";
-import { Icon } from "../ui/icon";
-import { Text } from "../ui/text";
+import {
+	ConfirmStep,
+	type FlowStage,
+	ListeningStep,
+	RequestErrorStep,
+	SearchingStep,
+	toCampusLocation,
+	UnattendedStep,
+} from "./steps";
 
-// ─── Types ────────────────────────────────────────────────────────────────
-
-export interface AcessibleRequestStep {
-	subtitle?: string;
-	title: string;
-	note: string | React.ReactNode;
-	children: React.ReactNode;
-}
+// ─── Props ────────────────────────────────────────────────────────────────
 
 interface AccessibleRequestFlowProps {
 	campusLocations: Place[];
 	nearestPoint: Place | null;
 }
 
-type FlowStage =
-	| "listening"
-	| "confirm"
-	| "searching"
-	| "unattended"
-	| "request-error"
-	| "scholar-found"
-	| "in-transit";
-
-// ─── Helpers ──────────────────────────────────────────────────────────────
-
-function toCampusLocation(p: Place): CampusLocation {
-	return {
-		id: p.id ?? p.name,
-		name: p.name,
-		abbreviations: p.abbreviation ? [p.abbreviation] : undefined,
-	};
-}
-
-// ─── FlowStep UI component ─────────────────────────────────────────────────
-
-export function FlowStep({
-	title,
-	note,
-	children,
-	subtitle,
-}: AcessibleRequestStep) {
-	return (
-		<View className="flex-1">
-			<View className="bg-primary px-4 flex justify-start items-start">
-				{subtitle && (
-					<Text className="text-primary-foreground font-semibold text-lg mb-1">
-						{subtitle}
-					</Text>
-				)}
-				<Text
-					className="text-primary-foreground text-4xl mb-4 font-extrabold"
-					accessibilityRole="header"
-				>
-					{title}
-				</Text>
-				<View className="flex flex-row items-center justify-center mb-4 gap-3 w-full bg-background rounded-md p-4">
-					<Icon icon={Info} color="white" size={20} />
-					<Text className="text-primary-foreground text-base flex-1 leading-6">
-						{note}
-					</Text>
-				</View>
-			</View>
-			{children}
-		</View>
-	);
-}
-
-// ─── Main accessible request flow component ───────────────────────────────
+// ─── Main component ───────────────────────────────────────────────────────
 
 export function AccessibleRequestFlow({
 	campusLocations,
 	nearestPoint,
 }: AccessibleRequestFlowProps) {
 	const router = useRouter();
-	const insets = useSafeAreaInsets();
 
 	const [stage, setStage] = useState<FlowStage>("listening");
 	const [origin, setOrigin] = useState<Place | null>(null);
@@ -109,7 +50,7 @@ export function AccessibleRequestFlow({
 	const utils = trpc.useContext();
 
 	// Map Place[] → CampusLocation[] for the speech hook
-	const campusLocationList = useMemo<CampusLocation[]>(
+	const campusLocationList = useMemo(
 		() => campusLocations.map(toCampusLocation),
 		[campusLocations],
 	);
@@ -121,7 +62,7 @@ export function AccessibleRequestFlow({
 	);
 
 	// Current location as CampusLocation for the speech hook
-	const currentCampusLocation = useMemo<CampusLocation | null>(
+	const currentCampusLocation = useMemo(
 		() => (nearestPoint ? toCampusLocation(nearestPoint) : null),
 		[nearestPoint],
 	);
@@ -286,259 +227,70 @@ export function AccessibleRequestFlow({
 		);
 	}, []);
 
-	// ─── Render — outer scroll wrapper with insets ───────────────────────
-
-	const outerPadding = { paddingTop: insets.top + 64 };
-
-	// ── Stage: listening ─────────────────────────────────────────────────
-	if (stage === "listening") {
-		const isListening = phase === "listening";
-		const isProcessing = phase === "processing";
-		const hasError = phase === "error";
-
-		return (
-			<View style={outerPadding}>
-				<FlowStep
-					subtitle="Estamos ouvindo seu pedido"
-					title="Diga para onde deseja ir"
-					note={
-						hasError
-							? "Não entendi. Toque no microfone para tentar novamente."
-							: isProcessing
-								? "Processando sua solicitação..."
-								: "Fale claramente o nome do local para onde deseja ir."
-					}
-				>
-					<View className="items-center gap-6 w-full px-4">
-						{/* Microphone button */}
-						<Button
-							size="lg"
-							className={`w-28 h-28 rounded-full ${isListening ? "bg-destructive" : "bg-primary"}`}
-							onPress={
-								isListening || hasError ? handleRetry : start
-							}
-							accessible
-							accessibilityRole="button"
-							accessibilityLabel={
-								isListening
-									? "Ouvindo. Toque para parar e tentar novamente."
-									: hasError
-										? "Toque para tentar novamente."
-										: "Toque para começar a falar o destino"
-							}
-							accessibilityState={{
-								busy: isListening || isProcessing,
-							}}
-						>
-							<Text className="text-4xl" accessible={false}>
-								{isListening ? "⏹" : "🎤"}
-							</Text>
-						</Button>
-
-						{/* Real-time transcription */}
-						{transcript.length > 0 && (
-							<View
-								className="bg-card border border-border rounded-lg p-4 w-full"
-								accessible
-								accessibilityLabel={`Transcrição: ${transcript}`}
-								accessibilityLiveRegion="polite"
-							>
-								<Text className="text-sm font-semibold text-muted-foreground mb-1">
-									Transcrição
-								</Text>
-								<Text className="text-base text-foreground">
-									{transcript}
-								</Text>
-							</View>
-						)}
-
-						{/* Error message */}
-						{hasError && speechError && (
-							<Text
-								className="text-destructive-foreground bg-destructive p-3 rounded-lg"
-								accessibilityRole="alert"
-							>
-								{speechError}
-							</Text>
-						)}
-
-						{/* Back button */}
-						<Button
-							variant="outline"
-							className="mt-2"
-							onPress={handleBack}
-							accessible
-							accessibilityRole="button"
-							accessibilityLabel="Voltar para a página inicial"
-						>
-							<Text>Cancelar</Text>
-						</Button>
-					</View>
-				</FlowStep>
-			</View>
-		);
-	}
-
-	// ── Stage: confirm ──────────────────────────────────────────────────
-	if (stage === "confirm") {
-		const originName =
-			origin?.abbreviation ?? origin?.name ?? "sua localização atual";
-		const destinationName = destination?.name ?? "";
-
-		return (
-			<View style={outerPadding}>
-				<FlowStep
-					subtitle="Confirma pra gente:"
-					title={`Você deseja ir de ${originName} para ${destinationName}?`}
-					note="Selecione 'Sim' para confirmar ou 'Não' para tentar novamente."
-				>
-					<View
-						className="w-full gap-6 px-4"
-						accessible
-						accessibilityLabel={`Confirmação: de ${originName} para ${destinationName}`}
-					>
-						<AddressRoute
-							className="bg-card border border-border p-4 rounded-lg"
-							from={{ label: originName }}
-							to={{ label: destinationName }}
-							size="lg"
-						/>
-
-						<Button
-							size="lg"
-							className="py-6"
-							onPress={handleConfirm}
-							accessible
-							accessibilityRole="button"
-							accessibilityLabel="Sim, quero enviar a solicitação"
-							accessibilityHint="Confirma o deslocamento e envia a solicitação"
-						>
-							<Text className="text-2xl font-medium">
-								Sim, quero enviar
-							</Text>
-						</Button>
-
-						<Button
-							size="lg"
-							variant="destructive"
-							className="py-6"
-							onPress={handleReject}
-							accessible
-							accessibilityRole="button"
-							accessibilityLabel="Não, quero cancelar"
-							accessibilityHint="Cancela e volta a ouvir o destino"
-						>
-							<Text className="text-2xl font-medium">
-								Não, quero cancelar
-							</Text>
-						</Button>
-					</View>
-				</FlowStep>
-			</View>
-		);
-	}
-
-	// ── Stage: searching / unattended / request-error ───────────────────
+	// ─── Resolve display names ───────────────────────────────────────────
 
 	const originName = origin?.abbreviation ?? origin?.name ?? "";
 	const destinationName = destination?.name ?? "";
+	const confirmOriginName =
+		origin?.abbreviation ?? origin?.name ?? "sua localização atual";
+	const confirmDestinationName = destination?.name ?? "";
 
-	// Unattended (no scholar found)
-	if (searchState === "unattended") {
-		return (
-			<View style={outerPadding}>
-				<FlowStep
-					title="Nenhum contribuinte encontrado"
-					note="Nenhum contribuinte aceitou sua solicitação no tempo esperado. Tente novamente mais tarde ou entre em contato com o NAC."
-				>
-					<View className="w-full gap-4 px-4">
-						<AddressRoute
-							className="bg-card border border-border p-4 rounded-lg"
-							from={{ label: originName }}
-							to={{ label: destinationName }}
-						/>
-						<Button
-							size="lg"
-							onPress={handleBack}
-							accessible
-							accessibilityRole="button"
-						>
-							<Text>Fechar</Text>
-						</Button>
-					</View>
-				</FlowStep>
-			</View>
-		);
+	// ─── Render current stage ───────────────────────────────────────────
+
+	switch (stage) {
+		case "listening":
+			return (
+				<ListeningStep
+					phase={phase}
+					transcript={transcript}
+					speechError={speechError}
+					start={start}
+					onRetry={handleRetry}
+					onBack={handleBack}
+				/>
+			);
+
+		case "confirm":
+			return (
+				<ConfirmStep
+					originName={confirmOriginName}
+					destinationName={confirmDestinationName}
+					onConfirm={handleConfirm}
+					onReject={handleReject}
+				/>
+			);
+
+		case "searching":
+			return (
+				<SearchingStep
+					elapsedSeconds={elapsedSeconds}
+					originName={originName}
+					destinationName={destinationName}
+					onCancel={handleBack}
+				/>
+			);
+
+		case "unattended":
+			return (
+				<UnattendedStep
+					originName={originName}
+					destinationName={destinationName}
+					onClose={handleBack}
+				/>
+			);
+
+		case "request-error":
+			return <RequestErrorStep onBack={handleBack} />;
+
+		default:
+			// Fallback: shouldn't normally happen
+			return (
+				<SearchingStep
+					elapsedSeconds={elapsedSeconds}
+					originName={originName}
+					destinationName={destinationName}
+					onCancel={handleBack}
+				/>
+			);
 	}
-
-	// Request creation error
-	if (searchState === "error") {
-		return (
-			<View style={outerPadding}>
-				<FlowStep
-					title="Erro ao criar solicitação"
-					note="Não foi possível criar sua solicitação. Verifique sua conexão e tente novamente."
-				>
-					<Button
-						size="lg"
-						onPress={handleBack}
-						accessible
-						accessibilityRole="button"
-					>
-						<Text>Voltar</Text>
-					</Button>
-				</FlowStep>
-			</View>
-		);
-	}
-
-	// Actively searching
-	return (
-		<View style={outerPadding}>
-			<FlowStep
-				subtitle="Por favor, aguarde"
-				title="Procurando contribuintes..."
-				note="Para voltar à página inicial, selecione o botão 'cancelar solicitação' abaixo"
-			>
-				<View
-					className="items-center gap-4 w-full px-4"
-					accessibilityLabel="Procurando contribuintes. Aguarde."
-					accessibilityLiveRegion="polite"
-				>
-					<SearchIndicator />
-
-					<View className="flex-row items-center gap-2">
-						<Icon
-							icon={Timer}
-							size={16}
-							color="--muted-foreground"
-						/>
-						<Text className="text-sm text-muted-foreground">
-							{elapsedSeconds < 60
-								? `${elapsedSeconds}s`
-								: `${Math.floor(elapsedSeconds / 60)}m${elapsedSeconds % 60}s`}
-						</Text>
-					</View>
-
-					<AddressRoute
-						className="bg-card border border-border p-4 rounded-lg"
-						from={{ label: originName }}
-						to={{ label: destinationName }}
-					/>
-
-					<Button
-						variant="destructive"
-						size="lg"
-						className="py-6"
-						onPress={handleBack}
-						accessible
-						accessibilityRole="button"
-						accessibilityLabel="Cancelar solicitação"
-					>
-						<Text className="text-xl">Cancelar solicitação</Text>
-					</Button>
-				</View>
-			</FlowStep>
-		</View>
-	);
 }
