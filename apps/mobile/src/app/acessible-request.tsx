@@ -1,24 +1,39 @@
-import { useState } from "react";
-import { ScrollView, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ScrollView } from "react-native";
 
-import type { AcessibleRequestStep } from "@/components/simplified-interface/request-flow";
+import type { Place } from "@/components/request-flow-sheet/types";
+import { AccessibleRequestFlow } from "@/components/simplified-interface/request-flow";
+
+import {
+	getCachedCampusLocations,
+	useNearestPoint,
+} from "@/lib/location-store";
+import { trpc } from "@/lib/trpc/client";
 
 export default function AccessibleRequest() {
-	const insets = useSafeAreaInsets();
+	const nearestPoint = useNearestPoint();
 
-	const [currentStep, setCurrentStep] = useState<AcessibleRequestStep>(Step1);
+	const { data: campusLocations = [] } = trpc.locations.list.useQuery(
+		undefined,
+		{
+			staleTime: 30 * 60 * 1000,
+		},
+	);
+
+	const locations =
+		campusLocations.length > 0
+			? (campusLocations as Place[])
+			: (getCachedCampusLocations() as Place[]);
 
 	return (
-		<ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-			<View
-				className="bg-primary pb-16 px-4 flex justify-center items-center mb-8"
-				style={{
-					paddingTop: insets.top + 64,
-				}}
-			>
-				<FlowStep {...currentStep} />
-			</View>
+		<ScrollView
+			className="flex-1 bg-background"
+			showsVerticalScrollIndicator={false}
+			keyboardShouldPersistTaps="handled"
+		>
+			<AccessibleRequestFlow
+				campusLocations={locations}
+				nearestPoint={nearestPoint}
+			/>
 		</ScrollView>
 	);
 }

@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { LocateFixed, MapPin, MousePointer2 } from "lucide-react-native";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,6 +18,7 @@ export default function SimplifiedHome({
 	nearestPoint,
 	campusLocations,
 }: Props) {
+	const router = useRouter();
 	const insets = useSafeAreaInsets();
 
 	return (
@@ -35,7 +37,11 @@ export default function SimplifiedHome({
 				</Text>
 			</View>
 			<View className="p-4 gap-4">
-				<View className="bg-card rounded-lg p-4 flex-row items-center justify-between gap-4 border border-border">
+				<View
+					className="bg-card rounded-lg p-4 flex-row items-center justify-between gap-4 border border-border"
+					accessible
+					accessibilityLabel={`Você está em ${nearestPoint?.name ?? "localização não disponível"}`}
+				>
 					<View className="flex-1 gap-4 flex-row items-center justify-start">
 						<View className="items-center justify-center gap-1 p-4 rounded-md bg-primary">
 							<Icon
@@ -61,7 +67,14 @@ export default function SimplifiedHome({
 					</View>
 				</View>
 
-				<Pressable className="bg-primary rounded-lg p-4 flex-row items-center justify-between gap-4 border border-border active:opacity-70">
+				<Pressable
+					className="bg-primary rounded-lg p-4 flex-row items-center justify-between gap-4 border border-border active:opacity-70"
+					onPress={() => router.push("/acessible-request")}
+					accessible
+					accessibilityRole="button"
+					accessibilityLabel="Solicitar deslocamento"
+					accessibilityHint="Toque para abrir o assistente de voz e solicitar um deslocamento"
+				>
 					<View className="flex-1 gap-4 flex-row items-center justify-start">
 						<View className="items-center justify-center gap-1 p-4 rounded-md bg-white/20">
 							<Icon
