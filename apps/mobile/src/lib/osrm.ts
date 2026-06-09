@@ -24,11 +24,16 @@ export async function fetchOSRMRoute(
 ): Promise<OSRMResult | null> {
 	const url = `https://router.project-osrm.org/route/v1/${profile}/${origin[0]},${origin[1]};${destination[0]},${destination[1]}?geometries=geojson&overview=full`;
 
+	console.log("[OSRM] Fetching route", { origin, destination, profile, url });
+
 	try {
 		const res = await fetch(url);
 		const data = await res.json();
 
+		console.log("[OSRM] Response code:", data.code, "| routes:", data.routes?.length);
+
 		if (data.code !== "Ok" || !data.routes?.[0]) {
+			console.warn("[OSRM] No valid route returned", { code: data.code });
 			return null;
 		}
 
@@ -38,12 +43,15 @@ export async function fetchOSRMRoute(
 			duration: number;
 		};
 
+		console.log("[OSRM] Route success — coord count:", route.geometry.coordinates.length, "| distance:", route.distance, "| duration:", route.duration);
+
 		return {
 			geometry: route.geometry,
 			distance: route.distance,
 			duration: route.duration,
 		};
-	} catch {
+	} catch (err) {
+		console.warn("[OSRM] Fetch failed:", err);
 		return null;
 	}
 }

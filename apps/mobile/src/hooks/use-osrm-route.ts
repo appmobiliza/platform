@@ -1,6 +1,22 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { fetchOSRMRoute, type OSRMProfile, type OSRMResult } from "@/lib/osrm";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+/**
+ * Minimum coordinate change (degrees) before triggering a new route fetch.
+ * 0.0003° ≈ 30 m — avoids re-fetching when GPS jitters by tiny amounts.
+ */
+const COORD_THRESHOLD = 0.0003;
+
+/** True if either coordinate of the pair differs by more than the threshold. */
+function hasMoved(a: [number, number], b: [number, number]): boolean {
+	return (
+		Math.abs(a[0] - b[0]) > COORD_THRESHOLD ||
+		Math.abs(a[1] - b[1]) > COORD_THRESHOLD
+	);
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -29,6 +45,9 @@ export interface UseOsrmRouteResult {
 /**
  * Fetch an OSRM route between two points, with automatic polling.
  *
+ * Skips the actual HTTP request when the coordinates have not moved
+ * by more than ~30 m to avoid rate limiting on the OSRM API.
+ *
  * Returns the raw route result (geometry, distance, duration) so consumers
  * can format it as needed (duration string, arrival time, map coordinates…).
  */
@@ -39,29 +58,57 @@ export function useOsrmRoute({
 	profile = "foot",
 	pollInterval = 30_000,
 }: UseOsrmRouteOptions): UseOsrmRouteResult {
-	const resultRef = useRef<OSRMResult | null>(null);
-	const isLoadingRef = useRef(false);
+	const [route, setRoute] = useState<OSRMResult | null>(null);
+	const [isLoading, setIsLoading] = useState(false);
 
-	// We store the latest settled value in a ref so the render cycle sees a
-	// stable reference; the `route` field changes only when a new fetch completes.
-	// For simplicity we return a fresh object each render – consumers that need
-	// referential stability can memoize.
+	// Track last fetched coordinates so we can skip when position barely moves.
+	const lastOrigin = useRef<[number, number] | null>(null);
+	const lastDest = useRef<[number, number] | null>(null);
+
+	const shouldSkip = (): boolean => {
+		if (!origin || !destination) return false;
+		if (!lastOrigin.current || !lastDest.current) return false;
+		return (
+			!hasMoved(origin, lastOrigin.current) &&
+			!hasMoved(destination, lastDest.current)
+		);
+	};
 
 	const fetchRoute = async (signal: { cancelled: boolean }) => {
 		if (!origin || !destination) {
+			console.log("[useOsrmRoute] Skipped — missing origin or destination", {
+				origin,
+				destination,
+			});
 			if (!signal.cancelled) {
-				resultRef.current = null;
-				isLoadingRef.current = false;
+				setRoute(null);
+				setIsLoading(false);
 			}
 			return;
 		}
 
-		isLoadingRef.current = true;
+		if (shouldSkip()) {
+			console.log("[useOsrmRoute] Skipped — coordinates unchanged");
+			return;
+		}
+
+		console.log("[useOsrmRoute] Fetching route", {
+			origin,
+			destination,
+			profile,
+			enabled,
+		});
+
+		setIsLoading(true);
 		const result = await fetchOSRMRoute(origin, destination, profile);
 
+		console.log("[useOsrmRoute] Result:", result ? "success" : "null");
+
 		if (!signal.cancelled) {
-			resultRef.current = result;
-			isLoadingRef.current = false;
+			setRoute(result);
+			setIsLoading(false);
+			lastOrigin.current = origin;
+			lastDest.current = destination;
 		}
 	};
 
@@ -69,8 +116,8 @@ export function useOsrmRoute({
 	// The `cancelled` pattern inside the effect handles cleanup correctly.
 	useEffect(() => {
 		if (!enabled) {
-			resultRef.current = null;
-			isLoadingRef.current = false;
+			setRoute(null);
+			setIsLoading(false);
 			return;
 		}
 
@@ -102,8 +149,14 @@ export function useOsrmRoute({
 		pollInterval,
 	]);
 
-	return {
-		route: resultRef.current,
-		isLoading: isLoadingRef.current,
-	};
+	console.log(
+		"[useOsrmRoute] Render — route:",
+		route ? "set" : "null",
+		"| origin:",
+		origin,
+		"| dest:",
+		destination,
+	);
+
+	return { route, isLoading };
 }

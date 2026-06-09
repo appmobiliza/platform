@@ -874,11 +874,7 @@ export function ScholarHome() {
 							{/* Atendimento ativo */}
 							{currentActiveService ? (
 								<View className="gap-4">
-									<SectionTitle label="Atendimento em andamento">
-										<Badge variant="info">
-											<Text>ativo</Text>
-										</Badge>
-									</SectionTitle>
+									<SectionTitle label="Atendimento em andamento" />
 									<View className="border border-info-border bg-card p-5 gap-4 rounded-xl">
 										<View className="flex-row items-start justify-between">
 											<View className="flex-row items-center gap-3">

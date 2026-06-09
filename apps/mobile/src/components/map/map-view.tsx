@@ -169,8 +169,10 @@ export default function MapView({
 	// ─── Build route line GeoJSON ───────────────────────────────────────────
 
 	const routeGeoJSON = useMemo(() => {
+		let result: GeoJSON.Feature<GeoJSON.LineString> | null = null;
+
 		if (routePath && routePath.length >= 2) {
-			return {
+			result = {
 				type: "Feature" as const,
 				properties: {},
 				geometry: {
@@ -178,14 +180,12 @@ export default function MapView({
 					coordinates: routePath,
 				},
 			};
-		}
-
-		if (
+		} else if (
 			(stage === "start-confirm" || stage === "trip") &&
 			origin &&
 			destination
 		) {
-			return {
+			result = {
 				type: "Feature" as const,
 				properties: {},
 				geometry: {
@@ -199,11 +199,8 @@ export default function MapView({
 					],
 				},
 			};
-		}
-
-		// For trip stage with destination but no origin, use user location
-		if (stage === "trip" && destination && userLocation) {
-			return {
+		} else if (stage === "trip" && destination && userLocation) {
+			result = {
 				type: "Feature" as const,
 				properties: {},
 				geometry: {
@@ -222,7 +219,17 @@ export default function MapView({
 			};
 		}
 
-		return null;
+		console.log("[MapView] routeGeoJSON:", result ? "set" : "null", {
+			stage,
+			coordCount: result?.geometry?.coordinates?.length,
+			firstCoord: result?.geometry?.coordinates?.[0],
+			lastCoord:
+				result?.geometry?.coordinates?.[
+					(result?.geometry?.coordinates?.length ?? 1) - 1
+				],
+		});
+
+		return result;
 	}, [routePath, stage, origin, destination, userLocation]);
 
 	// ─── All scholar positions ──────────────────────────────────────────────
@@ -263,6 +270,44 @@ export default function MapView({
 			});
 		}
 	}, [mapLoaded, scholar, stage, isMoving]);
+
+	// ── Camera: center on route path in trip mode (once per entry) ──────
+	// Used when there's no scholar to follow (e.g. user→origin route).
+	const hasCenteredOnRoute = useRef(false);
+
+	useEffect(() => {
+		// Reset the flag when leaving trip mode so we centre again on re-entry.
+		if (stage !== "trip") {
+			hasCenteredOnRoute.current = false;
+		}
+	}, [stage]);
+
+	useEffect(() => {
+		if (
+			mapLoaded &&
+			stage === "trip" &&
+			routePath &&
+			routePath.length >= 2 &&
+			!scholar &&
+			!hasCenteredOnRoute.current
+		) {
+			hasCenteredOnRoute.current = true;
+
+			// Compute the centroid of the route path
+			let sumLng = 0;
+			let sumLat = 0;
+			for (const [lng, lat] of routePath) {
+				sumLng += lng;
+				sumLat += lat;
+			}
+
+			cameraRef.current?.flyTo({
+				center: [sumLng / routePath.length, sumLat / routePath.length],
+				zoom: 15,
+				duration: 1500,
+			});
+		}
+	}, [mapLoaded, stage, routePath, scholar]);
 
 	// ─── Center crosshair: report on region change ──────────────────────────
 
