@@ -204,6 +204,7 @@ export function useSpeechDestination({
 			lang: "pt-BR",
 			interimResults: true,
 			continuous: false,
+			volumeChangeEventOptions: { enabled: true },
 			...nativeOptions,
 		});
 	}, []);
