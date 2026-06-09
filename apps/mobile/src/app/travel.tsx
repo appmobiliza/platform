@@ -14,6 +14,8 @@ import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
 import { useOsrmRoute } from "@/hooks/use-osrm-route";
+import { usePositionBroadcaster } from "@/hooks/use-position-broadcaster";
+import { useStudentTripPosition } from "@/hooks/use-student-trip-position";
 import { useUserLocation } from "@/hooks/use-user-location";
 import {
 	clearActiveAttendance,
@@ -158,6 +160,20 @@ export default function TravelScreen() {
 	// ─── Scholar location tracking ────────────────────────────────────────────
 
 	const userLocation = useUserLocation({ enabled: !hasCompleted });
+
+	// ─── Broadcast scholar position to realtime channels ─────────────────────
+	// Student sees this during the trip via useScholarTripPosition
+	usePositionBroadcaster({
+		enabled: !!requestId && !hasCompleted,
+		location: userLocation,
+		requestId,
+	});
+
+	// ─── Subscribe to student position (so scholar can see student on map) ────
+	const { studentPosition } = useStudentTripPosition({
+		enabled: !!requestId && !hasCompleted,
+		requestId,
+	});
 
 	// ─── Distances ────────────────────────────────────────────────────────────
 
@@ -447,6 +463,7 @@ export default function TravelScreen() {
 							}
 							routePath={routePath}
 							showUserLocation
+							studentPosition={studentPosition}
 						/>
 					</View>
 				)}

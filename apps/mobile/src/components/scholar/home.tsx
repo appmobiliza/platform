@@ -35,6 +35,8 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
+import { usePositionBroadcaster } from "@/hooks/use-position-broadcaster";
+import { useUserLocation } from "@/hooks/use-user-location";
 import {
 	clearActiveAttendance,
 	saveActiveAttendance,
@@ -351,6 +353,15 @@ export function ScholarHome() {
 	// Turno ativo do bolsista
 	const { data: activeShiftLog, isLoading: isLoadingShift } =
 		trpc.shiftLogs.getActiveShift.useQuery();
+
+	// ─── Position broadcasting (visible to students during search) ──────────
+	const scholarLocation = useUserLocation({
+		enabled: !!activeShiftLog,
+	});
+	usePositionBroadcaster({
+		enabled: !!activeShiftLog,
+		location: scholarLocation,
+	});
 
 	// Solicitações pendentes (só busca quando o turno está ativo)
 	const { data: availableRequests = [] } = trpc.requests.pending.useQuery(

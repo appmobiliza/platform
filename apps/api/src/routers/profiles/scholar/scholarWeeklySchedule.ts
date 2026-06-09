@@ -6,7 +6,6 @@ import { scholarProcedure } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
 import { uuidv7 } from "uuidv7";
-import { z } from "zod";
 
 export const scholarWeeklySchedule = scholarProcedure
 	.input(UpsertScheduleSchema)

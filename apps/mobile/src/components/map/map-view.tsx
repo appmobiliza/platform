@@ -74,6 +74,9 @@ interface MapViewProps {
 
 	/** Distance string to display above the scholar marker (e.g. "6 min") */
 	scholarDistance?: string | null;
+
+	/** Student's real-time geographic position (shown to the scholar during trip) */
+	studentPosition?: ScholarPosition | null;
 }
 
 // ─── Default initial view (UFAL campus) ──────────────────────────────────────
@@ -155,6 +158,7 @@ export default function MapView({
 	routeDashed = false,
 	showUserLocation = true,
 	scholarDistance,
+	studentPosition,
 }: MapViewProps) {
 	const scheme = useAppColorScheme();
 	const { location: userLocation } = useNativeUserLocation();
@@ -459,6 +463,23 @@ export default function MapView({
 						</Marker>
 					);
 				})}
+
+				{/* ── Student position marker (visible to scholar) ──────── */}
+				{studentPosition && (
+					<Marker
+						id="student-position-marker"
+						lngLat={[
+							studentPosition.longitude,
+							studentPosition.latitude,
+						]}
+						anchor="bottom"
+					>
+						<View className="items-center">
+							{/* Purple dot to distinguish from scholar teal */}
+							<View className="size-5 rounded-full bg-purple-600 border-2 border-white" />
+						</View>
+					</Marker>
+				)}
 			</MapViewNative>
 
 			{/* ── Center crosshair (destination mode) ────────────────────── */}

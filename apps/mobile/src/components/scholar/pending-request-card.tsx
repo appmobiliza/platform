@@ -87,16 +87,17 @@ export function PendingRequestCard({
 	useEffect(() => {
 		const interval = setInterval(() => {
 			setNow(new Date());
-		}, 30_000);
+		}, 1000);
 
 		return () => clearInterval(interval);
 	}, []);
 
-	const elapsedMinutes = useMemo(() => {
+	const elapsedSeconds = useMemo(() => {
 		if (isAccepting) return null;
 		const refTime = service.createdAt ?? service.startedAt;
 		if (!refTime) return 0;
-		return Math.floor((now.getTime() - refTime.getTime()) / 60000);
+		const diffMs = now.getTime() - refTime.getTime();
+		return Math.max(0, Math.floor(diffMs / 1000));
 	}, [isAccepting, service.createdAt, service.startedAt, now]);
 
 	return (
@@ -136,7 +137,9 @@ export function PendingRequestCard({
 					<Text className="mt-1 text-xs font-semibold text-warning-foreground">
 						{isAccepting
 							? "Aceitando..."
-							: `há ${elapsedMinutes ?? 0} min`}
+							: elapsedSeconds !== null && elapsedSeconds < 60
+								? `há ${elapsedSeconds}s`
+								: `há ${elapsedSeconds !== null ? Math.floor(elapsedSeconds / 60) : 0}min`}
 					</Text>
 				</View>
 

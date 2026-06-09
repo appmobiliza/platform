@@ -14,6 +14,7 @@ import { create } from "./student/create.js";
 import { rate } from "./student/rate.js";
 import { studentHistory } from "./student/studentHistory.js";
 import { markUnattended } from "./student/unattended.js";
+import { updatePosition } from "./updatePosition.js";
 
 /**
  * Router de solicitações de deslocamento modularizado.
@@ -34,4 +35,5 @@ export const requestsRouter = router({
 	managerList,
 	active,
 	getAttendanceById,
+	updatePosition,
 });

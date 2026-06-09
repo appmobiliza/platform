@@ -272,7 +272,7 @@ function useRequestFlow() {
 					setActiveRequestId(null);
 					clearRequestState();
 					cancelAllNotifications();
-					router.back();
+					router.replace("/(tabs)");
 					return;
 				}
 
@@ -403,7 +403,7 @@ function useRequestFlow() {
 		clearRequestState();
 		cancelAllNotifications();
 		setCancelOnUnmountFalse();
-		router.back();
+		router.replace("/(tabs)");
 	}, [router, clearTimers, setCancelOnUnmountFalse]);
 
 	const dismissAndExit = React.useCallback(() => {
@@ -578,6 +578,7 @@ function useRequestFlow() {
 			const onCancelled = () => {
 				setActiveRequestId(null);
 				exitFlow();
+				Alert.alert("Deslocamento cancelado", "Seu deslocamento foi cancelado pelo bolsista.");
 			};
 
 			const onUnattended = () => {

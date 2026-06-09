@@ -11,6 +11,7 @@ import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
 import { useOsrmRoute } from "@/hooks/use-osrm-route";
+import { usePositionBroadcaster } from "@/hooks/use-position-broadcaster";
 import { useScholarPositions } from "@/hooks/use-scholar-positions";
 import { useScholarTripPosition } from "@/hooks/use-scholar-trip-position";
 import { useUserLocation } from "@/hooks/use-user-location";
@@ -77,6 +78,13 @@ export default function RequestScreen() {
 	// ─── User location (for trip routes) ────────────────────────────────────
 
 	const userLocation = useUserLocation({ enabled: stage === "trip" });
+
+	// ─── Broadcast student position to scholar during trip ───────────────────
+	usePositionBroadcaster({
+		enabled: stage === "trip",
+		location: userLocation,
+		requestId: activeRequestId,
+	});
 
 	// ── Distance from user to origin ───────────────────────────────────────
 
