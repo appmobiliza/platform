@@ -2,14 +2,14 @@ export type Place = {
 	/** Database ID from campus_location, resolved at runtime */
 	id?: string;
 	name: string;
-	abbreviation?: string;
+	abbreviation?: string | null;
 	latitude: number;
 	longitude: number;
 };
 
 export type Stage =
 	| "destination"
-	| "destination-selection"
+	| "route-selection"
 	| "start-confirm"
 	| "searching"
 	| "trip";

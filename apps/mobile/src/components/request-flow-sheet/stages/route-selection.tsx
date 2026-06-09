@@ -1,3 +1,5 @@
+import { Keyboard } from "react-native";
+
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
@@ -31,7 +33,7 @@ interface DestinationSelectionStageProps extends StageBaseProps {
 	transitionTo: (stage: Stage) => void;
 }
 
-function DestinationSelectionStage({
+function RouteSelectionStage({
 	modalRef,
 	handleDismiss,
 	isDark,
@@ -46,10 +48,13 @@ function DestinationSelectionStage({
 }: DestinationSelectionStageProps) {
 	return (
 		<StageSheet
-			stage="destination-selection"
+			stage="route-selection"
 			modalRef={modalRef}
-			onDismiss={handleDismiss}
-			snapPoints={["85%"]}
+			onDismiss={(stage) => {
+				Keyboard.dismiss();
+				handleDismiss(stage);
+			}}
+			snapPoints={["82.5%"]}
 			colorScheme={isDark ? "dark" : "light"}
 			panDownToClose
 		>
@@ -62,7 +67,8 @@ function DestinationSelectionStage({
 							disabled={
 								destination === null ||
 								origin === null ||
-								destination === origin
+								(destination.latitude === origin.latitude &&
+									destination.longitude === origin.longitude)
 							}
 						>
 							<Text>Confirmar destino</Text>
@@ -107,4 +113,4 @@ function DestinationSelectionStage({
 	);
 }
 
-export { DestinationSelectionStage };
+export { RouteSelectionStage };

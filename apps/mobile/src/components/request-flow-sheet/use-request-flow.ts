@@ -45,7 +45,7 @@ function useRequestFlow() {
 		() =>
 			({
 				destination: destinationRef,
-				"destination-selection": destinationSelectionRef,
+				"route-selection": destinationSelectionRef,
 				"start-confirm": startConfirmRef,
 				searching: searchingRef,
 				trip: tripRef,
@@ -56,10 +56,10 @@ function useRequestFlow() {
 		[],
 	);
 
-	const activeStageRef = React.useRef<Stage>("destination-selection");
+	const activeStageRef = React.useRef<Stage>("route-selection");
 	const queuedStageRef = React.useRef<Stage | null>(null);
 	const [activeStage, setActiveStage] = React.useState<Stage>(
-		"destination-selection",
+		"route-selection",
 	);
 
 	const [origin, setOrigin] = React.useState<Place | null>(null);
@@ -425,12 +425,17 @@ function useRequestFlow() {
 
 			if (stage === activeStageRef.current) {
 				if (stage === "destination") {
-					openStage("destination-selection");
+					openStage("route-selection");
 					return;
 				}
 
-				if (stage === "destination-selection") {
+				if (stage === "route-selection") {
 					openStage("destination");
+					return;
+				}
+
+				if (stage === "start-confirm") {
+					openStage("route-selection");
 					return;
 				}
 
@@ -620,7 +625,7 @@ function useRequestFlow() {
 	// Only open the initial stage if we are NOT restoring a session
 	React.useEffect(() => {
 		if (!hasPersistedRequest) {
-			openStage("destination-selection");
+			openStage("route-selection");
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [openStage]);

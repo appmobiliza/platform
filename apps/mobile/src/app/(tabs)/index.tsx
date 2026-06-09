@@ -1,19 +1,24 @@
 import * as Location from "expo-location";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Clock, MapPin } from "lucide-react-native";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { NewsCarousel } from "@/components/news-carousel";
 import { PlaceCard } from "@/components/place-card";
+import type { Place } from "@/components/request-flow-sheet/types";
 import { ScholarHome } from "@/components/scholar/home";
 import { SearchBar } from "@/components/search-bar";
 import { Text } from "@/components/ui/text";
 
 import { useUserRole } from "@/lib/auth-store";
 import { haversineMeters } from "@/lib/distance";
-import { setNearestPoint } from "@/lib/location-store";
+import {
+	getCachedCampusLocations,
+	setCachedCampusLocations,
+	setNearestPoint,
+} from "@/lib/location-store";
 import { getRequestState } from "@/lib/request-store";
 import { trpc } from "@/lib/trpc/client";
 
@@ -21,19 +26,19 @@ import { Logo } from "@/assets/logo";
 
 const newsItems = [
 	{
-		image: "https://picsum.photos/seed/sapos2/600/300",
+		image: "https://noticias.ufal.br/transparencia/noticias/2026/4/exposicao-itinerante-sobre-anfibios-chega-a-biblioteca-central-em-abril/.jpeg/@@images/image",
 		label: "28 de abril: Exposição itinerante sobre anfíbios chega à Biblioteca Central",
-		link: "https://example.com/noticias/anfibios",
+		link: "https://noticias.ufal.br/transparencia/noticias/2026/4/exposicao-itinerante-sobre-anfibios-chega-a-biblioteca-central-em-abril",
 	},
 	{
-		image: "https://picsum.photos/seed/mobilidade1/600/300",
-		label: "Nova rota experimental liga o campus ao terminal em horários de pico",
-		link: "https://example.com/noticias/rota-experimental",
+		image: "https://noticias.ufal.br/estudante/noticias/2026/4/ufal-amplia-acoes-de-acessibilidade-na-pos-para-estudantes-surdos/@@images/image-768-16882703fa5e1d332539198d6adc0c8a.jpeg",
+		label: "Ufal amplia ações de acessibilidade na pós para estudantes surdos",
+		link: "https://noticias.ufal.br/estudante/noticias/2026/4/ufal-amplia-acoes-de-acessibilidade-na-pos-para-estudantes-surdos",
 	},
 	{
-		image: "https://picsum.photos/seed/ciencia2/600/300",
-		label: "Semana de ciência e tecnologia abre inscrições para oficinas gratuitas",
-		link: "https://example.com/noticias/semana-ciencia",
+		image: "https://noticias.ufal.br/estudante/noticias/2026/3/ufal-abre-inscricoes-para-bolsistas-do-nucleo-de-acessibilidade-em-maceio/@@images/image-768-814377bd74e9a631339192ff98626ae6.jpeg",
+		label: "Ufal abre inscrições para bolsistas do Núcleo de Acessibilidade em Maceió",
+		link: "https://noticias.ufal.br/estudante/noticias/2026/3/ufal-abre-inscricoes-para-bolsistas-do-nucleo-de-acessibilidade-em-maceio",
 	},
 ];
 
@@ -43,9 +48,9 @@ const getPosition = async () => {
 		maxAge: 5 * 60 * 1000, // accept up to 5 min old
 		requiredAccuracy: 5000, // meters, loose enough for campus-level use
 	});
-	console.log(
-		`Last known position: ${last?.coords.latitude}, ${last?.coords.longitude}`,
-	);
+	// console.log(
+	// 	`Last known position: ${last?.coords.latitude}, ${last?.coords.longitude}`,
+	// );
 	if (last) return last;
 
 	// 2. Live fix — try descending accuracy until one works
@@ -55,7 +60,7 @@ const getPosition = async () => {
 		Location.Accuracy.Lowest,
 	]) {
 		try {
-			console.log(`Trying accuracy: ${accuracy}`);
+			// console.log(`Trying accuracy: ${accuracy}`);
 			return await Location.getCurrentPositionAsync({ accuracy });
 		} catch {
 			// try next tier
@@ -70,18 +75,30 @@ function StudentHome() {
 	const router = useRouter();
 
 	// Fetch campus locations from the DB (source of truth)
-	const { data: campusLocations = [] } = trpc.locations.list.useQuery();
+	const { data: campusLocations = [] } = trpc.locations.list.useQuery(
+		undefined,
+		{
+			staleTime: 30 * 60 * 1000, // 30 min — campus data rarely changes
+			gcTime: 60 * 60 * 1000, // keep in cache for 1h even if unused
+		},
+	);
 	const campusLocationsRef = useRef(campusLocations);
 	campusLocationsRef.current = campusLocations;
+
+	// Persist campus locations across app sessions
+	useEffect(() => {
+		if (campusLocations.length > 0) {
+			setCachedCampusLocations(campusLocations as Place[]);
+		}
+	}, [campusLocations]);
 
 	useFocusEffect(
 		useCallback(() => {
 			// ─── Restore ongoing trip if one was in progress ────────────────
 			const persisted = getRequestState();
 			const hasOngoingRequest =
-				persisted.activeRequestId &&
-				(persisted.searchState !== "idle" ||
-					persisted.stage === "trip");
+				persisted.activeRequestId && persisted.stage === "trip";
+
 			if (hasOngoingRequest) {
 				router.replace("/request");
 				return;
@@ -103,9 +120,12 @@ function StudentHome() {
 					const userLat = position.coords.latitude;
 					const userLng = position.coords.longitude;
 
-					console.log("User position:", userLat, userLng);
+					// console.log("User position:", userLat, userLng);
 
-					const locations = campusLocationsRef.current; // ← always fresh
+					const locations =
+						campusLocationsRef.current.length > 0
+							? campusLocationsRef.current
+							: getCachedCampusLocations(); // ← instant from MMKV
 					if (locations.length === 0) return;
 
 					let closestPoint = locations[0];
@@ -135,13 +155,6 @@ function StudentHome() {
 							closestPoint = point;
 						}
 					}
-
-					console.log(
-						"Closest point:",
-						closestPoint,
-						"Distance:",
-						minDistance,
-					);
 
 					setNearestPoint({
 						name: closestPoint.name,

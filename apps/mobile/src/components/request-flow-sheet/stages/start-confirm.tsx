@@ -65,7 +65,7 @@ function StartConfirmStage({
 					<Button
 						variant="inverted"
 						size="sm"
-						onPress={() => transitionTo("destination-selection")}
+						onPress={() => transitionTo("route-selection")}
 					>
 						<Text>Alterar</Text>
 					</Button>

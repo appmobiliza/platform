@@ -19,7 +19,7 @@ import { trpc } from "@/lib/trpc/client";
 
 const BACK_ALLOWED_DESTINATIONS = [
 	"destination",
-	"destination-selection",
+	"route-selection",
 	"start-confirm",
 ];
 
@@ -102,7 +102,7 @@ export default function RequestScreen() {
 			<View
 				className="absolute top-0 left-0 z-10 flex-row items-start gap-4 px-4 pt-4"
 				style={{
-					paddingTop: insets.top + 24,
+					paddingTop: insets.top + 16,
 				}}
 			>
 				{BACK_ALLOWED_DESTINATIONS.includes(stage) && (

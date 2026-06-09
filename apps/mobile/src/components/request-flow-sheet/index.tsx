@@ -3,8 +3,8 @@ import { View } from "react-native";
 import { useAppColorScheme } from "@/lib/use-app-color-scheme";
 
 import {
-	DestinationSelectionStage,
 	DestinationStage,
+	RouteSelectionStage,
 	SearchingStage,
 	StartConfirmStage,
 	TripStage,
@@ -50,7 +50,7 @@ function RequestFlowSheet() {
 				setDestination={setDestination}
 			/>
 
-			<DestinationSelectionStage
+			<RouteSelectionStage
 				modalRef={destinationSelectionRef}
 				handleDismiss={handleDismiss}
 				isDark={isDark}

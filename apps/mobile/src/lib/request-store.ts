@@ -7,7 +7,7 @@ import { storage } from "./storage";
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
 export type SearchState = "idle" | "searching" | "unattended" | "error";
-export type Stage = "destination" | "destination-selection" | "start-confirm" | "searching" | "trip";
+export type Stage = "destination" | "route-selection" | "start-confirm" | "searching" | "trip";
 
 export interface ScholarInfo {
 	id: string;
@@ -33,7 +33,7 @@ const STORAGE_KEY = "request-flow-state";
 const DEFAULT_STATE: PersistedRequestState = {
 	activeRequestId: null,
 	searchState: "idle",
-	stage: "destination-selection",
+	stage: "route-selection",
 	origin: null,
 	destination: null,
 	message: "",
