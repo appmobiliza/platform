@@ -67,6 +67,7 @@ export const auth = betterAuth({
 	 * provedor confiável para linking implícito.
 	 */
 	account: {
+		skipStateCookieCheck: true,
 		accountLinking: {
 			enabled: true,
 			trustedProviders: ["google"],
