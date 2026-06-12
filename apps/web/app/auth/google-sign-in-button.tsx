@@ -4,7 +4,6 @@ import { webBaseUrl } from "@mobiliza/env/base-url";
 
 import { Loader2 } from "lucide-react";
 import Image, { type StaticImageData } from "next/image";
-import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -18,18 +17,15 @@ type GoogleSignInButtonProps = {
 
 export function GoogleSignInButton({ googleLogo }: GoogleSignInButtonProps) {
 	const [isSigningIn, setIsSigningIn] = useState(false);
-	const searchParams = useSearchParams();
-
-	// Preserva o path original que o usuário tentava acessar
-	const redirectTo = searchParams.get("redirect") || "/";
 
 	async function handleGoogleSignIn() {
 		setIsSigningIn(true);
 
 		try {
+			console.log("Iniciando login com Google...", webBaseUrl);
 			await authClient.signIn.social({
 				provider: "google",
-				callbackURL: `${webBaseUrl}/auth?login=success&redirect=${encodeURIComponent(redirectTo)}`,
+				callbackURL: `${webBaseUrl}/`,
 				errorCallbackURL: `${webBaseUrl}/auth`,
 			});
 		} catch (error) {

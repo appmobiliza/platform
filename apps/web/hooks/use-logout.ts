@@ -15,11 +15,7 @@ export function useLogout() {
 		try {
 			await authClient.signOut({
 				fetchOptions: {
-					onSuccess: async () => {
-						// Limpa o cookie de sessão assinado do Next.js
-						await fetch("/api/auth/clear-session", {
-							method: "POST",
-						});
+					onSuccess: () => {
 						router.push("/auth");
 					},
 				},
