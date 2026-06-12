@@ -150,6 +150,9 @@ Este repositório foi organizado com a ideia de manter a lógica compartilhada f
 Nos READMEs individuais, cada pacote e aplicação tem sua própria documentação com detalhes de execução, escopo e decisões de implementação.
 
 ---
+![Metrics](./.github/metrics.svg)
+
+---
 
 ## 📄 Licença
 
