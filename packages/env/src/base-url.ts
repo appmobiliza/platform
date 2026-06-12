@@ -1,7 +1,9 @@
-export const backendBaseUrl =
-	process.env.NEXT_PUBLIC_BACKEND_API_URL ??
-	process.env.BACKEND_API_URL ??
+export const apiBaseUrl =
+	process.env.API_URL ??
+	process.env.NEXT_PUBLIC_API_URL ??
 	"http://localhost:3001";
 
 export const webBaseUrl =
-	process.env.NEXT_PUBLIC_WEB_URL ?? "http://localhost:3000";
+	process.env.WEB_URL ??
+	process.env.NEXT_PUBLIC_WEB_URL ??
+	"http://localhost:3000";

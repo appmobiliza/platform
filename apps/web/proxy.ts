@@ -42,7 +42,9 @@ export default async function middleware(request: NextRequest) {
 	const cached = sessionCache.get(token);
 	if (cached && cached.expiresAt > Date.now()) {
 		if (!cached.valid) {
-			return NextResponse.redirect(new URL("/auth", request.url));
+			return NextResponse.redirect(
+				new URL("/auth?error=unauthorized_role", request.url),
+			);
 		}
 		return NextResponse.next();
 	}
@@ -58,7 +60,9 @@ export default async function middleware(request: NextRequest) {
 	});
 
 	if (!isValid) {
-		return NextResponse.redirect(new URL("/auth", request.url));
+		return NextResponse.redirect(
+			new URL("/auth?error=unauthorized_role", request.url),
+		);
 	}
 
 	return NextResponse.next();

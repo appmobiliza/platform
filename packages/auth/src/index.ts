@@ -32,7 +32,7 @@ const allowedDomains = [
  * Referência: https://www.better-auth.com/docs/integrations/hono
  */
 export const auth = betterAuth({
-	baseURL: authEnv.BETTER_AUTH_URL,
+	baseURL: authEnv.API_URL,
 
 	database: drizzleAdapter(db, {
 		provider: "pg",

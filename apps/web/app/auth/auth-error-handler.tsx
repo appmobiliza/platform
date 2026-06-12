@@ -24,6 +24,8 @@ const errorMessages: Record<string, string> = {
 	state_mismatch: "Erro de segurança na autenticação. Tente novamente.",
 	internal_server_error:
 		"Ocorreu um erro interno ao autenticar. Tente novamente mais tarde.",
+	unauthorized_role:
+		"Seu e-mail não possui permissão de acesso ao painel de gestão. Entre em contato com o administrador.",
 };
 
 function getErrorMessage(code: string): string {

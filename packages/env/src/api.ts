@@ -7,11 +7,11 @@ loadEnv();
 
 export const apiEnv = createEnv({
 	server: {
-		DATABASE_URL: z.string().min(1),
-		PORT: z.coerce.number().int().positive().default(3001),
 		NODE_ENV: nodeEnvSchema,
 		TRUSTED_ORIGINS: commaSeparatedOrigins,
+		DATABASE_URL: z.string().min(1),
 		CRON_SECRET: optionalString,
+		PORT: z.coerce.number().int().positive().default(3001),
 	},
 	runtimeEnv: process.env,
 });

@@ -35,11 +35,11 @@ export default function Auth() {
 				callbackURL:
 					Platform.OS === "web"
 						? `${process.env.EXPO_PUBLIC_WEB_URL}/auth-callback`
-						: "/auth",
+						: "mobiliza://auth",
 				errorCallbackURL:
 					Platform.OS === "web"
 						? `${process.env.EXPO_PUBLIC_WEB_URL}/auth`
-						: "/auth",
+						: "mobiliza://auth",
 			});
 
 			if (error) {

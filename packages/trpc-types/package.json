@@ -1,25 +1,25 @@
 {
-	"name": "@mobiliza/contracts",
+	"name": "@mobiliza/trpc-types",
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
 	"main": "./dist/index.js",
 	"types": "./src/index.ts",
 	"scripts": {
-		"build": "tsup src/index.ts --format esm --dts --no-splitting --target node20 --out-dir dist"
+		"build": "tsup src/index.ts --format esm --dts --no-splitting --out-dir dist",
+		"check-types": "tsc --noEmit"
 	},
 	"exports": {
 		".": {
 			"types": "./src/index.ts",
-			"react-native": "./src/index.ts",
 			"default": "./dist/index.js"
 		}
 	},
 	"dependencies": {
-		"zod": "^4.4.3"
+		"@trpc/server": "^11.17.0"
 	},
 	"devDependencies": {
-		"@mobiliza/typescript-config": "workspace:*",
+		"@mobiliza/api": "workspace:*",
 		"typescript": "^5.9.0"
 	}
 }

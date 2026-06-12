@@ -19,7 +19,7 @@ export async function requireManagerAuth() {
 	const session = await getSession(h);
 
 	if (!session || session.user.role !== "manager") {
-		redirect("/auth");
+		redirect("/auth?error=unauthorized_role");
 	}
 
 	return session;
