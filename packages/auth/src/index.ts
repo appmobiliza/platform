@@ -35,7 +35,7 @@ const allowedDomains = [
 console.log("authEnv", authEnv)
 
 export const auth = betterAuth({
-	baseURL: authEnv.WEB_URL,
+	baseURL: authEnv.API_URL,
 
 	database: drizzleAdapter(db, {
 		provider: "pg",
@@ -51,7 +51,6 @@ export const auth = betterAuth({
 		google: {
 			clientId: authEnv.GOOGLE_CLIENT_ID,
 			clientSecret: authEnv.GOOGLE_CLIENT_SECRET,
-			redirectURI: `${authEnv.WEB_URL}/api/auth/callback/google`,
 		},
 	},
 
