@@ -29,14 +29,24 @@ function getSessionToken(request: NextRequest): string | null {
  * Protege as rotas do dashboard verificando se o usuário possui
  * uma sessão válida com papel de gestor. Redireciona para /auth
  * caso contrário.
+ *
+ * Também redireciona de /auth para / se o usuário já estiver
+ * autenticado como gestor, evitando que veja a página de login
+ * desnecessariamente.
  */
 export default async function middleware(request: NextRequest) {
 	console.log("Interceptando: ", request.url);
 
+	const { pathname } = request.nextUrl;
+	const isAuthPage = pathname.startsWith("/auth");
+
 	const token = getSessionToken(request);
 
-	// Se não tem cookie de sessão, redireciona sem consultar o banco
+	// Se não tem cookie de sessão, redireciona para /auth (exceto se já está em /auth)
 	if (!token) {
+		if (isAuthPage) {
+			return NextResponse.next();
+		}
 		return NextResponse.redirect(new URL("/auth", request.url));
 	}
 
@@ -44,17 +54,23 @@ export default async function middleware(request: NextRequest) {
 	const cached = sessionCache.get(token);
 	if (cached && cached.expiresAt > Date.now()) {
 		if (!cached.valid) {
+			if (isAuthPage) {
+				return NextResponse.next();
+			}
 			return NextResponse.redirect(
 				new URL("/auth?error=unauthorized_role", request.url),
 			);
+		}
+		// Sessão válida: se estiver em /auth, redireciona para /
+		if (isAuthPage) {
+			return NextResponse.redirect(new URL("/", request.url));
 		}
 		return NextResponse.next();
 	}
 
 	// Cache miss: consulta o banco
 	const session = await getSession(request.headers);
-	const isValid =
-		session?.user?.role === "manager";
+	const isValid = session?.user?.role === "manager";
 
 	sessionCache.set(token, {
 		valid: isValid,
@@ -62,14 +78,22 @@ export default async function middleware(request: NextRequest) {
 	});
 
 	if (!isValid) {
+		if (isAuthPage) {
+			return NextResponse.next();
+		}
 		return NextResponse.redirect(
 			new URL("/auth?error=unauthorized_role", request.url),
 		);
+	}
+
+	// Sessão válida: se estiver em /auth, redireciona para /
+	if (isAuthPage) {
+		return NextResponse.redirect(new URL("/", request.url));
 	}
 
 	return NextResponse.next();
 }
 
 export const config = {
-	matcher: ["/((?!api|_next/static|_next/image|favicon.ico|auth).*)"],
+	matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };
