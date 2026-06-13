@@ -33,6 +33,9 @@ importers:
       '@hono/trpc-server':
         specifier: ^0.4.2
         version: 0.4.2(@trpc/server@11.17.0(typescript@6.0.3))(hono@4.12.25)
+      '@mobiliza/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@mobiliza/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts

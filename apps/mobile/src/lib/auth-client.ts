@@ -9,5 +9,5 @@
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
-	baseURL: `${process.env.EXPO_PUBLIC_API_URL}/api/auth`,
+	baseURL: `${process.env.EXPO_PUBLIC_WEB_URL}/api/auth`,
 });

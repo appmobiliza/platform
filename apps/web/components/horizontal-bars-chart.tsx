@@ -40,7 +40,6 @@ export function HorizontalBarsChart({ data, config, className }: Props) {
 					tickLine={false}
 					tickMargin={10}
 					axisLine={false}
-					interval={0}
 					tick={{
 						className:
 							"font-medium fill-foreground text-xs md:text-sm",

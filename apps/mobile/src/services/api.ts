@@ -6,7 +6,6 @@
 import type {
 	ApiError,
 	AuthResponse,
-	GoogleAuthRequest,
 	OnboardingApiRequest,
 	OnboardingResponse,
 	SessionResponse,
@@ -19,12 +18,9 @@ import { API_ERROR_CODES, HTTP_STATUS } from "../types/api";
 // ============================================
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+const WEB_BASE_URL = process.env.EXPO_PUBLIC_WEB_URL || "http://localhost:3001";
 
 const endpoints = {
-	auth: {
-		google: "/api/auth/google",
-		session: "/api/auth/session",
-	},
 	user: {
 		onboarding: "/api/onboarding",
 		byId: (id: string) => `/api/user/${id}`,
@@ -149,6 +145,60 @@ export async function fetchApi<T>(
 }
 
 /**
+ * Custom fetch targeting the web app (Next.js route handler).
+ *
+ * Usada para chamadas de autenticação que precisam de
+ * `credentials: "include"` para enviar cookies de sessão
+ * ao domínio do Next.js, evitando problemas com cross-domain
+ * cookies que ocorriam ao chamar a API diretamente.
+ */
+export async function fetchWebApi<T>(
+	endpoint: string,
+	options: RequestInit = {},
+): Promise<T> {
+	const url = `${WEB_BASE_URL}${endpoint}`;
+
+	const defaultHeaders: Record<string, string> = {
+		"Content-Type": "application/json",
+	};
+
+	// Add auth token if available
+	const optionsHeaders = options.headers as Record<string, string> | undefined;
+	const token =
+		optionsHeaders?.Authorization || optionsHeaders?.authorization;
+	if (token) {
+		defaultHeaders.Authorization = token;
+	}
+
+	try {
+		const response = await fetch(url, {
+			...options,
+			credentials: "include",
+			headers: {
+				...defaultHeaders,
+				...options.headers,
+			},
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json().catch(() => ({}));
+			throw parseApiError(errorData);
+		}
+
+		return response.json() as Promise<T>;
+	} catch (error) {
+		if (isApiError(error)) {
+			throw error;
+		}
+		// Network error
+		throw parseApiError({
+			code: "NETWORK_ERROR",
+			message: "Erro de conexão com o servidor",
+		});
+	}
+}
+
+/**
  * Type guard for ApiError
  */
 export function isApiError(error: unknown): error is ApiError {
@@ -224,25 +274,28 @@ export function transformOnboardingDataToApiRequest(data: {
 // ============================================
 
 /**
- * Send Google auth token to API
+ * Send Google auth token to web app (Next.js route handler)
+ *
+ * A autenticação foi movida para o app Next.js em
+ * `{EXPO_PUBLIC_WEB_URL}/api/auth` para evitar problemas com
+ * cross-domain cookies. As chamadas de auth agora usam
+ * `credentials: "include"` e apontam para o servidor Next.js.
  */
 export async function authenticateWithGoogle(
 	googleToken: string,
 ): Promise<AuthResponse> {
-	const request: GoogleAuthRequest = { googleToken };
-
-	return fetchApi<AuthResponse>(endpoints.auth.google, {
+	return fetchWebApi<AuthResponse>("/api/auth/callback/google", {
 		method: "POST",
-		body: JSON.stringify(request),
+		body: JSON.stringify({ idToken: googleToken }),
 	});
 }
 
 /**
- * Validate session token
+ * Validate session token via web app (Better Auth route handler)
  */
 export async function validateSession(token: string): Promise<SessionResponse> {
-	return fetchApi<SessionResponse>(endpoints.auth.session, {
-		method: "POST",
+	return fetchWebApi<SessionResponse>("/api/auth/session", {
+		method: "GET",
 		headers: {
 			Authorization: `Bearer ${token}`,
 		},
@@ -250,11 +303,11 @@ export async function validateSession(token: string): Promise<SessionResponse> {
 }
 
 /**
- * Logout (invalidate session)
+ * Logout (invalidate session via web app)
  */
 export async function logout(): Promise<{ success: boolean }> {
-	return fetchApi<{ success: boolean }>(endpoints.auth.session, {
-		method: "DELETE",
+	return fetchWebApi<{ success: boolean }>("/api/auth/sign-out", {
+		method: "POST",
 	});
 }
 
@@ -297,4 +350,4 @@ export async function getUserById(
 // EXPORTS
 // ============================================
 
-export { API_ERROR_CODES, endpoints, HTTP_STATUS };
+export { API_ERROR_CODES, endpoints, HTTP_STATUS, WEB_BASE_URL };
