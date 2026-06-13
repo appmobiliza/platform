@@ -25,8 +25,8 @@ export function GoogleSignInButton({ googleLogo }: GoogleSignInButtonProps) {
 			console.log("Iniciando login com Google...", webBaseUrl);
 			await authClient.signIn.social({
 				provider: "google",
-				callbackURL: `${webBaseUrl}/`,
-				errorCallbackURL: `${webBaseUrl}/auth`,
+				callbackURL: `/`,
+				errorCallbackURL: `/auth`,
 			});
 		} catch (error) {
 			console.error("Erro ao fazer login com Google:", error);

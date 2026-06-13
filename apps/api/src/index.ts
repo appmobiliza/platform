@@ -12,7 +12,6 @@
  *   GET  /api/cron/*        → cron jobs (disparados pela Vercel)
  */
 
-import { auth } from "@mobiliza/auth";
 import { getSession } from "@mobiliza/auth/server";
 import { db } from "@mobiliza/db/client";
 import { notifyUnansweredRequests } from "@mobiliza/domain";
@@ -98,18 +97,6 @@ app.get("/health", (c) =>
 		provider: realtimeEnv.REALTIME_PROVIDER,
 	}),
 );
-
-// ─── Better Auth ──────────────────────────────────────────────────────────────
-
-/**
- * O Better Auth gerencia todas as rotas sob `/api/auth`.
- * Isso inclui:
- *   POST /api/auth/sign-in/social      → inicia OAuth
- *   GET  /api/auth/callback/google     → callback OAuth
- *   POST /api/auth/sign-out            → logout
- *   GET  /api/auth/session             → retorna sessão atual
- */
-app.on(["GET", "POST"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 
 // ─── tRPC ─────────────────────────────────────────────────────────────────────
 

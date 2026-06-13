@@ -31,9 +31,10 @@ const allowedDomains = [
  *
  * Referência: https://www.better-auth.com/docs/integrations/hono
  */
-export const auth = betterAuth({
-	baseURL: authEnv.API_URL,
 
+console.log(authEnv, authEnv.WEB_URL, authEnv.NEXT_PUBLIC_WEB_URL)
+
+export const auth = betterAuth({
 	database: drizzleAdapter(db, {
 		provider: "pg",
 		schema: {
