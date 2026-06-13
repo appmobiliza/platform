@@ -1,10 +1,10 @@
 "use client";
 
 import { createAuthClient } from "@mobiliza/auth/client";
-import { apiBaseUrl } from "@mobiliza/env/base-url";
+import { webBaseUrl } from "@mobiliza/env/base-url";
 
-console.log("apiBaseUrl", apiBaseUrl);
+console.log("webBaseUrl", webBaseUrl);
 
 export const authClient = createAuthClient({
-	baseURL: `${apiBaseUrl}/api/auth`,
+	baseURL: `${webBaseUrl}/api/auth`,
 });

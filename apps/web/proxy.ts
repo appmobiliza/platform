@@ -31,6 +31,8 @@ function getSessionToken(request: NextRequest): string | null {
  * caso contrário.
  */
 export default async function middleware(request: NextRequest) {
+	console.log("Interceptando: ", request.url);
+
 	const token = getSessionToken(request);
 
 	// Se não tem cookie de sessão, redireciona sem consultar o banco

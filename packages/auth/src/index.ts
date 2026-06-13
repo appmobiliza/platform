@@ -31,8 +31,11 @@ const allowedDomains = [
  *
  * Referência: https://www.better-auth.com/docs/integrations/hono
  */
+
+console.log("authEnv", authEnv)
+
 export const auth = betterAuth({
-	baseURL: authEnv.API_URL,
+	baseURL: authEnv.WEB_URL,
 
 	database: drizzleAdapter(db, {
 		provider: "pg",
@@ -48,6 +51,7 @@ export const auth = betterAuth({
 		google: {
 			clientId: authEnv.GOOGLE_CLIENT_ID,
 			clientSecret: authEnv.GOOGLE_CLIENT_SECRET,
+			redirectURI: `${authEnv.WEB_URL}/api/auth/callback/google`,
 		},
 	},
 
@@ -67,7 +71,6 @@ export const auth = betterAuth({
 	 * provedor confiável para linking implícito.
 	 */
 	account: {
-		skipStateCookieCheck: true,
 		accountLinking: {
 			enabled: true,
 			trustedProviders: ["google"],
@@ -108,7 +111,7 @@ export const auth = betterAuth({
 
 	trustedOrigins: [
 		...authEnv.TRUSTED_ORIGINS,
-		// Deep link scheme do app mobile (usado pelo @better-auth/expo
+		// Deep link scheme do app mobile (usado pelo @better-auth/expo)
 		// para redirecionar de volta ao app após OAuth).
 		"mobiliza://",
 	],

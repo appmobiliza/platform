@@ -84,7 +84,7 @@ app.use(
 	cors({
 		origin: apiEnv.TRUSTED_ORIGINS,
 		allowHeaders: ["Content-Type", "Authorization"],
-		allowMethods: ["GET", "POST", "OPTIONS"],
+		allowMethods: ["GET", "POST", "OPTIONS", "PUT", "DELETE", "PATCH"],
 		credentials: true,
 	}),
 );

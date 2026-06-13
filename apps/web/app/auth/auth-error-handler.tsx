@@ -53,10 +53,7 @@ export function AuthErrorHandler() {
 		<Alert variant="destructive" className="mb-6 pr-10 relative">
 			<AlertCircle className="size-4" />
 			<AlertTitle>Erro na autenticação</AlertTitle>
-			<AlertDescription>
-				{getErrorMessage(error)}
-				<code>{error}</code>
-			</AlertDescription>
+			<AlertDescription>{getErrorMessage(error)}</AlertDescription>
 			<Button
 				variant="ghost"
 				size="icon-xs"

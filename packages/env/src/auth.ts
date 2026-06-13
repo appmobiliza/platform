@@ -11,6 +11,7 @@ export const authEnv = createEnv({
 		TRUSTED_ORIGINS: commaSeparatedOrigins,
 		API_URL: z.string().min(1).default("http://localhost:3001"),
 		NEXT_PUBLIC_API_URL: z.string().min(1).default("http://localhost:3001"),
+		WEB_URL: z.string().min(1).default("http://localhost:3000"),
 		BETTER_AUTH_SECRET: z.string().min(32),
 		GOOGLE_CLIENT_ID: z.string().min(1),
 		GOOGLE_CLIENT_SECRET: z.string().min(1),
