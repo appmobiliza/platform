@@ -9,7 +9,7 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
 
-import { useUserRole } from "@/lib/auth-store";
+import { cacheUserInfo, useUserRole } from "@/lib/auth-store";
 import { trpc } from "@/lib/trpc/client";
 
 import { type ProfileNameInput, ProfileNameSchema } from "@/schemas";
@@ -55,6 +55,19 @@ export default function BasicProfileName() {
 				});
 			}
 			await utils.profiles.me.invalidate();
+
+			// Refetch the full user data and update the MMKV cache so that
+			// the profile tab (which reads from the auth store, not TRPC)
+			// reflects the updated name immediately
+			const freshUser = await utils.profiles.me.fetch();
+			cacheUserInfo({
+				id: freshUser.id,
+				name: freshUser.name,
+				email: freshUser.email,
+				image: freshUser.image,
+				role: freshUser.role,
+			});
+
 			reset(data);
 			router.back();
 		} catch (error) {

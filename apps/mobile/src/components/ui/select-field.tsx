@@ -94,7 +94,7 @@ function SelectField({
 					<Button
 						variant="outline"
 						className={cn(
-							"w-full justify-between px-3 py-1 text-foreground",
+							"w-full justify-between px-3 py-2 text-foreground",
 							error && "border-destructive",
 						)}
 						accessibilityLabel={label}

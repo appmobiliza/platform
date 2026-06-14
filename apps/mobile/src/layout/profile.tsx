@@ -83,7 +83,7 @@ export default function ProfileLayout({
 					<Button
 						className="mt-8"
 						onPress={handleSave}
-						disabled={isSaving}
+						disabled={isSaving || !isDirty}
 					>
 						<Text>
 							{isSaving ? "Salvando..." : "Salvar alterações"}

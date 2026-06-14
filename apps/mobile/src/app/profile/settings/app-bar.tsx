@@ -1,12 +1,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
+import z from "zod";
 
 import ProfileLayout from "@/layout/profile";
 
 import { SelectField } from "@/components/ui/select-field";
 
-import { type ProfilePhoneInput, ProfilePhoneSchema } from "@/schemas";
+const appBarSchema = z.object({
+	schema: z.enum(["default", "native"]),
+});
+
+type AppBarSchema = z.infer<typeof appBarSchema>;
 
 export default function SettingsProfileAppBar() {
 	const router = useRouter();
@@ -15,10 +20,10 @@ export default function SettingsProfileAppBar() {
 		control,
 		handleSubmit,
 		formState: { errors, isDirty },
-	} = useForm<ProfilePhoneInput>({
-		resolver: zodResolver(ProfilePhoneSchema),
+	} = useForm<AppBarSchema>({
+		resolver: zodResolver(appBarSchema),
 		defaultValues: {
-			phone: "",
+			schema: "default",
 		},
 		mode: "onTouched",
 	});
@@ -36,16 +41,15 @@ export default function SettingsProfileAppBar() {
 		>
 			<Controller
 				control={control}
-				name="phone"
+				name="schema"
 				render={({ field }) => (
 					<SelectField
 						label="Estilo da barra de navegação"
-						description="Escolha entre o estilo padrão ou flutuante para a barra de navegação."
-						error={errors.phone?.message}
+						error={errors.schema?.message}
 						placeholder="Selecione um estilo"
 						options={[
 							{ label: "Padrão", value: "default" },
-							{ label: "Flutuante", value: "floating" },
+							{ label: "Nativo", value: "native" },
 						]}
 						value={field.value}
 						onValueChange={field.onChange}

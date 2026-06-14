@@ -226,18 +226,22 @@ export function useUser() {
 	const { data: session } = authClient.useSession();
 
 	return useMemo(() => {
+		const cached = getCachedUser();
 		const user = toSessionUser(session?.user as Record<string, unknown>);
 
 		if (!user) {
-			return getCachedUser();
+			return cached;
 		}
 
+		// Use session data as base, but let MMKV cache override mutable
+		// fields. This ensures profile updates (which call cacheUserInfo)
+		// are reflected immediately even if the session hasn't refreshed
 		return {
 			id: user.id ?? "",
-			name: user.name ?? "",
-			email: user.email ?? "",
-			image: user.image ?? null,
-			role: (user.role as UserRole) ?? UserRole.Student,
+			name: cached.name || user.name || "",
+			email: cached.email || user.email || "",
+			image: cached.image || user.image || null,
+			role: (cached.role as UserRole) || (user.role as UserRole) || UserRole.Student,
 		};
 	}, [session]);
 }
