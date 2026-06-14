@@ -29,6 +29,7 @@ function buildAnnouncements(currentLocation?: CampusLocation | null) {
 			"Não entendi bem. Tente novamente falando mais devagar.",
 		error_permission: "Permissão de microfone negada.",
 		error_generic: "Erro ao reconhecer voz. Tente novamente.",
+		error_browser: "O navegador não suporta o reconhecimento de voz. Tente usar o Google Chrome ou Microsoft Edge.",
 		idle: "Reconhecimento encerrado.",
 	};
 }
@@ -98,13 +99,29 @@ export function useSpeechDestination({
 
 	useSpeechRecognitionEvent("error", (event) => {
 		isListening.current = false;
-		const msg =
-			event.error === "not-allowed"
-				? ANNOUNCE.error_permission
-				: ANNOUNCE.error_generic;
+
+		let displayError: string;
+		let announceMsg: string;
+
+		if (event.error === "not-allowed") {
+			displayError =
+				"Permissão do microfone negada. Permita o acesso nas configurações do navegador e tente novamente.";
+			announceMsg = ANNOUNCE.error_permission;
+		} else if (Platform.OS === "web" && event.error === "network") {
+			displayError =
+				"Não foi possível conectar ao serviço de reconhecimento de voz. " +
+				"Verifique sua conexão ou tente usar o Google Chrome.";
+			announceMsg = ANNOUNCE.error_generic;
+		} else {
+			displayError =
+				event.message || event.error || "Erro desconhecido ao reconhecer voz.";
+			announceMsg = ANNOUNCE.error_generic;
+		}
+
+		console.log(event);
 		setPhase("error");
-		setResult((prev) => ({ ...prev, error: event.message ?? event.error }));
-		announce(msg);
+		setResult((prev) => ({ ...prev, error: displayError }));
+		announce(announceMsg);
 	});
 
 	/**
@@ -188,6 +205,34 @@ export function useSpeechDestination({
 
 	const start = useCallback(async () => {
 		if (isListening.current) return;
+
+		// Clear previous error state before a new attempt
+		setPhase("idle");
+		setResult((prev) => ({ ...prev, error: null, confidence: null }));
+
+		// On web, check if the Web Speech API is available before proceeding.
+		// The expo-speech-recognition web module has a bug where it accesses
+		// `SpeechRecognition` without a typeof guard, crashing with
+		// "ReferenceError: SpeechRecognition is not defined" in browsers
+		// that don't support the Web Speech API (e.g. Firefox) or when the
+		// API is otherwise unavailable.
+		if (Platform.OS === "web") {
+			const hasWebSpeech =
+				typeof window !== "undefined" &&
+				(typeof window.SpeechRecognition !== "undefined" ||
+					typeof window.webkitSpeechRecognition !== "undefined");
+
+			if (!hasWebSpeech) {
+				setPhase("error");
+				setResult((prev) => ({
+					...prev,
+					error:
+						"Reconhecimento de fala não está disponível neste navegador. Tente usar Chrome ou Edge.",
+				}));
+				announce(ANNOUNCE.error_browser);
+				return;
+			}
+		}
 
 		const nativeOptions =
 			Platform.OS !== "web"

@@ -34,11 +34,11 @@ export default function Auth() {
 				provider: "google",
 				callbackURL:
 					Platform.OS === "web"
-						? `${process.env.EXPO_PUBLIC_WEB_URL}/auth-callback`
+						? `${process.env.EXPO_PUBLIC_APP_URL}/auth-callback`
 						: "mobiliza://auth",
 				errorCallbackURL:
 					Platform.OS === "web"
-						? `${process.env.EXPO_PUBLIC_WEB_URL}/auth`
+						? `${process.env.EXPO_PUBLIC_APP_URL}/auth`
 						: "mobiliza://auth",
 			});
 

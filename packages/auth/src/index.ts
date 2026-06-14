@@ -52,6 +52,7 @@ export const auth = betterAuth({
 			clientId: authEnv.GOOGLE_CLIENT_ID,
 			clientSecret: authEnv.GOOGLE_CLIENT_SECRET,
 			redirectURI: `${authEnv.WEB_URL}/api/auth/callback/google`,
+			prompt: "select_account"
 		},
 	},
 

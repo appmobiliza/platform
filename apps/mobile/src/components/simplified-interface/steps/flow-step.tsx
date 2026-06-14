@@ -7,11 +7,6 @@ import { Text } from "@/components/ui/text";
 
 import type { AcessibleRequestStep } from "./types";
 
-/**
- * Shared layout wrapper used by every step.
- * Renders subtitle, title, and a note box at the top (flush with safe area),
- * then the step's children centered in the remaining space.
- */
 export function FlowStep({
 	title,
 	note,
@@ -22,7 +17,6 @@ export function FlowStep({
 
 	return (
 		<View className="flex-1">
-			{/* Header: flush at the top with safe-area padding */}
 			<View
 				className="bg-primary px-4 justify-start items-start"
 				style={{ paddingTop: insets.top }}
@@ -45,7 +39,6 @@ export function FlowStep({
 					</Text>
 				</View>
 			</View>
-			{/* Content: fills remaining space and centers children */}
 			<View className="flex-1 justify-center">{children}</View>
 		</View>
 	);

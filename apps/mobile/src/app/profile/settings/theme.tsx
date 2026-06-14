@@ -21,9 +21,9 @@ export default function SettingsProfileTheme() {
 		>
 			<BoxOptions
 				options={[
-					{ id: "light", label: "Claro", icon: SunIcon },
-					{ id: "dark", label: "Escuro", icon: MoonIcon },
-					{ id: "system", label: "Sistema", icon: SmartphoneIcon },
+					{ ids: ["light"], label: "Claro", icon: SunIcon },
+					{ ids: ["dark"], label: "Escuro", icon: MoonIcon },
+					{ ids: ["system"], label: "Sistema", icon: SmartphoneIcon },
 				]}
 				value={[theme]}
 				onChange={onSelect}

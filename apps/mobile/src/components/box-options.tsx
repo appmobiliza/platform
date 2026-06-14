@@ -27,17 +27,17 @@ interface BoxOptionsProps {
 
 const DEFAULT_OPTIONS: Option[] = [
 	{
-		ids: [disabilityTypeValues[0], disabilityTypeValues[1]],
+		ids: [disabilityTypeValues[0]],
 		label: "Deficiência física ou\nmobilidade reduzida",
 		icon: Accessibility,
 	},
 	{
-		ids: [disabilityTypeValues[4], disabilityTypeValues[5]],
+		ids: [disabilityTypeValues[4]],
 		label: "Deficiência auditiva",
 		icon: Ear,
 	},
 	{
-		ids: [disabilityTypeValues[2], disabilityTypeValues[3]],
+		ids: [disabilityTypeValues[2]],
 		label: "Cegueira ou\nbaixa visão",
 		icon: Eye,
 	},

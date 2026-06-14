@@ -221,6 +221,7 @@ export default function MapView({
 					position: "absolute",
 					inset: 0,
 				}}
+				attributionControl={false}
 				onLoad={() => setMapLoaded(true)}
 				onMoveStart={handleMapMoveStart}
 				onMoveEnd={handleMapMoveEnd}

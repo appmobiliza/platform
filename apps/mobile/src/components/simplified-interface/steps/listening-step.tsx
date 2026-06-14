@@ -1,5 +1,6 @@
 import { useSpeechRecognitionEvent } from "expo-speech-recognition";
 import { MicIcon, StopCircleIcon } from "lucide-react-native";
+import { useCallback } from "react";
 import { View } from "react-native";
 import Animated, {
 	Easing,
@@ -15,6 +16,8 @@ import Animated, {
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
+
+import { cn } from "@/lib/utils";
 
 import type { SpeechPhase } from "@/types/location";
 
@@ -58,11 +61,11 @@ export function ListeningStep({
 	const pulseScale = useSharedValue(MIN_SCALE);
 	const pulseOpacity = useSharedValue(0);
 
-	const resetAnimations = () => {
+	const resetAnimations = useCallback(() => {
 		volumeScale.value = MIN_SCALE;
 		pulseScale.value = MIN_SCALE;
 		pulseOpacity.value = 0;
-	};
+	}, []);
 
 	useSpeechRecognitionEvent("start", resetAnimations);
 	useSpeechRecognitionEvent("end", resetAnimations);
@@ -127,29 +130,30 @@ export function ListeningStep({
 				}
 			>
 				<View className="items-center gap-6 flex-1 justify-center px-4">
-					{/* Microphone button with volume visualization */}
 					<View
 						className="relative items-center justify-center"
 						style={{ width: 144, height: 144 }}
 					>
-						{/* Pulse ring */}
 						<View className="absolute inset-0 justify-center items-center">
 							<Animated.View
 								className="w-32 h-32 rounded-full border-2 border-primary"
 								style={pulseStyle}
 							/>
 						</View>
-						{/* Volume intensity circle */}
 						<View className="absolute inset-0 justify-center items-center">
 							<Animated.View
 								className="w-32 h-32 rounded-full bg-primary/12"
 								style={volumeScaleStyle}
 							/>
 						</View>
-						{/* Microphone button */}
 						<Button
 							size="lg"
-							className={`w-28 h-28 rounded-full ${isListening ? "bg-destructive" : "bg-primary"}`}
+							className={cn(
+								"w-28 h-28 sm:h-28 rounded-full bg-primary",
+								{
+									"bg-destructive": isListening,
+								},
+							)}
 							onPress={isListening || hasError ? onRetry : start}
 							accessible
 							accessibilityRole="button"
@@ -164,25 +168,22 @@ export function ListeningStep({
 								busy: isListening || isProcessing,
 							}}
 						>
-							<Text className="text-4xl" accessible={false}>
-								{isListening ? (
-									<Icon
-										icon={StopCircleIcon}
-										size={48}
-										color={"white"}
-									/>
-								) : (
-									<Icon
-										icon={MicIcon}
-										size={48}
-										color={"white"}
-									/>
-								)}
-							</Text>
+							{isListening ? (
+								<Icon
+									icon={StopCircleIcon}
+									size={48}
+									color={"white"}
+								/>
+							) : (
+								<Icon
+									icon={MicIcon}
+									size={48}
+									color={"white"}
+								/>
+							)}
 						</Button>
 					</View>
 
-					{/* Real-time transcription */}
 					{transcript.length > 0 && (
 						<View
 							className="bg-card border border-border rounded-lg p-4 w-full"
@@ -199,20 +200,14 @@ export function ListeningStep({
 						</View>
 					)}
 
-					{/* Error message */}
-					{hasError && speechError && (
+					{hasError && speechError ? (
 						<Text
 							className="text-destructive-foreground bg-destructive p-3 rounded-lg"
 							accessibilityRole="alert"
 						>
 							{speechError}
 						</Text>
-					)}
-
-					{/* Back button */}
-
-					{/* Volume metering is enabled via `volumeChangeEventOptions`
-					   in the `useSpeechDestination` hook. */}
+					) : null}
 					<Button
 						variant="outline"
 						className="mt-2"
