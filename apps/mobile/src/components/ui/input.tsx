@@ -3,7 +3,7 @@ import { Platform, TextInput } from "react-native";
 import { cn } from "@/lib/utils";
 
 const inputClassName =
-	"dark:bg-input/50 border-border dark:border-input bg-background text-foreground flex h-11 w-full min-w-0 flex-row items-center rounded-md border py-1 text-base leading-5 shadow-sm shadow-black/5 sm:h-9 pl-3";
+	"dark:bg-input/50 border-border dark:border-input bg-background text-foreground flex w-full min-w-0 flex-row items-center rounded-md border py-2 text-base leading-5 shadow-sm shadow-black/5 pl-3";
 
 const inputDisabledClassName = cn(
 	"opacity-50",
