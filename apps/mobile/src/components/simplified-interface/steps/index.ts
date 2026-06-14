@@ -1,3 +1,4 @@
+export { CompletedStep } from "./completed-step";
 export { ConfirmStep } from "./confirm-step";
 export { FlowStep } from "./flow-step";
 export { InTransitStep } from "./in-transit-step";

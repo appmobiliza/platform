@@ -10,6 +10,7 @@ import type { SpeechDestinationResult } from "@/types/location";
 
 import type { Place } from "../request-flow-sheet/types";
 import {
+	CompletedStep,
 	ConfirmStep,
 	type FlowStage,
 	InTransitStep,
@@ -255,9 +256,11 @@ export function AccessibleRequestFlow({
 			};
 
 			const onCompleted = () => {
-				setActiveRequestId(null);
-				reset();
-				router.back();
+				setStage("completed");
+
+				AccessibilityInfo.announceForAccessibility(
+					"Viagem concluída com sucesso.",
+				);
 			};
 
 			const onCancelled = () => {
@@ -375,6 +378,14 @@ export function AccessibleRequestFlow({
 		router.back();
 	}, [reset, router, activeRequestId, cancelRequest]);
 
+	const handleCloseCompleted = useCallback(() => {
+		setActiveRequestId(null);
+		realtimeUnsubRef.current?.();
+		realtimeUnsubRef.current = null;
+		reset();
+		router.back();
+	}, [reset, router]);
+
 	const handleRetry = useCallback(() => {
 		hasStartedListening.current = false;
 		reset();
@@ -457,6 +468,17 @@ export function AccessibleRequestFlow({
 					originName={originName}
 					destinationName={destinationName}
 					onClose={handleBack}
+				/>
+			);
+
+		case "completed":
+			return (
+				<CompletedStep
+					scholarName={scholarInfo?.name ?? "Contribuinte"}
+					scholarImage={scholarInfo?.image ?? null}
+					originName={originName}
+					destinationName={destinationName}
+					onClose={handleCloseCompleted}
 				/>
 			);
 

@@ -22,7 +22,8 @@ export type FlowStage =
 	| "unattended"
 	| "request-error"
 	| "scholar-found"
-	| "in-transit";
+	| "in-transit"
+	| "completed";
 
 // ─── Helper: convert Place (with lat/lng) to CampusLocation ───────────────
 
