@@ -11,14 +11,12 @@ import { PlaceCard } from "../place-card";
 
 interface Props {
 	nearestPoint: Place | null;
-	campusLocations: Place[];
 	userName?: string;
 	isLocationLoading?: boolean;
 }
 
 export default function SimplifiedHome({
 	nearestPoint,
-	campusLocations,
 	userName = "",
 	isLocationLoading = false,
 }: Props) {

@@ -2,7 +2,7 @@ import {
 	ExpoSpeechRecognitionModule,
 	useSpeechRecognitionEvent,
 } from "expo-speech-recognition";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AccessibilityInfo, Platform } from "react-native";
 
 import { extractEntities } from "@/utils/extract-entities";
@@ -12,6 +12,19 @@ import type {
 	SpeechDestinationResult,
 	SpeechPhase,
 } from "@/types/location";
+
+// ─── Extrai frases contextuais para o reconhecedor de voz ──────────────────
+
+function buildContextualStrings(locations: CampusLocation[]): string[] {
+	const strings = new Set<string>();
+	for (const loc of locations) {
+		strings.add(loc.name);
+		for (const abbr of loc.abbreviations ?? []) {
+			if (abbr) strings.add(abbr);
+		}
+	}
+	return Array.from(strings);
+}
 
 // ─── Mensagens de feedback sonoro (pt-BR) ───────────────────────────────────
 
@@ -92,6 +105,14 @@ export function useSpeechDestination({
 	const recognitionServiceRef = useRef<string | undefined>(undefined);
 	const localeSupportedRef = useRef<boolean | null>(null);
 	const fallbackAttemptedRef = useRef(false);
+
+	// Contextual strings mantidas em ref para evitar stale closure no start()
+	const contextualStrings = useMemo(
+		() => buildContextualStrings(locations),
+		[locations],
+	);
+	const contextualStringsRef = useRef(contextualStrings);
+	contextualStringsRef.current = contextualStrings;
 
 	// Recalcula os announces sempre que currentLocation mudar
 	const ANNOUNCE = buildAnnouncements(currentLocation);
@@ -197,6 +218,7 @@ export function useSpeechDestination({
 				lang: "pt-BR",
 				interimResults: true,
 				continuous: false,
+				contextualStrings: contextualStringsRef.current,
 				volumeChangeEventOptions: { enabled: true },
 				androidRecognitionServicePackage:
 					recognitionServiceRef.current ?? "com.google.android.as",
@@ -415,6 +437,7 @@ export function useSpeechDestination({
 			lang: "pt-BR",
 			interimResults: true,
 			continuous: false,
+			contextualStrings: contextualStringsRef.current,
 			volumeChangeEventOptions: { enabled: true },
 			...nativeOptions,
 		});
