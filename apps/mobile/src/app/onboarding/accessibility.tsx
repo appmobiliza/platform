@@ -13,7 +13,11 @@ import { Switch } from "@/components/ui/switch";
 import { Text } from "@/components/ui/text";
 
 import { authClient } from "@/lib/auth-client";
-import { cacheUserInfo, setHasProfile } from "@/lib/auth-store";
+import {
+	cacheUserInfo,
+	setHasProfile,
+	setSimplifiedInterface,
+} from "@/lib/auth-store";
 import { clearOnboardingData, getOnboardingData } from "@/lib/onboarding-store";
 import { trpc } from "@/lib/trpc/client";
 
@@ -72,6 +76,7 @@ export default function AccessibilityInfo() {
 
 				// Atualiza cache local indicando que o onboarding foi concluído
 				setHasProfile(true);
+				setSimplifiedInterface(data.simplifiedInterface ?? false);
 
 				cacheUserInfo({
 					id: user?.id ?? "",

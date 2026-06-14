@@ -125,7 +125,7 @@ export default function Auth() {
 			}
 		} catch (err) {
 			setIsLoading(false);
-			console.error("Google login error:", err);
+			console.log("Google login error:", err);
 			Alert.alert(
 				"Erro de autenticação",
 				"Ocorreu um erro inesperado ao tentar fazer login.",

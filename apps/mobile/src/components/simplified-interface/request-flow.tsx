@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AccessibilityInfo } from "react-native";
 
 import { useSpeechDestination } from "@/hooks/use-speech-destination";
-import { getRealtimeClient } from "@/lib/realtime";
+import { getRealtimeClient, isUsingMockClient } from "@/lib/realtime";
 import { trpc } from "@/lib/trpc/client";
 
 import type { SpeechDestinationResult } from "@/types/location";
@@ -198,6 +198,14 @@ export function AccessibleRequestFlow({
 			const client = await getRealtimeClient();
 			if (cancelled) return;
 
+			if (isUsingMockClient()) {
+				clearTimer();
+				setSearchState("idle");
+				setElapsedSeconds(0);
+				setStage("request-error");
+				return;
+			}
+
 			const onAccepted = (data: unknown) => {
 				// Extract scholar info from event payload
 				const payload = data as {
@@ -321,7 +329,10 @@ export function AccessibleRequestFlow({
 			const destinationId = map.get(destination.name);
 
 			if (!originId || !destinationId) {
-				setSearchState("error");
+				clearTimer();
+				setSearchState("idle");
+				setElapsedSeconds(0);
+				setStage("request-error");
 				return;
 			}
 
@@ -334,9 +345,12 @@ export function AccessibleRequestFlow({
 				setActiveRequestId(result.id);
 			}
 		} catch {
-			setSearchState("error");
+			clearTimer();
+			setSearchState("idle");
+			setElapsedSeconds(0);
+			setStage("request-error");
 		}
-	}, [origin, destination, createRequest, utils]);
+	}, [origin, destination, createRequest, utils, clearTimer]);
 
 	const handleReject = useCallback(() => {
 		reset();

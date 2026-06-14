@@ -29,6 +29,20 @@ import { appRouter } from "./router.js";
 
 const app = new Hono();
 
+// ─── Middlewares globais ──────────────────────────────────────────────────────
+
+app.use(logger());
+
+app.use(
+	"*",
+	cors({
+		origin: apiEnv.TRUSTED_ORIGINS,
+		allowHeaders: ["Content-Type", "Authorization"],
+		allowMethods: ["GET", "POST", "OPTIONS", "PUT", "DELETE", "PATCH"],
+		credentials: true,
+	}),
+);
+
 // ─── Realtime — Credenciais para o cliente ─────────────────────────────────────
 
 /**
@@ -74,20 +88,6 @@ app.get("/api/cron/check-timeouts", async (c) => {
 		timestamp: new Date().toISOString(),
 	});
 });
-
-// ─── Middlewares globais ──────────────────────────────────────────────────────
-
-app.use(logger());
-
-app.use(
-	"*",
-	cors({
-		origin: apiEnv.TRUSTED_ORIGINS,
-		allowHeaders: ["Content-Type", "Authorization"],
-		allowMethods: ["GET", "POST", "OPTIONS", "PUT", "DELETE", "PATCH"],
-		credentials: true,
-	}),
-);
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 

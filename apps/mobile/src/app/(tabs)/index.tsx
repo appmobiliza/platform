@@ -1,7 +1,7 @@
 import * as Location from "expo-location";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Clock, MapPin } from "lucide-react-native";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -11,10 +11,9 @@ import type { Place } from "@/components/request-flow-sheet/types";
 import { ScholarHome } from "@/components/scholar/home";
 import { SearchBar } from "@/components/search-bar";
 import SimplifiedHome from "@/components/simplified-interface/home";
-import { SpeechRequestForm } from "@/components/simplified-interface/old-home";
 import { Text } from "@/components/ui/text";
 
-import { useUserRole } from "@/lib/auth-store";
+import { useSimplifiedInterface, useUser, useUserRole } from "@/lib/auth-store";
 import { haversineMeters } from "@/lib/distance";
 import {
 	getCachedCampusLocations,
@@ -26,7 +25,6 @@ import { getRequestState } from "@/lib/request-store";
 import { trpc } from "@/lib/trpc/client";
 
 import { Logo } from "@/assets/logo";
-import type { CampusLocation } from "@/types/location";
 
 const newsItems = [
 	{
@@ -216,11 +214,12 @@ export default function Home() {
 	const insets = useSafeAreaInsets();
 	const router = useRouter();
 	const role = useUserRole();
+	const user = useUser();
 	const nearestPoint = useNearestPoint();
+	const [isLocationLoading, setIsLocationLoading] = useState(true);
 
-	const { data: profileData } = trpc.profiles.me.useQuery();
-	const simplifiedInterface =
-		profileData?.studentProfile?.simplifiedInterface ?? false;
+	const userName = user.name?.split(" ")[0] ?? "";
+	const simplifiedInterface = useSimplifiedInterface();
 
 	const { data: campusLocations = [] } = trpc.locations.list.useQuery(
 		undefined,
@@ -309,7 +308,8 @@ export default function Home() {
 				}
 			};
 
-			setupLocation();
+			setIsLocationLoading(true);
+			setupLocation().finally(() => setIsLocationLoading(false));
 		}, [router]),
 	);
 
@@ -318,6 +318,8 @@ export default function Home() {
 			<SimplifiedHome
 				nearestPoint={nearestPoint}
 				campusLocations={campusLocations}
+				userName={userName}
+				isLocationLoading={isLocationLoading}
 			/>
 		);
 	}

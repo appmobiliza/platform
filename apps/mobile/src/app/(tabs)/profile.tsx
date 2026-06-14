@@ -34,7 +34,7 @@ const options = [
 	},
 	// {
 	// 	title: "Locais Salvos",
-	// 	description: "Atualize suas informações de locais salvos.",
+	// 	description: "Disponível em breve",
 	// 	icon: Star,
 	// 	href: "/profile/saved-locations",
 	// 	studentExclusive: true,

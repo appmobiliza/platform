@@ -2,7 +2,9 @@ import { z } from "zod";
 
 export const commaSeparatedOrigins = z
 	.string()
-	.default("http://localhost:3000,http://localhost:3001")
+	.default(
+		"http://localhost:3000,http://localhost:3001,http://localhost:8081",
+	)
 	.transform((value: string) =>
 		value
 			.split(",")
@@ -37,6 +39,6 @@ export function requireEnvVar<
 import { config } from "dotenv";
 
 export function loadEnv(path: string = "../../.env") {
-  if (process.env.NODE_ENV === "production") return;
-  config({ path });
+	if (process.env.NODE_ENV === "production") return;
+	config({ path });
 }

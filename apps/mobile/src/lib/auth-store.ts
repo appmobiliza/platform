@@ -27,6 +27,7 @@ const CACHE_KEYS = {
 	userImage: "auth-user-image",
 	userRole: "auth-user-role",
 	hasProfile: "auth-has-profile",
+	simplifiedInterface: "auth-simplified-interface",
 } as const;
 
 // ─── Funções de cache síncrono (MMKV) ─────────────────────────────────────────
@@ -54,6 +55,7 @@ export function clearUserCache() {
 		storage.remove(key);
 	}
 	notifyHasProfileListeners();
+	notifySimplifiedInterfaceListeners();
 }
 
 export function getCachedUser() {
@@ -66,6 +68,45 @@ export function getCachedUser() {
 			(storage.getString(CACHE_KEYS.userRole) as UserRole) ??
 			UserRole.Student,
 	};
+}
+
+// ─── Simplified Interface cache ──────────────────────────────────────────────
+
+const simplifiedInterfaceListeners = new Set<() => void>();
+
+function subscribeToSimplifiedInterface(callback: () => void): () => void {
+	simplifiedInterfaceListeners.add(callback);
+	return () => {
+		simplifiedInterfaceListeners.delete(callback);
+	};
+}
+
+function notifySimplifiedInterfaceListeners(): void {
+	for (const listener of simplifiedInterfaceListeners) {
+		listener();
+	}
+}
+
+export function setSimplifiedInterface(value: boolean) {
+	storage.set(CACHE_KEYS.simplifiedInterface, String(value));
+	notifySimplifiedInterfaceListeners();
+}
+
+export function getSimplifiedInterface(): boolean {
+	return storage.getString(CACHE_KEYS.simplifiedInterface) === "true";
+}
+
+/**
+ * Retorna se o usuário optou pela interface simplificada (acessibilidade).
+ * O valor é lido do cache MMKV para resposta instantânea,
+ * e atualizado via listeners quando sofre alteração.
+ */
+export function useSimplifiedInterface(): boolean {
+	return useSyncExternalStore(
+		subscribeToSimplifiedInterface,
+		getSimplifiedInterface,
+		getSimplifiedInterface,
+	);
 }
 
 // ─── Reactive subscriptions ───────────────────────────────────────────────────

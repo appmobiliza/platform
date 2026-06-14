@@ -6,6 +6,7 @@ import { View } from "react-native";
 import { SettingsButton } from "@/components/settings-button";
 import { Switch } from "@/components/ui/switch";
 
+import { setSimplifiedInterface as setCacheSimplifiedInterface } from "@/lib/auth-store";
 import { trpc } from "@/lib/trpc/client";
 
 export default function AccessibilityProfile() {
@@ -25,12 +26,14 @@ export default function AccessibilityProfile() {
 
 	const handleSimplifiedInterfaceChange = async (value: boolean) => {
 		setSimplifiedInterface(value);
+		setCacheSimplifiedInterface(value);
 		try {
 			await updateStudent.mutateAsync({ simplifiedInterface: value });
 			await utils.profiles.me.invalidate();
 		} catch (error) {
 			console.error("Erro ao salvar interface simplificada:", error);
 			setSimplifiedInterface(!value);
+			setCacheSimplifiedInterface(!value);
 		}
 	};
 

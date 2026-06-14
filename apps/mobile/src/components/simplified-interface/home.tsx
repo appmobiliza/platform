@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { LocateFixed, MapPin, MousePointer2 } from "lucide-react-native";
-import { Pressable, ScrollView, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import type { Place } from "@/components/request-flow-sheet/types";
@@ -12,12 +12,17 @@ import { PlaceCard } from "../place-card";
 interface Props {
 	nearestPoint: Place | null;
 	campusLocations: Place[];
+	userName?: string;
+	isLocationLoading?: boolean;
 }
 
 export default function SimplifiedHome({
 	nearestPoint,
 	campusLocations,
+	userName = "",
+	isLocationLoading = false,
 }: Props) {
+	const displayName = userName || "";
 	const router = useRouter();
 	const insets = useSafeAreaInsets();
 
@@ -30,7 +35,7 @@ export default function SimplifiedHome({
 				}}
 			>
 				<Text className="uppercase text-lg font-semibold mb-2">
-					OLÁ, PEDRO
+					OLÁ, {displayName}
 				</Text>
 				<Text className="text-4xl font-extrabold">
 					Para onde vamos?
@@ -40,7 +45,11 @@ export default function SimplifiedHome({
 				<View
 					className="bg-card rounded-lg p-4 flex-row items-center justify-between gap-4 border border-border"
 					accessible
-					accessibilityLabel={`Você está em ${nearestPoint?.name ?? "localização não disponível"}`}
+					accessibilityLabel={
+						isLocationLoading
+							? "Detectando localização"
+							: `Você está em ${nearestPoint?.name ?? "localização não disponível"}`
+					}
 				>
 					<View className="flex-1 gap-4 flex-row items-center justify-start">
 						<View className="items-center justify-center gap-1 p-4 rounded-md bg-primary">
@@ -57,12 +66,21 @@ export default function SimplifiedHome({
 							>
 								Você está em
 							</Text>
-							<Text
-								className="text-xl mt-0.5 font-extrabold"
-								numberOfLines={3}
-							>
-								{nearestPoint?.name}
-							</Text>
+							{isLocationLoading ? (
+								<View className="flex-row items-center gap-2 mt-1">
+									<ActivityIndicator size="small" />
+									<Text className="text-base text-muted-foreground">
+										Detectando...
+									</Text>
+								</View>
+							) : (
+								<Text
+									className="text-xl mt-0.5 font-extrabold"
+									numberOfLines={3}
+								>
+									{nearestPoint?.name}
+								</Text>
+							)}
 						</View>
 					</View>
 				</View>
