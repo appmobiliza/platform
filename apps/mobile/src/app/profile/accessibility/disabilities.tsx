@@ -1,11 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
-import { Alert } from "react-native";
 
 import ProfileLayout from "@/layout/profile";
 
 import BoxOptions from "@/components/box-options";
+import { toast } from "@/components/ui/toast";
 
 import { type RouterInputs, trpc } from "@/lib/trpc/client";
 
@@ -64,8 +64,7 @@ export default function AccessibilityDisabilities() {
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar tipos de deficiência:", error);
-			Alert.alert(
-				"Erro",
+			toast.error(
 				"Não foi possível salvar as alterações. Tente novamente.",
 			);
 		}

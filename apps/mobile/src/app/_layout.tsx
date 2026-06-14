@@ -3,6 +3,8 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { View } from "react-native";
 
+import { Toaster } from "@/components/ui/toast";
+
 import "../global.css";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
@@ -74,6 +76,7 @@ export default function RootLayout() {
 							pointerEvents="box-none"
 						>
 							<PortalHost />
+							<Toaster />
 						</View>
 					</BottomSheetModalProvider>
 				</ThemeProvider>

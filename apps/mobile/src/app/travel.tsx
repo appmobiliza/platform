@@ -3,7 +3,7 @@ import { disabilityTypeLabels } from "@mobiliza/contracts";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, Clock, MapIcon } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, Alert, ScrollView, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddressRoute } from "@/components/address";
@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
+import { toast } from "@/components/ui/toast";
 
 import { useOsrmRoute } from "@/hooks/use-osrm-route";
 import { usePositionBroadcaster } from "@/hooks/use-position-broadcaster";
@@ -65,10 +66,9 @@ export default function TravelScreen() {
 			},
 			onError: (error) => {
 				console.error("[startAttendance] Erro:", error.message);
-				Alert.alert(
-					"Erro ao iniciar atendimento",
-					error.message ?? "Tente novamente mais tarde.",
-				);
+				toast.error(error.message ?? "Tente novamente mais tarde.", {
+					description: "Erro ao iniciar atendimento",
+				});
 			},
 		});
 
@@ -80,18 +80,16 @@ export default function TravelScreen() {
 				utils.requests.pending.invalidate();
 				utils.requests.active.setData(undefined, null);
 				utils.requests.scholarHistory.invalidate();
-				Alert.alert(
-					"Atendimento cancelado",
-					"O deslocamento foi cancelado.",
-				);
+				toast.success("Atendimento cancelado", {
+					description: "O deslocamento foi cancelado.",
+				});
 				router.back();
 			},
 			onError: (error) => {
 				console.error("[reportIssue] Erro:", error.message);
-				Alert.alert(
-					"Erro ao reportar problema",
-					error.message ?? "Tente novamente mais tarde.",
-				);
+				toast.error(error.message ?? "Tente novamente mais tarde.", {
+					description: "Erro ao reportar problema",
+				});
 			},
 		});
 
@@ -104,18 +102,16 @@ export default function TravelScreen() {
 				utils.requests.active.setData(undefined, null);
 				utils.requests.scholarHistory.invalidate();
 				utils.requests.pending.invalidate();
-				Alert.alert(
-					"Atendimento concluído",
-					"O deslocamento foi finalizado com sucesso.",
-				);
+				toast.success("Atendimento concluído", {
+					description: "O deslocamento foi finalizado com sucesso.",
+				});
 				router.back();
 			},
 			onError: (error) => {
 				console.error("[completeAttendance] Erro:", error.message);
-				Alert.alert(
-					"Erro ao concluir atendimento",
-					error.message ?? "Tente novamente mais tarde.",
-				);
+				toast.error(error.message ?? "Tente novamente mais tarde.", {
+					description: "Erro ao concluir atendimento",
+				});
 			},
 		});
 
@@ -255,17 +251,20 @@ export default function TravelScreen() {
 		if (isDuring) {
 			// Concluir atendimento
 			if (isFarFromDestination) {
-				Alert.alert(
-					"Atenção",
+				toast.warning(
 					"Você ainda está distante do destino. Deseja concluir o atendimento mesmo assim?",
-					[
-						{ text: "Cancelar", style: "cancel" },
-						{
-							text: "Concluir",
-							style: "destructive",
-							onPress: handleComplete,
+					{
+						description: "Atenção",
+						action: {
+							label: "Concluir",
+							onClick: () => handleComplete(),
 						},
-					],
+						cancel: {
+							label: "Cancelar",
+							onClick: () => {},
+						},
+						duration: Infinity,
+					},
 				);
 			} else {
 				handleComplete();
@@ -275,17 +274,20 @@ export default function TravelScreen() {
 
 		// Iniciar atendimento
 		if (!isCloseToStudent) {
-			Alert.alert(
-				"Atenção",
+			toast.warning(
 				"Você ainda está distante do estudante. Deseja iniciar o atendimento mesmo assim?",
-				[
-					{ text: "Cancelar", style: "cancel" },
-					{
-						text: "Iniciar",
-						style: "destructive",
-						onPress: handleStart,
+				{
+					description: "Atenção",
+					action: {
+						label: "Iniciar",
+						onClick: () => handleStart(),
 					},
-				],
+					cancel: {
+						label: "Cancelar",
+						onClick: () => {},
+					},
+					duration: Infinity,
+				},
 			);
 		} else {
 			handleStart();
@@ -294,17 +296,20 @@ export default function TravelScreen() {
 
 	const handleReportProblem = () => {
 		if (!requestId) return;
-		Alert.alert(
-			"Reportar problema",
+		toast.warning(
 			"Se houver algum problema com este deslocamento, você pode cancelá-lo.",
-			[
-				{ text: "Voltar", style: "cancel" },
-				{
-					text: "Cancelar atendimento",
-					style: "destructive",
-					onPress: () => reportIssue({ requestId }),
+			{
+				description: "Reportar problema",
+				action: {
+					label: "Cancelar atendimento",
+					onClick: () => reportIssue({ requestId }),
 				},
-			],
+				cancel: {
+					label: "Voltar",
+					onClick: () => {},
+				},
+				duration: Infinity,
+			},
 		);
 	};
 

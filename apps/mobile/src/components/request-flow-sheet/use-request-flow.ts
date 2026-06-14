@@ -1,7 +1,8 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as React from "react";
-import { Alert } from "react-native";
+
+import { toast } from "@/components/ui/toast";
 
 import { getNearestPoint } from "@/lib/location-store";
 import { getRealtimeClient } from "@/lib/realtime";
@@ -568,17 +569,20 @@ function useRequestFlow() {
 			const onCompleted = () => {
 				setActiveRequestId(null);
 				utils.requests.studentHistory.invalidate();
-				Alert.alert(
-					"Deslocamento concluído",
-					"Seu deslocamento foi finalizado com sucesso. Obrigado por usar o Mobiliza!",
-				);
+				toast.success("Deslocamento concluído", {
+					description:
+						"Seu deslocamento foi finalizado com sucesso. Obrigado por usar o Mobiliza!",
+				});
 				exitFlow();
 			};
 
 			const onCancelled = () => {
 				setActiveRequestId(null);
 				exitFlow();
-				Alert.alert("Deslocamento cancelado", "Seu deslocamento foi cancelado pelo bolsista.");
+				toast.info("Deslocamento cancelado", {
+					description:
+						"Seu deslocamento foi cancelado pelo bolsista.",
+				});
 			};
 
 			const onUnattended = () => {

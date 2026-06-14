@@ -11,17 +11,9 @@ import {
 	Play,
 	Power,
 } from "lucide-react-native";
-import {
-	type ReactNode,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef } from "react";
 import {
 	ActivityIndicator,
-	Alert,
 	FlatList,
 	Pressable,
 	ScrollView,
@@ -29,12 +21,12 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { RequestExtraShiftDialog } from "@/components/request-extra-shift-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
+import { toast } from "@/components/ui/toast";
 
 import { usePositionBroadcaster } from "@/hooks/use-position-broadcaster";
 import { useUserLocation } from "@/hooks/use-user-location";
@@ -390,10 +382,6 @@ export function ScholarHome() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [activeAttendance]);
 
-	// ─── Estado do diálogo de turno extra ──────────────────────────────────
-
-	const [extraShiftDialogOpen, setExtraShiftDialogOpen] = useState(false);
-
 	// ─── Mutations ───────────────────────────────────────────────────────────
 
 	const utils = trpc.useUtils();
@@ -462,16 +450,14 @@ export function ScholarHome() {
 	const { mutate: startShift, isPending: isStartingShift } =
 		trpc.shiftLogs.startShift.useMutation({
 			onSuccess: () => {
-				setExtraShiftDialogOpen(false);
 				utils.shiftLogs.getActiveShift.invalidate();
 				utils.profiles.me.invalidate();
 			},
 			onError: (error) => {
 				console.error("[startShift] Erro:", error.message);
-				Alert.alert(
-					"Erro ao iniciar turno",
-					error.message ?? "Tente novamente mais tarde.",
-				);
+				toast.error(error.message ?? "Tente novamente mais tarde.", {
+					description: "Erro ao iniciar turno",
+				});
 			},
 		});
 
@@ -515,10 +501,9 @@ export function ScholarHome() {
 			},
 			onError: (error) => {
 				console.error("[acceptRequest] Erro:", error.message);
-				Alert.alert(
-					"Erro ao aceitar solicitação",
-					error.message ?? "Tente novamente mais tarde.",
-				);
+				toast.error(error.message ?? "Tente novamente mais tarde.", {
+					description: "Erro ao aceitar solicitação",
+				});
 			},
 		});
 
@@ -698,7 +683,21 @@ export function ScholarHome() {
 	// Handler para encerrar turno
 	const handleEndShift = useCallback(() => {
 		if (!activeShiftLog) return;
-		endShift({ shiftLogId: activeShiftLog.id });
+
+		toast("Tem certeza que deseja encerrar o turno?", {
+			description:
+				"Após encerrar, você não receberá novas solicitações de deslocamento.",
+			action: {
+				label: "Encerrar turno",
+				onClick: () => endShift({ shiftLogId: activeShiftLog.id }),
+			},
+			cancel: {
+				label: "Cancelar",
+				onClick: () => {},
+			},
+			duration: Infinity,
+			closeButton: true,
+		});
 	}, [activeShiftLog, endShift]);
 
 	// Handler para confirmar turno extra — inicia imediatamente sem aprovação
@@ -725,11 +724,10 @@ export function ScholarHome() {
 			);
 
 			if (isRegistered) {
-				Alert.alert(
-					"Turno indisponível",
+				toast.warning(
 					"Você não pode solicitar um turno extra para o período em que já está registrado na sua grade semanal. Utilize o fluxo regular para iniciar seu turno.",
+					{ description: "Turno indisponível" },
 				);
-				setExtraShiftDialogOpen(false);
 				return;
 			}
 		}
@@ -802,19 +800,27 @@ export function ScholarHome() {
 						<Button
 							size="lg"
 							variant="outline"
-							onPress={() => setExtraShiftDialogOpen(true)}
+							onPress={() => {
+								toast("Solicitação de turno extra", {
+									description:
+										"Seu turno regular ainda não começou. Caso precise compensar horas pendentes, você pode iniciar um turno extra agora.",
+									action: {
+										label: "Iniciar turno extra",
+										onClick: () =>
+											handleConfirmExtraShift(),
+									},
+									cancel: {
+										label: "Cancelar",
+										onClick: () => {},
+									},
+									duration: Infinity,
+									closeButton: true,
+								});
+							}}
 							className="rounded-full px-4 gap-2"
 						>
 							<Text>Solicitar turno extra</Text>
 						</Button>
-
-						<RequestExtraShiftDialog
-							open={extraShiftDialogOpen}
-							onOpenChange={setExtraShiftDialogOpen}
-							onConfirm={handleConfirmExtraShift}
-							onCancel={() => setExtraShiftDialogOpen(false)}
-							isLoading={isStartingShift}
-						/>
 
 						<EmptyStateCard>
 							<Icon

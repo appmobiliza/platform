@@ -4,11 +4,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Alert } from "react-native";
 
 import ProfileLayout from "@/layout/profile";
 
 import { SelectField } from "@/components/ui/select-field";
+import { toast } from "@/components/ui/toast";
 
 import { useUserRole } from "@/lib/auth-store";
 import { trpc } from "@/lib/trpc/client";
@@ -53,8 +53,7 @@ export default function AcademicProfileCourse() {
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar curso:", error);
-			Alert.alert(
-				"Erro",
+			toast.error(
 				"Não foi possível salvar as alterações. Tente novamente.",
 			);
 		}

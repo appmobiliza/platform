@@ -1,10 +1,11 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, Linking, Platform, View } from "react-native";
+import { Linking, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import { toast } from "@/components/ui/toast";
 
 import { authClient } from "@/lib/auth-client";
 import { cacheUserInfo, clearUserCache, setHasProfile } from "@/lib/auth-store";
@@ -44,9 +45,9 @@ export default function Auth() {
 
 			if (error) {
 				setIsLoading(false);
-				Alert.alert(
-					"Erro de autenticação",
+				toast.error(
 					error.message ?? "Não foi possível fazer login com Google.",
+					{ description: "Erro de autenticação" },
 				);
 				return;
 			}
@@ -67,10 +68,7 @@ export default function Auth() {
 
 			if (!sessionData?.user) {
 				setIsLoading(false);
-				Alert.alert(
-					"Erro",
-					"Não foi possível recuperar os dados da sessão.",
-				);
+				toast.error("Não foi possível recuperar os dados da sessão.");
 				return;
 			}
 
@@ -80,7 +78,7 @@ export default function Auth() {
 
 			if (!user) {
 				setIsLoading(false);
-				Alert.alert("Erro", "Dados do usuário não disponíveis.");
+				toast.error("Dados do usuário não disponíveis.");
 				return;
 			}
 
@@ -126,10 +124,9 @@ export default function Auth() {
 		} catch (err) {
 			setIsLoading(false);
 			console.log("Google login error:", err);
-			Alert.alert(
-				"Erro de autenticação",
-				"Ocorreu um erro inesperado ao tentar fazer login.",
-			);
+			toast.error("Ocorreu um erro inesperado ao tentar fazer login.", {
+				description: "Erro de autenticação",
+			});
 		}
 	};
 

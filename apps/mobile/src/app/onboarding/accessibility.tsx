@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Alert, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 
 import BoxOptions from "@/components/box-options";
 import { Header } from "@/components/header";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldSet } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { Text } from "@/components/ui/text";
+import { toast } from "@/components/ui/toast";
 
 import { authClient } from "@/lib/auth-client";
 import {
@@ -95,16 +96,14 @@ export default function AccessibilityInfo() {
 				router.replace("/(tabs)");
 			} catch (error) {
 				console.error("Erro ao finalizar onboarding:", error);
-				Alert.alert(
-					"Erro",
+				toast.error(
 					"Não foi possível finalizar seu cadastro. Tente novamente.",
 				);
 				setIsSubmitting(false);
 			}
 		},
 		(errors) => {
-			Alert.alert(
-				"Erro",
+			toast.error(
 				"Por favor, corrija os erros no formulário antes de continuar.",
 			);
 			console.log("ERRORS", errors);

@@ -1,12 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
-import { Alert } from "react-native";
 
 import ProfileLayout from "@/layout/profile";
 
 import { Field } from "@/components/ui/field";
 import { MaskedInput } from "@/components/ui/masked-input";
+import { toast } from "@/components/ui/toast";
 
 import { useUserRole } from "@/lib/auth-store";
 import { trpc } from "@/lib/trpc/client";
@@ -40,7 +40,7 @@ export default function BasicProfileCpf() {
 
 	const handleSave = handleSubmit(async (data) => {
 		if (!isScholar) {
-			Alert.alert("Aviso", "Apenas bolsistas podem alterar o CPF.");
+			toast.warning("Apenas bolsistas podem alterar o CPF.");
 			router.back();
 			return;
 		}
@@ -52,8 +52,7 @@ export default function BasicProfileCpf() {
 			router.back();
 		} catch (error) {
 			console.error("Erro ao salvar CPF:", error);
-			Alert.alert(
-				"Erro",
+			toast.error(
 				"Não foi possível salvar as alterações. Tente novamente.",
 			);
 		}
