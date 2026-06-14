@@ -59,7 +59,7 @@ export function ScholarFoundStep({
 						</Avatar>
 						<View className="flex-1 gap-0.5">
 							<View className="flex-row items-center justify-between gap-3">
-								<Text className="text-[16px] font-semibold leading-6 text-foreground">
+								<Text className="text-xl font-semibold leading-6 text-foreground">
 									{scholarName}
 								</Text>
 							</View>

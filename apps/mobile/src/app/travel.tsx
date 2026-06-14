@@ -274,21 +274,18 @@ export default function TravelScreen() {
 
 		// Iniciar atendimento
 		if (!isCloseToStudent) {
-			toast.warning(
-				"Você ainda está distante do estudante. Deseja iniciar o atendimento mesmo assim?",
-				{
-					description: "Atenção",
-					action: {
-						label: "Iniciar",
-						onClick: () => handleStart(),
-					},
-					cancel: {
-						label: "Cancelar",
-						onClick: () => {},
-					},
-					duration: Infinity,
+			toast.warning("Você ainda está distante do estudante", {
+				description: "Deseja iniciar o atendimento mesmo assim?",
+				action: {
+					label: "Iniciar",
+					onClick: () => handleStart(),
 				},
-			);
+				cancel: {
+					label: "Cancelar",
+					onClick: () => {},
+				},
+				duration: Infinity,
+			});
 		} else {
 			handleStart();
 		}
@@ -296,21 +293,19 @@ export default function TravelScreen() {
 
 	const handleReportProblem = () => {
 		if (!requestId) return;
-		toast.warning(
-			"Se houver algum problema com este deslocamento, você pode cancelá-lo.",
-			{
-				description: "Reportar problema",
-				action: {
-					label: "Cancelar atendimento",
-					onClick: () => reportIssue({ requestId }),
-				},
-				cancel: {
-					label: "Voltar",
-					onClick: () => {},
-				},
-				duration: Infinity,
+		toast.warning("Reportar problema", {
+			description:
+				"Se houver algum problema com este deslocamento, você pode cancelá-lo.",
+			action: {
+				label: "Cancelar atendimento",
+				onClick: () => reportIssue({ requestId }),
 			},
-		);
+			cancel: {
+				label: "Voltar",
+				onClick: () => {},
+			},
+			duration: Infinity,
+		});
 	};
 
 	// ─── Button derived props ─────────────────────────────────────────────────

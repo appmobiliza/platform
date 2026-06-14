@@ -760,8 +760,7 @@ export function ScholarHome() {
 						className={cn("py-1 px-2.5", {
 							"bg-green-600": shiftState === "shift_active",
 							"bg-yellow-600": shiftState === "shift_not_started",
-							"bg-muted-foreground":
-								shiftState === "not_in_shift",
+							"bg-accent": shiftState === "not_in_shift",
 						})}
 					>
 						<View
@@ -800,6 +799,7 @@ export function ScholarHome() {
 						<Button
 							size="lg"
 							variant="outline"
+							disabled={isStartingShift}
 							onPress={() => {
 								toast("Solicitação de turno extra", {
 									description:
@@ -819,7 +819,14 @@ export function ScholarHome() {
 							}}
 							className="rounded-full px-4 gap-2"
 						>
-							<Text>Solicitar turno extra</Text>
+							{isStartingShift ? (
+								<ActivityIndicator size={20} />
+							) : null}
+							<Text>
+								{isStartingShift
+									? "Iniciando..."
+									: "Solicitar turno extra"}
+							</Text>
 						</Button>
 
 						<EmptyStateCard>

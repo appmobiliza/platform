@@ -43,7 +43,7 @@ export function InTransitStep({
 				subtitle="Em trajeto para"
 				title={destinationName}
 				note={
-					<View className="flex-row items-start gap-4">
+					<View className="flex-row items-center justify-center gap-4">
 						<Avatar
 							alt="Avatar do contribuinte"
 							className="size-12"
@@ -61,7 +61,7 @@ export function InTransitStep({
 						</Avatar>
 						<View className="flex-1 gap-0.5">
 							<View className="flex-row items-center justify-between gap-3">
-								<Text className="text-[16px] font-semibold leading-6 text-foreground">
+								<Text className="text-xl font-semibold leading-6 text-foreground">
 									{scholarName}
 								</Text>
 							</View>

@@ -1,6 +1,12 @@
-import { X } from "lucide-react-native";
+import {
+	AlertTriangle,
+	CheckCircle2,
+	Info,
+	X,
+	XCircle,
+} from "lucide-react-native";
 import * as React from "react";
-import { Platform, Pressable, View } from "react-native";
+import { ActivityIndicator, Platform, Pressable, View } from "react-native";
 import {
 	FadeIn,
 	FadeOut,
@@ -25,7 +31,13 @@ import { cn } from "@/lib/utils";
 // Types
 // ────────────────────────────────────────────────────────────────
 
-type ToastVariant = "default" | "success" | "error" | "loading";
+type ToastVariant =
+	| "default"
+	| "success"
+	| "error"
+	| "warning"
+	| "info"
+	| "loading";
 
 interface ToastAction {
 	label: string;
@@ -34,6 +46,7 @@ interface ToastAction {
 
 interface ToastOptions {
 	description?: string;
+	variant?: ToastVariant;
 	duration?: number;
 	icon?: React.ReactNode;
 	action?: ToastAction | React.ReactNode;
@@ -80,7 +93,7 @@ function getState(): ToastData[] {
 }
 
 function addToast(t: ToastData) {
-	toasts = [...toasts, t];
+	toasts = [...toasts.filter((item) => item.id !== t.id), t];
 	listeners.forEach((fn) => {
 		fn();
 	});
@@ -121,7 +134,7 @@ function toast(message: string, options?: ToastOptions): string {
 	const id = options?.id ?? generateId();
 	const t: ToastData = {
 		id,
-		variant: "default",
+		variant: options?.variant ?? "default",
 		title: message,
 		description: options?.description,
 		duration: options?.duration ?? 4000,
@@ -141,35 +154,38 @@ function toast(message: string, options?: ToastOptions): string {
 toast.success = (message: string, options?: ToastOptions): string => {
 	return toast(message, {
 		...options,
-		icon: options?.icon ?? undefined,
+		variant: "success",
 	});
 };
 
 toast.error = (message: string, options?: ToastOptions): string => {
 	return toast(message, {
 		...options,
-		icon: options?.icon ?? undefined,
+		variant: "error",
 	});
 };
 
 toast.warning = (message: string, options?: ToastOptions): string => {
 	return toast(message, {
 		...options,
-		icon: options?.icon ?? undefined,
+		variant: "warning",
 	});
 };
 
 toast.info = (message: string, options?: ToastOptions): string => {
 	return toast(message, {
 		...options,
-		icon: options?.icon ?? undefined,
+		variant: "info",
 	});
 };
 
 toast.loading = (message: string, options?: ToastOptions): string => {
 	return toast(message, {
 		...options,
-		duration: options?.duration ?? Infinity,
+		variant: "loading",
+		duration: Infinity,
+		dismissible: false,
+		closeButton: false,
 	});
 };
 
@@ -234,11 +250,56 @@ function DialogToast({ data }: { data: ToastData }) {
 		dismissToast(data.id);
 	}, [data.id, data.onDismiss]);
 
+	// ── Variant configuration ────────────────────────────────────
+	const variantConfig = (() => {
+		switch (data.variant) {
+			case "success":
+				return {
+					icon: CheckCircle2,
+					color: "--success",
+					borderClass: "border-l-success-border",
+				};
+			case "error":
+				return {
+					icon: XCircle,
+					color: "--destructive",
+					borderClass: "border-l-destructive-border",
+				};
+			case "warning":
+				return {
+					icon: AlertTriangle,
+					color: "--warning",
+					borderClass: "border-l-warning-border",
+				};
+			case "info":
+				return {
+					icon: Info,
+					color: "--info",
+					borderClass: "border-l-info-border",
+				};
+			case "loading":
+				return {
+					icon: null,
+					color: "--info",
+					borderClass: "border-l-info-border",
+				};
+			default:
+				return {
+					icon: null,
+					color: "transparent",
+					borderClass: "",
+				};
+		}
+	})();
+
 	const content = (
 		<Dialog
 			open={true}
 			onOpenChange={(open) => {
-				if (!open) handleDismiss();
+				if (!open) {
+					// Delay to let the exit animation play (~150ms matches fade-out-0 duration)
+					setTimeout(() => handleDismiss(), 150);
+				}
 			}}
 		>
 			<View
@@ -247,6 +308,8 @@ function DialogToast({ data }: { data: ToastData }) {
 					Platform.select({
 						web: "animate-in fade-in-0 zoom-in-95 duration-200",
 					}),
+					data.variant !== "default" && "border-l-4",
+					data.variant !== "default" && variantConfig.borderClass,
 				)}
 			>
 				{/* Close button */}
@@ -266,12 +329,27 @@ function DialogToast({ data }: { data: ToastData }) {
 				)}
 
 				<DialogHeader>
-					<DialogTitle>{data.title}</DialogTitle>
-					{data.description && (
-						<DialogDescription>
-							{data.description}
-						</DialogDescription>
-					)}
+					<View className="flex-row items-start gap-3">
+						{data.variant === "loading" ? (
+							<ActivityIndicator size={20} />
+						) : data.icon ? (
+							data.icon
+						) : variantConfig.icon ? (
+							<Icon
+								icon={variantConfig.icon}
+								size={20}
+								color={variantConfig.color}
+							/>
+						) : null}
+						<View className="flex-1">
+							<DialogTitle>{data.title}</DialogTitle>
+							{data.description && (
+								<DialogDescription>
+									{data.description}
+								</DialogDescription>
+							)}
+						</View>
+					</View>
 				</DialogHeader>
 
 				{/* Actions */}
@@ -399,7 +477,7 @@ function DialogToast({ data }: { data: ToastData }) {
 				{/* We place content inside here so the backdrop click-away works */}
 				<Pressable
 					onPress={(e) => e.stopPropagation()}
-					className="w-full max-w-lg"
+					className="w-full max-w-lg animate-in fade-in-0 zoom-in-95 duration-200"
 				>
 					{content}
 				</Pressable>

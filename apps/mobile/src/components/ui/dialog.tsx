@@ -31,7 +31,9 @@ function DialogOverlay({ children }: { children?: React.ReactNode }) {
 		return (
 			<DialogPrimitive.Overlay
 				className={cn(
-					"bottom-0 left-0 right-0 top-0 flex items-center justify-center bg-black/50 p-2 animate-in fade-in-0 fixed cursor-default [&>*]:cursor-auto",
+					"bottom-0 left-0 right-0 top-0 flex items-center justify-center bg-black/50 p-2 fixed cursor-default [&>*]:cursor-auto",
+					"data-[state=open]:animate-in data-[state=open]:fade-in-0",
+					"data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
 				)}
 			>
 				{children}
@@ -100,14 +102,18 @@ function DialogContent({
 					className={cn(
 						"bg-background border-border z-50 mx-auto flex w-full max-w-[calc(100%-2rem)] flex-col gap-4 rounded-lg border p-6 shadow-lg shadow-black/5 sm:max-w-lg",
 						Platform.select({
-							web: "animate-in fade-in-0 zoom-in-95 duration-200",
+							web: cn(
+								"duration-200",
+								"data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+								"data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+							),
 						}),
 						className,
 					)}
 					{...props}
 				>
-					<>{children}</>
-					<DialogPrimitive.Close
+					{children}
+					{/*<DialogPrimitive.Close
 						className={cn(
 							"absolute right-4 top-4 rounded opacity-70 active:opacity-100",
 							Platform.select({
@@ -118,7 +124,7 @@ function DialogContent({
 					>
 						<Icon icon={X} size={16} color="--accent-foreground" />
 						<Text className="sr-only">Close</Text>
-					</DialogPrimitive.Close>
+					</DialogPrimitive.Close>*/}
 				</DialogPrimitive.Content>
 			</DialogOverlay>
 		</DialogPortal>

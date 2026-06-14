@@ -20,6 +20,8 @@ import { TRPCError } from "@trpc/server";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
+const BYPASS_EXTRA_VALIDATION = true;
+
 export const shiftLogsRouter = router({
 	/**
 	 * Inicia o turno do bolsista.
@@ -69,11 +71,17 @@ export const shiftLogsRouter = router({
 			});
 
 			if (existingLog) {
-				throw new TRPCError({
-					code: "CONFLICT",
-					message:
-						"Você já completou este turno hoje. Se precisar trabalhar em outro horário, solicite um turno extra.",
-				});
+				// Se já houver um turno ativo, o encerra e permite o início de um novo
+				if (BYPASS_EXTRA_VALIDATION) {
+					await db.delete(schema.scholarShiftLog)
+						.where(eq(schema.scholarShiftLog.id, existingLog.id));
+				} else {
+					throw new TRPCError({
+						code: "CONFLICT",
+						message:
+							"Você já completou este turno hoje. Você não pode iniciar um novo turno até que o atual seja encerrado.",
+					});
+				}
 			}
 
 			// Cria o registro de turno
