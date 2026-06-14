@@ -363,11 +363,13 @@ export function AccessibleRequestFlow({
 
 	const handleRetry = useCallback(() => {
 		hasStartedListening.current = false;
+		reset();
 		setStage("listening");
+		start();
 		AccessibilityInfo.announceForAccessibility(
 			"Toque no microfone e diga para onde deseja ir.",
 		);
-	}, []);
+	}, [reset, start]);
 
 	// ─── Resolve display names ───────────────────────────────────────────
 

@@ -51,6 +51,13 @@ interface UseSpeechDestinationOptions {
 	 * só precisa dizer o destino.
 	 */
 	currentLocation?: CampusLocation | null;
+	/**
+	 * Permite o envio de áudio para servidores externos durante o
+	 * reconhecimento de fala. Quando false, apenas reconhecimento
+	 * local (no dispositivo) é utilizado.
+	 * @default true
+	 */
+	voiceProcessingOnline?: boolean;
 	onResult?: (
 		result: Pick<
 			SpeechDestinationResult,
@@ -62,6 +69,7 @@ interface UseSpeechDestinationOptions {
 export function useSpeechDestination({
 	locations,
 	currentLocation,
+	voiceProcessingOnline = true,
 	onResult,
 }: UseSpeechDestinationOptions): SpeechDestinationResult {
 	const [phase, setPhase] = useState<SpeechPhase>("idle");
@@ -83,6 +91,7 @@ export function useSpeechDestination({
 	const isAvailableRef = useRef(false);
 	const recognitionServiceRef = useRef<string | undefined>(undefined);
 	const localeSupportedRef = useRef<boolean | null>(null);
+	const fallbackAttemptedRef = useRef(false);
 
 	// Recalcula os announces sempre que currentLocation mudar
 	const ANNOUNCE = buildAnnouncements(currentLocation);
@@ -170,6 +179,31 @@ export function useSpeechDestination({
 	useSpeechRecognitionEvent("error", (event) => {
 		isListening.current = false;
 
+		// ── Tentativa de fallback: local → online ───────────────────────────────
+		// Se o reconhecimento local falhou (serviço não encontrado ou idioma não
+		// suportado localmente) e o usuário permite processamento online, tenta
+		// novamente sem a restrição de dispositivo local.
+		if (
+			voiceProcessingOnline &&
+			Platform.OS === "android" &&
+			!fallbackAttemptedRef.current &&
+			(event.error === "service-not-allowed" ||
+				event.error === "language-not-supported")
+		) {
+			fallbackAttemptedRef.current = true;
+			announce("Reconhecimento local indisponível. Tentando servidor externo.");
+
+			ExpoSpeechRecognitionModule.start({
+				lang: "pt-BR",
+				interimResults: true,
+				continuous: false,
+				volumeChangeEventOptions: { enabled: true },
+				androidRecognitionServicePackage:
+					recognitionServiceRef.current ?? "com.google.android.as",
+			});
+			return;
+		}
+
 		let displayError: string;
 		let announceMsg: string;
 
@@ -186,6 +220,11 @@ export function useSpeechDestination({
 			displayError =
 				"O idioma português (Brasil) não é suportado pelo serviço de reconhecimento de voz deste dispositivo.";
 			announceMsg = ANNOUNCE.error_language_not_supported;
+		} else if (event.error === "no-speech") {
+			displayError =
+				"Nenhuma fala detectada. Toque no microfone e fale claramente.";
+			announceMsg =
+				"Nenhuma fala detectada. Toque no microfone e fale claramente.";
 		} else if (Platform.OS === "web" && event.error === "network") {
 			displayError =
 				"Não foi possível conectar ao serviço de reconhecimento de voz. " +
@@ -353,12 +392,18 @@ export function useSpeechDestination({
 			}
 		}
 
-		// ── Android: configura o pacote de serviço de reconhecimento ────────────
-		// Em vez de fixar "com.google.android.as", usa o serviço descoberto
-		// na sondagem, com fallback para o Google AS.
+		// ── Android: reconhecimento local primeiro, online como fallback ──────
+		// A estratégia é: sempre tentar o motor local (on-device). Se falhar por
+		// indisponibilidade do serviço local ou falta de pacote de idioma, e o
+		// usuário autorizou processamento online, o error handler faz uma segunda
+		// tentativa sem a restrição local (fallback para nuvem).
+		fallbackAttemptedRef.current = false;
+
 		const nativeOptions: Record<string, unknown> = {};
 
 		if (Platform.OS === "android") {
+			// Quando o usuário permite online, tentamos local primeiro.
+			// Quando não permite, forçamos local e não há fallback.
 			nativeOptions.requiresOnDeviceRecognition = true;
 			nativeOptions.androidRecognitionServicePackage =
 				recognitionServiceRef.current ?? "com.google.android.as";

@@ -141,6 +141,7 @@ export const InsertStudentSchema = z.object({
 	nickname: z.string().optional(),
 	attendanceNotes: z.string().optional(),
 	simplifiedInterface: z.boolean().optional(),
+	voiceProcessingOnline: z.boolean().optional(),
 	disabilityTypes: z
 		.array(z.enum(disabilityTypeValues), {
 			error: "Tipo de deficiência deve ser selecionado",

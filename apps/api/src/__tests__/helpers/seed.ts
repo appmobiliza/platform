@@ -83,6 +83,7 @@ export async function seedStudentProfile(
 			nickname: null,
 			attendanceNotes: null,
 			simplifiedInterface: false,
+			voiceProcessingOnline: true,
 			isActive: true,
 			...overrides,
 		})

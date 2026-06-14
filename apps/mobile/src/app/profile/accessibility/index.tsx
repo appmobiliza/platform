@@ -19,6 +19,10 @@ export default function AccessibilityProfile() {
 		studentProfile?.simplifiedInterface ?? false,
 	);
 
+	const [voiceProcessingOnline, setVoiceProcessingOnline] = useState(
+		studentProfile?.voiceProcessingOnline ?? true,
+	);
+
 	const handleSimplifiedInterfaceChange = async (value: boolean) => {
 		setSimplifiedInterface(value);
 		try {
@@ -27,6 +31,20 @@ export default function AccessibilityProfile() {
 		} catch (error) {
 			console.error("Erro ao salvar interface simplificada:", error);
 			setSimplifiedInterface(!value);
+		}
+	};
+
+	const handleVoiceProcessingOnlineChange = async (value: boolean) => {
+		setVoiceProcessingOnline(value);
+		try {
+			await updateStudent.mutateAsync({ voiceProcessingOnline: value });
+			await utils.profiles.me.invalidate();
+		} catch (error) {
+			console.error(
+				"Erro ao salvar preferência de processamento de voz:",
+				error,
+			);
+			setVoiceProcessingOnline(!value);
 		}
 	};
 
@@ -83,6 +101,15 @@ export default function AccessibilityProfile() {
 				<Switch
 					checked={simplifiedInterface}
 					onCheckedChange={handleSimplifiedInterfaceChange}
+				/>
+			</SettingsButton>
+			<SettingsButton
+				title="Processamento de voz online"
+				label="Quando ativo, o áudio pode ser enviado a servidores externos para reconhecimento de fala mais preciso"
+			>
+				<Switch
+					checked={voiceProcessingOnline}
+					onCheckedChange={handleVoiceProcessingOnlineChange}
 				/>
 			</SettingsButton>
 		</View>

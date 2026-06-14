@@ -61,6 +61,13 @@ export const studentProfile = pgTable("student_profile", {
 	simplifiedInterface: boolean("simplified_interface")
 		.notNull()
 		.default(false),
+	/*
+	 * Quando desativado, o app só usa reconhecimento de voz local
+	 * (no dispositivo) e não envia áudio para servidores externos.
+	 */
+	voiceProcessingOnline: boolean("voice_processing_online")
+		.notNull()
+		.default(true),
 });
 
 /**
