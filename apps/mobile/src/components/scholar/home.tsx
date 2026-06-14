@@ -73,7 +73,7 @@ const shiftLabels: Record<string, string> = {
  * registrado. Útil durante desenvolvimento para testar fluxos extras sem
  * precisar aguardar mudanças de período.
  */
-const BYPASS_EXTRA_VALIDATION = __DEV__;
+const BYPASS_EXTRA_VALIDATION = false;
 
 // ─── Componentes auxiliares ──────────────────────────────────────────────────
 

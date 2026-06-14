@@ -20,7 +20,7 @@ import { TRPCError } from "@trpc/server";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
-const BYPASS_EXTRA_VALIDATION = true;
+const BYPASS_EXTRA_VALIDATION = false;
 
 export const shiftLogsRouter = router({
 	/**
