@@ -77,6 +77,7 @@ export function InTransitStep({
 						}}
 						to={{ label: destinationName }}
 						shouldShowRoute
+						size="accessibility"
 					/>
 
 					<View className="w-full flex flex-col items-center justify-center gap-2 bg-card border border-border rounded-lg p-4">

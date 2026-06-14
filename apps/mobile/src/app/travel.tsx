@@ -352,12 +352,10 @@ export default function TravelScreen() {
 
 	return (
 		<View className="flex-1 bg-background">
-			{/* Header */}
 			<View
 				className="bg-primary px-6 pb-8 gap-6"
 				style={{ paddingTop: insets.top + 24 }}
 			>
-				{/* Top Nav */}
 				<View className="flex-row items-center justify-between">
 					<ChevronLeft
 						color="#FFFFFF"
@@ -365,7 +363,6 @@ export default function TravelScreen() {
 						onPress={() => router.back()}
 					/>
 
-					{/* Timer (only while in progress) */}
 					{isDuring && !hasCompleted && (
 						<View className="bg-primary-foreground/20 px-3 py-1.5 rounded-full flex-row items-center">
 							<Clock
@@ -380,7 +377,6 @@ export default function TravelScreen() {
 					)}
 				</View>
 
-				{/* Student Profile Info */}
 				<View className="flex-row items-center">
 					<Avatar
 						alt={`${studentName}'s Avatar`}
@@ -408,7 +404,6 @@ export default function TravelScreen() {
 				contentContainerClassName="gap-4"
 				showsVerticalScrollIndicator={false}
 			>
-				{/* Route Card */}
 				<View className="p-5 bg-card border border-border rounded-lg">
 					<Text className="text-muted-foreground font-semibold text-xs mb-3 tracking-widest uppercase">
 						PERCURSO
@@ -427,7 +422,6 @@ export default function TravelScreen() {
 					/>
 				</View>
 
-				{/* Observation Card */}
 				{observation && (
 					<View className="bg-card p-4 border border-border rounded-lg">
 						<Text className="text-muted-foreground font-semibold text-xs mb-3 tracking-widest uppercase">
@@ -439,7 +433,6 @@ export default function TravelScreen() {
 					</View>
 				)}
 
-				{/* Map area when toggled */}
 				{showMap && (
 					<View className="h-64 rounded-lg overflow-hidden border border-border">
 						<MapView
@@ -472,9 +465,7 @@ export default function TravelScreen() {
 				)}
 			</ScrollView>
 
-			{/* Footer Actions */}
 			<View className="px-6 pb-8 pt-4 gap-2">
-				{/* Map toggle */}
 				{!hasCompleted && (
 					<Button
 						variant="outline"
@@ -482,14 +473,13 @@ export default function TravelScreen() {
 						onPress={() => setShowMap((prev) => !prev)}
 						className="w-full rounded-xl"
 					>
-						<Icon icon={MapIcon} size={16} color="--primary" />
+						<Icon icon={MapIcon} size={16} color="--foreground" />
 						<Text className="ml-2">
 							{showMap ? "Ocultar mapa" : "Ver no mapa"}
 						</Text>
 					</Button>
 				)}
 
-				{/* Main action button (unified) */}
 				<Button
 					size="lg"
 					onPress={handleRequest}

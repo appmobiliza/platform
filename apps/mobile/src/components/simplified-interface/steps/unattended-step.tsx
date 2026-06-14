@@ -34,6 +34,7 @@ export function UnattendedStep({
 						className="bg-card border border-border p-4 rounded-lg"
 						from={{ label: originName }}
 						to={{ label: destinationName }}
+						size="accessibility"
 					/>
 					<Button
 						size="lg"

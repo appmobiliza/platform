@@ -1,5 +1,4 @@
 import { memo } from "react";
-
 import { View } from "react-native";
 
 import { Text } from "@/components/ui/text";
@@ -16,7 +15,7 @@ interface AddressProps {
 	marker: "from" | "to";
 	children?: React.ReactNode;
 	maxLines?: number;
-	size?: "sm" | "md" | "lg";
+	size?: "sm" | "md" | "lg" | "accessibility";
 }
 
 function Address({
@@ -36,7 +35,7 @@ function Address({
 			<View
 				className={cn("size-6 items-center justify-center", {
 					"size-3": size === "sm",
-					"size-9": size === "lg",
+					"size-9": size === "lg" || size === "accessibility",
 				})}
 			>
 				{marker === "from" ? (
@@ -56,18 +55,24 @@ function Address({
 			<View className="min-w-0 flex-1 flex-row items-center justify-between gap-4">
 				<View className="flex-1 flex-col items-start">
 					<Text
-						className={
-							"min-w-0 flex-1 text-lg font-normal leading-none text-foreground"
-						}
+						className={cn(
+							"min-w-0 flex-1 text-lg font-normal leading-none text-foreground",
+							{
+								"text-2xl": size === "accessibility",
+							},
+						)}
 						numberOfLines={maxLines ?? 1}
 					>
 						{label}
 					</Text>
 					{description && (
 						<Text
-							className={
-								"min-w-0 flex-1 text-sm font-normal leading-none text-muted-foreground mt-1"
-							}
+							className={cn(
+								"min-w-0 flex-1 text-sm font-normal leading-none text-muted-foreground mt-1",
+								{
+									"text-2xl": size === "accessibility",
+								},
+							)}
 							numberOfLines={1}
 						>
 							{description}
@@ -124,7 +129,7 @@ function AddressRoute({
 				{shouldShowRoute && (
 					<View
 						className={cn("size-6 items-center justify-center", {
-							"size-9": size === "lg",
+							"size-9": size === "lg" || size === "accessibility",
 							"size-3": size === "sm",
 						})}
 					>

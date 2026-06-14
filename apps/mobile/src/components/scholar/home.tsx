@@ -2,6 +2,7 @@ import { disabilityTypeLabels, getCurrentShift } from "@mobiliza/contracts";
 
 import { useRouter } from "expo-router";
 import {
+	CheckCircle2,
 	Clock,
 	Info,
 	LogIn,
@@ -74,6 +75,13 @@ const shiftLabels: Record<string, string> = {
 	afternoon: "Turno vespertino",
 	night: "Turno noturno",
 };
+
+/**
+ * Ignora a validação que impede solicitar turno extra para o próprio turno
+ * registrado. Útil durante desenvolvimento para testar fluxos extras sem
+ * precisar aguardar mudanças de período.
+ */
+const BYPASS_EXTRA_VALIDATION = __DEV__;
 
 // ─── Componentes auxiliares ──────────────────────────────────────────────────
 
@@ -666,6 +674,19 @@ export function ScholarHome() {
 		return null;
 	}, [currentShift]);
 
+	// Verifica se o turno atual já foi completado hoje
+	const { data: completedShiftData, isLoading: isLoadingCompleted } =
+		trpc.shiftLogs.completedShiftForToday.useQuery(
+			{
+				shift: currentShift?.shift as "morning" | "afternoon" | "night",
+			},
+			{
+				enabled: shiftState === "shift_not_started" && !!currentShift,
+			},
+		);
+
+	const isShiftCompleted = completedShiftData?.completed ?? false;
+
 	// Handler para iniciar turno
 	const handleStartShift = useCallback(() => {
 		if (!currentShift) return;
@@ -683,12 +704,42 @@ export function ScholarHome() {
 	// Handler para confirmar turno extra — inicia imediatamente sem aprovação
 	const handleConfirmExtraShift = useCallback(() => {
 		const currentShiftValue = getCurrentShift();
+
+		// Verifica se o bolsista já está registrado para este turno hoje
+		if (!BYPASS_EXTRA_VALIDATION) {
+			const dayNames = [
+				"sunday",
+				"monday",
+				"tuesday",
+				"wednesday",
+				"thursday",
+				"friday",
+				"saturday",
+			] as const;
+			const today = dayNames[new Date().getDay()]!;
+
+			const isRegistered = me?.scholarProfile?.weeklySchedule?.some(
+				(entry) =>
+					entry.dayOfWeek === today &&
+					entry.shift === currentShiftValue,
+			);
+
+			if (isRegistered) {
+				Alert.alert(
+					"Turno indisponível",
+					"Você não pode solicitar um turno extra para o período em que já está registrado na sua grade semanal. Utilize o fluxo regular para iniciar seu turno.",
+				);
+				setExtraShiftDialogOpen(false);
+				return;
+			}
+		}
+
 		startShift({
 			shift: currentShiftValue,
 		});
-	}, [startShift]);
+	}, [startShift, me?.scholarProfile?.weeklySchedule]);
 
-	const isLoading = isLoadingShift;
+	const isLoading = isLoadingShift || isLoadingCompleted;
 
 	return (
 		<ScrollView
@@ -748,7 +799,6 @@ export function ScholarHome() {
 					</View>
 				) : shiftState === "not_in_shift" ? (
 					<>
-						{/* Fora do turno — pode solicitar turno extra */}
 						<Button
 							size="lg"
 							variant="outline"
@@ -783,48 +833,78 @@ export function ScholarHome() {
 					</>
 				) : shiftState === "shift_not_started" ? (
 					<>
-						{/* Dentro do horário de turno mas não iniciou no app */}
-						<Button
-							variant="default"
-							onPress={handleStartShift}
-							disabled={isStartingShift}
-							size="lg"
-							className="rounded-full gap-3"
-						>
-							{isStartingShift ? (
-								<ActivityIndicator size={20} color="white" />
-							) : (
-								<Icon
-									icon={LogIn}
-									size={18}
-									color="--primary-foreground"
-								/>
-							)}
-							<Text className="mb-0.5 text-base font-medium">
-								{isStartingShift
-									? "Iniciando..."
-									: "Iniciar turno"}
-							</Text>
-						</Button>
+						{isShiftCompleted ? (
+							<>
+								<EmptyStateCard>
+									<Icon
+										icon={CheckCircle2}
+										color="--foreground"
+										size={56}
+									/>
+									<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
+										Turno já realizado
+									</Text>
+									<Text className="text-center text-base leading-tight text-muted-foreground">
+										Você já completou seu turno de hoje.
+										{"\n"}
+										Se precisar trabalhar em outro horário,
+										{"\n"}
+										solicite um turno extra.
+									</Text>
+								</EmptyStateCard>
+							</>
+						) : (
+							<>
+								<Button
+									variant="default"
+									onPress={handleStartShift}
+									disabled={isStartingShift}
+									size="lg"
+									className="rounded-full gap-3"
+								>
+									{isStartingShift ? (
+										<ActivityIndicator
+											size={20}
+											color="white"
+										/>
+									) : (
+										<Icon
+											icon={LogIn}
+											size={18}
+											color="--primary-foreground"
+										/>
+									)}
+									<Text className="mb-0.5 text-base font-medium">
+										{isStartingShift
+											? "Iniciando..."
+											: "Iniciar turno"}
+									</Text>
+								</Button>
 
-						<EmptyStateCard>
-							<Icon icon={Play} color="--foreground" size={56} />
-							<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
-								Seu turno já começou!
-							</Text>
-							<Text className="text-center text-base leading-tight text-muted-foreground">
-								Clique em "Iniciar turno" para começar a{"\n"}
-								receber solicitações de deslocamento.
-							</Text>
-						</EmptyStateCard>
+								<EmptyStateCard>
+									<Icon
+										icon={Play}
+										color="--foreground"
+										size={56}
+									/>
+									<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
+										Seu turno já começou!
+									</Text>
+									<Text className="text-center text-base leading-tight text-muted-foreground">
+										Clique em "Iniciar turno" para começar a
+										{"\n"}
+										receber solicitações de deslocamento.
+									</Text>
+								</EmptyStateCard>
+							</>
+						)}
 					</>
 				) : (
 					<>
-						{/* Turno ativo — pode ver solicitações */}
 						<Button
 							variant="secondary"
 							onPress={handleEndShift}
-							disabled={isEndingShift}
+							disabled={isEndingShift || !!currentActiveService}
 							size="lg"
 							className="rounded-full gap-3"
 						>
@@ -848,7 +928,6 @@ export function ScholarHome() {
 						</Button>
 
 						<View className="gap-4 flex-1">
-							{/* Atendimento ativo */}
 							{currentActiveService ? (
 								<View className="gap-4">
 									<SectionTitle label="Atendimento em andamento" />

@@ -41,7 +41,7 @@ export function ScholarFoundStep({
 				subtitle="Bolsista encontrado!"
 				title="Você será atendido por"
 				note={
-					<View className="flex-row items-start gap-4">
+					<View className="flex-row items-center justify-center gap-4">
 						<Avatar
 							alt="Avatar do contribuinte"
 							className="size-12"
@@ -75,6 +75,7 @@ export function ScholarFoundStep({
 						}}
 						to={{ label: destinationName }}
 						shouldShowRoute
+						size="accessibility"
 					/>
 
 					<Text className="text-base text-muted-foreground text-center">

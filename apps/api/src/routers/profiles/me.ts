@@ -15,7 +15,11 @@ export const me = protectedProcedure
 						disabilities: true,
 					},
 				},
-				scholarProfile: true,
+				scholarProfile: {
+					with: {
+						weeklySchedule: true,
+					},
+				},
 			},
 		});
 

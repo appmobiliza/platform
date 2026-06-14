@@ -60,6 +60,7 @@ export function SearchingStep({
 						from={{ label: originName }}
 						to={{ label: destinationName }}
 						shouldShowRoute
+						size="accessibility"
 					/>
 
 					<Button

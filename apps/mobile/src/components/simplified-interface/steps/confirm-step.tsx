@@ -41,7 +41,7 @@ export function ConfirmStep({
 						className="bg-card border border-border p-4 rounded-lg gap-3"
 						from={{ label: originName }}
 						to={{ label: destinationName }}
-						size="lg"
+						size="accessibility"
 						shouldShowRoute
 					/>
 

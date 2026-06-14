@@ -6,7 +6,11 @@
  * Apenas um turno pode estar ativo por vez.
  */
 
-import { EndShiftLogSchema, StartShiftLogSchema } from "@mobiliza/contracts";
+import {
+	EndShiftLogSchema,
+	StartShiftLogSchema,
+	scholarShiftValues,
+} from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import { and, eq, isNull } from "@mobiliza/db/drizzle";
 import * as schema from "@mobiliza/db/schema";
@@ -31,7 +35,11 @@ export const shiftLogsRouter = router({
 				where: eq(schema.scholarProfile.userId, ctx.session.user.id),
 			});
 
-			if (!profile) throw new TRPCError({ code: "NOT_FOUND", message: "Bolsista não encontrado" });
+			if (!profile)
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Bolsista não encontrado",
+				});
 
 			// Verifica se já existe um turno ativo (sem endedAt) para este bolsista
 			const activeLog = await db.query.scholarShiftLog.findFirst({
@@ -50,6 +58,23 @@ export const shiftLogsRouter = router({
 			}
 
 			const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+			// Verifica se já existe um registro de turno para este período hoje
+			const existingLog = await db.query.scholarShiftLog.findFirst({
+				where: and(
+					eq(schema.scholarShiftLog.scholarProfileId, profile.id),
+					eq(schema.scholarShiftLog.date, today),
+					eq(schema.scholarShiftLog.shift, input.shift),
+				),
+			});
+
+			if (existingLog) {
+				throw new TRPCError({
+					code: "CONFLICT",
+					message:
+						"Você já completou este turno hoje. Se precisar trabalhar em outro horário, solicite um turno extra.",
+				});
+			}
 
 			// Cria o registro de turno
 			const [log] = await db
@@ -181,5 +206,35 @@ export const shiftLogsRouter = router({
 			});
 
 			return logs;
+		}),
+
+	/**
+	 * Verifica se o bolsista já completou o turno de um período específico hoje.
+	 * Retorna { completed: boolean }.
+	 */
+	completedShiftForToday: scholarProcedure
+		.input(
+			z.object({
+				shift: z.enum(scholarShiftValues),
+			}),
+		)
+		.query(async ({ ctx, input }) => {
+			const profile = await db.query.scholarProfile.findFirst({
+				where: eq(schema.scholarProfile.userId, ctx.session.user.id),
+			});
+
+			if (!profile) return { completed: false };
+
+			const today = new Date().toISOString().slice(0, 10);
+
+			const log = await db.query.scholarShiftLog.findFirst({
+				where: and(
+					eq(schema.scholarShiftLog.scholarProfileId, profile.id),
+					eq(schema.scholarShiftLog.date, today),
+					eq(schema.scholarShiftLog.shift, input.shift),
+				),
+			});
+
+			return { completed: !!log?.endedAt };
 		}),
 });
