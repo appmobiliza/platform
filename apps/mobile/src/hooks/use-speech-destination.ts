@@ -30,6 +30,9 @@ function buildAnnouncements(currentLocation?: CampusLocation | null) {
 		error_permission: "Permissão de microfone negada.",
 		error_generic: "Erro ao reconhecer voz. Tente novamente.",
 		error_browser: "O navegador não suporta o reconhecimento de voz. Tente usar o Google Chrome ou Microsoft Edge.",
+		error_not_available: "Reconhecimento de voz não disponível neste dispositivo.",
+		error_no_service: "Serviço de reconhecimento de voz não encontrado. Verifique se o Google Assistente está instalado e ativo.",
+		error_language_not_supported: "Idioma português não suportado neste dispositivo.",
 		idle: "Reconhecimento encerrado.",
 	};
 }
@@ -77,9 +80,76 @@ export function useSpeechDestination({
 	});
 
 	const isListening = useRef(false);
+	const isAvailableRef = useRef(false);
+	const recognitionServiceRef = useRef<string | undefined>(undefined);
+	const localeSupportedRef = useRef<boolean | null>(null);
 
 	// Recalcula os announces sempre que currentLocation mudar
 	const ANNOUNCE = buildAnnouncements(currentLocation);
+
+	// ─── Sondagem do dispositivo ao montar ────────────────────────────────────
+	// Verifica se o dispositivo tem suporte a reconhecimento de voz, descobre
+	// serviços disponíveis (Android) e checa se pt-BR é suportado.
+
+	useEffect(() => {
+		async function checkAvailability() {
+			try {
+				const available = ExpoSpeechRecognitionModule.isRecognitionAvailable();
+				isAvailableRef.current = available;
+
+				if (available && Platform.OS === "android") {
+					// Descobre os serviços de reconhecimento instalados
+					try {
+						const services = ExpoSpeechRecognitionModule.getSpeechRecognitionServices();
+						const preferred = [
+							"com.google.android.as",
+							"com.google.android.tts",
+							"com.google.android.googlequicksearchbox",
+						];
+						for (const pkg of preferred) {
+							if (services.includes(pkg)) {
+								recognitionServiceRef.current = pkg;
+								break;
+							}
+						}
+						// Fallback: primeiro serviço disponível
+						if (!recognitionServiceRef.current && services.length > 0) {
+							recognitionServiceRef.current = services[0];
+						}
+					} catch { }
+
+					// Fallback: serviço padrão do sistema
+					if (!recognitionServiceRef.current) {
+						try {
+							const def = ExpoSpeechRecognitionModule.getDefaultRecognitionService();
+							recognitionServiceRef.current = def.packageName;
+						} catch { }
+					}
+
+					// Verifica se o idioma pt-BR está entre os suportados
+					try {
+						const locales = await ExpoSpeechRecognitionModule.getSupportedLocales({
+							androidRecognitionServicePackage:
+								recognitionServiceRef.current ?? "com.google.android.as",
+						});
+						localeSupportedRef.current =
+							locales.locales.includes("pt-BR") ||
+							locales.installedLocales.includes("pt-BR");
+					} catch {
+						// getSupportedLocales não funciona no Android 12 e inferior
+						localeSupportedRef.current = null;
+					}
+				}
+			} catch (e) {
+				console.warn(
+					"Falha ao verificar disponibilidade de reconhecimento de voz:",
+					e,
+				);
+				isAvailableRef.current = false;
+			}
+		}
+		checkAvailability();
+	}, []);
 
 	// ─── Eventos STT ───────────────────────────────────────────────────────────
 
@@ -107,6 +177,15 @@ export function useSpeechDestination({
 			displayError =
 				"Permissão do microfone negada. Permita o acesso nas configurações do navegador e tente novamente.";
 			announceMsg = ANNOUNCE.error_permission;
+		} else if (event.error === "service-not-allowed") {
+			displayError =
+				"O serviço de reconhecimento de voz não está disponível ou foi desativado. " +
+				"Verifique se o Google Assistente ou serviço similar está ativo nas configurações do sistema.";
+			announceMsg = ANNOUNCE.error_no_service;
+		} else if (event.error === "language-not-supported") {
+			displayError =
+				"O idioma português (Brasil) não é suportado pelo serviço de reconhecimento de voz deste dispositivo.";
+			announceMsg = ANNOUNCE.error_language_not_supported;
 		} else if (Platform.OS === "web" && event.error === "network") {
 			displayError =
 				"Não foi possível conectar ao serviço de reconhecimento de voz. " +
@@ -206,16 +285,56 @@ export function useSpeechDestination({
 	const start = useCallback(async () => {
 		if (isListening.current) return;
 
-		// Clear previous error state before a new attempt
+		// Limpa estado de erro anterior antes de uma nova tentativa
 		setPhase("idle");
 		setResult((prev) => ({ ...prev, error: null, confidence: null }));
 
-		// On web, check if the Web Speech API is available before proceeding.
-		// The expo-speech-recognition web module has a bug where it accesses
-		// `SpeechRecognition` without a typeof guard, crashing with
-		// "ReferenceError: SpeechRecognition is not defined" in browsers
-		// that don't support the Web Speech API (e.g. Firefox) or when the
-		// API is otherwise unavailable.
+		// ── Verificação genérica de disponibilidade ───────────────────────────────
+		// Tanto isRecognitionAvailable() quanto as verificações específicas
+		// abaixo atuam em conjunto para evitar tentativas frustradas do usuário.
+		if (!isAvailableRef.current) {
+			try {
+				isAvailableRef.current =
+					ExpoSpeechRecognitionModule.isRecognitionAvailable();
+			} catch {
+				// Se a própria chamada lançar erro, assume indisponível
+			}
+		}
+
+		if (!isAvailableRef.current) {
+			const msg =
+				Platform.OS === "android"
+					? "Reconhecimento de voz não está disponível neste dispositivo. " +
+					"Verifique se o Google Assistente está instalado e ativo em " +
+					"Ajustes > Google > Configurações do Google Assistente > Voz e áudio."
+					: Platform.OS === "ios"
+						? "Reconhecimento de voz não está disponível. " +
+						"Ative o Siri e Ditado em Ajustes > Acessibilidade > Conteúdo falado."
+						: "Reconhecimento de voz não está disponível neste navegador. Tente usar Chrome ou Edge.";
+			setPhase("error");
+			setResult((prev) => ({ ...prev, error: msg }));
+			announce(ANNOUNCE.error_not_available);
+			return;
+		}
+
+		// ── Android: verificação adicional de suporte de idioma ──────────────────
+		if (Platform.OS === "android" && localeSupportedRef.current === false) {
+			setPhase("error");
+			setResult((prev) => ({
+				...prev,
+				error:
+					"O idioma português (Brasil) não está disponível para reconhecimento de voz " +
+					"neste dispositivo. Verifique se o pacote de idiomas está instalado em " +
+					"Ajustes > Sistema > Idiomas e entrada de texto > Assistente de voz.",
+			}));
+			announce(ANNOUNCE.error_language_not_supported);
+			return;
+		}
+
+		// ── Web: verificação específica do Web Speech API ────────────────────────
+		// O módulo web do expo-speech-recognition acessa `SpeechRecognition` sem
+		// guarda typeof, causando "ReferenceError: SpeechRecognition is not defined"
+		// em navegadores sem suporte (ex.: Firefox).
 		if (Platform.OS === "web") {
 			const hasWebSpeech =
 				typeof window !== "undefined" &&
@@ -234,14 +353,16 @@ export function useSpeechDestination({
 			}
 		}
 
-		const nativeOptions =
-			Platform.OS !== "web"
-				? {
-					requiresOnDeviceRecognition: true,
-					androidRecognitionServicePackage:
-						"com.google.android.as",
-				}
-				: {};
+		// ── Android: configura o pacote de serviço de reconhecimento ────────────
+		// Em vez de fixar "com.google.android.as", usa o serviço descoberto
+		// na sondagem, com fallback para o Google AS.
+		const nativeOptions: Record<string, unknown> = {};
+
+		if (Platform.OS === "android") {
+			nativeOptions.requiresOnDeviceRecognition = true;
+			nativeOptions.androidRecognitionServicePackage =
+				recognitionServiceRef.current ?? "com.google.android.as";
+		}
 
 		await ExpoSpeechRecognitionModule.requestPermissionsAsync();
 
