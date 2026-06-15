@@ -12,7 +12,7 @@ import { Pressable, View } from "react-native";
 import { Text } from "@/components/ui/text";
 
 import { THEME } from "@/lib/theme";
-import { useAppColorScheme } from "@/lib/use-app-color-scheme";
+import { useAppColorScheme } from "@/lib/theme/use-app-color-scheme";
 import { cn } from "@/lib/utils";
 
 // ─── Constants ───────────────────────────────────────────────────────────────

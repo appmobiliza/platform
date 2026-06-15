@@ -3,8 +3,9 @@ import { useEffect } from "react";
 import { Appearance, Platform, View } from "react-native";
 
 import { THEME, useThemeVariables } from "@/lib/theme";
-import { useThemePreference } from "@/lib/theme-store";
-import { useAppColorScheme } from "@/lib/use-app-color-scheme";
+import { useAppColorScheme } from "@/lib/theme/use-app-color-scheme";
+
+import { useThemePreference } from "@/stores/theme-store";
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
 	const theme = useThemeVariables();

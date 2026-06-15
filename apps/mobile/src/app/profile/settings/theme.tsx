@@ -4,7 +4,7 @@ import ProfileLayout from "@/layout/profile";
 
 import BoxOptions from "@/components/box-options";
 
-import { setThemePreference, useThemePreference } from "@/lib/theme-store";
+import { setThemePreference, useThemePreference } from "@/stores/theme-store";
 
 export default function SettingsProfileTheme() {
 	const theme = useThemePreference();

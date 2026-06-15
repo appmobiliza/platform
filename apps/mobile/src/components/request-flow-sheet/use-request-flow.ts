@@ -4,7 +4,6 @@ import * as React from "react";
 
 import { toast } from "@/components/ui/toast";
 
-import { getNearestPoint } from "@/lib/location-store";
 import { getRealtimeClient } from "@/lib/realtime";
 import {
 	cancelAllNotifications,
@@ -12,13 +11,15 @@ import {
 	showSearchingNotification,
 	showUnattendedNotification,
 } from "@/lib/request-notifications";
-import type { ScholarInfo } from "@/lib/request-store";
+import { trpc } from "@/lib/trpc/client";
+
+import { getNearestPoint } from "@/stores/location-store";
+import type { ScholarInfo } from "@/stores/request-store";
 import {
 	clearRequestState,
 	getRequestState,
 	setRequestState,
-} from "@/lib/request-store";
-import { trpc } from "@/lib/trpc/client";
+} from "@/stores/request-store";
 
 import type { Place, Stage } from "./types";
 
@@ -59,9 +60,8 @@ function useRequestFlow() {
 
 	const activeStageRef = React.useRef<Stage>("route-selection");
 	const queuedStageRef = React.useRef<Stage | null>(null);
-	const [activeStage, setActiveStage] = React.useState<Stage>(
-		"route-selection",
-	);
+	const [activeStage, setActiveStage] =
+		React.useState<Stage>("route-selection");
 
 	const [origin, setOrigin] = React.useState<Place | null>(null);
 	const [destination, setDestination] = React.useState<Place | null>(null);
@@ -193,10 +193,7 @@ function useRequestFlow() {
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	React.useEffect(() => {
 		return () => {
-			if (
-				cancelOnUnmountRef.current &&
-				activeRequestIdRef.current
-			) {
+			if (cancelOnUnmountRef.current && activeRequestIdRef.current) {
 				safeCancelRequest(activeRequestIdRef.current);
 			}
 		};
@@ -217,7 +214,16 @@ function useRequestFlow() {
 			scholar: scholarInfo,
 			isOngoing,
 		});
-	}, [activeRequestId, searchState, activeStage, origin, destination, message, scholarInfo, isOngoing]);
+	}, [
+		activeRequestId,
+		searchState,
+		activeStage,
+		origin,
+		destination,
+		message,
+		scholarInfo,
+		isOngoing,
+	]);
 
 	// ─── Restauração de sessão ──────────────────────────────────────────────
 	//
@@ -277,10 +283,7 @@ function useRequestFlow() {
 					return;
 				}
 
-				if (
-					status === "accepted" ||
-					status === "ongoing"
-				) {
+				if (status === "accepted" || status === "ongoing") {
 					// Já foi aceito enquanto estávamos fora — vai direto pra trip
 					setActiveRequestId(requestId);
 					setSearchState("idle");
@@ -296,7 +299,9 @@ function useRequestFlow() {
 							id: user.id,
 							name: user.name ?? "",
 							image: user.image ?? null,
-							createdAt: profile.createdAt ? new Date(profile.createdAt).toISOString() : null,
+							createdAt: profile.createdAt
+								? new Date(profile.createdAt).toISOString()
+								: null,
 							shift: null, // será obtido via getCurrentShift() no componente
 						});
 					}
@@ -318,7 +323,8 @@ function useRequestFlow() {
 						setSearchState("searching");
 						if (persistedState.requestCreatedAt) {
 							const elapsed = Math.floor(
-								(Date.now() - persistedState.requestCreatedAt) / 1000,
+								(Date.now() - persistedState.requestCreatedAt) /
+								1000,
 							);
 							setElapsedSeconds(elapsed);
 						}
@@ -469,7 +475,14 @@ function useRequestFlow() {
 				exitFlow();
 			}
 		},
-		[exitFlow, openStage, refs, activeRequestId, safeCancelRequest, searchState],
+		[
+			exitFlow,
+			openStage,
+			refs,
+			activeRequestId,
+			safeCancelRequest,
+			searchState,
+		],
 	);
 
 	// ─── Timer de elapsed + timeout da busca ─────────────────────────────────

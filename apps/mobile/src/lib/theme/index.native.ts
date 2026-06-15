@@ -1,7 +1,7 @@
 import { useUnstableNativeVariable as _useUnstableNativeVariable } from "nativewind";
 import type { ColorSchemeName } from "react-native";
 
-import { useUserRole } from "./auth-store";
+import { useUserRole } from "../auth/store";
 
 export type ThemeColors = {
 	primary: string;

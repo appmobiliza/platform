@@ -13,13 +13,12 @@ import { Switch } from "@/components/ui/switch";
 import { Text } from "@/components/ui/text";
 import { toast } from "@/components/ui/toast";
 
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth/client";
 import {
 	cacheUserInfo,
 	setHasProfile,
 	setSimplifiedInterface,
-} from "@/lib/auth-store";
-import { clearOnboardingData, getOnboardingData } from "@/lib/onboarding-store";
+} from "@/lib/auth/store";
 import { trpc } from "@/lib/trpc/client";
 
 import { onboardingSteps } from "@/constants/onboarding";
@@ -27,6 +26,10 @@ import {
 	type ProfileAccessibilityInput,
 	ProfileAccessibilitySchema,
 } from "@/schemas";
+import {
+	clearOnboardingData,
+	getOnboardingData,
+} from "@/stores/onboarding-store";
 import { toSessionUser } from "@/types/session";
 
 export default function AccessibilityInfo() {

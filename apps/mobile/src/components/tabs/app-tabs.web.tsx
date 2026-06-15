@@ -6,9 +6,9 @@ import { View } from "react-native";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
-import { useUserRole } from "@/lib/auth-store";
+import { useUserRole } from "@/lib/auth/store";
 import { SCHOLAR_THEME, THEME } from "@/lib/theme";
-import { useAppColorScheme } from "@/lib/use-app-color-scheme";
+import { useAppColorScheme } from "@/lib/theme/use-app-color-scheme";
 import { cn } from "@/lib/utils";
 
 function DefaultAppTabs() {

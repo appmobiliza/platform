@@ -10,7 +10,7 @@ import ProfileLayout from "@/layout/profile";
 import { SelectField } from "@/components/ui/select-field";
 import { toast } from "@/components/ui/toast";
 
-import { useUserRole } from "@/lib/auth-store";
+import { useUserRole } from "@/lib/auth/store";
 import { trpc } from "@/lib/trpc/client";
 
 import { type ProfileCourseInput, ProfileCourseSchema } from "@/schemas";

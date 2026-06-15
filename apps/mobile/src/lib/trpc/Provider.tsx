@@ -3,7 +3,7 @@ import { httpBatchLink } from "@trpc/client";
 import { useState } from "react";
 import { Platform } from "react-native";
 
-import { authClient } from "@/lib/auth-client";
+import { getAuthCookie } from "@/lib/auth/client";
 
 import { trpc } from "./client";
 
@@ -53,7 +53,7 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 						// Web: cookies are sent automatically via credentials: "include"
 						if (Platform.OS === "web") return {};
 
-						const cookies = authClient.getCookie();
+						const cookies = getAuthCookie();
 						const headers: Record<string, string> = {};
 						if (cookies) {
 							headers["Cookie"] = cookies;

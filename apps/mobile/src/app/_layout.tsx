@@ -14,10 +14,10 @@ import {
 	useHasProfile,
 	useIsLoggedIn,
 	useSyncSessionCache,
-} from "@/lib/auth-store";
+} from "@/lib/auth/store";
 import { THEME } from "@/lib/theme";
-import { TRPCProvider } from "@/lib/trpc/Provider";
-import { useAppColorScheme } from "@/lib/use-app-color-scheme";
+import { useAppColorScheme } from "@/lib/theme/use-app-color-scheme";
+import { TRPCProvider } from "@/lib/trpc/provider";
 
 import { ThemeProvider } from "@/providers/theme-provider";
 

@@ -1,18 +1,24 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Linking, Platform, View } from "react-native";
+import { Linking, Platform, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import GoogleIcon from "@/assets/google";
+import { Logo } from "@/assets/logo";
 
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { toast } from "@/components/ui/toast";
 
-import { authClient } from "@/lib/auth-client";
-import { cacheUserInfo, clearUserCache, setHasProfile } from "@/lib/auth-store";
+import { authClient } from "@/lib/auth/client";
+import {
+	cacheUserInfo,
+	clearUserCache,
+	setHasProfile,
+	setSimplifiedInterface,
+} from "@/lib/auth/store";
 import { trpc } from "@/lib/trpc/client";
 
-import GoogleIcon from "@/assets/google";
-import { Logo } from "@/assets/logo";
 import { toSessionUser } from "@/types/session";
 
 const openURL = (url: string) => {
@@ -83,20 +89,13 @@ export default function Auth() {
 			}
 
 			console.log("Usuário encontrado", user.id);
-
-			// Agora cacheia com os valores corretos
-			cacheUserInfo({
-				id: user.id,
-				name: user.name,
-				email: user.email,
-				image: user.image,
-				role: user.role,
-			});
-
 			console.log("isScholar: ", user.role === "scholar");
 
 			// Scholar — loga direto (perfil gerenciado pelo gestor)
 			if (user.role === "scholar") {
+				// Agora cacheia com os valores corretos
+				cacheUserInfo({ ...user });
+
 				setHasProfile(true);
 				setIsLoading(false);
 				router.replace("/(tabs)");
@@ -108,30 +107,35 @@ export default function Auth() {
 			// nunca veja um estado intermediário com userRole definido
 			// mas hasProfile incorreto.
 			const profile = await trpcUtils.profiles.me.fetch();
-			console.log("studentProfile: ", profile);
 			const hasStudentProfile =
 				"studentProfile" in profile && profile.studentProfile !== null;
+			const simplifiedInterface =
+				hasStudentProfile &&
+				(
+					profile.studentProfile as {
+						simplifiedInterface?: boolean;
+					} | null
+				)?.simplifiedInterface === true;
+
+			console.log("hasStudentProfile: ", hasStudentProfile);
 
 			setHasProfile(hasStudentProfile);
+			setSimplifiedInterface(simplifiedInterface);
 
-			if (hasStudentProfile) {
-				console.log("Usuário possui perfil", user.id);
-				// router.replace("/(tabs)");
-			} else {
-				console.log("Usuário não possui perfil", user.id);
-				// router.replace("/onboarding/unregistered");
-			}
+			// Agora cacheia com os valores corretos
+			cacheUserInfo({ ...user });
 		} catch (err) {
 			setIsLoading(false);
 			console.log("Google login error:", err);
-			toast.error("Ocorreu um erro inesperado ao tentar fazer login.", {
-				description: "Erro de autenticação",
+			toast.error("Erro de autenticação", {
+				description:
+					"Ocorreu um erro inesperado ao tentar fazer login.",
 			});
 		}
 	};
 
 	return (
-		<View className="flex-1">
+		<View className="flex-1 bg-background">
 			{/* Top half: Brand color with logo */}
 			<View
 				className="flex-[0.5] items-center justify-center bg-primary"
@@ -164,25 +168,108 @@ export default function Auth() {
 						</Text>
 					</Button>
 
-					<Text className="text-center text-sm text-muted-foreground mt-8">
-						Ao continuar, você concorda com nossos{"\n"}
-						<Text
-							onPress={() => openURL("https://example.com/terms")}
-							className="underline text-sm text-muted-foreground hover:text-foreground"
-						>
-							Termos de Serviço
-						</Text>{" "}
-						e{" "}
-						<Text
-							onPress={() =>
-								openURL("https://example.com/privacy")
-							}
-							className="underline text-sm text-muted-foreground hover:text-foreground"
-						>
-							Política de Privacidade
+					<View className="items-center mt-8">
+						<Text className="text-sm text-foreground">
+							Precisando de ajuda?
 						</Text>
-						.
-					</Text>
+						<Pressable
+							className="mt-1"
+							onPress={() => {
+								toast.info("Entre em contato com o NAC", {
+									closeButton: true,
+									description: (
+										<View className="gap-3">
+											<Pressable
+												onPress={() =>
+													openURL(
+														"mailto:atendimentonac.ufal@gmail.com",
+													)
+												}
+												className="active:opacity-70"
+											>
+												<Text className="text-muted-foreground text-sm">
+													E-mail:{" "}
+												</Text>
+												<Text className="text-info text-sm underline">
+													atendimentonac.ufal@gmail.com
+												</Text>
+											</Pressable>
+											<View>
+												<Text className="text-muted-foreground text-sm">
+													Telefones:
+												</Text>
+												<View className="flex-row flex-wrap items-center">
+													<Pressable
+														onPress={() =>
+															openURL(
+																"tel:8232141080",
+															)
+														}
+														className="active:opacity-70"
+													>
+														<Text className="text-info text-sm underline">
+															82 3214-1080
+														</Text>
+													</Pressable>
+													<Text className="text-muted-foreground text-sm">
+														{" "}
+														/{" "}
+													</Text>
+													<Pressable
+														onPress={() =>
+															openURL(
+																"tel:8232141081",
+															)
+														}
+														className="active:opacity-70"
+													>
+														<Text className="text-info text-sm underline">
+															3214-1081
+														</Text>
+													</Pressable>
+													<Text className="text-muted-foreground text-sm">
+														{" "}
+														/{" "}
+													</Text>
+													<Pressable
+														onPress={() =>
+															openURL(
+																"tel:8232141079",
+															)
+														}
+														className="active:opacity-70"
+													>
+														<Text className="text-info text-sm underline">
+															3214-1079
+														</Text>
+													</Pressable>
+												</View>
+											</View>
+											<Pressable
+												onPress={() =>
+													openURL(
+														"https://instagram.com/proestufal",
+													)
+												}
+												className="active:opacity-70"
+											>
+												<Text className="text-muted-foreground text-sm">
+													Instagram:{" "}
+												</Text>
+												<Text className="text-info text-sm underline">
+													@proestufal
+												</Text>
+											</Pressable>
+										</View>
+									),
+								});
+							}}
+						>
+							<Text className="text-sm text-muted-foreground active:underline font-medium">
+								Entre em contato com o NAC
+							</Text>
+						</Pressable>
+					</View>
 				</View>
 			</View>
 		</View>

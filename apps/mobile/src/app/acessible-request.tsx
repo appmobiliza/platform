@@ -3,11 +3,12 @@ import { ScrollView } from "react-native";
 import type { Place } from "@/components/request-flow-sheet/types";
 import { AccessibleRequestFlow } from "@/components/simplified-interface/request-flow";
 
+import { trpc } from "@/lib/trpc/client";
+
 import {
 	getCachedCampusLocations,
 	useNearestPoint,
-} from "@/lib/location-store";
-import { trpc } from "@/lib/trpc/client";
+} from "@/stores/location-store";
 
 export default function AccessibleRequest() {
 	const nearestPoint = useNearestPoint();

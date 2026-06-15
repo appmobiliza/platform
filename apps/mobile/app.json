@@ -12,6 +12,10 @@
 				"dark": "./assets/images/ios/ios-dark.png",
 				"light": "./assets/images/ios/ios-light.png",
 				"tinted": "./assets/images/ios/ios-tinted.png"
+			},
+			"infoPlist": {
+				"NSSpeechRecognitionUsageDescription": "Allow $(PRODUCT_NAME) to use speech recognition.",
+				"NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to use the microphone."
 			}
 		},
 		"android": {
@@ -24,7 +28,8 @@
 			},
 			"predictiveBackGestureEnabled": false,
 			"softwareKeyboardLayoutMode": "pan",
-			"package": "br.ufal.mobiliza"
+			"package": "br.ufal.mobiliza",
+			"permissions": ["android.permission.RECORD_AUDIO"]
 		},
 		"web": {
 			"output": "static",
@@ -47,7 +52,7 @@
 				{
 					"backgroundColor": "#005E65",
 					"image": "./assets/images/splash-icon.png",
-					"imageWidth": 1024
+					"imageWidth": 200
 				}
 			],
 			[
@@ -77,7 +82,12 @@
 			"tsconfigPaths": true
 		},
 		"extra": {
-			"router": {},
+			"router": {
+				"headers": {
+					"Cross-Origin-Embedder-Policy": "credentialless",
+					"Cross-Origin-Opener-Policy": "same-origin"
+				}
+			},
 			"expo-status-bar": {
 				"style": "light",
 				"hidden": false
@@ -88,8 +98,9 @@
 				"hidden": false
 			},
 			"eas": {
-				"projectId": "f0188ce7-a169-49f9-826a-288dd1010ad3"
+				"projectId": "d7b58126-5f7d-499a-9eea-8e054470eb79"
 			}
-		}
+		},
+		"owner": "meninocoiso"
 	}
 }

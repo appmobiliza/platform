@@ -6,7 +6,7 @@ import { View } from "react-native";
 import { SettingsButton } from "@/components/settings-button";
 import { Switch } from "@/components/ui/switch";
 
-import { setSimplifiedInterface as setCacheSimplifiedInterface } from "@/lib/auth-store";
+import { setSimplifiedInterface as setCacheSimplifiedInterface } from "@/lib/auth/store";
 import { trpc } from "@/lib/trpc/client";
 
 export default function AccessibilityProfile() {

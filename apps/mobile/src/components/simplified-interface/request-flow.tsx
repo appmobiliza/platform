@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AccessibilityInfo } from "react-native";
 
 import { useSpeechDestination } from "@/hooks/use-speech-destination";
+
 import { getRealtimeClient, isUsingMockClient } from "@/lib/realtime";
 import { trpc } from "@/lib/trpc/client";
 

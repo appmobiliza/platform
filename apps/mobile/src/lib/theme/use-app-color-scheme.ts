@@ -1,6 +1,6 @@
 import { useColorScheme } from "react-native";
 
-import { useThemePreference } from "./theme-store";
+import { useThemePreference } from "../../stores/theme-store";
 
 /**
  * Returns the effective color scheme by combining the user's stored

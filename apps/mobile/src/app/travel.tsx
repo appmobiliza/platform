@@ -18,14 +18,16 @@ import { useOsrmRoute } from "@/hooks/use-osrm-route";
 import { usePositionBroadcaster } from "@/hooks/use-position-broadcaster";
 import { useStudentTripPosition } from "@/hooks/use-student-trip-position";
 import { useUserLocation } from "@/hooks/use-user-location";
+
+import { haversineMeters } from "@/lib/geo/distance";
+import { trpc } from "@/lib/trpc/client";
+import { cn } from "@/lib/utils";
+
 import {
 	clearActiveAttendance,
 	getActiveAttendance,
 	saveActiveAttendance,
-} from "@/lib/active-attendance-store";
-import { haversineMeters } from "@/lib/distance";
-import { trpc } from "@/lib/trpc/client";
-import { cn } from "@/lib/utils";
+} from "@/stores/active-attendance-store";
 
 export default function TravelScreen() {
 	const insets = useSafeAreaInsets();

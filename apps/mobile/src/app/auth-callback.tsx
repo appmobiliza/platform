@@ -11,8 +11,13 @@
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 
-import { authClient } from "@/lib/auth-client";
-import { cacheUserInfo, clearUserCache, setHasProfile } from "@/lib/auth-store";
+import { authClient } from "@/lib/auth/client";
+import {
+	cacheUserInfo,
+	clearUserCache,
+	setHasProfile,
+	setSimplifiedInterface,
+} from "@/lib/auth/store";
 import { trpc } from "@/lib/trpc/client";
 
 import { toSessionUser } from "@/types/session";
@@ -90,15 +95,24 @@ function usePostLogin() {
 				//     Só cacheia os dados DEPOIS da resposta para que o layout
 				//     nunca veja userRole definido com hasProfile incorreto.
 				let hasStudentProfile = false;
+				let simplifiedInterface = false;
 				try {
 					const profileData = await trpcUtils.profiles.me.fetch();
 
 					hasStudentProfile =
 						"studentProfile" in profileData &&
 						profileData.studentProfile != null;
+					simplifiedInterface =
+						hasStudentProfile &&
+						(
+							profileData.studentProfile as {
+								simplifiedInterface?: boolean;
+							} | null
+						)?.simplifiedInterface === true;
 				} catch {
 					// Erro ao consultar perfil — assume que não existe
 					hasStudentProfile = false;
+					simplifiedInterface = false;
 				}
 
 				// Agora cacheia com os valores corretos
@@ -110,6 +124,7 @@ function usePostLogin() {
 					role: user.role,
 				});
 				setHasProfile(hasStudentProfile);
+				setSimplifiedInterface(simplifiedInterface);
 
 				if (hasStudentProfile) {
 					window.location.href = "/(tabs)";
@@ -137,7 +152,7 @@ export default function AuthCallback() {
 
 	if (status.type === "error") {
 		return (
-			<View className="flex-1 items-center justify-center px-6">
+			<View className="flex-1 items-center justify-center px-6 bg-background">
 				<Text className="text-lg font-medium text-foreground mb-2">
 					Erro ao autenticar
 				</Text>
@@ -157,7 +172,7 @@ export default function AuthCallback() {
 	}
 
 	return (
-		<View className="flex-1 items-center justify-center">
+		<View className="flex-1 items-center justify-center bg-background">
 			<ActivityIndicator size="large" />
 			<Text className="text-muted-foreground mt-4">
 				{status.type === "redirecting"

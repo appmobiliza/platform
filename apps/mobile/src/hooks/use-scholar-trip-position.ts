@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import type { ScholarPosition } from "@/lib/map-utils";
+import type { ScholarPosition } from "@/lib/geo/map-utils";
 import { getRealtimeClient } from "@/lib/realtime";
 
 // ─── Types ────────────────────────────────────────────────────────────────────

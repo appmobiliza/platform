@@ -13,8 +13,8 @@ import * as Location from "expo-location";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type NativeSyntheticEvent, Text, View } from "react-native";
 
-import type { ScholarPosition } from "@/lib/map-utils";
-import { useAppColorScheme } from "@/lib/use-app-color-scheme";
+import type { ScholarPosition } from "@/lib/geo/map-utils";
+import { useAppColorScheme } from "@/lib/theme/use-app-color-scheme";
 
 import { FromMarker, ToMarker } from "@/assets/route";
 

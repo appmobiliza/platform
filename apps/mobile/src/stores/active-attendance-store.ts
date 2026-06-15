@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-import { storage } from "./storage";
+import { storage } from "@/lib/storage";
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 

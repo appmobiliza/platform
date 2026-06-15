@@ -15,14 +15,16 @@ import { usePositionBroadcaster } from "@/hooks/use-position-broadcaster";
 import { useScholarPositions } from "@/hooks/use-scholar-positions";
 import { useScholarTripPosition } from "@/hooks/use-scholar-trip-position";
 import { useUserLocation } from "@/hooks/use-user-location";
-import { haversineMeters } from "@/lib/distance";
+
+import { haversineMeters } from "@/lib/geo/distance";
+import { findNearestCampusLocation } from "@/lib/geo/map-utils";
+import { formatDuration } from "@/lib/geo/osrm";
+
 import {
 	getCachedCampusLocations,
 	setNearestPoint,
-} from "@/lib/location-store";
-import { findNearestCampusLocation } from "@/lib/map-utils";
-import { formatDuration } from "@/lib/osrm";
-import { useRequestState } from "@/lib/request-store";
+} from "@/stores/location-store";
+import { useRequestState } from "@/stores/request-store";
 
 const BACK_ALLOWED_DESTINATIONS = [
 	"destination",

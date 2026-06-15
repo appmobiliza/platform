@@ -1,17 +1,6 @@
 import * as DialogPrimitive from "@rn-primitives/dialog";
-import { X } from "lucide-react-native";
-import * as React from "react";
-import { Platform, Text, View, type ViewProps } from "react-native";
-import {
-	FadeIn,
-	FadeOut,
-	SlideInDown,
-	SlideOutDown,
-} from "react-native-reanimated";
-import { FullWindowOverlay as RNFullWindowOverlay } from "react-native-screens";
-
-import { Icon } from "@/components/ui/icon";
-import { NativeOnlyAnimatedView } from "@/components/ui/native-only-animated-view";
+import type * as React from "react";
+import { Platform, View, type ViewProps } from "react-native";
 
 import { cn } from "@/lib/utils";
 
@@ -23,70 +12,31 @@ const DialogPortal = DialogPrimitive.Portal;
 
 const DialogClose = DialogPrimitive.Close;
 
-const FullWindowOverlay =
-	Platform.OS === "ios" ? RNFullWindowOverlay : React.Fragment;
-
-function DialogOverlay({ children }: { children?: React.ReactNode }) {
-	if (Platform.OS === "web") {
-		return (
-			<DialogPrimitive.Overlay
-				className={cn(
-					"bottom-0 left-0 right-0 top-0 flex items-center justify-center bg-black/50 p-2 fixed cursor-default [&>*]:cursor-auto",
-					"data-[state=open]:animate-in data-[state=open]:fade-in-0",
-					"data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
-				)}
-			>
-				{children}
-			</DialogPrimitive.Overlay>
-		);
-	}
-
+function DialogOverlay({
+	className,
+	children,
+	...props
+}: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
 	return (
-		<FullWindowOverlay>
-			{/* Custom backdrop — plain style, no NativeWind */}
-			<DialogPrimitive.Close
-				style={{
-					position: "absolute",
-					top: 0,
-					left: 0,
-					right: 0,
-					bottom: 0,
-				}}
-			>
-				<NativeOnlyAnimatedView
-					entering={FadeIn.duration(200)}
-					exiting={FadeOut.duration(150)}
-					style={{
-						flex: 1,
-						backgroundColor: "rgba(0, 0, 0, 0.5)",
-					}}
-				/>
-			</DialogPrimitive.Close>
-
-			{/* Content — slides up from bottom */}
-			<View
-				style={{
-					position: "absolute",
-					top: 0,
-					left: 0,
-					right: 0,
-					bottom: 0,
-					justifyContent: "center",
-					alignItems: "center",
-					padding: 8,
-				}}
-				pointerEvents="box-none"
-			>
-				<NativeOnlyAnimatedView
-					entering={SlideInDown.duration(300).springify()}
-					exiting={SlideOutDown.duration(200)}
-				>
-					{children}
-				</NativeOnlyAnimatedView>
-			</View>
-		</FullWindowOverlay>
+		<DialogPrimitive.Overlay
+			className={cn(
+				"bottom-0 left-0 right-0 top-0 flex items-center justify-center bg-black/50 p-2",
+				Platform.select({
+					web: cn(
+						"fixed cursor-default [&>*]:cursor-auto",
+						"data-[state=open]:animate-in data-[state=open]:fade-in-0",
+						"data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
+					),
+				}),
+				className,
+			)}
+			{...props}
+		>
+			{children}
+		</DialogPrimitive.Overlay>
 	);
 }
+
 function DialogContent({
 	className,
 	portalHost,
@@ -113,18 +63,6 @@ function DialogContent({
 					{...props}
 				>
 					{children}
-					{/*<DialogPrimitive.Close
-						className={cn(
-							"absolute right-4 top-4 rounded opacity-70 active:opacity-100",
-							Platform.select({
-								web: "ring-offset-background focus:ring-ring data-[state=open]:bg-accent transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2",
-							}),
-						)}
-						hitSlop={12}
-					>
-						<Icon icon={X} size={16} color="--accent-foreground" />
-						<Text className="sr-only">Close</Text>
-					</DialogPrimitive.Close>*/}
 				</DialogPrimitive.Content>
 			</DialogOverlay>
 		</DialogPortal>

@@ -10,8 +10,8 @@ import { Platform } from "react-native";
 
 import { toSessionUser } from "@/types/session";
 
-import { authClient } from "./auth-client";
-import { storage } from "./storage";
+import { storage } from "../storage";
+import { authClient } from "./client";
 
 export enum UserRole {
 	Student = "student",
@@ -241,7 +241,10 @@ export function useUser() {
 			name: cached.name || user.name || "",
 			email: cached.email || user.email || "",
 			image: cached.image || user.image || null,
-			role: (cached.role as UserRole) || (user.role as UserRole) || UserRole.Student,
+			role:
+				(cached.role as UserRole) ||
+				(user.role as UserRole) ||
+				UserRole.Student,
 		};
 	}, [session]);
 }

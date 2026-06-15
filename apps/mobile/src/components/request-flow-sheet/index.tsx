@@ -1,7 +1,7 @@
 import { View } from "react-native";
 
-import type { ScholarPosition } from "@/lib/map-utils";
-import { useAppColorScheme } from "@/lib/use-app-color-scheme";
+import type { ScholarPosition } from "@/lib/geo/map-utils";
+import { useAppColorScheme } from "@/lib/theme/use-app-color-scheme";
 
 import {
 	DestinationStage,

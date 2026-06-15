@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import type { Place } from "@/components/request-flow-sheet/types";
 
-import { formatDistance, haversineMeters } from "@/lib/distance";
+import { formatDistance, haversineMeters } from "@/lib/geo/distance";
 import {
 	buildRouteGeoJSON,
 	calculateBounds,
@@ -10,7 +10,7 @@ import {
 	formatEta,
 	type LngLat,
 	type ScholarPosition,
-} from "@/lib/map-utils";
+} from "@/lib/geo/map-utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

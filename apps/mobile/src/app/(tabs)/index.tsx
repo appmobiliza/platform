@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { Logo } from "@/assets/logo";
+
 import { NewsCarousel } from "@/components/news-carousel";
 import { PlaceCard } from "@/components/place-card";
 import type { Place } from "@/components/request-flow-sheet/types";
@@ -13,18 +15,17 @@ import { SearchBar } from "@/components/search-bar";
 import SimplifiedHome from "@/components/simplified-interface/home";
 import { Text } from "@/components/ui/text";
 
-import { useSimplifiedInterface, useUser, useUserRole } from "@/lib/auth-store";
-import { haversineMeters } from "@/lib/distance";
+import { useSimplifiedInterface, useUser, useUserRole } from "@/lib/auth/store";
+import { haversineMeters } from "@/lib/geo/distance";
+import { trpc } from "@/lib/trpc/client";
+
 import {
 	getCachedCampusLocations,
 	setCachedCampusLocations,
 	setNearestPoint,
 	useNearestPoint,
-} from "@/lib/location-store";
-import { getRequestState } from "@/lib/request-store";
-import { trpc } from "@/lib/trpc/client";
-
-import { Logo } from "@/assets/logo";
+} from "@/stores/location-store";
+import { getRequestState } from "@/stores/request-store";
 
 const newsItems = [
 	{
@@ -317,7 +318,6 @@ export default function Home() {
 		return (
 			<SimplifiedHome
 				nearestPoint={nearestPoint}
-				campusLocations={campusLocations}
 				userName={userName}
 				isLocationLoading={isLocationLoading}
 			/>

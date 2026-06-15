@@ -14,7 +14,7 @@ import ProfileLayout from "@/layout/profile";
 import { SelectField } from "@/components/ui/select-field";
 import { toast } from "@/components/ui/toast";
 
-import { useUserRole } from "@/lib/auth-store";
+import { useUserRole } from "@/lib/auth/store";
 import { type RouterInputs, trpc } from "@/lib/trpc/client";
 
 import {

@@ -11,11 +11,13 @@ import { Text } from "@/components/ui/text";
 
 import { useOsrmRoute } from "@/hooks/use-osrm-route";
 import { useUserLocation } from "@/hooks/use-user-location";
+
 import { formatShortDate } from "@/lib/date";
-import { haversineMeters } from "@/lib/distance";
-import type { ScholarPosition } from "@/lib/map-utils";
-import { formatArrivalTime, formatDuration } from "@/lib/osrm";
-import type { ScholarInfo } from "@/lib/request-store";
+import { haversineMeters } from "@/lib/geo/distance";
+import type { ScholarPosition } from "@/lib/geo/map-utils";
+import { formatArrivalTime, formatDuration } from "@/lib/geo/osrm";
+
+import type { ScholarInfo } from "@/stores/request-store";
 
 import { SheetFrame, StageSheet } from "../subcomponents/layout";
 import type { StageBaseProps } from "./types";

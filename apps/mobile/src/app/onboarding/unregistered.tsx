@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
-import { authClient } from "@/lib/auth-client";
-import { clearUserCache } from "@/lib/auth-store";
+import { authClient } from "@/lib/auth/client";
+import { clearUserCache } from "@/lib/auth/store";
 
 export default function Unregistered() {
 	const router = useRouter();

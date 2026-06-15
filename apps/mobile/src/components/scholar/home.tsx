@@ -21,6 +21,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { Logo } from "@/assets/logo";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,16 +32,16 @@ import { toast } from "@/components/ui/toast";
 
 import { usePositionBroadcaster } from "@/hooks/use-position-broadcaster";
 import { useUserLocation } from "@/hooks/use-user-location";
-import {
-	clearActiveAttendance,
-	saveActiveAttendance,
-	useActiveAttendance,
-} from "@/lib/active-attendance-store";
+
 import { getRealtimeClient } from "@/lib/realtime";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 
-import { Logo } from "@/assets/logo";
+import {
+	clearActiveAttendance,
+	saveActiveAttendance,
+	useActiveAttendance,
+} from "@/stores/active-attendance-store";
 
 import { AddressRoute } from "../address";
 import {
