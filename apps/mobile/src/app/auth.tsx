@@ -1,11 +1,12 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Linking, Platform, Pressable, View } from "react-native";
+import { Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import GoogleIcon from "@/assets/google";
 import { Logo } from "@/assets/logo";
 
+import { NacContact } from "@/components/nac-contact";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { toast } from "@/components/ui/toast";
@@ -20,12 +21,6 @@ import {
 import { trpc } from "@/lib/trpc/client";
 
 import { toSessionUser } from "@/types/session";
-
-const openURL = (url: string) => {
-	Linking.openURL(url).catch((err) => {
-		console.error("Failed to open URL:", err);
-	});
-};
 
 export default function Auth() {
 	const insets = useSafeAreaInsets();
@@ -168,108 +163,10 @@ export default function Auth() {
 						</Text>
 					</Button>
 
-					<View className="items-center mt-8">
-						<Text className="text-sm text-foreground">
-							Precisando de ajuda?
-						</Text>
-						<Pressable
-							className="mt-1"
-							onPress={() => {
-								toast.info("Entre em contato com o NAC", {
-									closeButton: true,
-									description: (
-										<View className="gap-3">
-											<Pressable
-												onPress={() =>
-													openURL(
-														"mailto:atendimentonac.ufal@gmail.com",
-													)
-												}
-												className="active:opacity-70"
-											>
-												<Text className="text-muted-foreground text-sm">
-													E-mail:{" "}
-												</Text>
-												<Text className="text-info text-sm underline">
-													atendimentonac.ufal@gmail.com
-												</Text>
-											</Pressable>
-											<View>
-												<Text className="text-muted-foreground text-sm">
-													Telefones:
-												</Text>
-												<View className="flex-row flex-wrap items-center">
-													<Pressable
-														onPress={() =>
-															openURL(
-																"tel:8232141080",
-															)
-														}
-														className="active:opacity-70"
-													>
-														<Text className="text-info text-sm underline">
-															82 3214-1080
-														</Text>
-													</Pressable>
-													<Text className="text-muted-foreground text-sm">
-														{" "}
-														/{" "}
-													</Text>
-													<Pressable
-														onPress={() =>
-															openURL(
-																"tel:8232141081",
-															)
-														}
-														className="active:opacity-70"
-													>
-														<Text className="text-info text-sm underline">
-															3214-1081
-														</Text>
-													</Pressable>
-													<Text className="text-muted-foreground text-sm">
-														{" "}
-														/{" "}
-													</Text>
-													<Pressable
-														onPress={() =>
-															openURL(
-																"tel:8232141079",
-															)
-														}
-														className="active:opacity-70"
-													>
-														<Text className="text-info text-sm underline">
-															3214-1079
-														</Text>
-													</Pressable>
-												</View>
-											</View>
-											<Pressable
-												onPress={() =>
-													openURL(
-														"https://instagram.com/proestufal",
-													)
-												}
-												className="active:opacity-70"
-											>
-												<Text className="text-muted-foreground text-sm">
-													Instagram:{" "}
-												</Text>
-												<Text className="text-info text-sm underline">
-													@proestufal
-												</Text>
-											</Pressable>
-										</View>
-									),
-								});
-							}}
-						>
-							<Text className="text-sm text-muted-foreground active:underline font-medium">
-								Entre em contato com o NAC
-							</Text>
-						</Pressable>
-					</View>
+					<NacContact
+						className="items-center mt-8"
+						helpTextClassName="text-foreground"
+					/>
 				</View>
 			</View>
 		</View>

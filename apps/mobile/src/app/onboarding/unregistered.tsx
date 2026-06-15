@@ -1,8 +1,9 @@
 import { useRouter } from "expo-router";
 import { CircleAlert } from "lucide-react-native";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
 import { Header } from "@/components/header";
+import { NacContact } from "@/components/nac-contact";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
@@ -49,16 +50,7 @@ export default function Unregistered() {
 					</Button>
 				</View>
 
-				<View className="items-center">
-					<Text className="text-sm text-neutral-400">
-						Precisando de ajuda?
-					</Text>
-					<Pressable className="mt-1">
-						<Text className="text-sm text-muted-foreground underline font-medium">
-							Entre em contato com o NAC
-						</Text>
-					</Pressable>
-				</View>
+				<NacContact className="items-center" />
 			</View>
 		</View>
 	);

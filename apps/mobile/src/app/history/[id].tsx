@@ -101,16 +101,16 @@ function StudentHistoryDetails() {
 			mapOrigin={
 				hasLocations
 					? {
-							latitude: request.originLocation!.latitude,
-							longitude: request.originLocation!.longitude,
+							latitude: request.originLocation.latitude,
+							longitude: request.originLocation.longitude,
 						}
 					: null
 			}
 			mapDestination={
 				hasLocations
 					? {
-							latitude: request.destinationLocation!.latitude,
-							longitude: request.destinationLocation!.longitude,
+							latitude: request.destinationLocation.latitude,
+							longitude: request.destinationLocation.longitude,
 						}
 					: null
 			}
