@@ -96,7 +96,7 @@ function FloatingAppTabs() {
 	return (
 		<Tabs className="flex h-screen min-h-0 flex-col bg-background overflow-y-scroll pb-24">
 			<TabSlot className="flex-1 min-h-0 pb-28" />
-			<TabList className="fixed bottom-4 left-1/2 z-50 max-w-md -translate-x-1/2 flex-row items-center rounded-full border border-border/60 bg-background/95 px-2 py-2 shadow-lg backdrop-blur supports-backdrop-filter:bg-background/80">
+			<TabList className="fixed bottom-4 left-1/2 z-50 max-w-md -translate-x-1/2 flex-row items-center rounded-full border border-border/60 bg-background/95 px-1 py-1 shadow-lg backdrop-blur supports-backdrop-filter:bg-background/80">
 				{visibleTabs.map((tab) => {
 					const active = isActive(tab);
 					return (
@@ -105,7 +105,7 @@ function FloatingAppTabs() {
 							name={tab.name}
 							href={tab.href}
 							className={cn(
-								"flex-1 flex-col items-center justify-center gap-0 rounded-full px-8 py-2 text-muted-foreground",
+								"flex-1 flex-col items-center justify-center gap-0 rounded-full px-5 py-2 text-muted-foreground",
 								active && "bg-card text-accent-foreground",
 							)}
 						>

@@ -33,6 +33,13 @@ export default async function ScholarsPage() {
 						</h2>
 					</div>
 					<div className="flex flex-wrap items-center gap-4">
+						<Button
+							size="lg"
+							className="gap-2 px-3"
+							variant={"outline"}
+						>
+							Ver grade
+						</Button>
 						<MutateScholarDialog>
 							<Button size="lg" className="gap-2 px-3">
 								<Plus className="size-4" />

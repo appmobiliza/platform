@@ -7,6 +7,7 @@ import {
 	ScheduleHeader,
 	type ScheduleSlotType,
 } from "@/components/schedule";
+import { ScholarHeader } from "@/components/scholar/scholar-header";
 
 /**
  * Example screen wiring the reusable <ScheduleHeader /> together with the
@@ -87,6 +88,11 @@ const SLOTS: ScheduleSlotType[] = [
 export default function ScheduleScreen() {
 	return (
 		<SafeAreaView className="flex-1" edges={["top"]}>
+			<ScholarHeader
+				scholarName="Bolsista"
+				shiftState="not_in_shift"
+				currentShiftInfo={null}
+			/>
 			<ScheduleHeader days={DAYS} />
 
 			<ScrollView showsVerticalScrollIndicator={false}>
