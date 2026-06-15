@@ -151,16 +151,16 @@ function ScholarDetailsContent({ scholar }: { scholar: CachedScholar }) {
 
 			<Separator />
 
-			<Button variant="outline" className="w-full" disabled>
+			{/*<Button variant="outline" className="w-full" disabled>
 				Ver histórico completo
+			</Button>*/}
+			<Button variant="destructive" className="w-[49%]">
+				Desativar
 			</Button>
 			<div className="flex flex-row gap-2 justify-between">
 				<MutateScholarDialog scholar={scholar}>
 					<Button className="w-full">Editar bolsista</Button>
 				</MutateScholarDialog>
-				{/*<Button variant="destructive" className="w-[49%]" disabled>
-					Desativar
-				</Button>*/}
 			</div>
 		</div>
 	);

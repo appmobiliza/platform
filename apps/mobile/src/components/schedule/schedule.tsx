@@ -41,7 +41,7 @@ export function Schedule({
 						gutterClassName={gutterClassName}
 					/>
 					{index < slots.length - 1 ? (
-						<View className="mx-4 h-px bg-neutral-800" />
+						<View className="mx-4 h-px bg-border" />
 					) : null}
 				</Fragment>
 			))}

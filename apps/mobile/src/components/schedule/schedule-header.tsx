@@ -23,7 +23,7 @@ export function ScheduleHeader({
 	gutterClassName = "w-16",
 }: ScheduleHeaderProps) {
 	return (
-		<View className="flex-row bg-[#161616] px-4 py-6">
+		<View className="flex-row bg-muted px-4 py-6">
 			{/* Left gutter keeps the day columns aligned with the grid below */}
 			<View className={gutterClassName} />
 
@@ -35,20 +35,20 @@ export function ScheduleHeader({
 							key={`${day.weekday}-${day.day}`}
 							className="flex-1 items-center"
 						>
-							<Text className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+							<Text className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
 								{day.weekday}
 							</Text>
 							<Text
 								className={
 									isActive
-										? "mt-1 text-3xl font-bold text-white"
-										: "mt-1 text-3xl font-bold text-neutral-100"
+										? "mt-1 text-3xl font-bold text-foreground"
+										: "mt-1 text-3xl font-bold text-foreground"
 								}
 							>
 								{day.day}
 							</Text>
 							{isActive ? (
-								<View className="mt-1 h-1 w-6 rounded-full bg-white" />
+								<View className="mt-1 h-1 w-6 rounded-full bg-foreground" />
 							) : null}
 						</View>
 					);

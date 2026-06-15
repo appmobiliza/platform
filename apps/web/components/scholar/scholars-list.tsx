@@ -3,13 +3,14 @@
 import { Frown, Search, XIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
-import { ScholarCard } from "@/components/scholar-card";
+import { ScholarCard } from "@/components/scholar/scholar-card";
 import { StatusMessage } from "@/components/status-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 import { useDebounce } from "@/hooks/use-debounce";
+
 import type { CachedScholar } from "@/lib/cached-data";
 
 // ─── Helpers ────────────────────────────────────────────────────────────
