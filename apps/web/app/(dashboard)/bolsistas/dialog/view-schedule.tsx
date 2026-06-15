@@ -15,7 +15,6 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
 import { trpc } from "@/providers/trpc-provider";
@@ -84,7 +83,7 @@ export function ViewScheduleDialog({ children }: Props) {
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
 
-			<DialogContent className="w-full gap-0 p-0">
+			<DialogContent className="flex flex-col gap-0 overflow-hidden p-0 sm:max-w-xl">
 				<div className="p-6 pb-0">
 					<DialogHeader>
 						<DialogTitle>Grade de bolsistas</DialogTitle>
@@ -94,9 +93,9 @@ export function ViewScheduleDialog({ children }: Props) {
 					</DialogHeader>
 				</div>
 
-				<Separator className="my-4" />
+				<Separator className="my-4 shrink-0" />
 
-				<ScrollArea className="max-h-[60vh] w-full px-6">
+				<div className="flex-1 overflow-y-auto px-6">
 					{isLoading ? (
 						<div className="flex items-center justify-center py-12">
 							<Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -106,7 +105,7 @@ export function ViewScheduleDialog({ children }: Props) {
 							Nenhum bolsista cadastrado.
 						</p>
 					) : (
-						<div className="overflow-x-auto pb-6">
+						<div className="pb-6">
 							<table className="w-full border-separate border-spacing-2">
 								<thead>
 									<tr>
@@ -174,11 +173,9 @@ export function ViewScheduleDialog({ children }: Props) {
 							</table>
 						</div>
 					)}
-				</ScrollArea>
+				</div>
 
-				<Separator />
-
-				<DialogFooter className="px-6 py-4">
+				<DialogFooter className="-m-1">
 					<DialogClose asChild>
 						<Button variant="outline">Fechar</Button>
 					</DialogClose>

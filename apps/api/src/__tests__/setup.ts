@@ -4,8 +4,9 @@
  * Configura ambiente Jest antes de cada suite de teste.
  */
 
-import { afterAll, afterEach, beforeAll } from "@jest/globals";
 import * as schema from "@mobiliza/db/schema";
+
+import { afterAll, afterEach, beforeAll } from "@jest/globals";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 
@@ -53,11 +54,6 @@ process.env.TRUSTED_ORIGINS = "http://localhost:3000";
 
 let db: ReturnType<typeof drizzle> | null = null;
 let sqlClient: ReturnType<typeof neon> | null = null;
-
-// Mock transaction for neon-http (not supported in unit tests)
-(globalThis as any).mockTransaction = async (cb: (tx: any) => Promise<any>) => {
-	return cb(db);
-};
 
 /**
  * Conecta ao banco Neon e cria instância Drizzle.

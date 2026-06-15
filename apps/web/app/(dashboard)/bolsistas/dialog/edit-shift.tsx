@@ -32,13 +32,13 @@ import { trpc } from "@/providers/trpc-provider";
 
 // ─── Mapping between UI shift system and API enum values ────────────────
 
-const DAY_TO_ENUM: Record<DayId, string> = {
+const DAY_TO_ENUM = {
 	Seg: "monday",
 	Ter: "tuesday",
 	Qua: "wednesday",
 	Qui: "thursday",
 	Sex: "friday",
-};
+} as const satisfies Record<DayId, string>;
 
 const ENUM_TO_DAY: Record<string, DayId> = {
 	monday: "Seg",
@@ -48,11 +48,11 @@ const ENUM_TO_DAY: Record<string, DayId> = {
 	friday: "Sex",
 };
 
-const SHIFT_TO_ENUM: Record<ShiftId, string> = {
+const SHIFT_TO_ENUM = {
 	MAT: "morning",
 	VES: "afternoon",
 	NOT: "night",
-};
+} as const satisfies Record<ShiftId, string>;
 
 const ENUM_TO_SHIFT: Record<string, ShiftId> = {
 	morning: "MAT",
@@ -74,10 +74,18 @@ function entriesToSelected(
 	return set;
 }
 
-function selectedToEntries(
-	selected: Set<string>,
-): Array<{ dayOfWeek: string; shift: string }> {
-	const entries: Array<{ dayOfWeek: string; shift: string }> = [];
+function selectedToEntries(selected: Set<string>) {
+	const entries: Array<{
+		dayOfWeek:
+			| "monday"
+			| "tuesday"
+			| "wednesday"
+			| "thursday"
+			| "friday"
+			| "saturday"
+			| "sunday";
+		shift: "morning" | "afternoon" | "night";
+	}> = [];
 	for (const key of selected) {
 		const [day, shift] = key.split("-") as [DayId, ShiftId];
 		const dayOfWeek = DAY_TO_ENUM[day];

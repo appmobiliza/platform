@@ -136,24 +136,22 @@ export const settingsRouter = router({
 	upsertShiftDefinitions: managerProcedure
 		.input(UpsertShiftDefinitionsSchema)
 		.mutation(async ({ input }) => {
-			await db.transaction(async (tx) => {
-				// Limpa todas as definições existentes
-				await tx.delete(schema.shiftDefinition);
+			// Limpa todas as definições existentes
+			await db.delete(schema.shiftDefinition);
 
-				// Insere as novas definições
-				if (input.definitions.length > 0) {
-					await tx.insert(schema.shiftDefinition).values(
-						input.definitions.map((def) => ({
-							id: uuidv7(),
-							shift: def.shift,
-							dayOfWeek: def.dayOfWeek,
-							startTime: def.startTime,
-							endTime: def.endTime,
-							isEnabled: def.isEnabled,
-						})),
-					);
-				}
-			});
+			// Insere as novas definições
+			if (input.definitions.length > 0) {
+				await db.insert(schema.shiftDefinition).values(
+					input.definitions.map((def) => ({
+						id: uuidv7(),
+						shift: def.shift,
+						dayOfWeek: def.dayOfWeek,
+						startTime: def.startTime,
+						endTime: def.endTime,
+						isEnabled: def.isEnabled,
+					})),
+				);
+			}
 
 			// Retorna as definições atualizadas
 			return db.query.shiftDefinition.findMany({
