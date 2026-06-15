@@ -11,7 +11,9 @@ import {
 	coverageStatus,
 	DAY_LABEL,
 	DAYS,
+	type DayId,
 	SHIFTS,
+	type ShiftId,
 } from "@/data/shifts";
 
 const STATUS_CLASSES: Record<CoverageStatus, string> = {
@@ -54,7 +56,13 @@ function LegendDot({ className, label }: { className: string; label: string }) {
 	);
 }
 
-export function WeeklyCoverage({ selected }: { selected: Set<string> }) {
+export function WeeklyCoverage({
+	selected,
+	coverage: baseCoverage,
+}: {
+	selected: Set<string>;
+	coverage?: Record<ShiftId, Record<DayId, number>>;
+}) {
 	return (
 		<section
 			aria-label="Cobertura semanal"
@@ -105,8 +113,9 @@ export function WeeklyCoverage({ selected }: { selected: Set<string> }) {
 										cellKey(day, shift.id),
 									);
 									const count =
-										BASE_COVERAGE[shift.id][day] +
-										(isEditing ? 1 : 0);
+										(baseCoverage ?? BASE_COVERAGE)[
+											shift.id
+										][day] + (isEditing ? 1 : 0);
 									const status = coverageStatus(
 										count,
 										isEditing,

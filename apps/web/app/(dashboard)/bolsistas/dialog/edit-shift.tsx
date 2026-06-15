@@ -11,6 +11,9 @@ import {
 	Dialog,
 	DialogClose,
 	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
 
@@ -140,6 +143,30 @@ export function EditShiftDialog({ children, scholar }: Props) {
 		return found?.schedule ?? [];
 	}, [schedulesData, scholar]);
 
+	// Compute real coverage from all schedules (excluding current scholar)
+	const coverageFromApi = React.useMemo(() => {
+		const coverage: Record<ShiftId, Record<DayId, number>> = {
+			MAT: { Seg: 0, Ter: 0, Qua: 0, Qui: 0, Sex: 0 },
+			VES: { Seg: 0, Ter: 0, Qua: 0, Qui: 0, Sex: 0 },
+			NOT: { Seg: 0, Ter: 0, Qua: 0, Qui: 0, Sex: 0 },
+		};
+
+		if (!schedulesData) return coverage;
+
+		for (const s of schedulesData) {
+			if (s.scholarId === scholar?.profile.id) continue;
+			for (const entry of s.schedule) {
+				const day = ENUM_TO_DAY[entry.dayOfWeek];
+				const shift = ENUM_TO_SHIFT[entry.shift];
+				if (day && shift) {
+					coverage[shift][day]++;
+				}
+			}
+		}
+
+		return coverage;
+	}, [schedulesData, scholar]);
+
 	// Initialize selected from existing schedule
 	const [selected, setSelected] = React.useState<Set<string>>(new Set());
 
@@ -218,12 +245,14 @@ export function EditShiftDialog({ children, scholar }: Props) {
 							</Button>
 						</DialogClose>
 
-						<h2 className="font-heading text-xl font-semibold tracking-tight">
-							Editar turnos
-						</h2>
-						<p className="mt-1 text-sm text-muted-foreground">
-							Selecione turno &times; dia
-						</p>
+						<DialogHeader className="p-0">
+							<DialogTitle className="font-heading text-xl font-semibold tracking-tight">
+								Editar turnos
+							</DialogTitle>
+							<DialogDescription>
+								Selecione turno &times; dia
+							</DialogDescription>
+						</DialogHeader>
 
 						{/* Estudante */}
 						<div className="mt-4 flex items-center gap-3 border-b border-border pb-4">
@@ -384,7 +413,10 @@ export function EditShiftDialog({ children, scholar }: Props) {
 					</div>
 
 					{/* ── Painel lateral: Cobertura semanal ── */}
-					<WeeklyCoverage selected={selected} />
+					<WeeklyCoverage
+						selected={selected}
+						coverage={coverageFromApi}
+					/>
 				</div>
 			</DialogContent>
 		</Dialog>
