@@ -847,73 +847,69 @@ export function ScholarHome() {
 						</EmptyStateCard>
 					</>
 				) : shiftState === "shift_not_started" ? (
-					<>
-						{isShiftCompleted ? (
-							<>
-								<EmptyStateCard>
-									<Icon
-										icon={CheckCircle2}
-										color="--foreground"
-										size={56}
+					isShiftCompleted ? (
+						<EmptyStateCard>
+							<Icon
+								icon={CheckCircle2}
+								color="--foreground"
+								size={56}
+							/>
+							<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
+								Turno já realizado
+							</Text>
+							<Text className="text-center text-base leading-tight text-muted-foreground">
+								Você já completou seu turno de hoje.
+								{"\n"}
+								Se precisar trabalhar em outro horário,
+								{"\n"}
+								solicite um turno extra.
+							</Text>
+						</EmptyStateCard>
+					) : (
+						<>
+							<Button
+								variant="default"
+								onPress={handleStartShift}
+								disabled={isStartingShift}
+								size="lg"
+								className="rounded-full gap-3"
+							>
+								{isStartingShift ? (
+									<ActivityIndicator
+										size={20}
+										color="white"
 									/>
-									<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
-										Turno já realizado
-									</Text>
-									<Text className="text-center text-base leading-tight text-muted-foreground">
-										Você já completou seu turno de hoje.
-										{"\n"}
-										Se precisar trabalhar em outro horário,
-										{"\n"}
-										solicite um turno extra.
-									</Text>
-								</EmptyStateCard>
-							</>
-						) : (
-							<>
-								<Button
-									variant="default"
-									onPress={handleStartShift}
-									disabled={isStartingShift}
-									size="lg"
-									className="rounded-full gap-3"
-								>
-									{isStartingShift ? (
-										<ActivityIndicator
-											size={20}
-											color="white"
-										/>
-									) : (
-										<Icon
-											icon={LogIn}
-											size={18}
-											color="--primary-foreground"
-										/>
-									)}
-									<Text className="mb-0.5 text-base font-medium">
-										{isStartingShift
-											? "Iniciando..."
-											: "Iniciar turno"}
-									</Text>
-								</Button>
+								) : (
+									<Icon
+										icon={LogIn}
+										size={18}
+										color="--primary-foreground"
+									/>
+								)}
+								<Text className="mb-0.5 text-base font-medium">
+									{isStartingShift
+										? "Iniciando..."
+										: "Iniciar turno"}
+								</Text>
+							</Button>
 
-								<EmptyStateCard>
-									<Icon
-										icon={Play}
-										color="--foreground"
-										size={56}
-									/>
-									<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
-										Seu turno já começou!
-									</Text>
-									<Text className="text-center text-base leading-tight text-muted-foreground">
-										Clique em "Iniciar turno" para começar a
-										{"\n"}
-										receber solicitações de deslocamento.
-									</Text>
-								</EmptyStateCard>
-							</>
-						)}
-					</>
+							<EmptyStateCard>
+								<Icon
+									icon={Play}
+									color="--foreground"
+									size={56}
+								/>
+								<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
+									Seu turno já começou!
+								</Text>
+								<Text className="text-center text-base leading-tight text-muted-foreground">
+									Clique em "Iniciar turno" para começar a
+									{"\n"}
+									receber solicitações de deslocamento.
+								</Text>
+							</EmptyStateCard>
+						</>
+					)
 				) : (
 					<>
 						<Button
