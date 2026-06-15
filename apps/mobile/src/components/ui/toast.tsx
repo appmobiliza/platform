@@ -21,6 +21,8 @@ import { Text } from "@/components/ui/text";
 
 import { cn } from "@/lib/utils";
 
+import { Button } from "./button";
+
 // ────────────────────────────────────────────────────────────────
 // Types
 // ────────────────────────────────────────────────────────────────
@@ -132,14 +134,14 @@ function toast(message: string, options?: ToastOptions): string {
 		variant: options?.variant ?? "default",
 		title: message,
 		description: options?.description,
-		duration: options?.duration ?? 4000,
+		duration: options?.duration ?? Infinity,
 		icon: options?.icon,
 		action: options?.action,
 		cancel: options?.cancel,
 		onDismiss: options?.onDismiss,
 		onAutoClose: options?.onAutoClose,
 		dismissible: options?.dismissible ?? true,
-		closeButton: options?.closeButton ?? false,
+		closeButton: options?.closeButton ?? true,
 	};
 	addToast(t);
 	return id;
@@ -165,7 +167,6 @@ toast.loading = (message: string, options?: ToastOptions): string => {
 	return toast(message, {
 		...options,
 		variant: "loading",
-		duration: Infinity,
 		dismissible: false,
 		closeButton: false,
 	});
@@ -306,26 +307,34 @@ function ToastItem({ data }: { data: ToastData }) {
 				<Pressable
 					onPress={handleDismiss}
 					hitSlop={12}
+					accessibilityLabel="Fechar"
+					accessibilityRole="button"
 					className={cn(
-						"absolute right-4 top-4 rounded opacity-70 active:opacity-100",
+						"absolute right-6 top-6.5 rounded opacity-70 active:opacity-100",
 						Platform.select({
 							web: "transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
 						}),
 					)}
 				>
-					<Icon icon={X} size={16} color="--accent-foreground" />
+					<Icon icon={X} size={24} color="--foreground" />
 				</Pressable>
 			)}
 
 			{/* Icon + heading */}
 			<View className="flex-row items-start gap-3">
-				{data.variant === "loading" ? (
-					<ActivityIndicator size={20} />
-				) : data.icon ? (
-					data.icon
-				) : config.icon ? (
-					<Icon icon={config.icon} size={20} color={config.color} />
-				) : null}
+				<View className="mt-1">
+					{data.variant === "loading" ? (
+						<ActivityIndicator size={20} />
+					) : data.icon ? (
+						data.icon
+					) : config.icon ? (
+						<Icon
+							icon={config.icon}
+							size={20}
+							color={config.color}
+						/>
+					) : null}
+				</View>
 
 				<View className="flex-1 gap-1">
 					<Text className="text-foreground text-lg font-semibold leading-none">
@@ -344,6 +353,10 @@ function ToastItem({ data }: { data: ToastData }) {
 				</View>
 			</View>
 
+			{/*<Button accessibilityRole="button" onPress={handleDismiss}>
+				<Text>Fechar</Text>
+			</Button>*/}
+
 			{/* Actions */}
 			{(data.action || data.cancel) && (
 				<View className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -355,6 +368,7 @@ function ToastItem({ data }: { data: ToastData }) {
 								});
 								handleDismiss();
 							}}
+							accessibilityRole="button"
 							className={cn(
 								"flex-row items-center justify-center rounded-md px-4 py-2 active:bg-accent",
 								Platform.select({
@@ -377,6 +391,7 @@ function ToastItem({ data }: { data: ToastData }) {
 								});
 								handleDismiss();
 							}}
+							accessibilityRole="button"
 							className={cn(
 								"bg-primary flex-row items-center justify-center rounded-md px-4 py-2 shadow-sm shadow-black/5 active:bg-primary/90",
 								Platform.select({

@@ -80,7 +80,6 @@ function NacContactContent() {
 
 function showNacContactToast() {
 	toast.info("Entre em contato com o NAC", {
-		closeButton: true,
 		description: <NacContactContent />,
 	});
 }
