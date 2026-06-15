@@ -2,7 +2,6 @@ import { roleValues } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
 import { authEnv } from "@mobiliza/env/auth";
-import { webBaseUrl } from "@mobiliza/env/base-url";
 
 import { expo } from "@better-auth/expo";
 import type { BetterAuthPlugin } from "better-auth";
@@ -129,7 +128,7 @@ export const auth = betterAuth({
 		 * O frontend (apps/web ou apps/mobile na web) deve ler este
 		 * parâmetro e exibir um diálogo de erro adequado.
 		 */
-		errorURL: `${webBaseUrl}/auth`,
+		errorURL: `${authEnv.BETTER_AUTH_URL}/auth`,
 	},
 
 	plugins: [expo() as BetterAuthPlugin],
