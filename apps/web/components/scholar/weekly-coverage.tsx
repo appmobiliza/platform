@@ -2,6 +2,8 @@
 
 import { User, Users } from "lucide-react";
 
+import { cn } from "@/lib/utils";
+
 import {
 	BASE_COVERAGE,
 	type CoverageStatus,
@@ -10,8 +12,7 @@ import {
 	DAY_LABEL,
 	DAYS,
 	SHIFTS,
-} from "@/lib/shifts";
-import { cn } from "@/lib/utils";
+} from "@/data/shifts";
 
 const STATUS_CLASSES: Record<CoverageStatus, string> = {
 	empty: "border-destructive/40 bg-destructive/15 text-destructive",

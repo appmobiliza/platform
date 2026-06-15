@@ -2,13 +2,14 @@ import { Plus } from "lucide-react";
 import type { Metadata } from "next";
 
 import { ScholarDetailsSidebar } from "@/components/details";
-import { ScholarsListClient } from "@/components/scholars-list-client";
+import { ScholarsListClient } from "@/components/scholar/scholars-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { getCachedScholarDashboard } from "@/lib/cached-data";
 
 import { MutateScholarDialog } from "./dialog/add-scholar";
+import { ViewScheduleDialog } from "./dialog/view-schedule";
 
 export const metadata: Metadata = {
 	title: "Bolsistas",
@@ -33,13 +34,15 @@ export default async function ScholarsPage() {
 						</h2>
 					</div>
 					<div className="flex flex-wrap items-center gap-4">
-						<Button
-							size="lg"
-							className="gap-2 px-3"
-							variant={"outline"}
-						>
-							Ver grade
-						</Button>
+						<ViewScheduleDialog>
+							<Button
+								size="lg"
+								className="gap-2 px-3"
+								variant="outline"
+							>
+								Ver grade
+							</Button>
+						</ViewScheduleDialog>
 						<MutateScholarDialog>
 							<Button size="lg" className="gap-2 px-3">
 								<Plus className="size-4" />
