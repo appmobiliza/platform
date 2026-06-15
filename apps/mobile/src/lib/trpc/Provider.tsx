@@ -9,13 +9,9 @@ import { trpc } from "./client";
 
 // URL do Backend: localhost no iOS, 10.0.2.2 no Android (Emulador)
 const getBaseUrl = () => {
-	// Em produção, isso virá de uma variável de ambiente (EXPO_PUBLIC_API_URL)
-	if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
-
-	if (Platform.OS === "android") {
-		return "https://unmaidenlike-unaborted-jaelyn.ngrok-free.dev";
-	}
-	return "http://localhost:3001";
+	if (!process.env.EXPO_PUBLIC_API_URL)
+		throw new Error("EXPO_PUBLIC_API_URL is not defined");
+	return process.env.EXPO_PUBLIC_API_URL;
 };
 
 export function TRPCProvider({ children }: { children: React.ReactNode }) {

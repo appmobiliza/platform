@@ -24,12 +24,8 @@ import { getAuthCookie } from "@/lib/auth/client";
 // ─── Client URL ────────────────────────────────────────────────────────────────
 
 const getBaseUrl = () => {
-	if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
-
-	if (Platform.OS === "android") {
-		return "https://unmaidenlike-unaborted-jaelyn.ngrok-free.dev";
-	}
-	return "http://localhost:3001";
+	if (!process.env.EXPO_PUBLIC_API_URL) throw new Error("EXPO_PUBLIC_API_URL is not defined");
+	return process.env.EXPO_PUBLIC_API_URL
 };
 
 // ─── React hooks (via @trpc/react-query) ───────────────────────────────────────
