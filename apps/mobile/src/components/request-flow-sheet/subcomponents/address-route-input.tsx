@@ -16,7 +16,7 @@ import {
 	formatDistance,
 	haversineDistance,
 	pointToLineDistance,
-} from "@/lib/distance";
+} from "@/lib/geo/distance";
 import { useUnstableNativeVariable } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 

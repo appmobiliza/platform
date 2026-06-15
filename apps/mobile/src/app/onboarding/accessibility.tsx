@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Alert, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 
 import BoxOptions from "@/components/box-options";
 import { Header } from "@/components/header";
@@ -11,10 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldSet } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { Text } from "@/components/ui/text";
+import { toast } from "@/components/ui/toast";
 
-import { authClient } from "@/lib/auth-client";
-import { cacheUserInfo, setHasProfile } from "@/lib/auth-store";
-import { clearOnboardingData, getOnboardingData } from "@/lib/onboarding-store";
+import { authClient } from "@/lib/auth/client";
+import {
+	cacheUserInfo,
+	setHasProfile,
+	setSimplifiedInterface,
+} from "@/lib/auth/store";
 import { trpc } from "@/lib/trpc/client";
 
 import { onboardingSteps } from "@/constants/onboarding";
@@ -22,6 +26,10 @@ import {
 	type ProfileAccessibilityInput,
 	ProfileAccessibilitySchema,
 } from "@/schemas";
+import {
+	clearOnboardingData,
+	getOnboardingData,
+} from "@/stores/onboarding-store";
 import { toSessionUser } from "@/types/session";
 
 export default function AccessibilityInfo() {
@@ -72,6 +80,7 @@ export default function AccessibilityInfo() {
 
 				// Atualiza cache local indicando que o onboarding foi concluído
 				setHasProfile(true);
+				setSimplifiedInterface(data.simplifiedInterface ?? false);
 
 				cacheUserInfo({
 					id: user?.id ?? "",
@@ -90,16 +99,14 @@ export default function AccessibilityInfo() {
 				router.replace("/(tabs)");
 			} catch (error) {
 				console.error("Erro ao finalizar onboarding:", error);
-				Alert.alert(
-					"Erro",
+				toast.error(
 					"Não foi possível finalizar seu cadastro. Tente novamente.",
 				);
 				setIsSubmitting(false);
 			}
 		},
 		(errors) => {
-			Alert.alert(
-				"Erro",
+			toast.error(
 				"Por favor, corrija os erros no formulário antes de continuar.",
 			);
 			console.log("ERRORS", errors);

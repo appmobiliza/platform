@@ -6,11 +6,13 @@ import { View } from "react-native";
 import { SettingsButton } from "@/components/settings-button";
 import { Switch } from "@/components/ui/switch";
 
+import { setSimplifiedInterface as setCacheSimplifiedInterface } from "@/lib/auth/store";
 import { trpc } from "@/lib/trpc/client";
 
 export default function AccessibilityProfile() {
 	const { data: userData, isLoading } = trpc.profiles.me.useQuery();
 	const updateStudent = trpc.profiles.updateStudent.useMutation();
+	const utils = trpc.useUtils();
 
 	const studentProfile = userData?.studentProfile;
 
@@ -18,13 +20,34 @@ export default function AccessibilityProfile() {
 		studentProfile?.simplifiedInterface ?? false,
 	);
 
+	const [voiceProcessingOnline, setVoiceProcessingOnline] = useState(
+		studentProfile?.voiceProcessingOnline ?? true,
+	);
+
 	const handleSimplifiedInterfaceChange = async (value: boolean) => {
 		setSimplifiedInterface(value);
+		setCacheSimplifiedInterface(value);
 		try {
 			await updateStudent.mutateAsync({ simplifiedInterface: value });
+			await utils.profiles.me.invalidate();
 		} catch (error) {
 			console.error("Erro ao salvar interface simplificada:", error);
 			setSimplifiedInterface(!value);
+			setCacheSimplifiedInterface(!value);
+		}
+	};
+
+	const handleVoiceProcessingOnlineChange = async (value: boolean) => {
+		setVoiceProcessingOnline(value);
+		try {
+			await updateStudent.mutateAsync({ voiceProcessingOnline: value });
+			await utils.profiles.me.invalidate();
+		} catch (error) {
+			console.error(
+				"Erro ao salvar preferência de processamento de voz:",
+				error,
+			);
+			setVoiceProcessingOnline(!value);
 		}
 	};
 
@@ -81,6 +104,15 @@ export default function AccessibilityProfile() {
 				<Switch
 					checked={simplifiedInterface}
 					onCheckedChange={handleSimplifiedInterfaceChange}
+				/>
+			</SettingsButton>
+			<SettingsButton
+				title="Processamento de voz online"
+				label="Quando ativo, o áudio pode ser enviado a servidores externos para reconhecimento de fala mais preciso"
+			>
+				<Switch
+					checked={voiceProcessingOnline}
+					onCheckedChange={handleVoiceProcessingOnlineChange}
 				/>
 			</SettingsButton>
 		</View>

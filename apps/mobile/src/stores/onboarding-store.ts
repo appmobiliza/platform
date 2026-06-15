@@ -6,7 +6,7 @@
  * para a API via `createStudent`.
  */
 
-import { storage } from "./storage";
+import { storage } from "@/lib/storage";
 
 const ONBOARDING_KEY = "onboarding-data";
 

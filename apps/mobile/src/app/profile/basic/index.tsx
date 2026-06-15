@@ -4,7 +4,7 @@ import { View } from "react-native";
 
 import { SettingsButton } from "@/components/settings-button";
 
-import { useUserRole } from "@/lib/auth-store";
+import { useUserRole } from "@/lib/auth/store";
 import { trpc } from "@/lib/trpc/client";
 
 export default function BasicProfile() {

@@ -1,8 +1,7 @@
 "use client";
 
-import type * as React from "react";
-
 import { XIcon } from "lucide-react";
+import type * as React from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -12,9 +11,8 @@ import {
 	DrawerTitle,
 } from "@/components/ui/drawer";
 
-import { cn } from "@/lib/utils";
-
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 interface DetailsSidebarProps {
 	children: React.ReactNode;
@@ -59,7 +57,7 @@ export function DetailsSidebar({
 	return (
 		<aside
 			className={cn(
-				"hidden min-h-0 shrink-0 overflow-hidden border-l border-border bg-card transition-[width] duration-300 ease-in-out md:flex",
+				"hidden shrink-0 overflow-hidden border-l border-border bg-card transition-[width] duration-300 ease-in-out md:flex sticky top-0 h-screen",
 				open ? "w-[24rem]" : "w-0 border-l-0",
 			)}
 		>

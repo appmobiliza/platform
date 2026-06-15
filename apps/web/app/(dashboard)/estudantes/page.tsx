@@ -172,14 +172,26 @@ export default async function StudentsPage() {
 											</div>
 										</TableCell>
 										<TableCell>
-											{entry.profile.disabilities
-												.map(
-													(d) =>
-														disabilityTypeLabels[
-															d as keyof typeof disabilityTypeLabels
-														],
-												)
-												.join(", ")}
+											<div
+												className="truncate"
+												title={entry.profile.disabilities
+													.map(
+														(d) =>
+															disabilityTypeLabels[
+																d as keyof typeof disabilityTypeLabels
+															],
+													)
+													.join(", ")}
+											>
+												{entry.profile.disabilities
+													.map(
+														(d) =>
+															disabilityTypeLabels[
+																d as keyof typeof disabilityTypeLabels
+															],
+													)
+													.join(", ")}
+											</div>
 										</TableCell>
 										<TableCell>
 											{entry.summary.servicesAmount}

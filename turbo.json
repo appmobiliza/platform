@@ -7,15 +7,17 @@
 			"inputs": ["$TURBO_DEFAULT$", ".env*"],
 			"outputs": ["dist/**", ".next/**", "!.next/cache/**"],
 			"env": [
+				"TRUSTED_ORIGINS",
 				"PORT",
 				"NODE_ENV",
-				"TRUSTED_ORIGINS",
-				"CRON_SECRET",
-				"BETTER_AUTH_SECRET",
-				"BETTER_AUTH_URL",
+				"NEXT_PUBLIC_WEB_URL",
+				"WEB_URL",
+				"NEXT_PUBLIC_API_URL",
+				"API_URL",
+				"DATABASE_URL",
 				"GOOGLE_CLIENT_ID",
 				"GOOGLE_CLIENT_SECRET",
-				"DATABASE_URL",
+				"BETTER_AUTH_SECRET",
 				"REALTIME_PROVIDER",
 				"ABLY_API_KEY"
 			]

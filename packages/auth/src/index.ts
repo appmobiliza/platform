@@ -2,7 +2,6 @@ import { roleValues } from "@mobiliza/contracts";
 import { db } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
 import { authEnv } from "@mobiliza/env/auth";
-import { webBaseUrl } from "@mobiliza/env/base-url";
 
 import { expo } from "@better-auth/expo";
 import type { BetterAuthPlugin } from "better-auth";
@@ -31,6 +30,9 @@ const allowedDomains = [
  *
  * Referência: https://www.better-auth.com/docs/integrations/hono
  */
+
+console.log("authEnv", authEnv)
+
 export const auth = betterAuth({
 	baseURL: authEnv.BETTER_AUTH_URL,
 
@@ -48,6 +50,8 @@ export const auth = betterAuth({
 		google: {
 			clientId: authEnv.GOOGLE_CLIENT_ID,
 			clientSecret: authEnv.GOOGLE_CLIENT_SECRET,
+			redirectURI: `${authEnv.BETTER_AUTH_URL}/api/auth/callback/google`,
+			prompt: "select_account"
 		},
 	},
 
@@ -107,7 +111,7 @@ export const auth = betterAuth({
 
 	trustedOrigins: [
 		...authEnv.TRUSTED_ORIGINS,
-		// Deep link scheme do app mobile (usado pelo @better-auth/expo
+		// Deep link scheme do app mobile (usado pelo @better-auth/expo)
 		// para redirecionar de volta ao app após OAuth).
 		"mobiliza://",
 	],
@@ -124,7 +128,7 @@ export const auth = betterAuth({
 		 * O frontend (apps/web ou apps/mobile na web) deve ler este
 		 * parâmetro e exibir um diálogo de erro adequado.
 		 */
-		errorURL: `${webBaseUrl}/auth`,
+		errorURL: `${authEnv.BETTER_AUTH_URL}/auth`,
 	},
 
 	plugins: [expo() as BetterAuthPlugin],

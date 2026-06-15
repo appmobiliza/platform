@@ -8,6 +8,13 @@
       "when": 1780814062999,
       "tag": "0000_strange_landau",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781421519340,
+      "tag": "0001_lively_vision",
+      "breakpoints": true
     }
   ]
 }

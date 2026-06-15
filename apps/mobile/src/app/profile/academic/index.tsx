@@ -4,7 +4,7 @@ import { View } from "react-native";
 
 import { SettingsButton } from "@/components/settings-button";
 
-import { useUserRole } from "@/lib/auth-store";
+import { useUserRole } from "@/lib/auth/store";
 import { trpc } from "@/lib/trpc/client";
 
 export default function AcademicProfile() {
@@ -40,10 +40,11 @@ export default function AcademicProfile() {
 				<SettingsButton
 					title="Turno"
 					label={
-						studentShiftLabels[profile?.shift ?? ""] ||
-						"Não informado"
+						studentShiftLabels[
+							userData.studentProfile?.shift ?? ""
+						] || "Não informado"
 					}
-					href={`/profile/academic/shift?shift=${encodeURIComponent(profile?.shift ?? "")}`}
+					href={`/profile/academic/shift?shift=${encodeURIComponent(userData.studentProfile?.shift ?? "")}`}
 				/>
 			)}
 			<SettingsButton

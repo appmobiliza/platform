@@ -1,24 +1,26 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, Linking, Platform, View } from "react-native";
+import { Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-import { Button } from "@/components/ui/button";
-import { Text } from "@/components/ui/text";
-
-import { authClient } from "@/lib/auth-client";
-import { cacheUserInfo, clearUserCache, setHasProfile } from "@/lib/auth-store";
-import { trpc } from "@/lib/trpc/client";
 
 import GoogleIcon from "@/assets/google";
 import { Logo } from "@/assets/logo";
-import { toSessionUser } from "@/types/session";
 
-const openURL = (url: string) => {
-	Linking.openURL(url).catch((err) => {
-		console.error("Failed to open URL:", err);
-	});
-};
+import { NacContact } from "@/components/nac-contact";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
+import { toast } from "@/components/ui/toast";
+
+import { authClient } from "@/lib/auth/client";
+import {
+	cacheUserInfo,
+	clearUserCache,
+	setHasProfile,
+	setSimplifiedInterface,
+} from "@/lib/auth/store";
+import { trpc } from "@/lib/trpc/client";
+
+import { toSessionUser } from "@/types/session";
 
 export default function Auth() {
 	const insets = useSafeAreaInsets();
@@ -34,19 +36,19 @@ export default function Auth() {
 				provider: "google",
 				callbackURL:
 					Platform.OS === "web"
-						? `${process.env.EXPO_PUBLIC_WEB_URL}/auth-callback`
-						: "/auth",
+						? `${process.env.EXPO_PUBLIC_APP_URL}/auth-callback`
+						: "mobiliza://auth",
 				errorCallbackURL:
 					Platform.OS === "web"
-						? `${process.env.EXPO_PUBLIC_WEB_URL}/auth`
-						: "/auth",
+						? `${process.env.EXPO_PUBLIC_APP_URL}/auth`
+						: "mobiliza://auth",
 			});
 
 			if (error) {
 				setIsLoading(false);
-				Alert.alert(
-					"Erro de autenticação",
+				toast.error(
 					error.message ?? "Não foi possível fazer login com Google.",
+					{ description: "Erro de autenticação" },
 				);
 				return;
 			}
@@ -67,10 +69,7 @@ export default function Auth() {
 
 			if (!sessionData?.user) {
 				setIsLoading(false);
-				Alert.alert(
-					"Erro",
-					"Não foi possível recuperar os dados da sessão.",
-				);
+				toast.error("Não foi possível recuperar os dados da sessão.");
 				return;
 			}
 
@@ -80,25 +79,18 @@ export default function Auth() {
 
 			if (!user) {
 				setIsLoading(false);
-				Alert.alert("Erro", "Dados do usuário não disponíveis.");
+				toast.error("Dados do usuário não disponíveis.");
 				return;
 			}
 
 			console.log("Usuário encontrado", user.id);
-
-			// Agora cacheia com os valores corretos
-			cacheUserInfo({
-				id: user.id,
-				name: user.name,
-				email: user.email,
-				image: user.image,
-				role: user.role,
-			});
-
 			console.log("isScholar: ", user.role === "scholar");
 
 			// Scholar — loga direto (perfil gerenciado pelo gestor)
 			if (user.role === "scholar") {
+				// Agora cacheia com os valores corretos
+				cacheUserInfo({ ...user });
+
 				setHasProfile(true);
 				setIsLoading(false);
 				router.replace("/(tabs)");
@@ -110,31 +102,35 @@ export default function Auth() {
 			// nunca veja um estado intermediário com userRole definido
 			// mas hasProfile incorreto.
 			const profile = await trpcUtils.profiles.me.fetch();
-			console.log("studentProfile: ", profile);
 			const hasStudentProfile =
 				"studentProfile" in profile && profile.studentProfile !== null;
+			const simplifiedInterface =
+				hasStudentProfile &&
+				(
+					profile.studentProfile as {
+						simplifiedInterface?: boolean;
+					} | null
+				)?.simplifiedInterface === true;
+
+			console.log("hasStudentProfile: ", hasStudentProfile);
 
 			setHasProfile(hasStudentProfile);
+			setSimplifiedInterface(simplifiedInterface);
 
-			if (hasStudentProfile) {
-				console.log("Usuário possui perfil", user.id);
-				// router.replace("/(tabs)");
-			} else {
-				console.log("Usuário não possui perfil", user.id);
-				// router.replace("/onboarding/unregistered");
-			}
+			// Agora cacheia com os valores corretos
+			cacheUserInfo({ ...user });
 		} catch (err) {
 			setIsLoading(false);
-			console.error("Google login error:", err);
-			Alert.alert(
-				"Erro de autenticação",
-				"Ocorreu um erro inesperado ao tentar fazer login.",
-			);
+			console.log("Google login error:", err);
+			toast.error("Erro de autenticação", {
+				description:
+					"Ocorreu um erro inesperado ao tentar fazer login.",
+			});
 		}
 	};
 
 	return (
-		<View className="flex-1">
+		<View className="flex-1 bg-background">
 			{/* Top half: Brand color with logo */}
 			<View
 				className="flex-[0.5] items-center justify-center bg-primary"
@@ -167,25 +163,10 @@ export default function Auth() {
 						</Text>
 					</Button>
 
-					<Text className="text-center text-sm text-muted-foreground mt-8">
-						Ao continuar, você concorda com nossos{"\n"}
-						<Text
-							onPress={() => openURL("https://example.com/terms")}
-							className="underline text-sm text-muted-foreground hover:text-foreground"
-						>
-							Termos de Serviço
-						</Text>{" "}
-						e{" "}
-						<Text
-							onPress={() =>
-								openURL("https://example.com/privacy")
-							}
-							className="underline text-sm text-muted-foreground hover:text-foreground"
-						>
-							Política de Privacidade
-						</Text>
-						.
-					</Text>
+					<NacContact
+						className="items-center mt-8"
+						helpTextClassName="text-foreground"
+					/>
 				</View>
 			</View>
 		</View>

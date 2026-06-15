@@ -16,8 +16,8 @@ import { View } from "react-native";
 import { Text } from "@/components/ui/text";
 
 import { useMapLogic } from "@/hooks/use-map-logic";
-import type { ScholarPosition } from "@/lib/map-utils";
-import { useAppColorScheme } from "@/lib/use-app-color-scheme";
+import type { ScholarPosition } from "@/lib/geo/map-utils";
+import { useAppColorScheme } from "@/lib/theme/use-app-color-scheme";
 
 import _dark from "@/assets/map-styles/dark.json";
 
@@ -221,6 +221,7 @@ export default function MapView({
 					position: "absolute",
 					inset: 0,
 				}}
+				attributionControl={false}
 				onLoad={() => setMapLoaded(true)}
 				onMoveStart={handleMapMoveStart}
 				onMoveEnd={handleMapMoveEnd}

@@ -3,6 +3,8 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { View } from "react-native";
 
+import { Toaster } from "@/components/ui/toast";
+
 import "../global.css";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
@@ -12,10 +14,10 @@ import {
 	useHasProfile,
 	useIsLoggedIn,
 	useSyncSessionCache,
-} from "@/lib/auth-store";
+} from "@/lib/auth/store";
 import { THEME } from "@/lib/theme";
-import { TRPCProvider } from "@/lib/trpc/Provider";
-import { useAppColorScheme } from "@/lib/use-app-color-scheme";
+import { useAppColorScheme } from "@/lib/theme/use-app-color-scheme";
+import { TRPCProvider } from "@/lib/trpc/provider";
 
 import { ThemeProvider } from "@/providers/theme-provider";
 
@@ -74,6 +76,7 @@ export default function RootLayout() {
 							pointerEvents="box-none"
 						>
 							<PortalHost />
+							<Toaster />
 						</View>
 					</BottomSheetModalProvider>
 				</ThemeProvider>

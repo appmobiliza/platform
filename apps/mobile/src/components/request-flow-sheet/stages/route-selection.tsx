@@ -3,7 +3,7 @@ import { Keyboard } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 
-import { setNearestPoint } from "@/lib/location-store";
+import { setNearestPoint } from "@/stores/location-store";
 
 import { AddressRouteInput } from "../subcomponents/address-route-input";
 import { SheetFrame, StageSheet } from "../subcomponents/layout";

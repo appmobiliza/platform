@@ -6,9 +6,10 @@ import { ActivityIndicator, Platform, View } from "react-native";
 import { SettingsButton } from "@/components/settings-button";
 import { Icon } from "@/components/ui/icon";
 
-import { authClient } from "@/lib/auth-client";
-import { clearUserCache } from "@/lib/auth-store";
-import { useThemePreference } from "@/lib/theme-store";
+import { authClient } from "@/lib/auth/client";
+import { clearUserCache } from "@/lib/auth/store";
+
+import { useThemePreference } from "@/stores/theme-store";
 
 const THEME_LABELS: Record<string, string> = {
 	light: "Claro",

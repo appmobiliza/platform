@@ -12,7 +12,8 @@ import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
 import { useLightStatusBar } from "@/hooks/use-light-status-bar";
-import { useUserRole } from "@/lib/auth-store";
+
+import { useUserRole } from "@/lib/auth/store";
 import { formatDateTime, formatTime } from "@/lib/date";
 import { trpc } from "@/lib/trpc/client";
 
@@ -100,16 +101,16 @@ function StudentHistoryDetails() {
 			mapOrigin={
 				hasLocations
 					? {
-							latitude: request.originLocation!.latitude,
-							longitude: request.originLocation!.longitude,
+							latitude: request.originLocation.latitude,
+							longitude: request.originLocation.longitude,
 						}
 					: null
 			}
 			mapDestination={
 				hasLocations
 					? {
-							latitude: request.destinationLocation!.latitude,
-							longitude: request.destinationLocation!.longitude,
+							latitude: request.destinationLocation.latitude,
+							longitude: request.destinationLocation.longitude,
 						}
 					: null
 			}

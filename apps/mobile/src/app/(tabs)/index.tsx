@@ -1,28 +1,31 @@
 import * as Location from "expo-location";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Clock, MapPin } from "lucide-react-native";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { Logo } from "@/assets/logo";
 
 import { NewsCarousel } from "@/components/news-carousel";
 import { PlaceCard } from "@/components/place-card";
 import type { Place } from "@/components/request-flow-sheet/types";
 import { ScholarHome } from "@/components/scholar/home";
 import { SearchBar } from "@/components/search-bar";
+import SimplifiedHome from "@/components/simplified-interface/home";
 import { Text } from "@/components/ui/text";
 
-import { useUserRole } from "@/lib/auth-store";
-import { haversineMeters } from "@/lib/distance";
+import { useSimplifiedInterface, useUser, useUserRole } from "@/lib/auth/store";
+import { haversineMeters } from "@/lib/geo/distance";
+import { trpc } from "@/lib/trpc/client";
+
 import {
 	getCachedCampusLocations,
 	setCachedCampusLocations,
 	setNearestPoint,
-} from "@/lib/location-store";
-import { getRequestState } from "@/lib/request-store";
-import { trpc } from "@/lib/trpc/client";
-
-import { Logo } from "@/assets/logo";
+	useNearestPoint,
+} from "@/stores/location-store";
+import { getRequestState } from "@/stores/request-store";
 
 const newsItems = [
 	{
@@ -70,8 +73,16 @@ const getPosition = async () => {
 	throw new Error("Unable to determine location");
 };
 
-function StudentHome() {
-	const insets = useSafeAreaInsets();
+type StudentHomeProps = {
+	insets: {
+		top: number;
+		bottom: number;
+		left: number;
+		right: number;
+	};
+};
+
+function StudentHome({ insets }: StudentHomeProps) {
 	const router = useRouter();
 
 	const navigateWithDestination = useCallback(
@@ -82,103 +93,6 @@ function StudentHome() {
 			});
 		},
 		[router],
-	);
-
-	// Fetch campus locations from the DB (source of truth)
-	const { data: campusLocations = [] } = trpc.locations.list.useQuery(
-		undefined,
-		{
-			staleTime: 30 * 60 * 1000, // 30 min — campus data rarely changes
-			gcTime: 60 * 60 * 1000, // keep in cache for 1h even if unused
-		},
-	);
-	const campusLocationsRef = useRef(campusLocations);
-	campusLocationsRef.current = campusLocations;
-
-	// Persist campus locations across app sessions
-	useEffect(() => {
-		if (campusLocations.length > 0) {
-			setCachedCampusLocations(campusLocations as Place[]);
-		}
-	}, [campusLocations]);
-
-	useFocusEffect(
-		useCallback(() => {
-			// ─── Restore ongoing trip if one was in progress ────────────────
-			const persisted = getRequestState();
-			const hasOngoingRequest =
-				persisted.activeRequestId && persisted.stage === "trip";
-
-			if (hasOngoingRequest) {
-				router.replace("/request");
-				return;
-			}
-
-			const setupLocation = async () => {
-				const { status } =
-					await Location.getForegroundPermissionsAsync();
-
-				if (status !== "granted") {
-					router.replace("/location-permission");
-					return;
-				}
-
-				// Permissão concedida — calcula o ponto UFAL mais próximo
-				try {
-					const position = await getPosition();
-
-					const userLat = position.coords.latitude;
-					const userLng = position.coords.longitude;
-
-					// console.log("User position:", userLat, userLng);
-
-					const locations =
-						campusLocationsRef.current.length > 0
-							? campusLocationsRef.current
-							: getCachedCampusLocations(); // ← instant from MMKV
-					if (locations.length === 0) return;
-
-					let closestPoint = locations[0];
-					if (!closestPoint) {
-						console.warn("No campus locations available");
-						return;
-					}
-
-					let minDistance = haversineMeters(
-						userLat,
-						userLng,
-						closestPoint.latitude,
-						closestPoint.longitude,
-					);
-
-					for (let i = 1; i < locations.length; i++) {
-						const point = locations[i];
-						if (!point) continue;
-						const dist = haversineMeters(
-							userLat,
-							userLng,
-							point.latitude,
-							point.longitude,
-						);
-						if (dist < minDistance) {
-							minDistance = dist;
-							closestPoint = point;
-						}
-					}
-
-					setNearestPoint({
-						name: closestPoint.name,
-						abbreviation: closestPoint.abbreviation ?? undefined,
-						latitude: closestPoint.latitude,
-						longitude: closestPoint.longitude,
-					});
-				} catch (error) {
-					console.warn("Failed to get current location:", error);
-				}
-			};
-
-			setupLocation();
-		}, [router]),
 	);
 
 	return (
@@ -298,6 +212,121 @@ function StudentHome() {
 }
 
 export default function Home() {
+	const insets = useSafeAreaInsets();
+	const router = useRouter();
 	const role = useUserRole();
-	return role === "scholar" ? <ScholarHome /> : <StudentHome />;
+	const user = useUser();
+	const nearestPoint = useNearestPoint();
+	const [isLocationLoading, setIsLocationLoading] = useState(true);
+
+	const userName = user.name?.split(" ")[0] ?? "";
+	const simplifiedInterface = useSimplifiedInterface();
+
+	const { data: campusLocations = [] } = trpc.locations.list.useQuery(
+		undefined,
+		{
+			staleTime: 30 * 60 * 1000,
+			gcTime: 60 * 60 * 1000,
+		},
+	);
+	const campusLocationsRef = useRef(campusLocations);
+	campusLocationsRef.current = campusLocations;
+
+	useEffect(() => {
+		if (campusLocations.length > 0) {
+			setCachedCampusLocations(campusLocations as Place[]);
+		}
+	}, [campusLocations]);
+
+	useFocusEffect(
+		useCallback(() => {
+			const persisted = getRequestState();
+			const hasOngoingRequest =
+				persisted.activeRequestId && persisted.stage === "trip";
+
+			if (hasOngoingRequest) {
+				router.replace("/request");
+				return;
+			}
+
+			const setupLocation = async () => {
+				const { status } =
+					await Location.getForegroundPermissionsAsync();
+
+				if (status !== "granted") {
+					router.replace("/location-permission");
+					return;
+				}
+
+				try {
+					const position = await getPosition();
+
+					const userLat = position.coords.latitude;
+					const userLng = position.coords.longitude;
+
+					const locations =
+						campusLocationsRef.current.length > 0
+							? campusLocationsRef.current
+							: getCachedCampusLocations();
+					if (locations.length === 0) return;
+
+					let closestPoint = locations[0];
+					if (!closestPoint) {
+						console.warn("No campus locations available");
+						return;
+					}
+
+					let minDistance = haversineMeters(
+						userLat,
+						userLng,
+						closestPoint.latitude,
+						closestPoint.longitude,
+					);
+
+					for (let i = 1; i < locations.length; i++) {
+						const point = locations[i];
+						if (!point) continue;
+						const dist = haversineMeters(
+							userLat,
+							userLng,
+							point.latitude,
+							point.longitude,
+						);
+						if (dist < minDistance) {
+							minDistance = dist;
+							closestPoint = point;
+						}
+					}
+
+					setNearestPoint({
+						name: closestPoint.name,
+						abbreviation: closestPoint.abbreviation ?? undefined,
+						latitude: closestPoint.latitude,
+						longitude: closestPoint.longitude,
+					});
+				} catch (error) {
+					console.warn("Failed to get current location:", error);
+				}
+			};
+
+			setIsLocationLoading(true);
+			setupLocation().finally(() => setIsLocationLoading(false));
+		}, [router]),
+	);
+
+	if (role === "student" && simplifiedInterface) {
+		return (
+			<SimplifiedHome
+				nearestPoint={nearestPoint}
+				userName={userName}
+				isLocationLoading={isLocationLoading}
+			/>
+		);
+	}
+
+	return role === "scholar" ? (
+		<ScholarHome />
+	) : (
+		<StudentHome insets={insets} />
+	);
 }

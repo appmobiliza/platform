@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import { getRealtimeClient } from "@/lib/realtime";
+import { getRealtimeClient, isUsingMockClient } from "@/lib/realtime";
 
 import type { Coordinates } from "./use-user-location";
 
@@ -63,12 +63,21 @@ export function usePositionBroadcaster({
 			lng: location.longitude,
 		};
 
-		getRealtimeClient().then((client) => {
-			client.publish(channel, event, {
-				latitude: location.latitude,
-				longitude: location.longitude,
-				...payload,
+		getRealtimeClient()
+			.then((client) => {
+				if (isUsingMockClient()) return;
+
+				client.publish(channel, event, {
+					latitude: location.latitude,
+					longitude: location.longitude,
+					...payload,
+				});
+			})
+			.catch((error) => {
+				console.error(
+					"[usePositionBroadcaster] Erro ao publicar posição:",
+					error,
+				);
 			});
-		});
 	}, [enabled, location, channel, event, payload]);
 }

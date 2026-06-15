@@ -1,7 +1,5 @@
 "use client";
 
-import { scholarShiftLabels } from "@mobiliza/contracts";
-
 import { DetailsSidebar } from "@/components/details/details-sidebar";
 import { RoutePreview } from "@/components/route-preview";
 import { DetailsSection } from "@/components/section";
@@ -68,12 +66,7 @@ function ServiceDetailsContent({ entry }: { entry: ServiceEntry }) {
 								{entry.scholar.user.name}
 							</p>
 							<p className="text-sm text-muted-foreground">
-								Turno{" "}
-								{
-									scholarShiftLabels[
-										entry.scholar.profile.shift
-									]
-								}
+								{entry.scholar.profile.course}
 							</p>
 						</div>
 					</div>

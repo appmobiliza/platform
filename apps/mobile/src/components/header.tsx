@@ -11,7 +11,7 @@ interface HeaderProps {
 	title?: string;
 	description?: string;
 	size?: "default" | "small";
-	href?: "back" | string;
+	href?: "back" | string | null;
 	onClick?: () => void;
 	isDisabled?: boolean;
 }

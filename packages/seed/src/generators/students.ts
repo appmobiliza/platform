@@ -26,6 +26,7 @@ import {
 	studentProfile,
 	user,
 } from "@mobiliza/db/schema";
+
 import { eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 
@@ -133,6 +134,7 @@ function generateStudentProfile(userId: string): NewStudentProfile {
 			])
 			: null,
 		simplifiedInterface: faker.datatype.boolean(0.2),
+		voiceProcessingOnline: faker.datatype.boolean(0.8),
 		isActive: faker.datatype.boolean(0.9),
 	};
 }

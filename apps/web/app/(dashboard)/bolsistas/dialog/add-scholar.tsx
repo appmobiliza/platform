@@ -7,8 +7,6 @@ import {
 	genderValues,
 	type InsertScholarAsManagerInput,
 	InsertScholarAsManagerSchema,
-	scholarShiftLabels,
-	scholarShiftValues,
 	type UpdateScholarAsManagerInput,
 } from "@mobiliza/contracts";
 
@@ -136,7 +134,6 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 				course: scholar.profile.course as ScholarFormData["course"],
 				campus: scholar.profile.campus as ScholarFormData["campus"],
 				phone: scholar.profile.phone ?? "",
-				shift: scholar.profile.shift as ScholarFormData["shift"],
 				email: scholar.user.email,
 				cpf: "",
 				gender: undefined,
@@ -377,52 +374,6 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 										<FieldError
 											errors={[errors.enrollment]}
 										/>
-									)}
-								</Field>
-								<Field data-invalid={!!errors.shift}>
-									<Label htmlFor="shift">Turno</Label>
-									<Controller
-										name="shift"
-										control={control}
-										render={({ field }) => (
-											<Select
-												value={field.value}
-												onValueChange={field.onChange}
-											>
-												<SelectTrigger
-													id="shift"
-													className="w-full"
-													aria-invalid={
-														!!errors.shift
-													}
-												>
-													<SelectValue placeholder="Turno" />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectGroup>
-														{scholarShiftValues.map(
-															(_shift) => (
-																<SelectItem
-																	key={_shift}
-																	value={
-																		_shift
-																	}
-																>
-																	{
-																		scholarShiftLabels[
-																			_shift
-																		]
-																	}
-																</SelectItem>
-															),
-														)}
-													</SelectGroup>
-												</SelectContent>
-											</Select>
-										)}
-									/>
-									{errors.shift && (
-										<FieldError errors={[errors.shift]} />
 									)}
 								</Field>
 								<Field data-invalid={!!errors.gender}>

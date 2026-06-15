@@ -1,8 +1,8 @@
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 
-import { useUserRole } from "@/lib/auth-store";
+import { useUserRole } from "@/lib/auth/store";
 import { SCHOLAR_THEME, THEME } from "@/lib/theme";
-import { useAppColorScheme } from "@/lib/use-app-color-scheme";
+import { useAppColorScheme } from "@/lib/theme/use-app-color-scheme";
 
 export default function AppTabs() {
 	const colorScheme = useAppColorScheme();

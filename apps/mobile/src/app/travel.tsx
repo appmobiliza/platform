@@ -3,7 +3,7 @@ import { disabilityTypeLabels } from "@mobiliza/contracts";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, Clock, MapIcon } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, Alert, ScrollView, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddressRoute } from "@/components/address";
@@ -12,19 +12,22 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
+import { toast } from "@/components/ui/toast";
 
 import { useOsrmRoute } from "@/hooks/use-osrm-route";
 import { usePositionBroadcaster } from "@/hooks/use-position-broadcaster";
 import { useStudentTripPosition } from "@/hooks/use-student-trip-position";
 import { useUserLocation } from "@/hooks/use-user-location";
+
+import { haversineMeters } from "@/lib/geo/distance";
+import { trpc } from "@/lib/trpc/client";
+import { cn } from "@/lib/utils";
+
 import {
 	clearActiveAttendance,
 	getActiveAttendance,
 	saveActiveAttendance,
-} from "@/lib/active-attendance-store";
-import { haversineMeters } from "@/lib/distance";
-import { trpc } from "@/lib/trpc/client";
-import { cn } from "@/lib/utils";
+} from "@/stores/active-attendance-store";
 
 export default function TravelScreen() {
 	const insets = useSafeAreaInsets();
@@ -65,10 +68,9 @@ export default function TravelScreen() {
 			},
 			onError: (error) => {
 				console.error("[startAttendance] Erro:", error.message);
-				Alert.alert(
-					"Erro ao iniciar atendimento",
-					error.message ?? "Tente novamente mais tarde.",
-				);
+				toast.error(error.message ?? "Tente novamente mais tarde.", {
+					description: "Erro ao iniciar atendimento",
+				});
 			},
 		});
 
@@ -80,18 +82,16 @@ export default function TravelScreen() {
 				utils.requests.pending.invalidate();
 				utils.requests.active.setData(undefined, null);
 				utils.requests.scholarHistory.invalidate();
-				Alert.alert(
-					"Atendimento cancelado",
-					"O deslocamento foi cancelado.",
-				);
+				toast.success("Atendimento cancelado", {
+					description: "O deslocamento foi cancelado.",
+				});
 				router.back();
 			},
 			onError: (error) => {
 				console.error("[reportIssue] Erro:", error.message);
-				Alert.alert(
-					"Erro ao reportar problema",
-					error.message ?? "Tente novamente mais tarde.",
-				);
+				toast.error(error.message ?? "Tente novamente mais tarde.", {
+					description: "Erro ao reportar problema",
+				});
 			},
 		});
 
@@ -104,18 +104,16 @@ export default function TravelScreen() {
 				utils.requests.active.setData(undefined, null);
 				utils.requests.scholarHistory.invalidate();
 				utils.requests.pending.invalidate();
-				Alert.alert(
-					"Atendimento concluído",
-					"O deslocamento foi finalizado com sucesso.",
-				);
+				toast.success("Atendimento concluído", {
+					description: "O deslocamento foi finalizado com sucesso.",
+				});
 				router.back();
 			},
 			onError: (error) => {
 				console.error("[completeAttendance] Erro:", error.message);
-				Alert.alert(
-					"Erro ao concluir atendimento",
-					error.message ?? "Tente novamente mais tarde.",
-				);
+				toast.error(error.message ?? "Tente novamente mais tarde.", {
+					description: "Erro ao concluir atendimento",
+				});
 			},
 		});
 
@@ -255,17 +253,20 @@ export default function TravelScreen() {
 		if (isDuring) {
 			// Concluir atendimento
 			if (isFarFromDestination) {
-				Alert.alert(
-					"Atenção",
+				toast.warning(
 					"Você ainda está distante do destino. Deseja concluir o atendimento mesmo assim?",
-					[
-						{ text: "Cancelar", style: "cancel" },
-						{
-							text: "Concluir",
-							style: "destructive",
-							onPress: handleComplete,
+					{
+						description: "Atenção",
+						action: {
+							label: "Concluir",
+							onClick: () => handleComplete(),
 						},
-					],
+						cancel: {
+							label: "Cancelar",
+							onClick: () => {},
+						},
+						duration: Infinity,
+					},
 				);
 			} else {
 				handleComplete();
@@ -275,18 +276,18 @@ export default function TravelScreen() {
 
 		// Iniciar atendimento
 		if (!isCloseToStudent) {
-			Alert.alert(
-				"Atenção",
-				"Você ainda está distante do estudante. Deseja iniciar o atendimento mesmo assim?",
-				[
-					{ text: "Cancelar", style: "cancel" },
-					{
-						text: "Iniciar",
-						style: "destructive",
-						onPress: handleStart,
-					},
-				],
-			);
+			toast.warning("Você ainda está distante do estudante", {
+				description: "Deseja iniciar o atendimento mesmo assim?",
+				action: {
+					label: "Iniciar",
+					onClick: () => handleStart(),
+				},
+				cancel: {
+					label: "Cancelar",
+					onClick: () => {},
+				},
+				duration: Infinity,
+			});
 		} else {
 			handleStart();
 		}
@@ -294,18 +295,19 @@ export default function TravelScreen() {
 
 	const handleReportProblem = () => {
 		if (!requestId) return;
-		Alert.alert(
-			"Reportar problema",
-			"Se houver algum problema com este deslocamento, você pode cancelá-lo.",
-			[
-				{ text: "Voltar", style: "cancel" },
-				{
-					text: "Cancelar atendimento",
-					style: "destructive",
-					onPress: () => reportIssue({ requestId }),
-				},
-			],
-		);
+		toast.warning("Reportar problema", {
+			description:
+				"Se houver algum problema com este deslocamento, você pode cancelá-lo.",
+			action: {
+				label: "Cancelar atendimento",
+				onClick: () => reportIssue({ requestId }),
+			},
+			cancel: {
+				label: "Voltar",
+				onClick: () => {},
+			},
+			duration: Infinity,
+		});
 	};
 
 	// ─── Button derived props ─────────────────────────────────────────────────
@@ -352,12 +354,10 @@ export default function TravelScreen() {
 
 	return (
 		<View className="flex-1 bg-background">
-			{/* Header */}
 			<View
 				className="bg-primary px-6 pb-8 gap-6"
 				style={{ paddingTop: insets.top + 24 }}
 			>
-				{/* Top Nav */}
 				<View className="flex-row items-center justify-between">
 					<ChevronLeft
 						color="#FFFFFF"
@@ -365,7 +365,6 @@ export default function TravelScreen() {
 						onPress={() => router.back()}
 					/>
 
-					{/* Timer (only while in progress) */}
 					{isDuring && !hasCompleted && (
 						<View className="bg-primary-foreground/20 px-3 py-1.5 rounded-full flex-row items-center">
 							<Clock
@@ -380,7 +379,6 @@ export default function TravelScreen() {
 					)}
 				</View>
 
-				{/* Student Profile Info */}
 				<View className="flex-row items-center">
 					<Avatar
 						alt={`${studentName}'s Avatar`}
@@ -408,7 +406,6 @@ export default function TravelScreen() {
 				contentContainerClassName="gap-4"
 				showsVerticalScrollIndicator={false}
 			>
-				{/* Route Card */}
 				<View className="p-5 bg-card border border-border rounded-lg">
 					<Text className="text-muted-foreground font-semibold text-xs mb-3 tracking-widest uppercase">
 						PERCURSO
@@ -427,7 +424,6 @@ export default function TravelScreen() {
 					/>
 				</View>
 
-				{/* Observation Card */}
 				{observation && (
 					<View className="bg-card p-4 border border-border rounded-lg">
 						<Text className="text-muted-foreground font-semibold text-xs mb-3 tracking-widest uppercase">
@@ -439,7 +435,6 @@ export default function TravelScreen() {
 					</View>
 				)}
 
-				{/* Map area when toggled */}
 				{showMap && (
 					<View className="h-64 rounded-lg overflow-hidden border border-border">
 						<MapView
@@ -472,9 +467,7 @@ export default function TravelScreen() {
 				)}
 			</ScrollView>
 
-			{/* Footer Actions */}
 			<View className="px-6 pb-8 pt-4 gap-2">
-				{/* Map toggle */}
 				{!hasCompleted && (
 					<Button
 						variant="outline"
@@ -482,14 +475,13 @@ export default function TravelScreen() {
 						onPress={() => setShowMap((prev) => !prev)}
 						className="w-full rounded-xl"
 					>
-						<Icon icon={MapIcon} size={16} color="--primary" />
+						<Icon icon={MapIcon} size={16} color="--foreground" />
 						<Text className="ml-2">
 							{showMap ? "Ocultar mapa" : "Ver no mapa"}
 						</Text>
 					</Button>
 				)}
 
-				{/* Main action button (unified) */}
 				<Button
 					size="lg"
 					onPress={handleRequest}

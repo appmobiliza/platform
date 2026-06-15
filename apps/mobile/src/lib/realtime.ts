@@ -31,6 +31,7 @@ import {
 
 let _instance: RealtimeClientAdapter | null = null;
 let _initializing: Promise<RealtimeClientAdapter> | null = null;
+let _usingMock = false;
 
 async function fetchCredentials(): Promise<ClientCredentials> {
 	const apiUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -39,6 +40,7 @@ async function fetchCredentials(): Promise<ClientCredentials> {
 		console.warn(
 			"[realtime] EXPO_PUBLIC_API_URL não definida. Usando mock.",
 		);
+		_usingMock = true;
 		return { provider: "mock", config: {} };
 	}
 
@@ -52,14 +54,25 @@ async function fetchCredentials(): Promise<ClientCredentials> {
 			console.warn(
 				`[realtime] Falha ao buscar credenciais (${response.status}). Usando mock.`,
 			);
+			_usingMock = true;
 			return { provider: "mock", config: {} };
 		}
 
+		_usingMock = false;
 		return (await response.json()) as ClientCredentials;
 	} catch (error) {
 		console.error("[realtime] Erro ao buscar credenciais:", error);
+		_usingMock = true;
 		return { provider: "mock", config: {} };
 	}
+}
+
+/**
+ * Indica se o cliente de realtime está operando em modo mock
+ * (por falha na obtenção de credenciais ou URL não configurada).
+ */
+export function isUsingMockClient(): boolean {
+	return _usingMock;
 }
 
 /**
@@ -93,4 +106,5 @@ export function disconnectRealtime(): void {
 		_instance = null;
 	}
 	_initializing = null;
+	_usingMock = false;
 }

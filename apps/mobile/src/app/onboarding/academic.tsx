@@ -18,10 +18,9 @@ import { Input } from "@/components/ui/input";
 import { SelectField } from "@/components/ui/select-field";
 import { Text } from "@/components/ui/text";
 
-import { updateOnboardingData } from "@/lib/onboarding-store";
-
 import { onboardingSteps } from "@/constants/onboarding";
 import { type CourseInfoInput, CourseInfoSchema } from "@/schemas";
+import { updateOnboardingData } from "@/stores/onboarding-store";
 
 export default function CourseInfo() {
 	const router = useRouter();

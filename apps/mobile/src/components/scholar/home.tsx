@@ -2,6 +2,7 @@ import { disabilityTypeLabels, getCurrentShift } from "@mobiliza/contracts";
 
 import { useRouter } from "expo-router";
 import {
+	CheckCircle2,
 	Clock,
 	Info,
 	LogIn,
@@ -10,17 +11,9 @@ import {
 	Play,
 	Power,
 } from "lucide-react-native";
-import {
-	type ReactNode,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef } from "react";
 import {
 	ActivityIndicator,
-	Alert,
 	FlatList,
 	Pressable,
 	ScrollView,
@@ -28,25 +21,27 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { RequestExtraShiftDialog } from "@/components/request-extra-shift-dialog";
+import { Logo } from "@/assets/logo";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
+import { toast } from "@/components/ui/toast";
 
 import { usePositionBroadcaster } from "@/hooks/use-position-broadcaster";
 import { useUserLocation } from "@/hooks/use-user-location";
-import {
-	clearActiveAttendance,
-	saveActiveAttendance,
-	useActiveAttendance,
-} from "@/lib/active-attendance-store";
+
 import { getRealtimeClient } from "@/lib/realtime";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 
-import { Logo } from "@/assets/logo";
+import {
+	clearActiveAttendance,
+	saveActiveAttendance,
+	useActiveAttendance,
+} from "@/stores/active-attendance-store";
 
 import { AddressRoute } from "../address";
 import {
@@ -74,6 +69,13 @@ const shiftLabels: Record<string, string> = {
 	afternoon: "Turno vespertino",
 	night: "Turno noturno",
 };
+
+/**
+ * Ignora a validação que impede solicitar turno extra para o próprio turno
+ * registrado. Útil durante desenvolvimento para testar fluxos extras sem
+ * precisar aguardar mudanças de período.
+ */
+const BYPASS_EXTRA_VALIDATION = false;
 
 // ─── Componentes auxiliares ──────────────────────────────────────────────────
 
@@ -382,10 +384,6 @@ export function ScholarHome() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [activeAttendance]);
 
-	// ─── Estado do diálogo de turno extra ──────────────────────────────────
-
-	const [extraShiftDialogOpen, setExtraShiftDialogOpen] = useState(false);
-
 	// ─── Mutations ───────────────────────────────────────────────────────────
 
 	const utils = trpc.useUtils();
@@ -454,16 +452,14 @@ export function ScholarHome() {
 	const { mutate: startShift, isPending: isStartingShift } =
 		trpc.shiftLogs.startShift.useMutation({
 			onSuccess: () => {
-				setExtraShiftDialogOpen(false);
 				utils.shiftLogs.getActiveShift.invalidate();
 				utils.profiles.me.invalidate();
 			},
 			onError: (error) => {
 				console.error("[startShift] Erro:", error.message);
-				Alert.alert(
-					"Erro ao iniciar turno",
-					error.message ?? "Tente novamente mais tarde.",
-				);
+				toast.error(error.message ?? "Tente novamente mais tarde.", {
+					description: "Erro ao iniciar turno",
+				});
 			},
 		});
 
@@ -507,10 +503,9 @@ export function ScholarHome() {
 			},
 			onError: (error) => {
 				console.error("[acceptRequest] Erro:", error.message);
-				Alert.alert(
-					"Erro ao aceitar solicitação",
-					error.message ?? "Tente novamente mais tarde.",
-				);
+				toast.error(error.message ?? "Tente novamente mais tarde.", {
+					description: "Erro ao aceitar solicitação",
+				});
 			},
 		});
 
@@ -666,6 +661,19 @@ export function ScholarHome() {
 		return null;
 	}, [currentShift]);
 
+	// Verifica se o turno atual já foi completado hoje
+	const { data: completedShiftData, isLoading: isLoadingCompleted } =
+		trpc.shiftLogs.completedShiftForToday.useQuery(
+			{
+				shift: currentShift?.shift as "morning" | "afternoon" | "night",
+			},
+			{
+				enabled: shiftState === "shift_not_started" && !!currentShift,
+			},
+		);
+
+	const isShiftCompleted = completedShiftData?.completed ?? false;
+
 	// Handler para iniciar turno
 	const handleStartShift = useCallback(() => {
 		if (!currentShift) return;
@@ -677,18 +685,61 @@ export function ScholarHome() {
 	// Handler para encerrar turno
 	const handleEndShift = useCallback(() => {
 		if (!activeShiftLog) return;
-		endShift({ shiftLogId: activeShiftLog.id });
+
+		toast("Tem certeza que deseja encerrar o turno?", {
+			description:
+				"Após encerrar, você não receberá novas solicitações de deslocamento.",
+			action: {
+				label: "Encerrar turno",
+				onClick: () => endShift({ shiftLogId: activeShiftLog.id }),
+			},
+			cancel: {
+				label: "Cancelar",
+				onClick: () => {},
+			},
+			duration: Infinity,
+			closeButton: true,
+		});
 	}, [activeShiftLog, endShift]);
 
 	// Handler para confirmar turno extra — inicia imediatamente sem aprovação
 	const handleConfirmExtraShift = useCallback(() => {
 		const currentShiftValue = getCurrentShift();
+
+		// Verifica se o bolsista já está registrado para este turno hoje
+		if (!BYPASS_EXTRA_VALIDATION) {
+			const dayNames = [
+				"sunday",
+				"monday",
+				"tuesday",
+				"wednesday",
+				"thursday",
+				"friday",
+				"saturday",
+			] as const;
+			const today = dayNames[new Date().getDay()]!;
+
+			const isRegistered = me?.scholarProfile?.weeklySchedule?.some(
+				(entry) =>
+					entry.dayOfWeek === today &&
+					entry.shift === currentShiftValue,
+			);
+
+			if (isRegistered) {
+				toast.warning(
+					"Você não pode solicitar um turno extra para o período em que já está registrado na sua grade semanal. Utilize o fluxo regular para iniciar seu turno.",
+					{ description: "Turno indisponível" },
+				);
+				return;
+			}
+		}
+
 		startShift({
 			shift: currentShiftValue,
 		});
-	}, [startShift]);
+	}, [startShift, me?.scholarProfile?.weeklySchedule]);
 
-	const isLoading = isLoadingShift;
+	const isLoading = isLoadingShift || isLoadingCompleted;
 
 	return (
 		<ScrollView
@@ -711,8 +762,7 @@ export function ScholarHome() {
 						className={cn("py-1 px-2.5", {
 							"bg-green-600": shiftState === "shift_active",
 							"bg-yellow-600": shiftState === "shift_not_started",
-							"bg-muted-foreground":
-								shiftState === "not_in_shift",
+							"bg-accent": shiftState === "not_in_shift",
 						})}
 					>
 						<View
@@ -748,23 +798,38 @@ export function ScholarHome() {
 					</View>
 				) : shiftState === "not_in_shift" ? (
 					<>
-						{/* Fora do turno — pode solicitar turno extra */}
 						<Button
 							size="lg"
 							variant="outline"
-							onPress={() => setExtraShiftDialogOpen(true)}
+							disabled={isStartingShift}
+							onPress={() => {
+								toast("Solicitação de turno extra", {
+									description:
+										"Seu turno regular ainda não começou. Caso precise compensar horas pendentes, você pode iniciar um turno extra agora.",
+									action: {
+										label: "Iniciar turno extra",
+										onClick: () =>
+											handleConfirmExtraShift(),
+									},
+									cancel: {
+										label: "Cancelar",
+										onClick: () => {},
+									},
+									duration: Infinity,
+									closeButton: true,
+								});
+							}}
 							className="rounded-full px-4 gap-2"
 						>
-							<Text>Solicitar turno extra</Text>
+							{isStartingShift ? (
+								<ActivityIndicator size={20} />
+							) : null}
+							<Text>
+								{isStartingShift
+									? "Iniciando..."
+									: "Solicitar turno extra"}
+							</Text>
 						</Button>
-
-						<RequestExtraShiftDialog
-							open={extraShiftDialogOpen}
-							onOpenChange={setExtraShiftDialogOpen}
-							onConfirm={handleConfirmExtraShift}
-							onCancel={() => setExtraShiftDialogOpen(false)}
-							isLoading={isStartingShift}
-						/>
 
 						<EmptyStateCard>
 							<Icon
@@ -783,48 +848,78 @@ export function ScholarHome() {
 					</>
 				) : shiftState === "shift_not_started" ? (
 					<>
-						{/* Dentro do horário de turno mas não iniciou no app */}
-						<Button
-							variant="default"
-							onPress={handleStartShift}
-							disabled={isStartingShift}
-							size="lg"
-							className="rounded-full gap-3"
-						>
-							{isStartingShift ? (
-								<ActivityIndicator size={20} color="white" />
-							) : (
-								<Icon
-									icon={LogIn}
-									size={18}
-									color="--primary-foreground"
-								/>
-							)}
-							<Text className="mb-0.5 text-base font-medium">
-								{isStartingShift
-									? "Iniciando..."
-									: "Iniciar turno"}
-							</Text>
-						</Button>
+						{isShiftCompleted ? (
+							<>
+								<EmptyStateCard>
+									<Icon
+										icon={CheckCircle2}
+										color="--foreground"
+										size={56}
+									/>
+									<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
+										Turno já realizado
+									</Text>
+									<Text className="text-center text-base leading-tight text-muted-foreground">
+										Você já completou seu turno de hoje.
+										{"\n"}
+										Se precisar trabalhar em outro horário,
+										{"\n"}
+										solicite um turno extra.
+									</Text>
+								</EmptyStateCard>
+							</>
+						) : (
+							<>
+								<Button
+									variant="default"
+									onPress={handleStartShift}
+									disabled={isStartingShift}
+									size="lg"
+									className="rounded-full gap-3"
+								>
+									{isStartingShift ? (
+										<ActivityIndicator
+											size={20}
+											color="white"
+										/>
+									) : (
+										<Icon
+											icon={LogIn}
+											size={18}
+											color="--primary-foreground"
+										/>
+									)}
+									<Text className="mb-0.5 text-base font-medium">
+										{isStartingShift
+											? "Iniciando..."
+											: "Iniciar turno"}
+									</Text>
+								</Button>
 
-						<EmptyStateCard>
-							<Icon icon={Play} color="--foreground" size={56} />
-							<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
-								Seu turno já começou!
-							</Text>
-							<Text className="text-center text-base leading-tight text-muted-foreground">
-								Clique em "Iniciar turno" para começar a{"\n"}
-								receber solicitações de deslocamento.
-							</Text>
-						</EmptyStateCard>
+								<EmptyStateCard>
+									<Icon
+										icon={Play}
+										color="--foreground"
+										size={56}
+									/>
+									<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
+										Seu turno já começou!
+									</Text>
+									<Text className="text-center text-base leading-tight text-muted-foreground">
+										Clique em "Iniciar turno" para começar a
+										{"\n"}
+										receber solicitações de deslocamento.
+									</Text>
+								</EmptyStateCard>
+							</>
+						)}
 					</>
 				) : (
 					<>
-						{/* Turno ativo — pode ver solicitações */}
 						<Button
 							variant="secondary"
 							onPress={handleEndShift}
-							disabled={isEndingShift}
+							disabled={isEndingShift || !!currentActiveService}
 							size="lg"
 							className="rounded-full gap-3"
 						>
@@ -848,7 +943,6 @@ export function ScholarHome() {
 						</Button>
 
 						<View className="gap-4 flex-1">
-							{/* Atendimento ativo */}
 							{currentActiveService ? (
 								<View className="gap-4">
 									<SectionTitle label="Atendimento em andamento" />

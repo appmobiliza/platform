@@ -14,11 +14,11 @@ import { MaskedInput } from "@/components/ui/masked-input";
 import { SelectField } from "@/components/ui/select-field";
 import { Text } from "@/components/ui/text";
 
-import { getCachedUser } from "@/lib/auth-store";
-import { updateOnboardingData } from "@/lib/onboarding-store";
+import { getCachedUser } from "@/lib/auth/store";
 
 import { onboardingSteps } from "@/constants/onboarding";
 import { type BasicInfoInput, BasicInfoSchema } from "@/schemas";
+import { updateOnboardingData } from "@/stores/onboarding-store";
 
 export default function BasicInfo() {
 	const router = useRouter();

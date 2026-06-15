@@ -1,4 +1,4 @@
-import { ClockAlert, ClockFading } from "lucide-react-native";
+import { ClockFading } from "lucide-react-native";
 import { useCallback, useMemo } from "react";
 import { ActivityIndicator, FlatList, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -7,12 +7,12 @@ import { FeaturedHistoryCard } from "@/components/featured-history-card";
 import { ScholarHistory } from "@/components/scholar/history";
 import { SimpleHistoryItem } from "@/components/simple-history-item";
 import { StatusMessage } from "@/components/status-message";
-import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
 import { useLightStatusBar } from "@/hooks/use-light-status-bar";
-import { UserRole, useUserRole } from "@/lib/auth-store";
+
+import { UserRole, useUserRole } from "@/lib/auth/store";
 import { formatDateTime } from "@/lib/date";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";

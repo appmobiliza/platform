@@ -4,7 +4,7 @@ import { useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useCallback } from "react";
 
-import { useAppColorScheme } from "@/lib/use-app-color-scheme";
+import { useAppColorScheme } from "@/lib/theme/use-app-color-scheme";
 
 export function useLightStatusBar() {
 	const colorScheme = useAppColorScheme();

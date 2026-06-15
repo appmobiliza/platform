@@ -2,7 +2,7 @@ import { useSyncExternalStore } from "react";
 
 import type { Place } from "@/components/request-flow-sheet/types";
 
-import { storage } from "./storage";
+import { storage } from "@/lib/storage";
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 

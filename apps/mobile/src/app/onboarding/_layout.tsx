@@ -1,7 +1,7 @@
 import { Stack } from "expo-router";
 
 import { THEME } from "@/lib/theme";
-import { useAppColorScheme } from "@/lib/use-app-color-scheme";
+import { useAppColorScheme } from "@/lib/theme/use-app-color-scheme";
 
 export default function OnboardingLayout() {
 	const colorScheme = useAppColorScheme();

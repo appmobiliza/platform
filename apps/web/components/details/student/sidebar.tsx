@@ -168,7 +168,7 @@ export function StudentDetailsSidebar() {
 							</div>
 						</div>
 
-						<div className="flex items-center gap-2 flex-row">
+						<div className="flex items-center gap-2 flex-row flex-wrap">
 							{student.profile.disabilities.map((disability) => (
 								<Badge key={disability} variant={"secondary"}>
 									{

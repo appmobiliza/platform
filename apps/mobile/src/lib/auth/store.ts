@@ -10,8 +10,8 @@ import { Platform } from "react-native";
 
 import { toSessionUser } from "@/types/session";
 
-import { authClient } from "./auth-client";
-import { storage } from "./storage";
+import { storage } from "../storage";
+import { authClient } from "./client";
 
 export enum UserRole {
 	Student = "student",
@@ -27,6 +27,7 @@ const CACHE_KEYS = {
 	userImage: "auth-user-image",
 	userRole: "auth-user-role",
 	hasProfile: "auth-has-profile",
+	simplifiedInterface: "auth-simplified-interface",
 } as const;
 
 // ─── Funções de cache síncrono (MMKV) ─────────────────────────────────────────
@@ -54,6 +55,7 @@ export function clearUserCache() {
 		storage.remove(key);
 	}
 	notifyHasProfileListeners();
+	notifySimplifiedInterfaceListeners();
 }
 
 export function getCachedUser() {
@@ -66,6 +68,45 @@ export function getCachedUser() {
 			(storage.getString(CACHE_KEYS.userRole) as UserRole) ??
 			UserRole.Student,
 	};
+}
+
+// ─── Simplified Interface cache ──────────────────────────────────────────────
+
+const simplifiedInterfaceListeners = new Set<() => void>();
+
+function subscribeToSimplifiedInterface(callback: () => void): () => void {
+	simplifiedInterfaceListeners.add(callback);
+	return () => {
+		simplifiedInterfaceListeners.delete(callback);
+	};
+}
+
+function notifySimplifiedInterfaceListeners(): void {
+	for (const listener of simplifiedInterfaceListeners) {
+		listener();
+	}
+}
+
+export function setSimplifiedInterface(value: boolean) {
+	storage.set(CACHE_KEYS.simplifiedInterface, String(value));
+	notifySimplifiedInterfaceListeners();
+}
+
+export function getSimplifiedInterface(): boolean {
+	return storage.getString(CACHE_KEYS.simplifiedInterface) === "true";
+}
+
+/**
+ * Retorna se o usuário optou pela interface simplificada (acessibilidade).
+ * O valor é lido do cache MMKV para resposta instantânea,
+ * e atualizado via listeners quando sofre alteração.
+ */
+export function useSimplifiedInterface(): boolean {
+	return useSyncExternalStore(
+		subscribeToSimplifiedInterface,
+		getSimplifiedInterface,
+		getSimplifiedInterface,
+	);
 }
 
 // ─── Reactive subscriptions ───────────────────────────────────────────────────
@@ -185,18 +226,25 @@ export function useUser() {
 	const { data: session } = authClient.useSession();
 
 	return useMemo(() => {
+		const cached = getCachedUser();
 		const user = toSessionUser(session?.user as Record<string, unknown>);
 
 		if (!user) {
-			return getCachedUser();
+			return cached;
 		}
 
+		// Use session data as base, but let MMKV cache override mutable
+		// fields. This ensures profile updates (which call cacheUserInfo)
+		// are reflected immediately even if the session hasn't refreshed
 		return {
 			id: user.id ?? "",
-			name: user.name ?? "",
-			email: user.email ?? "",
-			image: user.image ?? null,
-			role: (user.role as UserRole) ?? UserRole.Student,
+			name: cached.name || user.name || "",
+			email: cached.email || user.email || "",
+			image: cached.image || user.image || null,
+			role:
+				(cached.role as UserRole) ||
+				(user.role as UserRole) ||
+				UserRole.Student,
 		};
 	}, [session]);
 }

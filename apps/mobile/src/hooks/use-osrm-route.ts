@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { fetchOSRMRoute, type OSRMProfile, type OSRMResult } from "@/lib/osrm";
+import { fetchOSRMRoute, type OSRMProfile, type OSRMResult } from "@/lib/geo/osrm";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 

@@ -22,7 +22,7 @@
 			"default": "./dist/client.js"
 		},
 		"./server": {
-			"types": "./dist/server.d.ts",
+			"types": "./src/server.ts",
 			"default": "./dist/server.js"
 		}
 	},

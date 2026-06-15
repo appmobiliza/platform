@@ -1,0 +1,1 @@
+ALTER TABLE "student_profile" ADD COLUMN "voice_processing_online" boolean DEFAULT true NOT NULL;

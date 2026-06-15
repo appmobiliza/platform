@@ -12,7 +12,7 @@ import { createAuthClient } from "better-auth/react";
 import * as SecureStore from "expo-secure-store";
 
 export const authClient = createAuthClient({
-	baseURL: `${process.env.EXPO_PUBLIC_API_URL}/api/auth`,
+	baseURL: `${process.env.EXPO_PUBLIC_BETTER_AUTH_URL}/api/auth`,
 	plugins: [
 		expoClient({
 			scheme: "mobiliza",
@@ -21,3 +21,14 @@ export const authClient = createAuthClient({
 		}),
 	],
 });
+
+/**
+ * Retorna o cookie de sessão armazenado pelo Better Auth.
+ *
+ * Em native, o cookie é gerenciado pelo `@better-auth/expo` via
+ * `expo-secure-store`. O método `getCookie()` é adicionado ao
+ * cliente pelo plugin `expoClient`.
+ */
+export function getAuthCookie(): string | null {
+	return authClient.getCookie?.() ?? null;
+}

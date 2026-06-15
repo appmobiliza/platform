@@ -1,6 +1,9 @@
 import { Pressable, Text } from "react-native";
 
-import { getThemePreference, setThemePreference } from "@/lib/theme-store";
+import {
+	getThemePreference,
+	setThemePreference,
+} from "@/stores/theme-store";
 
 function toggleTheme() {
 	const current = getThemePreference();

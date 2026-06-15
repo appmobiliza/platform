@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
-import { useNearestPoint } from "@/lib/location-store";
 import { cn } from "@/lib/utils";
+
+import { useNearestPoint } from "@/stores/location-store";
 
 import { SheetFrame, StageSheet } from "../subcomponents/layout";
 import type { Place, Stage } from "../types";

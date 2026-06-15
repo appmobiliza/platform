@@ -254,14 +254,6 @@ export default async function DashboardPage() {
 														</span>
 														<span className="text-xs">
 															{
-																scholarShiftLabels[
-																	scholar
-																		.profile
-																		.shift as ScholarShiftValues
-																]
-															}{" "}
-															·{" "}
-															{
 																scholar.profile
 																	.course
 															}

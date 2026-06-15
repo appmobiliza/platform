@@ -12,6 +12,10 @@
 				"dark": "./assets/images/ios/ios-dark.png",
 				"light": "./assets/images/ios/ios-light.png",
 				"tinted": "./assets/images/ios/ios-tinted.png"
+			},
+			"infoPlist": {
+				"NSSpeechRecognitionUsageDescription": "Allow $(PRODUCT_NAME) to use speech recognition.",
+				"NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to use the microphone."
 			}
 		},
 		"android": {
@@ -24,13 +28,16 @@
 			},
 			"predictiveBackGestureEnabled": false,
 			"softwareKeyboardLayoutMode": "pan",
-			"package": "br.ufal.mobiliza"
+			"package": "br.ufal.mobiliza",
+			"permissions": ["android.permission.RECORD_AUDIO"]
 		},
 		"web": {
 			"output": "static",
 			"favicon": "./assets/images/favicon.png"
 		},
 		"plugins": [
+			"expo-speech-recognition",
+			"expo-font",
 			[
 				"expo-router",
 				{
@@ -45,7 +52,7 @@
 				{
 					"backgroundColor": "#005E65",
 					"image": "./assets/images/splash-icon.png",
-					"imageWidth": 1024
+					"imageWidth": 200
 				}
 			],
 			[
@@ -63,124 +70,6 @@
 					"style": "light"
 				}
 			],
-			[
-				"expo-font",
-				{
-					"android": {
-						"fonts": [
-							{
-								"fontFamily": "Atkinson Hyperlegible Next",
-								"fontDefinitions": [
-									{
-										"path": "./node_modules/@expo-google-fonts/atkinson-hyperlegible-next/200ExtraLight/AtkinsonHyperlegibleNext_200ExtraLight.ttf",
-										"weight": 200
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/atkinson-hyperlegible-next/200ExtraLight_Italic/AtkinsonHyperlegibleNext_200ExtraLight_Italic.ttf",
-										"weight": 200,
-										"style": "italic"
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/atkinson-hyperlegible-next/300Light/AtkinsonHyperlegibleNext_300Light.ttf",
-										"weight": 300
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/atkinson-hyperlegible-next/300Light_Italic/AtkinsonHyperlegibleNext_300Light_Italic.ttf",
-										"weight": 300,
-										"style": "italic"
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/atkinson-hyperlegible-next/400Regular/AtkinsonHyperlegibleNext_400Regular.ttf",
-										"weight": 400
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/atkinson-hyperlegible-next/400Regular_Italic/AtkinsonHyperlegibleNext_400Regular_Italic.ttf",
-										"weight": 400,
-										"style": "italic"
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/atkinson-hyperlegible-next/500Medium/AtkinsonHyperlegibleNext_500Medium.ttf",
-										"weight": 500
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/atkinson-hyperlegible-next/500Medium_Italic/AtkinsonHyperlegibleNext_500Medium_Italic.ttf",
-										"weight": 500,
-										"style": "italic"
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/atkinson-hyperlegible-next/600SemiBold/AtkinsonHyperlegibleNext_600SemiBold.ttf",
-										"weight": 600
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/atkinson-hyperlegible-next/600SemiBold_Italic/AtkinsonHyperlegibleNext_600SemiBold_Italic.ttf",
-										"weight": 600,
-										"style": "italic"
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/atkinson-hyperlegible-next/700Bold/AtkinsonHyperlegibleNext_700Bold.ttf",
-										"weight": 700
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/atkinson-hyperlegible-next/700Bold_Italic/AtkinsonHyperlegibleNext_700Bold_Italic.ttf",
-										"weight": 700,
-										"style": "italic"
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/atkinson-hyperlegible-next/800ExtraBold/AtkinsonHyperlegibleNext_800ExtraBold.ttf",
-										"weight": 800
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/atkinson-hyperlegible-next/800ExtraBold_Italic/AtkinsonHyperlegibleNext_800ExtraBold_Italic.ttf",
-										"weight": 800,
-										"style": "italic"
-									}
-								]
-							},
-							{
-								"fontFamily": "Google Sans Flex",
-								"fontDefinitions": [
-									{
-										"path": "./node_modules/@expo-google-fonts/google-sans-flex/100Thin/GoogleSansFlex_100Thin.ttf",
-										"weight": 100
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/google-sans-flex/200ExtraLight/GoogleSansFlex_200ExtraLight.ttf",
-										"weight": 200
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/google-sans-flex/300Light/GoogleSansFlex_300Light.ttf",
-										"weight": 300
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/google-sans-flex/400Regular/GoogleSansFlex_400Regular.ttf",
-										"weight": 400
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/google-sans-flex/500Medium/GoogleSansFlex_500Medium.ttf",
-										"weight": 500
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/google-sans-flex/600SemiBold/GoogleSansFlex_600SemiBold.ttf",
-										"weight": 600
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/google-sans-flex/700Bold/GoogleSansFlex_700Bold.ttf",
-										"weight": 700
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/google-sans-flex/800ExtraBold/GoogleSansFlex_800ExtraBold.ttf",
-										"weight": 800
-									},
-									{
-										"path": "./node_modules/@expo-google-fonts/google-sans-flex/900Black/GoogleSansFlex_900Black.ttf",
-										"weight": 900
-									}
-								]
-							}
-						]
-					}
-				}
-			],
 			"expo-image",
 			"expo-web-browser",
 			"@maplibre/maplibre-react-native",
@@ -193,7 +82,12 @@
 			"tsconfigPaths": true
 		},
 		"extra": {
-			"router": {},
+			"router": {
+				"headers": {
+					"Cross-Origin-Embedder-Policy": "credentialless",
+					"Cross-Origin-Opener-Policy": "same-origin"
+				}
+			},
 			"expo-status-bar": {
 				"style": "light",
 				"hidden": false
@@ -204,8 +98,9 @@
 				"hidden": false
 			},
 			"eas": {
-				"projectId": "f0188ce7-a169-49f9-826a-288dd1010ad3"
+				"projectId": "d7b58126-5f7d-499a-9eea-8e054470eb79"
 			}
-		}
+		},
+		"owner": "meninocoiso"
 	}
 }
