@@ -85,7 +85,7 @@ export function ScholarCard({ scholar }: { scholar: CachedScholar }) {
 					scholar={scholar}
 					className="flex-1 w-full md:w-auto py-2"
 				/>
-				<EditShiftDialog>
+				<EditShiftDialog scholar={scholar}>
 					<Button
 						className="flex-1 w-full  md:w-auto py-2"
 						variant="outline"
