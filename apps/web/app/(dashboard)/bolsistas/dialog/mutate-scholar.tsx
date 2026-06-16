@@ -54,8 +54,6 @@ import type { CachedScholar } from "@/lib/cached-data";
 
 import { trpc } from "@/providers/trpc-provider";
 
-import { EditShiftDialog } from "./edit-shift";
-
 // Local form schema – does NOT include `shift` (absent from scholar_profile table)
 const FormSchema = z.object({
 	userId: z.string().optional(),
@@ -457,20 +455,6 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 									<FieldError errors={[errors.cpf]} />
 								)}
 							</Field>
-
-							{/* Editar grade – full-width secondary button */}
-							<EditShiftDialog
-								scholar={isEditing ? scholar : undefined}
-							>
-								<Button
-									type="button"
-									variant="secondary"
-									className="w-full"
-									disabled={!isEditing}
-								>
-									Editar grade
-								</Button>
-							</EditShiftDialog>
 
 							{mutationError ? (
 								<Alert variant="destructive">

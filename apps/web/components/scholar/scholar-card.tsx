@@ -90,7 +90,7 @@ export function ScholarCard({ scholar }: { scholar: CachedScholar }) {
 						className="flex-1 w-full  md:w-auto py-2"
 						variant="outline"
 					>
-						Editar turno
+						Editar turnos
 					</Button>
 				</EditShiftDialog>
 			</div>

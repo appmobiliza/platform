@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { getCachedScholarDashboard } from "@/lib/cached-data";
 
-import { MutateScholarDialog } from "./dialog/add-scholar";
+import { MutateScholarDialog } from "./dialog/mutate-scholar";
 import { ViewScheduleDialog } from "./dialog/view-schedule";
 
 export const metadata: Metadata = {

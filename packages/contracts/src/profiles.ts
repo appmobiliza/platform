@@ -29,7 +29,6 @@ const SharedProfileSchema = {
 export const InsertScholarSchema = z.object({
 	...SharedProfileSchema,
 	course: z.enum(courseValues, { error: "Curso deve ser selecionado" }),
-	shift: z.enum(scholarShiftValues, { error: "Turno deve ser selecionado" }),
 	cpf: z
 		.string()
 		.regex(/^(?:\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11})$/, "CPF inválido"),

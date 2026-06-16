@@ -12,7 +12,7 @@ import { VerticalBarsChart } from "@/components/vertical-bars-chart";
 import type { CachedScholar } from "@/lib/cached-data";
 import { getInitials } from "@/lib/utils";
 
-import { MutateScholarDialog } from "@/app/(dashboard)/bolsistas/dialog/add-scholar";
+import { MutateScholarDialog } from "@/app/(dashboard)/bolsistas/dialog/mutate-scholar";
 
 import { DetailsSection } from "../../section";
 import { closeScholarDetails, useScholarDetailsEntry } from "./store";
