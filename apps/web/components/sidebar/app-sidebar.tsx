@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import type * as React from "react";
 
+import Logo from "@/assets/icons/logo";
+
 import { NavMain } from "@/components/sidebar/nav-main";
 import { NavUser } from "@/components/sidebar/nav-user";
 import {
@@ -21,8 +23,6 @@ import {
 	SidebarMenuItem,
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
-
-import Logo from "@/assets/icons/logo";
 
 const data = {
 	navMain: [
@@ -67,7 +67,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					<SidebarMenuItem className="flex flex-col items-start group-data-[collapsible=icon]:gap-0 pt-3.5 md:pt-2">
 						<div className="flex w-full flex-row items-center justify-between transition-all duration-300 ease-in-out">
 							<div className="w-36 shrink-0 overflow-hidden pl-4 transition-[width,opacity,padding] duration-300 ease-in-out group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:pl-0 group-data-[collapsible=icon]:opacity-0">
-								<Logo className="h-5 w-31.5 max-w-none" />
+								<Logo className="h-5 w-31.5 max-w-none fill-foreground" />
 							</div>
 							<SidebarTrigger className="hidden md:flex" />
 						</div>

@@ -42,6 +42,14 @@ export function createDetailsStore<T>() {
 		emitChange();
 	}
 
+	function updateItem(item: T) {
+		selectedItem = {
+			...selectedItem,
+			item,
+		};
+		emitChange();
+	}
+
 	function subscribe(listener: Listener) {
 		listeners.add(listener);
 		return () => listeners.delete(listener);
@@ -58,6 +66,7 @@ export function createDetailsStore<T>() {
 	return {
 		closeDetails,
 		openDetails,
+		updateItem,
 		useDetailsState,
 	};
 }

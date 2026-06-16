@@ -8,4 +8,5 @@ const scholarDetailsStore = createDetailsStore<CachedScholar>();
 
 export const openScholarDetails = scholarDetailsStore.openDetails;
 export const closeScholarDetails = scholarDetailsStore.closeDetails;
+export const updateScholarDetails = scholarDetailsStore.updateItem;
 export const useScholarDetailsEntry = scholarDetailsStore.useDetailsState;

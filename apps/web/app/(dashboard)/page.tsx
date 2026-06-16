@@ -51,7 +51,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 function getScholarStatusLabel(
-	status: "available" | "busy" | "off_shift" | "pending",
+	status: "available" | "busy" | "off_shift" | "inactive",
 ) {
 	switch (status) {
 		case "available":
@@ -60,13 +60,13 @@ function getScholarStatusLabel(
 			return "Em atendimento";
 		case "off_shift":
 			return "Fora do turno";
-		case "pending":
-			return "Pendente";
+		case "inactive":
+			return "Inativo";
 	}
 }
 
 function getScholarBadgeVariant(
-	status: "available" | "busy" | "off_shift" | "pending",
+	status: "available" | "busy" | "off_shift" | "inactive",
 ) {
 	if (status === "available") {
 		return "success";

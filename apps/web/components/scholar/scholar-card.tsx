@@ -15,7 +15,7 @@ const MONTHLY_HOURS_GOAL = 40;
 const STATUS_LABEL: Record<CachedScholar["status"], string> = {
 	available: "Disponível",
 	busy: "Em atendimento",
-	pending: "Pendente",
+	inactive: "Inativo",
 };
 
 const STATUS_VARIANT: Record<
@@ -24,7 +24,7 @@ const STATUS_VARIANT: Record<
 > = {
 	available: "success",
 	busy: "warning",
-	pending: "secondary",
+	inactive: "secondary",
 };
 
 export function ScholarCard({ scholar }: { scholar: CachedScholar }) {
@@ -89,6 +89,7 @@ export function ScholarCard({ scholar }: { scholar: CachedScholar }) {
 					<Button
 						className="flex-1 w-full  md:w-auto py-2"
 						variant="outline"
+						disabled={!scholar.profile?.isActive}
 					>
 						Editar turnos
 					</Button>

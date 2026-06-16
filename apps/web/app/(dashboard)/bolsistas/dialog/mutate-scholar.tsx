@@ -12,6 +12,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import * as React from "react";
+import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -50,6 +51,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 
+import { revalidateScholarDashboard } from "@/lib/actions";
 import type { CachedScholar } from "@/lib/cached-data";
 
 import { trpc } from "@/providers/trpc-provider";
@@ -104,6 +106,7 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 
 	const createScholar = trpc.profiles.createScholarAsManager.useMutation({
 		onSuccess() {
+			revalidateScholarDashboard();
 			router.refresh();
 			setOpen(false);
 			reset();
@@ -112,6 +115,7 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 
 	const updateScholar = trpc.profiles.updateScholarAsManager.useMutation({
 		onSuccess() {
+			revalidateScholarDashboard();
 			router.refresh();
 			setOpen(false);
 		},
@@ -136,7 +140,7 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 	}
 
 	// Reset form with scholar data when editing
-	React.useEffect(() => {
+	useEffect(() => {
 		if (open && scholar) {
 			reset({
 				userId: scholar.profile.userId,
@@ -146,8 +150,8 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 				campus: scholar.profile.campus as FormData["campus"],
 				phone: scholar.profile.phone ?? "",
 				email: scholar.user.email,
-				cpf: "",
-				gender: undefined,
+				cpf: scholar.profile.cpf ?? "",
+				gender: scholar.profile.gender,
 			});
 		} else if (!open) {
 			reset();

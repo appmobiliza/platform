@@ -8,7 +8,7 @@ function getScholarDashboardStatus(profile: {
 	isAvailable: boolean;
 }) {
 	if (!profile.isActive) {
-		return "pending" as const;
+		return "inactive" as const;
 	}
 
 	if (profile.isAvailable) {
@@ -197,6 +197,8 @@ export const scholarDashboard = managerProcedure
 					course: profile.course,
 					campus: profile.campus,
 					phone: profile.phone,
+					gender: profile.gender,
+					cpf: profile.cpf,
 					isAvailable: profile.isAvailable,
 					isActive: profile.isActive,
 				},
