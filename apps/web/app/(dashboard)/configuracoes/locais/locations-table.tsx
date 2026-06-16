@@ -18,8 +18,7 @@ import {
 } from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
-import { AddLocationDialog } from "./dialog/add-location";
-import { EditLocationDialog } from "./dialog/edit-location";
+import { MutateLocationDialog } from "./dialog/mutate-location";
 import { LocationStatusSwitch } from "./location-status-switch";
 
 export function LocationsTable({
@@ -106,7 +105,7 @@ export function LocationsTable({
 					</ToggleGroup>
 				</div>
 
-				<AddLocationDialog>
+				<MutateLocationDialog>
 					<Button
 						type="button"
 						size="lg"
@@ -115,7 +114,7 @@ export function LocationsTable({
 						<Plus className="size-4" />
 						Novo local
 					</Button>
-				</AddLocationDialog>
+				</MutateLocationDialog>
 			</div>
 
 			<div className="border-t border-border/70">
@@ -178,7 +177,9 @@ export function LocationsTable({
 										</div>
 									</TableCell>
 									<TableCell className="hidden px-4 py-4 text-right md:table-cell">
-										<EditLocationDialog location={location}>
+										<MutateLocationDialog
+											location={location}
+										>
 											<Button
 												type="button"
 												variant="outline"
@@ -187,7 +188,7 @@ export function LocationsTable({
 											>
 												Editar
 											</Button>
-										</EditLocationDialog>
+										</MutateLocationDialog>
 									</TableCell>
 								</TableRow>
 							))

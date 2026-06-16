@@ -1,5 +1,7 @@
 "use client";
 
+import type { CampusLocation } from "@mobiliza/db/schema";
+
 import { useRouter } from "next/navigation";
 import type * as React from "react";
 import { useState } from "react";
@@ -25,24 +27,28 @@ import { cn } from "@/lib/utils";
 
 import { trpc } from "@/providers/trpc-provider";
 
-export interface CampusLocationData {
-	id: string;
-	name: string;
-	abbreviation: string | null;
-	description: string | null;
-	latitude: number;
-	longitude: number;
-}
+type LocationData = Pick<
+	CampusLocation,
+	"id" | "name" | "abbreviation" | "description" | "latitude" | "longitude"
+>;
 
 interface Props {
-	location: CampusLocationData;
+	location?: LocationData;
 	children: React.ReactNode;
 	className?: string;
 }
 
-export function EditLocationDialog({ location, children, className }: Props) {
+export function MutateLocationDialog({ location, children, className }: Props) {
 	const router = useRouter();
 	const [open, setOpen] = useState(false);
+	const isEditing = location !== undefined;
+
+	const createLocation = trpc.locations.create.useMutation({
+		onSuccess() {
+			router.refresh();
+			setOpen(false);
+		},
+	});
 	const updateLocation = trpc.locations.update.useMutation({
 		onSuccess() {
 			router.refresh();
@@ -50,22 +56,27 @@ export function EditLocationDialog({ location, children, className }: Props) {
 		},
 	});
 
+	const mutation = isEditing ? updateLocation : createLocation;
+
 	function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
 		const formData = new FormData(event.currentTarget);
 		const description = String(formData.get("description") ?? "").trim();
 
-		updateLocation.mutate({
-			id: location.id,
-			data: {
-				name: String(formData.get("name") ?? "").trim(),
-				abbreviation: String(formData.get("abbreviation") ?? "").trim(),
-				description: description || undefined,
-				latitude: Number(formData.get("latitude")),
-				longitude: Number(formData.get("longitude")),
-			},
-		});
+		const data = {
+			name: String(formData.get("name") ?? "").trim(),
+			abbreviation: String(formData.get("abbreviation") ?? "").trim(),
+			description: description || undefined,
+			latitude: Number(formData.get("latitude")),
+			longitude: Number(formData.get("longitude")),
+		};
+
+		if (isEditing) {
+			updateLocation.mutate({ id: location.id, data });
+		} else {
+			createLocation.mutate(data);
+		}
 	}
 
 	return (
@@ -74,9 +85,13 @@ export function EditLocationDialog({ location, children, className }: Props) {
 			<DialogContent className={cn("sm:max-w-lg", className)}>
 				<form onSubmit={handleSubmit} className="contents">
 					<DialogHeader>
-						<DialogTitle>Editar local</DialogTitle>
+						<DialogTitle>
+							{isEditing ? "Editar local" : "Adicionar local"}
+						</DialogTitle>
 						<DialogDescription>
-							Altere os dados do ponto de referência.
+							{isEditing
+								? "Altere os dados do ponto de referência."
+								: "Cadastre um ponto de referência usado nas solicitações de deslocamento."}
 						</DialogDescription>
 					</DialogHeader>
 					<FieldGroup>
@@ -88,7 +103,7 @@ export function EditLocationDialog({ location, children, className }: Props) {
 									name="name"
 									required
 									minLength={2}
-									defaultValue={location.name}
+									defaultValue={location?.name ?? ""}
 									placeholder="Restaurante Universitário"
 								/>
 							</Field>
@@ -100,7 +115,7 @@ export function EditLocationDialog({ location, children, className }: Props) {
 									required
 									minLength={1}
 									maxLength={20}
-									defaultValue={location.abbreviation ?? ""}
+									defaultValue={location?.abbreviation ?? ""}
 									placeholder="RU"
 								/>
 							</Field>
@@ -110,7 +125,7 @@ export function EditLocationDialog({ location, children, className }: Props) {
 							<Textarea
 								id="description"
 								name="description"
-								defaultValue={location.description ?? ""}
+								defaultValue={location?.description ?? ""}
 								placeholder="Como chegar, pontos de referência, entradas acessíveis, etc."
 							/>
 						</Field>
@@ -123,7 +138,7 @@ export function EditLocationDialog({ location, children, className }: Props) {
 									type="number"
 									step="any"
 									required
-									defaultValue={location.latitude}
+									defaultValue={location?.latitude ?? ""}
 									placeholder="-9.551"
 								/>
 							</Field>
@@ -135,15 +150,15 @@ export function EditLocationDialog({ location, children, className }: Props) {
 									type="number"
 									step="any"
 									required
-									defaultValue={location.longitude}
+									defaultValue={location?.longitude ?? ""}
 									placeholder="-35.775"
 								/>
 							</Field>
 						</div>
-						{updateLocation.error ? (
+						{mutation.error ? (
 							<Alert variant="destructive">
 								<AlertDescription>
-									{updateLocation.error.message}
+									{mutation.error.message}
 								</AlertDescription>
 							</Alert>
 						) : null}
@@ -154,13 +169,12 @@ export function EditLocationDialog({ location, children, className }: Props) {
 								Cancelar
 							</Button>
 						</DialogClose>
-						<Button
-							type="submit"
-							disabled={updateLocation.isPending}
-						>
-							{updateLocation.isPending
+						<Button type="submit" disabled={mutation.isPending}>
+							{mutation.isPending
 								? "Salvando..."
-								: "Salvar alterações"}
+								: isEditing
+									? "Salvar alterações"
+									: "Salvar local"}
 						</Button>
 					</DialogFooter>
 				</form>
