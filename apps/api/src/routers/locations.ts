@@ -15,6 +15,15 @@ import { TRPCError } from "@trpc/server";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
+/** Schema compartilhado com o create — campos editáveis de um local */
+const locationUpdateSchema = z.object({
+	name: z.string().min(2).max(100),
+	abbreviation: z.string().min(1).max(20),
+	description: z.string().max(500).optional(),
+	latitude: z.number(),
+	longitude: z.number(),
+});
+
 export const locationsRouter = router({
 	/**
 	 * Lista todos os locais ativos do campus.
@@ -42,15 +51,7 @@ export const locationsRouter = router({
 	 * Cria um novo local do campus.
 	 */
 	create: managerProcedure
-		.input(
-			z.object({
-				name: z.string().min(2).max(100),
-				abbreviation: z.string().min(1).max(20),
-				description: z.string().max(500).optional(),
-				latitude: z.number(),
-				longitude: z.number(),
-			}),
-		)
+		.input(locationUpdateSchema)
 
 		.mutation(async ({ input }) => {
 			const [location] = await db
@@ -76,6 +77,29 @@ export const locationsRouter = router({
 			const [updated] = await db
 				.update(schema.campusLocation)
 				.set({ isActive: input.isActive, updatedAt: new Date() })
+				.where(eq(schema.campusLocation.id, input.id))
+				.returning();
+
+			if (!updated) throw new TRPCError({ code: "NOT_FOUND" });
+			return updated;
+		}),
+
+	/**
+	 * Atualiza os dados de um local.
+	 * Apenas managers podem alterar locais.
+	 */
+	update: managerProcedure
+		.input(
+			z.object({
+				id: z.string(),
+				data: locationUpdateSchema,
+			}),
+		)
+
+		.mutation(async ({ input }) => {
+			const [updated] = await db
+				.update(schema.campusLocation)
+				.set({ ...input.data, updatedAt: new Date() })
 				.where(eq(schema.campusLocation.id, input.id))
 				.returning();
 

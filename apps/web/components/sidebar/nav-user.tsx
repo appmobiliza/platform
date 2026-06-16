@@ -24,6 +24,9 @@ import {
 	DropdownMenuRadioGroup,
 	DropdownMenuRadioItem,
 	DropdownMenuSeparator,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -139,23 +142,31 @@ export function NavUser() {
 									</DropdownMenuItem>
 								</DropdownMenuGroup>
 								<DropdownMenuSeparator />
-								<DropdownMenuRadioGroup
-									value={theme}
-									onValueChange={setTheme}
-								>
-									<DropdownMenuRadioItem value="system">
+								<DropdownMenuSub>
+									<DropdownMenuSubTrigger>
 										<Monitor />
-										Sistema
-									</DropdownMenuRadioItem>
-									<DropdownMenuRadioItem value="light">
-										<Sun />
-										Claro
-									</DropdownMenuRadioItem>
-									<DropdownMenuRadioItem value="dark">
-										<Moon />
-										Escuro
-									</DropdownMenuRadioItem>
-								</DropdownMenuRadioGroup>
+										Tema
+									</DropdownMenuSubTrigger>
+									<DropdownMenuSubContent>
+										<DropdownMenuRadioGroup
+											value={theme}
+											onValueChange={setTheme}
+										>
+											<DropdownMenuRadioItem value="system">
+												<Monitor />
+												Sistema
+											</DropdownMenuRadioItem>
+											<DropdownMenuRadioItem value="light">
+												<Sun />
+												Claro
+											</DropdownMenuRadioItem>
+											<DropdownMenuRadioItem value="dark">
+												<Moon />
+												Escuro
+											</DropdownMenuRadioItem>
+										</DropdownMenuRadioGroup>
+									</DropdownMenuSubContent>
+								</DropdownMenuSub>
 								<DropdownMenuSeparator />
 								<DropdownMenuItem
 									onClick={handleLogout}
