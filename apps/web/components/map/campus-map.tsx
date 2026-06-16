@@ -91,12 +91,17 @@ export function CampusMap({
 		);
 	}, [locations, mapLoaded]);
 
-	// ─── Map click handler (selection mode) ──────────────────────────────
+	// ─── Map click handler (selection mode or dismiss popup) ────────────
 
 	const handleMapClick = useCallback(
 		(event: MapLayerMouseEvent) => {
-			if (!selectionMode) return;
-			onSelectLocation?.(event.lngLat.lat, event.lngLat.lng);
+			if (selectionMode) {
+				onSelectLocation?.(event.lngLat.lat, event.lngLat.lng);
+			} else {
+				// Close the popup when clicking on empty map area.
+				// Marker clicks call stopPropagation so they won't reach here.
+				setPopupLocation(null);
+			}
 		},
 		[selectionMode, onSelectLocation],
 	);
@@ -130,7 +135,34 @@ export function CampusMap({
 				"relative h-full w-full overflow-hidden rounded-xl",
 				className,
 			)}
+			data-map-wrapper
 		>
+			{/* Override maplibre popup styles to match the theme */}
+			<style>{`
+				[data-map-wrapper] .maplibregl-popup-content {
+					background: var(--card) !important;
+					color: var(--card-foreground) !important;
+					border-radius: 0.5rem !important;
+					padding: 8px 12px !important;
+					box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1) !important;
+					font-family: inherit !important;
+					font-size: 0.875rem !important;
+				}
+				[data-map-wrapper] .maplibregl-popup-tip {
+					border-top-color: var(--card) !important;
+					border-bottom-color: var(--card) !important;
+				}
+				[data-map-wrapper] .maplibregl-popup-close-button {
+					color: var(--muted-foreground) !important;
+					font-size: 1rem !important;
+					padding: 2px 6px !important;
+					border-radius: 0.25rem !important;
+				}
+				[data-map-wrapper] .maplibregl-popup-close-button:hover {
+					background: var(--accent) !important;
+					color: var(--accent-foreground) !important;
+				}
+			`}</style>
 			<MapGL
 				ref={mapRef}
 				mapStyle={mapStyle}
@@ -162,13 +194,13 @@ export function CampusMap({
 					>
 						<div
 							className={cn(
-								"flex size-8 cursor-pointer items-center justify-center rounded-full border-2 border-background text-xs font-bold text-primary-foreground shadow-md transition-transform hover:scale-110",
+								"flex size-10 cursor-pointer items-center justify-center rounded-full border-2 border-background text-xs font-bold text-primary-foreground shadow-md transition-transform hover:scale-110",
 								popupLocation?.id === location.id
 									? "bg-primary ring-2 ring-ring"
 									: "bg-primary",
 							)}
 						>
-							{location.abbreviation?.slice(0, 2) ?? "📍"}
+							{location.abbreviation?.slice(0, 5) ?? "📍"}
 						</div>
 					</Marker>
 				))}
@@ -200,7 +232,7 @@ export function CampusMap({
 						offset={10}
 					>
 						<div className="p-1">
-							<h3 className="text-sm font-semibold">
+							<h3 className="text-sm text-foreground font-semibold">
 								{popupLocation.name}
 							</h3>
 							{popupLocation.abbreviation && (
