@@ -12,10 +12,10 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { updateScholarDetails } from "@/components/details/scholar/store";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,6 +50,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { revalidateScholarDashboard } from "@/lib/actions";
 import type { CachedScholar } from "@/lib/cached-data";
@@ -86,6 +91,20 @@ interface Props {
 	scholar?: CachedScholar;
 }
 
+function scholarToFormData(s: CachedScholar): Partial<FormData> {
+	return {
+		userId: s.profile.userId,
+		name: s.user.name,
+		email: s.user.email,
+		enrollment: s.profile.enrollment,
+		course: s.profile.course as FormData["course"],
+		campus: s.profile.campus as FormData["campus"],
+		phone: s.profile.phone ?? "",
+		cpf: s.profile.cpf ?? "",
+		gender: s.profile.gender,
+	};
+}
+
 export function MutateScholarDialog({ children, scholar }: Props) {
 	const router = useRouter();
 	const [open, setOpen] = React.useState(false);
@@ -94,12 +113,13 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 	const form = useForm<FormData>({
 		resolver: zodResolver(FormSchema),
 		mode: "onSubmit",
+		defaultValues: scholar ? scholarToFormData(scholar) : {},
 	});
 
 	const {
 		control,
 		handleSubmit,
-		formState: { errors, isSubmitting },
+		formState: { errors, isSubmitting, isDirty },
 		register,
 		reset,
 	} = form;
@@ -114,7 +134,20 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 	});
 
 	const updateScholar = trpc.profiles.updateScholarAsManager.useMutation({
-		onSuccess() {
+		onSuccess(_data, variables) {
+			// Immediately update the sidebar store so the details panel
+			// reflects the changes without waiting for a server round-trip.
+			if (scholar) {
+				const { userId: _uid, ...profileUpdates } = variables;
+				updateScholarDetails({
+					...scholar,
+					profile: {
+						...scholar.profile,
+						...(profileUpdates as Record<string, string>),
+					},
+				} as CachedScholar);
+			}
+
 			revalidateScholarDashboard();
 			router.refresh();
 			setOpen(false);
@@ -128,35 +161,16 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 
 	function onSubmit(data: FormData) {
 		if (isEditing) {
-			const { name: _name, email: _email, userId, ...profileData } = data;
+			const { userId, ...rest } = data;
 			updateScholar.mutate({
 				userId: userId!,
-				...profileData,
+				...rest,
 			} as UpdateScholarAsManagerInput);
 		} else {
 			const { userId: _userId, ...rest } = data;
 			createScholar.mutate(rest as InsertScholarAsManagerInput);
 		}
 	}
-
-	// Reset form with scholar data when editing
-	useEffect(() => {
-		if (open && scholar) {
-			reset({
-				userId: scholar.profile.userId,
-				name: scholar.user.name,
-				enrollment: scholar.profile.enrollment,
-				course: scholar.profile.course as FormData["course"],
-				campus: scholar.profile.campus as FormData["campus"],
-				phone: scholar.profile.phone ?? "",
-				email: scholar.user.email,
-				cpf: scholar.profile.cpf ?? "",
-				gender: scholar.profile.gender,
-			});
-		} else if (!open) {
-			reset();
-		}
-	}, [open, scholar, reset]);
 
 	const comboboxPortalRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -165,9 +179,8 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 			open={open}
 			onOpenChange={(v) => {
 				setOpen(v);
-				if (!v) {
-					reset();
-				}
+				if (v) reset(scholar ? scholarToFormData(scholar) : {});
+				if (!v) reset();
 			}}
 		>
 			<DialogTrigger asChild>{children}</DialogTrigger>
@@ -402,19 +415,47 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 							</div>
 
 							{/* E-mail – full width */}
-							<Field data-invalid={!!errors.email}>
-								<Label htmlFor="email">E-mail</Label>
-								<Input
-									id="email"
-									type="email"
-									{...register("email")}
-									placeholder="bolsista@example.com"
-									aria-invalid={!!errors.email}
-								/>
-								{errors.email && (
-									<FieldError errors={[errors.email]} />
-								)}
-							</Field>
+							{isEditing ? (
+								<Field>
+									<Label htmlFor="email">E-mail</Label>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<span>
+												<Input
+													id="email"
+													value={scholar?.user.email}
+													disabled
+													placeholder="bolsista@example.com"
+													aria-invalid={
+														!!errors.email
+													}
+												/>
+											</span>
+										</TooltipTrigger>
+										<TooltipContent>
+											<p>
+												O e-mail do bolsista está
+												vinculado à sua conta Google e
+												não pode ser alterado.
+											</p>
+										</TooltipContent>
+									</Tooltip>
+								</Field>
+							) : (
+								<Field data-invalid={!!errors.email}>
+									<Label htmlFor="email">E-mail</Label>
+									<Input
+										id="email"
+										type="email"
+										{...register("email")}
+										placeholder="bolsista@example.com"
+										aria-invalid={!!errors.email}
+									/>
+									{errors.email && (
+										<FieldError errors={[errors.email]} />
+									)}
+								</Field>
+							)}
 
 							{/* Telefone – full width */}
 							<Field data-invalid={!!errors.phone}>
@@ -481,7 +522,11 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 						</DialogClose>
 						<Button
 							type="submit"
-							disabled={isSubmitting || isPending}
+							disabled={
+								isSubmitting ||
+								isPending ||
+								(isEditing && !isDirty)
+							}
 						>
 							{isPending
 								? "Salvando..."

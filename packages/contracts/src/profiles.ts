@@ -67,6 +67,8 @@ export type UpdateScholarBySelfInput = z.infer<
  */
 export const UpdateScholarAsManagerSchema = UpdateScholarSchema.extend({
 	userId: z.string(),
+	name: z.string().min(1, "Nome é obrigatório").optional(),
+	email: z.string().email("E-mail inválido").optional(),
 });
 
 export type UpdateScholarAsManagerInput = z.infer<

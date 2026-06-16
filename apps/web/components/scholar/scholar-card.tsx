@@ -9,6 +9,8 @@ import { getInitials } from "@/lib/utils";
 
 import { EditShiftDialog } from "@/app/(dashboard)/bolsistas/dialog/edit-shift";
 
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+
 const SCHOLARS_SERVICES_AVERAGE = 150;
 const MONTHLY_HOURS_GOAL = 40;
 
@@ -86,13 +88,34 @@ export function ScholarCard({ scholar }: { scholar: CachedScholar }) {
 					className="flex-1 w-full md:w-auto py-2"
 				/>
 				<EditShiftDialog scholar={scholar}>
-					<Button
-						className="flex-1 w-full  md:w-auto py-2"
-						variant="outline"
-						disabled={!scholar.profile?.isActive}
-					>
-						Editar turnos
-					</Button>
+					{scholar.profile?.isActive ? (
+						<Button
+							className="flex-1 w-full  md:w-auto py-2"
+							variant="outline"
+						>
+							Editar turnos
+						</Button>
+					) : (
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<span className="inline-block w-fit">
+									<Button
+										className="flex-1 w-full  md:w-auto py-2"
+										variant="outline"
+										disabled
+									>
+										Editar turnos
+									</Button>
+								</span>
+							</TooltipTrigger>
+							<TooltipContent>
+								<p>
+									Não é possível editar turnos para bolsistas
+									inativos
+								</p>
+							</TooltipContent>
+						</Tooltip>
+					)}
 				</EditShiftDialog>
 			</div>
 		</div>

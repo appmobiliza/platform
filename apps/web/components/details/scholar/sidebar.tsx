@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { DetailsSidebar } from "@/components/details/details-sidebar";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -253,10 +253,10 @@ function ScholarDetailsContent({ scholar }: { scholar: CachedScholar }) {
 			<Separator />
 
 			<div className="flex flex-col gap-2">
-				<ScholarActiveToggle scholar={scholar} />
 				<MutateScholarDialog scholar={scholar}>
 					<Button className="w-full">Editar bolsista</Button>
 				</MutateScholarDialog>
+				<ScholarActiveToggle scholar={scholar} />
 			</div>
 		</div>
 	);
@@ -277,6 +277,10 @@ export function ScholarDetailsSidebar() {
 								<AvatarFallback>
 									{getInitials(scholar.user.name)}
 								</AvatarFallback>
+								<AvatarImage
+									src={scholar.user.image ?? undefined}
+									alt={scholar.user.name}
+								/>
 							</Avatar>
 							<div className="min-w-0">
 								<p className="font-medium">

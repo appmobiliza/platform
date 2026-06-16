@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button";
 
 import type { CachedScholar } from "@/lib/cached-data";
 
-import { openScholarDetails } from "./store";
+import {
+	closeScholarDetails,
+	openScholarDetails,
+	useScholarDetailsEntry,
+} from "./store";
 
 export function ScholarDetailsTrigger({
 	scholar,
@@ -17,12 +21,21 @@ export function ScholarDetailsTrigger({
 	children?: React.ReactNode;
 	className?: string;
 }) {
+	const { isOpen, item } = useScholarDetailsEntry();
+
+	const isCurrentScholarOpen = isOpen && item?.user.id === scholar.user.id;
+
 	return (
 		<Button
 			className={className}
-			onClick={() => openScholarDetails(scholar)}
+			onClick={() =>
+				isCurrentScholarOpen
+					? closeScholarDetails()
+					: openScholarDetails(scholar)
+			}
 		>
-			{children ?? "Ver detalhe"}
+			{children ??
+				(isCurrentScholarOpen ? "Fechar detalhe" : "Ver detalhe")}
 		</Button>
 	);
 }

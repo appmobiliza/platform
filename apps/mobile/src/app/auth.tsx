@@ -54,6 +54,8 @@ export default function Auth() {
 				return;
 			}
 
+			console.log("auth", error);
+
 			// ── Web: redirect handled by better-auth's redirectPlugin ─────
 			// On web, signIn.social returns successfully after the server
 			// responds with the OAuth URL. The redirectPlugin then sets
@@ -96,7 +98,7 @@ export default function Auth() {
 				return;
 			}
 
-			console.log("Usuário encontrado", user.id);
+			console.log("Usuário encontrado", user);
 			console.log("isScholar: ", user.role === "scholar");
 
 			// Scholar — loga direto (perfil gerenciado pelo gestor)
@@ -111,10 +113,9 @@ export default function Auth() {
 			}
 
 			// Student — verifica com o servidor se o perfil existe.
-			// Só cacheia os dados DEPOIS da resposta para que o layout
-			// nunca veja um estado intermediário com userRole definido
-			// mas hasProfile incorreto.
 			const profile = await trpcUtils.profiles.me.fetch();
+			console.log("profile", profile);
+
 			const hasStudentProfile =
 				"studentProfile" in profile && profile.studentProfile !== null;
 			const simplifiedInterface =
@@ -127,11 +128,21 @@ export default function Auth() {
 
 			console.log("hasStudentProfile: ", hasStudentProfile);
 
+			// Cacheia os dados do usuário e o estado do perfil, depois
+			// redireciona explicitamente para o destino correto.
+			cacheUserInfo({ ...user });
+
 			setHasProfile(hasStudentProfile);
 			setSimplifiedInterface(simplifiedInterface);
+			setIsLoading(false);
 
-			// Agora cacheia com os valores corretos
-			cacheUserInfo({ ...user });
+			if (hasStudentProfile) {
+				router.replace("/(tabs)");
+				return;
+			}
+
+			router.replace("/onboarding/unregistered");
+			return;
 		} catch (err) {
 			setIsLoading(false);
 			console.log("Google login error:", err);

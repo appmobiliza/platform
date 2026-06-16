@@ -33,6 +33,8 @@ export default function RootLayout() {
 	const isLoggedIn = useIsLoggedIn();
 	const hasProfile = useHasProfile();
 
+	console.log("isLoggedIn: ", isLoggedIn, " hasProfile: ", hasProfile);
+
 	// For background we can rely on NativeWind, but if we need the RN style,
 	// we should probably derive it from the scheme.
 	// For now we keep using the THEME constant for the base background.
@@ -55,10 +57,11 @@ export default function RootLayout() {
 								<Stack.Screen name="(tabs)" />
 							</Stack.Protected>
 
-							{/* Onboarding — requer autenticação, mas ainda sem perfil */}
-							<Stack.Protected guard={isLoggedIn && !hasProfile}>
-								<Stack.Screen name="onboarding" />
-							</Stack.Protected>
+							{/* Onboarding — SEMPRE renderizado para que router.replace
+								  funcione imediatamente após o login, sem depender do
+								  timing de re-render dos guards. O controle de acesso
+								  é feito internamente no layout do onboarding. */}
+							<Stack.Screen name="onboarding" />
 
 							{/* Tela de login — apenas quando deslogado */}
 							<Stack.Protected guard={!isLoggedIn}>
