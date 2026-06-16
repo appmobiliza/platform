@@ -4,6 +4,7 @@ import {
 	ChartNoAxesColumn,
 	File,
 	LayoutDashboard,
+	Radio,
 	Settings2,
 	User,
 	Users,
@@ -30,6 +31,11 @@ const data = {
 			title: "Visão Geral",
 			url: "/",
 			icon: LayoutDashboard,
+		},
+		{
+			title: "Ao vivo",
+			url: "/mapa",
+			icon: Radio,
 		},
 		{
 			title: "Atendimentos",

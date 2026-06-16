@@ -2,10 +2,12 @@
 
 import type { CampusLocation } from "@mobiliza/db/schema";
 
+import { MapPin, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type * as React from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
+import { CampusMap } from "@/components/map/campus-map";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,12 +38,42 @@ interface Props {
 	location?: LocationData;
 	children: React.ReactNode;
 	className?: string;
+	/** Existing campus locations to show as reference markers on the map */
+	campusLocations?: CampusLocation[];
 }
 
-export function MutateLocationDialog({ location, children, className }: Props) {
+export function MutateLocationDialog({
+	location,
+	children,
+	className,
+	campusLocations = [],
+}: Props) {
 	const router = useRouter();
 	const [open, setOpen] = useState(false);
 	const isEditing = location !== undefined;
+
+	// ── Controlled lat/lng state for map picker integration ──────────────
+
+	const [latitude, setLatitude] = useState(
+		location?.latitude?.toString() ?? "",
+	);
+	const [longitude, setLongitude] = useState(
+		location?.longitude?.toString() ?? "",
+	);
+	const [showMapPicker, setShowMapPicker] = useState(false);
+
+	// ── Reset state when dialog opens ───────────────────────────────────
+
+	const handleOpenChange = (newOpen: boolean) => {
+		setOpen(newOpen);
+		if (newOpen) {
+			setLatitude(location?.latitude?.toString() ?? "");
+			setLongitude(location?.longitude?.toString() ?? "");
+			setShowMapPicker(false);
+		}
+	};
+
+	// ── TRPC mutations ───────────────────────────────────────────────────
 
 	const createLocation = trpc.locations.create.useMutation({
 		onSuccess() {
@@ -57,6 +89,19 @@ export function MutateLocationDialog({ location, children, className }: Props) {
 	});
 
 	const mutation = isEditing ? updateLocation : createLocation;
+
+	// ── Parse lat/lng for the map selection (only when map is open) ────
+
+	const parsedLat = useMemo(
+		() => (latitude ? Number(latitude) : null),
+		[latitude],
+	);
+	const parsedLng = useMemo(
+		() => (longitude ? Number(longitude) : null),
+		[longitude],
+	);
+
+	// ── Form submit ──────────────────────────────────────────────────────
 
 	function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -79,10 +124,18 @@ export function MutateLocationDialog({ location, children, className }: Props) {
 		}
 	}
 
+	// ── Render ───────────────────────────────────────────────────────────
+
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
+		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className={cn("sm:max-w-lg", className)}>
+			<DialogContent
+				className={cn(
+					"sm:max-w-lg",
+					showMapPicker && "sm:max-w-xl",
+					className,
+				)}
+			>
 				<form onSubmit={handleSubmit} className="contents">
 					<DialogHeader>
 						<DialogTitle>
@@ -129,6 +182,8 @@ export function MutateLocationDialog({ location, children, className }: Props) {
 								placeholder="Como chegar, pontos de referência, entradas acessíveis, etc."
 							/>
 						</Field>
+
+						{/* ── Latitude / Longitude ───────────────────────────── */}
 						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 							<Field>
 								<Label htmlFor="latitude">Latitude</Label>
@@ -138,7 +193,10 @@ export function MutateLocationDialog({ location, children, className }: Props) {
 									type="number"
 									step="any"
 									required
-									defaultValue={location?.latitude ?? ""}
+									value={latitude}
+									onChange={(e) =>
+										setLatitude(e.target.value)
+									}
 									placeholder="-9.551"
 								/>
 							</Field>
@@ -150,11 +208,53 @@ export function MutateLocationDialog({ location, children, className }: Props) {
 									type="number"
 									step="any"
 									required
-									defaultValue={location?.longitude ?? ""}
+									value={longitude}
+									onChange={(e) =>
+										setLongitude(e.target.value)
+									}
 									placeholder="-35.775"
 								/>
 							</Field>
 						</div>
+
+						{/* ── Map picker ──────────────────────────────────────── */}
+						<div className="flex flex-col gap-3">
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={() => setShowMapPicker(!showMapPicker)}
+								className="w-full gap-2"
+							>
+								{showMapPicker ? (
+									<X className="size-4" />
+								) : (
+									<MapPin className="size-4" />
+								)}
+								{showMapPicker
+									? "Fechar mapa"
+									: "Selecionar no mapa"}
+							</Button>
+
+							{showMapPicker && (
+								<div className="h-65 overflow-hidden rounded-lg border">
+									<CampusMap
+										locations={campusLocations}
+										selectionMode
+										selectedLatitude={parsedLat}
+										selectedLongitude={parsedLng}
+										onSelectLocation={(lat, lng) => {
+											setLatitude(lat.toFixed(6));
+											setLongitude(lng.toFixed(6));
+										}}
+										showNavigation={false}
+										className="h-full w-full"
+									/>
+								</div>
+							)}
+						</div>
+
+						{/* ── Error alert ─────────────────────────────────────── */}
 						{mutation.error ? (
 							<Alert variant="destructive">
 								<AlertDescription>

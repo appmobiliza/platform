@@ -1,8 +1,3 @@
-import {
-	type ScholarShiftValues,
-	scholarShiftLabels,
-} from "@mobiliza/contracts";
-
 import { Activity, Clock, Hourglass, Users } from "lucide-react";
 import type { Metadata } from "next";
 

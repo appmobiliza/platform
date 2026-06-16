@@ -105,7 +105,7 @@ export function LocationsTable({
 					</ToggleGroup>
 				</div>
 
-				<MutateLocationDialog>
+				<MutateLocationDialog campusLocations={campusLocations}>
 					<Button
 						type="button"
 						size="lg"
@@ -179,6 +179,7 @@ export function LocationsTable({
 									<TableCell className="hidden px-4 py-4 text-right md:table-cell">
 										<MutateLocationDialog
 											location={location}
+											campusLocations={campusLocations}
 										>
 											<Button
 												type="button"
