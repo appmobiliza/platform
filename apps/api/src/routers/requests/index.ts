@@ -5,6 +5,7 @@ import { accept } from "./scholar/accept.js";
 import { active } from "./scholar/active.js";
 import { complete } from "./scholar/complete.js";
 import { getAttendanceById } from "./scholar/getAttendanceById.js";
+import { markOverdueAsUnattended } from "./scholar/markOverdueAsUnattended.js";
 import { pending } from "./scholar/pending.js";
 import { reportIssue } from "./scholar/reportIssue.js";
 import { scholarHistory } from "./scholar/scholarHistory.js";
@@ -24,6 +25,7 @@ export const requestsRouter = router({
 	cancel,
 	markUnattended,
 	accept,
+	markOverdueAsUnattended,
 	reportIssue,
 	start,
 	complete,

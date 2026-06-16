@@ -1,6 +1,7 @@
 import { PortalHost } from "@rn-primitives/portal";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { useEffect } from "react";
 import { View } from "react-native";
 
 import { Toaster } from "@/components/ui/toast";
@@ -10,11 +11,14 @@ import "../global.css";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
+import { useNotificationResponse } from "@/hooks/use-notification-response";
+
 import {
 	useHasProfile,
 	useIsLoggedIn,
 	useSyncSessionCache,
 } from "@/lib/auth/store";
+import { initializeNotifications } from "@/lib/notifications";
 import { THEME } from "@/lib/theme";
 import { useAppColorScheme } from "@/lib/theme/use-app-color-scheme";
 import { TRPCProvider } from "@/lib/trpc/provider";
@@ -29,6 +33,15 @@ SplashScreen.setOptions({
 
 export default function RootLayout() {
 	useSyncSessionCache();
+
+	// ─── Notificações ───────────────────────────────────────────────────
+	useNotificationResponse();
+
+	useEffect(() => {
+		initializeNotifications();
+	}, []);
+
+	// ─── Autenticação ──────────────────────────────────────────────────
 
 	const isLoggedIn = useIsLoggedIn();
 	const hasProfile = useHasProfile();

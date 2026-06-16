@@ -32,7 +32,7 @@ export interface ScholarHeaderProps {
 
 function ShiftPill({ label, time }: { label: string; time: string }) {
 	return (
-		<View className="flex-row items-center justify-between rounded-lg bg-black/20 px-4 py-3">
+		<View className="flex-row items-center justify-between rounded-lg bg-accent/50 px-4 py-3">
 			<View className="flex-row items-center">
 				<Clock color="#FFFFFF" size={18} />
 				<Text className="ml-3 text-base font-medium text-primary-foreground">
@@ -79,7 +79,7 @@ export function ScholarHeader({
 					<View
 						className={cn("mr-1 h-1.5 w-1.5 rounded-full", {
 							"bg-green-400": shiftState === "shift_active",
-							"bg-yellow-400": shiftState === "shift_not_started",
+							hidden: shiftState === "shift_not_started",
 							"bg-red-400": shiftState === "not_in_shift",
 						})}
 					/>
@@ -87,7 +87,7 @@ export function ScholarHeader({
 						{shiftState === "shift_active"
 							? "Em turno"
 							: shiftState === "shift_not_started"
-								? "Iniciar turno"
+								? "Aguardando início"
 								: "Fora do turno"}
 					</Text>
 				</Badge>

@@ -1,4 +1,4 @@
-import * as Location from "expo-location";
+import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Linking, View } from "react-native";
@@ -11,27 +11,28 @@ function handleOpenSettings() {
 	Linking.openSettings();
 }
 
-export default function LocationPermission() {
+export default function NotificationPermission() {
 	const router = useRouter();
 	const [hasDenied, setHasDenied] = useState(false);
 	const [canAskAgain, setCanAskAgain] = useState(true);
 	const [isLoading, setIsLoading] = useState(false);
 
-	function handleRequestLocation() {
+	async function handleRequestNotification() {
 		setIsLoading(true);
-		Location.requestForegroundPermissionsAsync()
-			.then(({ granted, canAskAgain: canAsk }) => {
-				if (granted) {
-					router.push("/");
-					return;
-				}
+		try {
+			const { status, canAskAgain: canAsk } =
+				await Notifications.requestPermissionsAsync();
 
-				setHasDenied(true);
-				setCanAskAgain(canAsk);
-			})
-			.finally(() => {
-				setIsLoading(false);
-			});
+			if (status === "granted") {
+				router.push("/");
+				return;
+			}
+
+			setHasDenied(true);
+			setCanAskAgain(canAsk);
+		} finally {
+			setIsLoading(false);
+		}
 	}
 
 	const showSettingsFallback = hasDenied && !canAskAgain;
@@ -41,16 +42,16 @@ export default function LocationPermission() {
 			headerHref={null}
 			title={
 				showSettingsFallback
-					? "Acesso à localização negado"
-					: "O app precisa do acesso a sua localização para funcionar"
+					? "Acesso às notificações negado"
+					: "O app precisa do acesso a notificações para funcionar"
 			}
 		>
 			{showSettingsFallback ? (
 				<View>
 					<Text className="text-base leading-relaxed">
-						Você negou o acesso à localização. Para permitir, vá às
-						configurações do seu dispositivo e habilite o acesso à
-						localização para este aplicativo.
+						Você negou o acesso às notificações. Para permitir, vá
+						às configurações do seu dispositivo e habilite as
+						notificações para este aplicativo.
 					</Text>
 
 					<Button className="mt-8" onPress={handleOpenSettings}>
@@ -60,19 +61,14 @@ export default function LocationPermission() {
 			) : (
 				<View>
 					<Text className="text-base leading-relaxed">
-						Para permitir, você precisa fazer o seguinte: {"\n"}
-						1. Selecionar a opção{" "}
-						<Text className="font-semibold">"Precisa"</Text>
-						{"\n"}
-						2. Pressionar{" "}
-						<Text className="font-semibold">
-							"Durante o uso do app"
-						</Text>
+						Para receber notificações sobre o status das suas
+						solicitações e encontrar contribuintes mais rapidamente,{" "}
+						precisamos enviar notificações para você.
 					</Text>
 
 					<Button
 						className="mt-8"
-						onPress={handleRequestLocation}
+						onPress={handleRequestNotification}
 						disabled={isLoading}
 					>
 						{isLoading ? (
@@ -81,7 +77,7 @@ export default function LocationPermission() {
 								color="--foreground"
 							/>
 						) : (
-							<Text>Permitir acesso à localização</Text>
+							<Text>Permitir notificações</Text>
 						)}
 					</Button>
 				</View>

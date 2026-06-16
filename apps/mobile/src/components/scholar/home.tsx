@@ -290,6 +290,16 @@ export function ScholarHome() {
 
 	const utils = trpc.useUtils();
 
+	// ─── Marcar solicitações atrasadas como não atendidas ────────────────────
+	//
+	// Quando o bolsista abre a tela inicial, marca como "unattended" todas
+	// as solicitações pendentes que já ultrapassaram o tempo máximo de espera
+	// configurado (`maxServiceRequestTime`). Isso substitui a cron job que
+	// faria essa limpeza periodicamente.
+	const calledOnceRef = useRef(false);
+	const { mutateAsync: markOverdueAsUnattended } =
+		trpc.requests.markOverdueAsUnattended.useMutation();
+
 	// ─── Realtime — Novas solicitações pendentes ────────────────────────────
 	//
 	// Quando o turno está ativo, inscreve-se no canal `requests:pending`
@@ -350,6 +360,37 @@ export function ScholarHome() {
 			unsubPromise.then((unsub) => unsub());
 		};
 	}, [activeShiftLog, utils.requests.pending]);
+
+	// ─── Limpeza de solicitações expiradas ao abrir a tela ──────────────────
+	//
+	// Sem uma cron job rodando em background, solicitações que ficaram
+	// "pending" por mais tempo que o `maxServiceRequestTime` nunca seriam
+	// marcadas como "unattended". Este efeito dispara a mutation uma única
+	// vez quando o componente monta para fazer essa limpeza.
+	//
+	// O uso do `calledOnceRef` evita execução duplicada em StrictMode.
+	useEffect(() => {
+		if (calledOnceRef.current) return;
+		calledOnceRef.current = true;
+
+		markOverdueAsUnattended(undefined, {
+			onSuccess: (data) => {
+				if (data.markedAsUnattended > 0) {
+					console.log(
+						`[cleanup] ${data.markedAsUnattended} solicitação(ões) marcada(s) como não atendida(s).`,
+					);
+					// Invalida a lista de pendentes para refletir a remoção
+					utils.requests.pending.invalidate();
+				}
+			},
+			onError: (error) => {
+				console.error(
+					"[cleanup] Erro ao limpar solicitações expiradas:",
+					error,
+				);
+			},
+		});
+	}, []);
 
 	const { mutate: startShift, isPending: isStartingShift } =
 		trpc.shiftLogs.startShift.useMutation({

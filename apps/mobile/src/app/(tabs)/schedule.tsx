@@ -36,7 +36,7 @@ export default function ScheduleScreen() {
 	);
 
 	return (
-		<SafeAreaView className="flex-1" edges={["top"]}>
+		<View className="flex-1">
 			<ScholarHeader
 				scholarName={scholarName}
 				shiftState={shiftState}
@@ -69,6 +69,6 @@ export default function ScheduleScreen() {
 				)}
 				<View className="h-6" />
 			</ScrollView>
-		</SafeAreaView>
+		</View>
 	);
 }
