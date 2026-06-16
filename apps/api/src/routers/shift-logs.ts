@@ -254,4 +254,43 @@ export const shiftLogsRouter = router({
 
 			return { completed: !!log?.endedAt };
 		}),
+
+	/**
+	 * Remove o registro de turno mais recente do bolsista para a data de hoje.
+	 *
+	 * Exclusivamente para uso durante desenvolvimento/testes.
+	 * Permite que o bolsista "ressete" seu estado de turno completado
+	 * e inicie um novo turno como se nada tivesse acontecido.
+	 */
+	devDeleteLatestShiftLog: scholarProcedure.mutation(async ({ ctx }) => {
+		const profile = await db.query.scholarProfile.findFirst({
+			where: eq(schema.scholarProfile.userId, ctx.session.user.id),
+		});
+
+		if (!profile) throw new TRPCError({ code: "NOT_FOUND" });
+
+		const today = new Date().toISOString().slice(0, 10);
+
+		const latestLog = await db.query.scholarShiftLog.findFirst({
+			where: and(
+				eq(schema.scholarShiftLog.scholarProfileId, profile.id),
+				eq(schema.scholarShiftLog.date, today),
+			),
+			orderBy: (t, { desc }) => [desc(t.startedAt)],
+		});
+
+		if (!latestLog) {
+			throw new TRPCError({
+				code: "NOT_FOUND",
+				message:
+					"Nenhum registro de turno encontrado para hoje.",
+			});
+		}
+
+		await db
+			.delete(schema.scholarShiftLog)
+			.where(eq(schema.scholarShiftLog.id, latestLog.id));
+
+		return { deleted: latestLog.id };
+	}),
 });

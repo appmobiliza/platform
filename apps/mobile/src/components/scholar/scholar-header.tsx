@@ -1,5 +1,5 @@
 import { Clock } from "lucide-react-native";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Logo } from "@/assets/logo";
@@ -21,6 +21,11 @@ export interface ScholarHeaderProps {
 	scholarName: string;
 	shiftState: ShiftState;
 	currentShiftInfo: CurrentShiftInfo | null;
+	/**
+	 * Acionado ao pressionar longamente o logo.
+	 * Usado durante desenvolvimento para resetar o estado de turno.
+	 */
+	onLongPressLogo?: () => void;
 }
 
 // ─── Sub-components ─────────────────────────────────────────────────────────
@@ -45,6 +50,7 @@ export function ScholarHeader({
 	scholarName,
 	shiftState,
 	currentShiftInfo,
+	onLongPressLogo,
 }: ScholarHeaderProps) {
 	const insets = useSafeAreaInsets();
 
@@ -58,7 +64,9 @@ export function ScholarHeader({
 					<Text className="text-sm font-medium text-primary-foreground mb-2">
 						Olá, {scholarName} 👋
 					</Text>
-					<Logo fill="#FFFFFF" height={28} width={160} />
+					<Pressable onLongPress={onLongPressLogo}>
+						<Logo fill="#FFFFFF" height={28} width={160} />
+					</Pressable>
 				</View>
 
 				<Badge

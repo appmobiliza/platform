@@ -375,6 +375,25 @@ export function ScholarHome() {
 			},
 		});
 
+	// ─── Dev: deletar último turno (long‑press no logo) ───────────────────────
+
+	const { mutate: devDeleteLatestShiftLog } =
+		trpc.shiftLogs.devDeleteLatestShiftLog.useMutation({
+			onSuccess: () => {
+				utils.shiftLogs.getActiveShift.invalidate();
+				utils.shiftLogs.completedShiftForToday.invalidate();
+				utils.profiles.me.invalidate();
+				toast.success("Registro de turno removido", {
+					description: "Você pode iniciar um novo turno normalmente.",
+				});
+			},
+			onError: (error) => {
+				toast.error("Erro ao remover turno", {
+					description: error.message,
+				});
+			},
+		});
+
 	// ─── Aceitar solicitação ────────────────────────────────────────────────
 
 	const { mutate: acceptRequest, isPending: isAccepting } =
@@ -762,6 +781,7 @@ export function ScholarHome() {
 				scholarName={scholarName}
 				shiftState={shiftState}
 				currentShiftInfo={currentShiftInfo}
+				onLongPressLogo={() => devDeleteLatestShiftLog()}
 			/>
 
 			<MainContentWrapper>
