@@ -5,10 +5,14 @@ import {
 	EllipsisVertical,
 	Loader2,
 	LogOut,
+	Monitor,
+	Moon,
+	Sun,
 	UserCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -17,6 +21,8 @@ import {
 	DropdownMenuGroup,
 	DropdownMenuItem,
 	DropdownMenuLabel,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -28,6 +34,7 @@ import {
 } from "@/components/ui/sidebar";
 
 import { useLogout } from "@/hooks/use-logout";
+
 import { authClient } from "@/lib/auth/client";
 
 export function NavUser() {
@@ -35,6 +42,7 @@ export function NavUser() {
 	const { isMobile } = useSidebar();
 	const router = useRouter();
 	const { handleLogout, isLoggingOut } = useLogout();
+	const { theme, setTheme } = useTheme();
 
 	const user = session?.user;
 
@@ -130,6 +138,24 @@ export function NavUser() {
 										Notificações
 									</DropdownMenuItem>
 								</DropdownMenuGroup>
+								<DropdownMenuSeparator />
+								<DropdownMenuRadioGroup
+									value={theme}
+									onValueChange={setTheme}
+								>
+									<DropdownMenuRadioItem value="system">
+										<Monitor />
+										Sistema
+									</DropdownMenuRadioItem>
+									<DropdownMenuRadioItem value="light">
+										<Sun />
+										Claro
+									</DropdownMenuRadioItem>
+									<DropdownMenuRadioItem value="dark">
+										<Moon />
+										Escuro
+									</DropdownMenuRadioItem>
+								</DropdownMenuRadioGroup>
 								<DropdownMenuSeparator />
 								<DropdownMenuItem
 									onClick={handleLogout}
