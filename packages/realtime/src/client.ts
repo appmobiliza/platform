@@ -52,8 +52,9 @@ export async function createClientFromCredentials(
 	switch (credentials.provider) {
 		case "ably": {
 			const clientToken = credentials.config.clientToken;
+			const authUrl = credentials.config.authUrl;
 
-			if (!clientToken) {
+			if (!clientToken && !authUrl) {
 				const { MockClientAdapter } = await import(
 					"./adapters/client/mock"
 				);
@@ -63,7 +64,7 @@ export async function createClientFromCredentials(
 			const { AblyClientAdapter } = await import(
 				"./adapters/client/ably"
 			);
-			return new AblyClientAdapter({ clientToken });
+			return new AblyClientAdapter({ clientToken, authUrl });
 		}
 
 		case "supabase": {

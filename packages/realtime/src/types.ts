@@ -172,24 +172,20 @@ export interface AblyAdapterOptions {
  *    endpoint da sua API que retorna um token Ably fresco. O SDK renova
  *    automaticamente antes da expiração.
  *
+ * Você pode combinar ambos: `clientToken` para conectar imediatamente e
+ * `authUrl` para renovação automática quando o token expirar.
+ *
  * @see https://ably.com/docs/auth/token
  */
-export type AblyClientAdapterOptions =
-	| {
-		/** Token JWT ou Ably Token gerado pelo servidor. Expira — prefira `authUrl`. */
-		clientToken: string;
-		authUrl?: never;
-		clientId?: string;
-		environment?: string;
-	}
-	| {
-		clientToken?: never;
-		/** URL do endpoint da API que retorna um Ably Token Request ou JWT. */
-		authUrl: string;
-		/** ID único do cliente — útil para presença e rastreamento. */
-		clientId?: string;
-		environment?: string;
-	};
+export type AblyClientAdapterOptions = {
+	/** Token JWT ou Ably Token gerado pelo servidor. */
+	clientToken?: string;
+	/** URL do endpoint da API que retorna um Ably Token Request ou JWT. */
+	authUrl?: string;
+	/** ID único do cliente — útil para presença e rastreamento. */
+	clientId?: string;
+	environment?: string;
+};
 
 export interface WebSocketAdapterOptions {
 	/** URL completa do servidor WS, ex.: `"ws://localhost:4001"` */

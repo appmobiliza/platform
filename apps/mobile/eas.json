@@ -6,17 +6,32 @@
 	"build": {
 		"development": {
 			"developmentClient": true,
-			"distribution": "internal"
+			"distribution": "internal",
+			"env": {
+				"EXPO_PUBLIC_BETTER_AUTH_URL": "http://localhost:3000",
+				"EXPO_PUBLIC_API_URL": "http://localhost:3001",
+				"EXPO_PUBLIC_APP_URL": "http://localhost:8081"
+			}
 		},
 		"preview": {
 			"distribution": "internal",
 			"android": {
 				"buildType": "apk"
+			},
+			"env": {
+				"EXPO_PUBLIC_BETTER_AUTH_URL": "https://appmobiliza.vercel.app",
+				"EXPO_PUBLIC_API_URL": "https://api-appmobiliza.vercel.app",
+				"EXPO_PUBLIC_APP_URL": "https://appmobiliza.vercel.app"
 			}
 		},
 		"production": {
 			"autoIncrement": true,
-			"environment": "production"
+			"environment": "production",
+			"env": {
+				"EXPO_PUBLIC_BETTER_AUTH_URL": "https://appmobiliza.vercel.app",
+				"EXPO_PUBLIC_API_URL": "https://api-appmobiliza.vercel.app",
+				"EXPO_PUBLIC_APP_URL": "https://appmobiliza.vercel.app"
+			}
 		}
 	},
 	"submit": {

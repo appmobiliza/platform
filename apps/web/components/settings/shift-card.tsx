@@ -1,8 +1,7 @@
 "use client";
 
-import * as React from "react";
-
 import { ChevronDown, type LucideIcon } from "lucide-react";
+import * as React from "react";
 
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";

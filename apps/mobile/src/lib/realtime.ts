@@ -59,7 +59,16 @@ async function fetchCredentials(): Promise<ClientCredentials> {
 		}
 
 		_usingMock = false;
-		return (await response.json()) as ClientCredentials;
+		const credentials = (await response.json()) as ClientCredentials;
+
+		// Injeta a authUrl para renovação automática de token no Ably.
+		// O Ably SDK chama este endpoint quando o token atual está
+		// prestes a expirar, obtendo um novo sem intervenção do usuário.
+		if (credentials.provider === "ably" && baseUrl) {
+			credentials.config.authUrl = `${baseUrl}/api/realtime/token`;
+		}
+
+		return credentials;
 	} catch (error) {
 		console.error("[realtime] Erro ao buscar credenciais:", error);
 		_usingMock = true;

@@ -46,16 +46,31 @@ export default function Auth() {
 
 			if (error) {
 				setIsLoading(false);
-				toast.error(
-					error.message ?? "Não foi possível fazer login com Google.",
-					{ description: "Erro de autenticação" },
-				);
+				toast.error("Erro de autenticação", {
+					description:
+						error.message ??
+						"Não foi possível fazer login com Google.",
+				});
+				return;
+			}
+
+			console.log("auth", error);
+
+			// ── Web: redirect handled by better-auth's redirectPlugin ─────
+			// On web, signIn.social returns successfully after the server
+			// responds with the OAuth URL. The redirectPlugin then sets
+			// window.location.href to navigate the browser to Google, but
+			// JS continues executing — the navigation is only scheduled.
+			// We must return early here to prevent the code below (native-
+			// only logic) from running before the redirect completes.
+			if (Platform.OS === "web") {
+				// The redirectPlugin has already set window.location.href.
+				// No further action needed; the page will unload shortly.
 				return;
 			}
 
 			// ── Native-only path ──────────────────────────────────────────
-			// On web the code below never runs because signIn.social triggers
-			// a full browser redirect. The same logic lives in auth-callback.tsx.
+			// The same logic lives in auth-callback.tsx for the web flow.
 
 			// Limpa o cache de auth para evitar que o layout reaja
 			// prematuramente quando o useSession() resolver — enquanto
@@ -83,7 +98,7 @@ export default function Auth() {
 				return;
 			}
 
-			console.log("Usuário encontrado", user.id);
+			console.log("Usuário encontrado", user);
 			console.log("isScholar: ", user.role === "scholar");
 
 			// Scholar — loga direto (perfil gerenciado pelo gestor)
@@ -98,10 +113,9 @@ export default function Auth() {
 			}
 
 			// Student — verifica com o servidor se o perfil existe.
-			// Só cacheia os dados DEPOIS da resposta para que o layout
-			// nunca veja um estado intermediário com userRole definido
-			// mas hasProfile incorreto.
 			const profile = await trpcUtils.profiles.me.fetch();
+			console.log("profile", profile);
+
 			const hasStudentProfile =
 				"studentProfile" in profile && profile.studentProfile !== null;
 			const simplifiedInterface =
@@ -114,11 +128,21 @@ export default function Auth() {
 
 			console.log("hasStudentProfile: ", hasStudentProfile);
 
+			// Cacheia os dados do usuário e o estado do perfil, depois
+			// redireciona explicitamente para o destino correto.
+			cacheUserInfo({ ...user });
+
 			setHasProfile(hasStudentProfile);
 			setSimplifiedInterface(simplifiedInterface);
+			setIsLoading(false);
 
-			// Agora cacheia com os valores corretos
-			cacheUserInfo({ ...user });
+			if (hasStudentProfile) {
+				router.replace("/(tabs)");
+				return;
+			}
+
+			router.replace("/onboarding/unregistered");
+			return;
 		} catch (err) {
 			setIsLoading(false);
 			console.log("Google login error:", err);

@@ -28,29 +28,27 @@ export const updateScholarSchedule = managerProcedure
 			});
 		}
 
-		await db.transaction(async (tx) => {
-			// Remove todas as entradas atuais
-			await tx
-				.delete(schema.scholarWeeklySchedule)
-				.where(
-					eq(
-						schema.scholarWeeklySchedule.scholarProfileId,
-						scholarId,
-					),
-				);
+		// Remove todas as entradas atuais
+		await db
+			.delete(schema.scholarWeeklySchedule)
+			.where(
+				eq(
+					schema.scholarWeeklySchedule.scholarProfileId,
+					scholarId,
+				),
+			);
 
-			// Insere as novas entradas
-			if (entries.length > 0) {
-				await tx.insert(schema.scholarWeeklySchedule).values(
-					entries.map((entry) => ({
-						id: uuidv7(),
-						scholarProfileId: scholarId,
-						dayOfWeek: entry.dayOfWeek,
-						shift: entry.shift,
-					})),
-				);
-			}
-		});
+		// Insere as novas entradas
+		if (entries.length > 0) {
+			await db.insert(schema.scholarWeeklySchedule).values(
+				entries.map((entry) => ({
+					id: uuidv7(),
+					scholarProfileId: scholarId,
+					dayOfWeek: entry.dayOfWeek,
+					shift: entry.shift,
+				})),
+			);
+		}
 
 		// Retorna a schedule atualizada
 		const schedule = await db.query.scholarWeeklySchedule.findMany({

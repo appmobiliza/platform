@@ -253,21 +253,19 @@ export default function TravelScreen() {
 		if (isDuring) {
 			// Concluir atendimento
 			if (isFarFromDestination) {
-				toast.warning(
-					"Você ainda está distante do destino. Deseja concluir o atendimento mesmo assim?",
-					{
-						description: "Atenção",
-						action: {
-							label: "Concluir",
-							onClick: () => handleComplete(),
-						},
-						cancel: {
-							label: "Cancelar",
-							onClick: () => {},
-						},
-						duration: Infinity,
+				toast.warning("Atenção", {
+					description:
+						"Você ainda está distante do destino. Deseja concluir o atendimento mesmo assim?",
+					action: {
+						label: "Concluir",
+						onClick: () => handleComplete(),
 					},
-				);
+					cancel: {
+						label: "Cancelar",
+						onClick: () => {},
+					},
+					duration: Infinity,
+				});
 			} else {
 				handleComplete();
 			}
@@ -401,42 +399,9 @@ export default function TravelScreen() {
 				</View>
 			</View>
 
-			<ScrollView
-				className="flex-1 px-6 pt-6"
-				contentContainerClassName="gap-4"
-				showsVerticalScrollIndicator={false}
-			>
-				<View className="p-5 bg-card border border-border rounded-lg">
-					<Text className="text-muted-foreground font-semibold text-xs mb-3 tracking-widest uppercase">
-						PERCURSO
-					</Text>
-					<AddressRoute
-						from={{
-							label: originName,
-							description: "Ponto de partida",
-						}}
-						to={{
-							label: destinationName,
-							description: "Destino",
-						}}
-						shouldShowRoute
-						size="lg"
-					/>
-				</View>
-
-				{observation && (
-					<View className="bg-card p-4 border border-border rounded-lg">
-						<Text className="text-muted-foreground font-semibold text-xs mb-3 tracking-widest uppercase">
-							OBSERVAÇÃO DO ESTUDANTE
-						</Text>
-						<Text className="text-foreground leading-relaxed font-medium">
-							"{observation}"
-						</Text>
-					</View>
-				)}
-
-				{showMap && (
-					<View className="h-64 rounded-lg overflow-hidden border border-border">
+			{showMap ? (
+				<View className="flex-1 px-6 pt-6">
+					<View className="flex-1 rounded-lg overflow-hidden border border-border">
 						<MapView
 							stage="trip"
 							origin={
@@ -464,8 +429,43 @@ export default function TravelScreen() {
 							studentPosition={studentPosition}
 						/>
 					</View>
-				)}
-			</ScrollView>
+				</View>
+			) : (
+				<ScrollView
+					className="flex-1 px-6 pt-6"
+					contentContainerClassName="gap-4"
+					showsVerticalScrollIndicator={false}
+				>
+					<View className="p-5 bg-card border border-border rounded-lg">
+						<Text className="text-muted-foreground font-semibold text-xs mb-3 tracking-widest uppercase">
+							PERCURSO
+						</Text>
+						<AddressRoute
+							from={{
+								label: originName,
+								description: "Ponto de partida",
+							}}
+							to={{
+								label: destinationName,
+								description: "Destino",
+							}}
+							shouldShowRoute
+							size="lg"
+						/>
+					</View>
+
+					{observation && (
+						<View className="bg-card p-4 border border-border rounded-lg">
+							<Text className="text-muted-foreground font-semibold text-xs mb-3 tracking-widest uppercase">
+								OBSERVAÇÃO DO ESTUDANTE
+							</Text>
+							<Text className="text-foreground leading-relaxed font-medium">
+								"{observation}"
+							</Text>
+						</View>
+					)}
+				</ScrollView>
+			)}
 
 			<View className="px-6 pb-8 pt-4 gap-2">
 				{!hasCompleted && (

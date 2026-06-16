@@ -4,13 +4,13 @@ import * as React from "react";
 
 import { toast } from "@/components/ui/toast";
 
-import { getRealtimeClient } from "@/lib/realtime";
 import {
 	cancelAllNotifications,
 	showAcceptedNotification,
 	showSearchingNotification,
 	showUnattendedNotification,
-} from "@/lib/request-notifications";
+} from "@/lib/notifications";
+import { getRealtimeClient } from "@/lib/realtime";
 import { trpc } from "@/lib/trpc/client";
 
 import { getNearestPoint } from "@/stores/location-store";
@@ -264,8 +264,13 @@ function useRequestFlow() {
 				const current = allItems.find((item) => item.id === requestId);
 
 				if (!current) {
-					// Request não encontrada — limpamos o estado
+					// Request não encontrada no histórico — pode ter sido limpa por
+					// CRON ou removida. Cancela no backend (caso ainda exista) para
+					// evitar o erro "Você já tem uma solicitação em andamento" ao
+					// tentar criar uma nova, e abre o fluxo inicial.
+					safeCancelRequest(requestId);
 					clearRequestState();
+					openStage("route-selection");
 					return;
 				}
 
@@ -312,7 +317,11 @@ function useRequestFlow() {
 					setSearchState("unattended");
 					openStage("searching");
 				} else if (status === "cancelled") {
+					// Request cancelada enquanto estávamos fora — limpa e
+					// abre o fluxo inicial (hasPersistedRequest impediu o
+					// openStage inicial).
 					clearRequestState();
+					openStage("route-selection");
 				} else {
 					// Ainda "pending" — restaura a busca
 					setActiveRequestId(requestId);
@@ -334,9 +343,19 @@ function useRequestFlow() {
 				}
 			})
 			.catch(() => {
+				// Falha ao buscar histórico — cancela no backend como safety net
+				// e abre o fluxo inicial.
+				safeCancelRequest(requestId);
 				clearRequestState();
+				openStage("route-selection");
 			});
-	}, [hasPersistedRequest, persistedState, utils, openStage]);
+	}, [
+		hasPersistedRequest,
+		persistedState,
+		utils,
+		openStage,
+		safeCancelRequest,
+	]);
 
 	/**
 	 * Creates the service request in the backend and transitions to "searching".
@@ -391,14 +410,54 @@ function useRequestFlow() {
 					notes: message,
 				});
 				setActiveRequestId(result.id);
+
+				// Mostra a notificação persistente com o ID da request
+				// para que a ação "Cancelar" funcione pela notificação.
+				showSearchingNotification(result.id);
 			} catch (error) {
 				console.error("Erro ao criar solicitação", error);
+
+				// Se o erro for CONFLICT (request pendente de sessão anterior),
+				// tenta encontrar e cancelar a request órfã, depois retenta.
+				try {
+					const history =
+						await utils.requests.studentHistory.fetchInfinite({
+							limit: 50,
+						});
+					const allItems = history.pages.flatMap(
+						(p) => p.items,
+					);
+					const active = allItems.find(
+						(item) =>
+							item.status === "pending" ||
+							item.status === "accepted" ||
+							item.status === "ongoing",
+					);
+					if (active) {
+						await cancelRequest({ requestId: active.id });
+						// Retenta a criação com os mesmos parâmetros
+						const result = await createRequest({
+							originLocationId: originId,
+							destinationLocationId: destinationId,
+							notes: message,
+						});
+						setActiveRequestId(result.id);
+						showSearchingNotification(result.id);
+						return;
+					}
+				} catch (innerErr) {
+					console.error(
+						"[useRequestFlow] Falha ao limpar request fantasma:",
+						innerErr,
+					);
+				}
+
 				setSearchState("error");
 				clearTimers();
 				cancelAllNotifications();
 			}
 		},
-		[createRequest, message, transitionTo, origin, destination, utils],
+		[createRequest, message, transitionTo, origin, destination, utils, cancelRequest, clearTimers],
 	);
 
 	const exitFlow = React.useCallback(() => {
@@ -416,22 +475,19 @@ function useRequestFlow() {
 	const dismissAndExit = React.useCallback(() => {
 		queuedStageRef.current = null;
 
-		// Se estava na busca *ativa*, cancela no backend
-		const stage = activeStageRef.current;
-		if (
-			stage === "searching" &&
-			activeRequestId &&
-			searchState === "searching"
-		) {
+		// Cancela qualquer requisição ativa no backend, independentemente do
+		// searchState (searching, unattended ou error). Isso evita que uma
+		// solicitação órfã no backend bloqueie a criação de uma nova.
+		if (activeRequestId) {
 			safeCancelRequest(activeRequestId);
 		}
 
-		clearTimers();
-		setSearchState("idle");
-		setElapsedSeconds(0);
-		cancelAllNotifications();
+		// Dismiss the current sheet first so navigation works reliably
 		refs[activeStageRef.current].current?.dismiss();
-	}, [refs, activeRequestId, safeCancelRequest, clearTimers, searchState]);
+
+		// Limpa estado, notificações e navega para a tela inicial.
+		exitFlow();
+	}, [activeRequestId, safeCancelRequest, exitFlow, refs]);
 
 	const handleDismiss = React.useCallback(
 		(stage: Stage) => {
@@ -464,25 +520,15 @@ function useRequestFlow() {
 				}
 
 				// Cancela a solicitação no backend se o usuário fechou a busca
-				if (
-					stage === "searching" &&
-					activeRequestId &&
-					searchState === "searching"
-				) {
+				// (inclui unattended e error, não apenas searching)
+				if (stage === "searching" && activeRequestId) {
 					safeCancelRequest(activeRequestId);
 				}
 
 				exitFlow();
 			}
 		},
-		[
-			exitFlow,
-			openStage,
-			refs,
-			activeRequestId,
-			safeCancelRequest,
-			searchState,
-		],
+		[exitFlow, openStage, refs, activeRequestId, safeCancelRequest],
 	);
 
 	// ─── Timer de elapsed + timeout da busca ─────────────────────────────────

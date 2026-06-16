@@ -9,6 +9,7 @@ import { reviewExtraShiftRequest } from "./scholar/reviewExtraShiftRequest.js";
 import { scholarDashboard } from "./scholar/scholarDashboard.js";
 import { scholarWeeklySchedule } from "./scholar/scholarWeeklySchedule.js";
 import { toggleAvailability } from "./scholar/toggleAvailability.js";
+import { toggleScholarActiveStatus } from "./scholar/toggleScholarActiveStatus.js";
 import { updateScholar } from "./scholar/updateScholar.js";
 import { updateScholarAsManager } from "./scholar/updateScholarAsManager.js";
 import { updateScholarSchedule } from "./scholar/updateScholarSchedule.js";
@@ -36,4 +37,5 @@ export const profilesRouter = router({
 	requestExtraShift,
 	getExtraShiftRequests,
 	reviewExtraShiftRequest,
+	toggleScholarActiveStatus,
 });

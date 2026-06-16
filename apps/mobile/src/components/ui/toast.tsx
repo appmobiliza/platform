@@ -21,6 +21,8 @@ import { Text } from "@/components/ui/text";
 
 import { cn } from "@/lib/utils";
 
+import { Button } from "./button";
+
 // ────────────────────────────────────────────────────────────────
 // Types
 // ────────────────────────────────────────────────────────────────
@@ -295,29 +297,12 @@ function ToastItem({ data }: { data: ToastData }) {
 	const card = (
 		<View
 			className={cn(
+				"pointer-events-auto",
 				"bg-background border-border mx-auto flex w-full max-w-[calc(100%-2rem)] flex-col gap-4 rounded-lg border p-6 shadow-lg shadow-black/5 sm:max-w-lg",
 				data.variant !== "default" && "border-l-4",
 				data.variant !== "default" && config.borderClass,
 			)}
 		>
-			{/* Close button */}
-			{data.dismissible && data.closeButton && (
-				<Pressable
-					onPress={handleDismiss}
-					hitSlop={12}
-					accessibilityLabel="Fechar"
-					accessibilityRole="button"
-					className={cn(
-						"absolute right-6 top-6.5 rounded opacity-70 active:opacity-100",
-						Platform.select({
-							web: "transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-						}),
-					)}
-				>
-					<Icon icon={X} size={24} color="--foreground" />
-				</Pressable>
-			)}
-
 			{/* Icon + heading */}
 			<View className="flex-row items-start gap-3">
 				<View className="mt-1">
@@ -335,9 +320,28 @@ function ToastItem({ data }: { data: ToastData }) {
 				</View>
 
 				<View className="flex-1 gap-1">
-					<Text className="text-foreground text-lg font-semibold leading-none">
-						{data.title}
-					</Text>
+					<View className="flex-row items-center justify-between w-full">
+						<Text className="text-foreground text-lg font-semibold leading-none">
+							{data.title}
+						</Text>
+						{/* Close button */}
+						{data.dismissible && data.closeButton && (
+							<Pressable
+								onPress={handleDismiss}
+								hitSlop={12}
+								accessibilityLabel="Fechar"
+								accessibilityRole="button"
+								className={cn(
+									"rounded opacity-70 active:opacity-100",
+									Platform.select({
+										web: "cursor-pointer transition-opacity hover:opacity-100 ",
+									}),
+								)}
+							>
+								<Icon icon={X} size={24} color="--foreground" />
+							</Pressable>
+						)}
+					</View>
 					{data.description &&
 						(typeof data.description === "string" ? (
 							<Text className="text-muted-foreground text-sm">
@@ -475,6 +479,7 @@ function ToastItem({ data }: { data: ToastData }) {
 	// Enter:  mount → mounted={false} (hidden) → rAF → mounted={true} (visible)
 	// Exit:   leaving={false} (visible) → dismiss → leaving={true} (hidden)
 	// Cleanup: after EXIT_ANIMATION_DURATION the toast is removed from store.
+	// ── Web: CSS transitions ─────────────────────────────────────
 	return (
 		<View
 			style={{
@@ -487,31 +492,48 @@ function ToastItem({ data }: { data: ToastData }) {
 			}}
 			pointerEvents="box-none"
 		>
-			{/* Backdrop */}
+			{/* Backdrop separado — não envolve o card */}
 			<Pressable
 				onPress={data.dismissible ? handleDismiss : undefined}
+				style={{
+					position: "absolute",
+					top: 0,
+					left: 0,
+					right: 0,
+					bottom: 0,
+				}}
 				className={cn(
-					"absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center p-2",
 					"transition-all ease-in-out duration-200",
 					leaving || !mounted
 						? "bg-black/0 opacity-0"
 						: "bg-black/50 opacity-100",
+					Platform.select({ web: "cursor-default" }),
+				)}
+			/>
+
+			{/* Card — irmão do backdrop, não filho */}
+			<View
+				style={{
+					position: "absolute",
+					top: 0,
+					left: 0,
+					right: 0,
+					bottom: 0,
+					justifyContent: "center",
+					alignItems: "center",
+					padding: 8,
+				}}
+				pointerEvents="box-none"
+				className={cn(
+					"pointer-events-none", // ← CSS puro, afeta só o container
+					"transition-all ease-in-out duration-200",
+					leaving || !mounted
+						? "opacity-0 scale-95"
+						: "opacity-100 scale-100",
 				)}
 			>
-				{/* Inner pressable stops propagation so taps on card don't dismiss */}
-				<Pressable
-					onPress={(e) => e.stopPropagation()}
-					className={cn(
-						"w-full max-w-lg",
-						"transition-all ease-in-out duration-200",
-						leaving || !mounted
-							? "opacity-0 scale-95"
-							: "opacity-100 scale-100",
-					)}
-				>
-					{card}
-				</Pressable>
-			</Pressable>
+				{card}
+			</View>
 		</View>
 	);
 }

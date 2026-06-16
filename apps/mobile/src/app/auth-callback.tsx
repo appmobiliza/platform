@@ -92,8 +92,6 @@ function usePostLogin() {
 				}
 
 				// 4. Student — verifica com o servidor se o perfil existe.
-				//     Só cacheia os dados DEPOIS da resposta para que o layout
-				//     nunca veja userRole definido com hasProfile incorreto.
 				let hasStudentProfile = false;
 				let simplifiedInterface = false;
 				try {
@@ -115,7 +113,9 @@ function usePostLogin() {
 					simplifiedInterface = false;
 				}
 
-				// Agora cacheia com os valores corretos
+				// Cacheia os dados do usuário PRIMEIRO para que, quando
+				// setHasProfile abaixo disparar re-renders, o layout já
+				// encontre o userRole no cache (consistente com auth.tsx).
 				cacheUserInfo({
 					id: user.id,
 					name: user.name,

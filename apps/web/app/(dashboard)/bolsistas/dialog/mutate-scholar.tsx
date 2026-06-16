@@ -6,7 +6,6 @@ import {
 	genderLabels,
 	genderValues,
 	type InsertScholarAsManagerInput,
-	InsertScholarAsManagerSchema,
 	type UpdateScholarAsManagerInput,
 } from "@mobiliza/contracts";
 
@@ -16,6 +15,7 @@ import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { updateScholarDetails } from "@/components/details/scholar/store";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,21 +50,59 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 
+import { revalidateScholarDashboard } from "@/lib/actions";
 import type { CachedScholar } from "@/lib/cached-data";
 
 import { trpc } from "@/providers/trpc-provider";
 
-// Shared form schema: create requires everything, edit requires userId + any subset
-const ScholarFormSchema = InsertScholarAsManagerSchema.extend({
+// Local form schema – does NOT include `shift` (absent from scholar_profile table)
+const FormSchema = z.object({
 	userId: z.string().optional(),
+	name: z.string().min(1, "Nome é obrigatório"),
+	email: z.string().email("E-mail inválido"),
+	enrollment: z.string({ error: "Matrícula inválida" }).refine(
+		(val) => {
+			const digitsOnly = val.replace(/\D/g, "");
+			return digitsOnly.length >= 5 && digitsOnly.length <= 20;
+		},
+		{ message: "Matrícula inválida" },
+	),
+	campus: z.enum(campusValues, { error: "Campus deve ser selecionado" }),
+	course: z.enum(courseValues, { error: "Curso deve ser selecionado" }),
+	phone: z
+		.string({ error: "Telefone inválido" })
+		.regex(/^\(?\d{2}\)?[\s]?\d{4,5}[\s-]?\d{4}$/, "Telefone inválido"),
+	gender: z.enum(genderValues, { error: "Gênero deve ser selecionado" }),
+	cpf: z
+		.string({ error: "CPF inválido" })
+		.regex(/^(?:\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11})$/, "CPF inválido"),
 });
 
-type ScholarFormData = z.infer<typeof ScholarFormSchema>;
+type FormData = z.infer<typeof FormSchema>;
 
 interface Props {
 	children: React.ReactNode;
 	scholar?: CachedScholar;
+}
+
+function scholarToFormData(s: CachedScholar): Partial<FormData> {
+	return {
+		userId: s.profile.userId,
+		name: s.user.name,
+		email: s.user.email,
+		enrollment: s.profile.enrollment,
+		course: s.profile.course as FormData["course"],
+		campus: s.profile.campus as FormData["campus"],
+		phone: s.profile.phone ?? "",
+		cpf: s.profile.cpf ?? "",
+		gender: s.profile.gender,
+	};
 }
 
 export function MutateScholarDialog({ children, scholar }: Props) {
@@ -72,21 +110,23 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 	const [open, setOpen] = React.useState(false);
 	const isEditing = Boolean(scholar);
 
-	const form = useForm<ScholarFormData>({
-		resolver: zodResolver(ScholarFormSchema),
+	const form = useForm<FormData>({
+		resolver: zodResolver(FormSchema),
 		mode: "onSubmit",
+		defaultValues: scholar ? scholarToFormData(scholar) : {},
 	});
 
 	const {
 		control,
 		handleSubmit,
-		formState: { errors, isSubmitting },
+		formState: { errors, isSubmitting, isDirty },
 		register,
 		reset,
 	} = form;
 
 	const createScholar = trpc.profiles.createScholarAsManager.useMutation({
 		onSuccess() {
+			revalidateScholarDashboard();
 			router.refresh();
 			setOpen(false);
 			reset();
@@ -94,7 +134,21 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 	});
 
 	const updateScholar = trpc.profiles.updateScholarAsManager.useMutation({
-		onSuccess() {
+		onSuccess(_data, variables) {
+			// Immediately update the sidebar store so the details panel
+			// reflects the changes without waiting for a server round-trip.
+			if (scholar) {
+				const { userId: _uid, ...profileUpdates } = variables;
+				updateScholarDetails({
+					...scholar,
+					profile: {
+						...scholar.profile,
+						...(profileUpdates as Record<string, string>),
+					},
+				} as CachedScholar);
+			}
+
+			revalidateScholarDashboard();
 			router.refresh();
 			setOpen(false);
 		},
@@ -105,43 +159,18 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 		: createScholar.isPending;
 	const mutationError = isEditing ? updateScholar.error : createScholar.error;
 
-	function onSubmit(data: ScholarFormData) {
+	function onSubmit(data: FormData) {
 		if (isEditing) {
-			const {
-				name: _name,
-				email: _email,
-				cpf: _cpf,
-				userId,
-				...profileData
-			} = data;
+			const { userId, ...rest } = data;
 			updateScholar.mutate({
 				userId: userId!,
-				...profileData,
+				...rest,
 			} as UpdateScholarAsManagerInput);
 		} else {
 			const { userId: _userId, ...rest } = data;
 			createScholar.mutate(rest as InsertScholarAsManagerInput);
 		}
 	}
-
-	// Reset form with scholar data when editing
-	React.useEffect(() => {
-		if (open && scholar) {
-			reset({
-				userId: scholar.profile.userId,
-				name: scholar.user.name,
-				enrollment: scholar.profile.enrollment,
-				course: scholar.profile.course as ScholarFormData["course"],
-				campus: scholar.profile.campus as ScholarFormData["campus"],
-				phone: scholar.profile.phone ?? "",
-				email: scholar.user.email,
-				cpf: "",
-				gender: undefined,
-			});
-		} else if (!open) {
-			reset();
-		}
-	}, [open, scholar, reset]);
 
 	const comboboxPortalRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -150,9 +179,8 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 			open={open}
 			onOpenChange={(v) => {
 				setOpen(v);
-				if (!v) {
-					reset();
-				}
+				if (v) reset(scholar ? scholarToFormData(scholar) : {});
+				if (!v) reset();
 			}}
 		>
 			<DialogTrigger asChild>{children}</DialogTrigger>
@@ -179,119 +207,22 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 					</DialogHeader>
 					<div ref={comboboxPortalRef}>
 						<FieldGroup>
-							{!isEditing && (
-								<>
-									<Field data-invalid={!!errors.name}>
-										<Label htmlFor="name">
-											Nome completo
-										</Label>
-										<Input
-											id="name"
-											{...register("name")}
-											placeholder="Nome do bolsista"
-											aria-invalid={!!errors.name}
-										/>
-										{errors.name && (
-											<FieldError
-												errors={[errors.name]}
-											/>
-										)}
-									</Field>
-									<Field data-invalid={!!errors.email}>
-										<Label htmlFor="email">E-mail</Label>
-										<Input
-											id="email"
-											type="email"
-											{...register("email")}
-											placeholder="bolsista@example.com"
-											aria-invalid={!!errors.email}
-										/>
-										{errors.email && (
-											<FieldError
-												errors={[errors.email]}
-											/>
-										)}
-									</Field>
-									<Field data-invalid={!!errors.cpf}>
-										<Label htmlFor="cpf">CPF</Label>
-										<Controller
-											name="cpf"
-											control={control}
-											render={({ field }) => (
-												<MaskedInput
-													id="cpf"
-													mask="cpf"
-													placeholder="999.999.999-99"
-													value={field.value}
-													onChange={field.onChange}
-													aria-invalid={!!errors.cpf}
-												/>
-											)}
-										/>
-										{errors.cpf && (
-											<FieldError errors={[errors.cpf]} />
-										)}
-									</Field>
-								</>
-							)}
+							{/* Nome completo – full width */}
+							<Field data-invalid={!!errors.name}>
+								<Label htmlFor="name">Nome completo</Label>
+								<Input
+									id="name"
+									{...register("name")}
+									placeholder="Nome do bolsista"
+									aria-invalid={!!errors.name}
+								/>
+								{errors.name && (
+									<FieldError errors={[errors.name]} />
+								)}
+							</Field>
+
+							{/* Campus + Curso – side by side */}
 							<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-								<Field data-invalid={!!errors.course}>
-									<Label htmlFor="course">Curso</Label>
-									<Controller
-										name="course"
-										control={control}
-										render={({ field }) => (
-											<Combobox
-												items={courseValues}
-												value={field.value}
-												onValueChange={(v) =>
-													field.onChange(v ?? "")
-												}
-											>
-												<ComboboxTrigger
-													render={
-														<Button
-															type="button"
-															variant="outline"
-															className="w-full justify-between font-normal"
-															aria-invalid={
-																!!errors.course
-															}
-														>
-															<ComboboxValue placeholder="Selecione um curso" />
-														</Button>
-													}
-												/>
-												<ComboboxContent
-													container={
-														comboboxPortalRef
-													}
-												>
-													<ComboboxInput
-														showTrigger={false}
-														placeholder="Pesquisar curso"
-													/>
-													<ComboboxEmpty>
-														Nenhum curso encontrado.
-													</ComboboxEmpty>
-													<ComboboxList>
-														{(item) => (
-															<ComboboxItem
-																key={item}
-																value={item}
-															>
-																{item}
-															</ComboboxItem>
-														)}
-													</ComboboxList>
-												</ComboboxContent>
-											</Combobox>
-										)}
-									/>
-									{errors.course && (
-										<FieldError errors={[errors.course]} />
-									)}
-								</Field>
 								<Field data-invalid={!!errors.campus}>
 									<Label htmlFor="campus">Campus</Label>
 									<Controller
@@ -350,6 +281,67 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 										<FieldError errors={[errors.campus]} />
 									)}
 								</Field>
+								<Field data-invalid={!!errors.course}>
+									<Label htmlFor="course">Curso</Label>
+									<Controller
+										name="course"
+										control={control}
+										render={({ field }) => (
+											<Combobox
+												items={courseValues}
+												value={field.value}
+												onValueChange={(v) =>
+													field.onChange(v ?? "")
+												}
+											>
+												<ComboboxTrigger
+													render={
+														<Button
+															type="button"
+															variant="outline"
+															className="w-full justify-between font-normal"
+															aria-invalid={
+																!!errors.course
+															}
+														>
+															<ComboboxValue placeholder="Selecione um curso" />
+														</Button>
+													}
+												/>
+												<ComboboxContent
+													container={
+														comboboxPortalRef
+													}
+												>
+													<ComboboxInput
+														showTrigger={false}
+														placeholder="Pesquisar curso"
+													/>
+													<ComboboxEmpty>
+														Nenhum curso encontrado.
+													</ComboboxEmpty>
+													<ComboboxList>
+														{(item) => (
+															<ComboboxItem
+																key={item}
+																value={item}
+															>
+																{item}
+															</ComboboxItem>
+														)}
+													</ComboboxList>
+												</ComboboxContent>
+											</Combobox>
+										)}
+									/>
+									{errors.course && (
+										<FieldError errors={[errors.course]} />
+									)}
+								</Field>
+							</div>
+
+							{/* Matrícula + Gênero – side by side */}
+							<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 								<Field data-invalid={!!errors.enrollment}>
 									<Label htmlFor="enrollment">
 										Matrícula
@@ -420,27 +412,95 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 										<FieldError errors={[errors.gender]} />
 									)}
 								</Field>
-								<Field data-invalid={!!errors.phone}>
-									<Label htmlFor="phone">Telefone</Label>
-									<Controller
-										name="phone"
-										control={control}
-										render={({ field }) => (
-											<MaskedInput
-												id="phone"
-												mask="phone"
-												placeholder="(99) 99999-9999"
-												value={field.value}
-												onChange={field.onChange}
-												aria-invalid={!!errors.phone}
-											/>
-										)}
+							</div>
+
+							{/* E-mail – full width */}
+							{isEditing ? (
+								<Field>
+									<Label htmlFor="email">E-mail</Label>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<span>
+												<Input
+													id="email"
+													value={scholar?.user.email}
+													disabled
+													placeholder="bolsista@example.com"
+													aria-invalid={
+														!!errors.email
+													}
+												/>
+											</span>
+										</TooltipTrigger>
+										<TooltipContent>
+											<p>
+												O e-mail do bolsista está
+												vinculado à sua conta Google e
+												não pode ser alterado.
+											</p>
+										</TooltipContent>
+									</Tooltip>
+								</Field>
+							) : (
+								<Field data-invalid={!!errors.email}>
+									<Label htmlFor="email">E-mail</Label>
+									<Input
+										id="email"
+										type="email"
+										{...register("email")}
+										placeholder="bolsista@example.com"
+										aria-invalid={!!errors.email}
 									/>
-									{errors.phone && (
-										<FieldError errors={[errors.phone]} />
+									{errors.email && (
+										<FieldError errors={[errors.email]} />
 									)}
 								</Field>
-							</div>
+							)}
+
+							{/* Telefone – full width */}
+							<Field data-invalid={!!errors.phone}>
+								<Label htmlFor="phone">Telefone</Label>
+								<Controller
+									name="phone"
+									control={control}
+									render={({ field }) => (
+										<MaskedInput
+											id="phone"
+											mask="phone"
+											placeholder="(99) 99999-9999"
+											value={field.value}
+											onChange={field.onChange}
+											aria-invalid={!!errors.phone}
+										/>
+									)}
+								/>
+								{errors.phone && (
+									<FieldError errors={[errors.phone]} />
+								)}
+							</Field>
+
+							{/* CPF – full width */}
+							<Field data-invalid={!!errors.cpf}>
+								<Label htmlFor="cpf">CPF</Label>
+								<Controller
+									name="cpf"
+									control={control}
+									render={({ field }) => (
+										<MaskedInput
+											id="cpf"
+											mask="cpf"
+											placeholder="999.999.999-99"
+											value={field.value}
+											onChange={field.onChange}
+											aria-invalid={!!errors.cpf}
+										/>
+									)}
+								/>
+								{errors.cpf && (
+									<FieldError errors={[errors.cpf]} />
+								)}
+							</Field>
+
 							{mutationError ? (
 								<Alert variant="destructive">
 									<AlertDescription>
@@ -462,7 +522,11 @@ export function MutateScholarDialog({ children, scholar }: Props) {
 						</DialogClose>
 						<Button
 							type="submit"
-							disabled={isSubmitting || isPending}
+							disabled={
+								isSubmitting ||
+								isPending ||
+								(isEditing && !isDirty)
+							}
 						>
 							{isPending
 								? "Salvando..."

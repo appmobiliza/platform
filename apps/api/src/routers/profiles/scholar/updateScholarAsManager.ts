@@ -8,8 +8,20 @@ export const updateScholarAsManager = managerProcedure
 	.input(UpdateScholarAsManagerSchema)
 
 	.mutation(async ({ input }) => {
-		const { userId, ...profileData } = input;
+		const { userId, name, email, ...profileData } = input;
 
+		// Update user-level fields (name, email) if provided
+		if (name !== undefined || email !== undefined) {
+			await db
+				.update(schema.user)
+				.set({
+					...(name !== undefined ? { name } : {}),
+					...(email !== undefined ? { email } : {}),
+				})
+				.where(eq(schema.user.id, userId));
+		}
+
+		// Update scholar profile fields
 		await db
 			.update(schema.scholarProfile)
 			.set({ ...profileData, updatedAt: new Date() })
