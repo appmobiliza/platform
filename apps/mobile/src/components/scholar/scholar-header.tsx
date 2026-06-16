@@ -70,9 +70,9 @@ export function ScholarHeader({
 				>
 					<View
 						className={cn("mr-1 h-1.5 w-1.5 rounded-full", {
-							"bg-green-300": shiftState === "shift_active",
-							"bg-yellow-300": shiftState === "shift_not_started",
-							"bg-red-300": shiftState === "not_in_shift",
+							"bg-green-400": shiftState === "shift_active",
+							"bg-yellow-400": shiftState === "shift_not_started",
+							"bg-red-400": shiftState === "not_in_shift",
 						})}
 					/>
 					<Text className="text-sm font-medium text-white leading-none mb-0.5">

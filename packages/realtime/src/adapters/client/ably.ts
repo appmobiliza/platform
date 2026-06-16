@@ -110,7 +110,8 @@ export class AblyClientAdapter implements RealtimeClientAdapter {
 
 		if (options.clientToken) {
 			realtimeOptions.token = options.clientToken;
-		} else {
+		}
+		if (options.authUrl) {
 			realtimeOptions.authUrl = options.authUrl;
 		}
 

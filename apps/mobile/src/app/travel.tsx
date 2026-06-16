@@ -253,21 +253,19 @@ export default function TravelScreen() {
 		if (isDuring) {
 			// Concluir atendimento
 			if (isFarFromDestination) {
-				toast.warning(
-					"Você ainda está distante do destino. Deseja concluir o atendimento mesmo assim?",
-					{
-						description: "Atenção",
-						action: {
-							label: "Concluir",
-							onClick: () => handleComplete(),
-						},
-						cancel: {
-							label: "Cancelar",
-							onClick: () => {},
-						},
-						duration: Infinity,
+				toast.warning("Atenção", {
+					description:
+						"Você ainda está distante do destino. Deseja concluir o atendimento mesmo assim?",
+					action: {
+						label: "Concluir",
+						onClick: () => handleComplete(),
 					},
-				);
+					cancel: {
+						label: "Cancelar",
+						onClick: () => {},
+					},
+					duration: Infinity,
+				});
 			} else {
 				handleComplete();
 			}

@@ -22,7 +22,7 @@ export function ScheduleSlot({
 		<View className="flex-row px-4 py-4">
 			{/* Left gutter with the time-range label */}
 			<View className={`${gutterClassName} pt-1`}>
-				<Text className="text-sm font-medium text-muted-foreground">
+				<Text className="text-xs font-medium text-muted-foreground">
 					{slot.label}
 				</Text>
 			</View>

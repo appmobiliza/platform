@@ -13,10 +13,13 @@ import {
 } from "@/components/schedule/schedule-data";
 import { ScholarHeader } from "@/components/scholar/scholar-header";
 
-import { useUser } from "@/lib/auth/store";
+import { useShiftState } from "@/hooks/use-shift-state";
+
 import { trpc } from "@/lib/trpc/client";
 
 export default function ScheduleScreen() {
+	const { shiftState, currentShiftInfo, scholarName } = useShiftState();
+
 	const { data: schedules, isLoading } = trpc.profiles.getSchedules.useQuery(
 		undefined,
 		{
@@ -24,9 +27,6 @@ export default function ScheduleScreen() {
 			gcTime: 30 * 60 * 1000,
 		},
 	);
-
-	const user = useUser();
-	const scholarName = user.name?.split(" ")[0] ?? "Bolsista";
 
 	const days = useMemo(() => getCurrentWeekDays(), []);
 
@@ -39,8 +39,8 @@ export default function ScheduleScreen() {
 		<SafeAreaView className="flex-1" edges={["top"]}>
 			<ScholarHeader
 				scholarName={scholarName}
-				shiftState="not_in_shift"
-				currentShiftInfo={null}
+				shiftState={shiftState}
+				currentShiftInfo={currentShiftInfo}
 			/>
 			<ScheduleHeader days={days} />
 

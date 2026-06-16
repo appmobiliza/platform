@@ -46,16 +46,29 @@ export default function Auth() {
 
 			if (error) {
 				setIsLoading(false);
-				toast.error(
-					error.message ?? "Não foi possível fazer login com Google.",
-					{ description: "Erro de autenticação" },
-				);
+				toast.error("Erro de autenticação", {
+					description:
+						error.message ??
+						"Não foi possível fazer login com Google.",
+				});
+				return;
+			}
+
+			// ── Web: redirect handled by better-auth's redirectPlugin ─────
+			// On web, signIn.social returns successfully after the server
+			// responds with the OAuth URL. The redirectPlugin then sets
+			// window.location.href to navigate the browser to Google, but
+			// JS continues executing — the navigation is only scheduled.
+			// We must return early here to prevent the code below (native-
+			// only logic) from running before the redirect completes.
+			if (Platform.OS === "web") {
+				// The redirectPlugin has already set window.location.href.
+				// No further action needed; the page will unload shortly.
 				return;
 			}
 
 			// ── Native-only path ──────────────────────────────────────────
-			// On web the code below never runs because signIn.social triggers
-			// a full browser redirect. The same logic lives in auth-callback.tsx.
+			// The same logic lives in auth-callback.tsx for the web flow.
 
 			// Limpa o cache de auth para evitar que o layout reaja
 			// prematuramente quando o useSession() resolver — enquanto

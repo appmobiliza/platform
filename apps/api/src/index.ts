@@ -65,6 +65,31 @@ app.get("/api/realtime/credentials", async (c) => {
 	}
 });
 
+// ─── Realtime — Token renewal ─────────────────────────────────────────────────
+
+/**
+ * Endpoint usado pelo Ably SDK no cliente para renovar o token
+ * automaticamente antes da expiração.
+ *
+ * O cliente configura `authUrl` apontando para esta rota. Quando o
+ * token atual está próximo de expirar, o Ably SDK faz uma requisição
+ * GET para cá e recebe um token fresco.
+ *
+ * @see https://ably.com/docs/auth/token
+ */
+app.get("/api/realtime/token", async (c) => {
+	try {
+		const realtime = await getRealtimeAdapter();
+		const credentials = await realtime.getClientCredentials();
+		// Ably SDK aceita tanto um objeto TokenDetails ({ token: "..." })
+		// quanto uma string simples com o token
+		return c.json({ token: credentials.config.clientToken });
+	} catch (error) {
+		console.error("[realtime] Erro ao renovar token:", error);
+		return c.json({ error: "Erro ao renovar token de realtime" }, 500);
+	}
+});
+
 // ─── Cron Jobs ────────────────────────────────────────────────────────────────
 
 /**

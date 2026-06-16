@@ -79,7 +79,7 @@ export const shiftLogsRouter = router({
 					throw new TRPCError({
 						code: "CONFLICT",
 						message:
-							"Você já completou este turno hoje. Você não pode iniciar um novo turno até que o atual seja encerrado.",
+							"Você já completou este turno hoje.",
 					});
 				}
 			}
@@ -218,12 +218,14 @@ export const shiftLogsRouter = router({
 
 	/**
 	 * Verifica se o bolsista já completou o turno de um período específico hoje.
+	 * Quando `shift` não é informado, verifica se **algum** turno foi completado
+	 * hoje (útil no estado `not_in_shift`, onde `currentShift` é nulo).
 	 * Retorna { completed: boolean }.
 	 */
 	completedShiftForToday: scholarProcedure
 		.input(
 			z.object({
-				shift: z.enum(scholarShiftValues),
+				shift: z.enum(scholarShiftValues).optional(),
 			}),
 		)
 		.query(async ({ ctx, input }) => {
@@ -235,12 +237,19 @@ export const shiftLogsRouter = router({
 
 			const today = new Date().toISOString().slice(0, 10);
 
-			const log = await db.query.scholarShiftLog.findFirst({
-				where: and(
-					eq(schema.scholarShiftLog.scholarProfileId, profile.id),
-					eq(schema.scholarShiftLog.date, today),
+			const whereConditions = [
+				eq(schema.scholarShiftLog.scholarProfileId, profile.id),
+				eq(schema.scholarShiftLog.date, today),
+			];
+			if (input.shift) {
+				whereConditions.push(
 					eq(schema.scholarShiftLog.shift, input.shift),
-				),
+				);
+			}
+
+			const log = await db.query.scholarShiftLog.findFirst({
+				where: and(...whereConditions),
+				orderBy: (t, { desc }) => [desc(t.startedAt)],
 			});
 
 			return { completed: !!log?.endedAt };

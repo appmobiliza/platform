@@ -28,6 +28,7 @@ import { Text } from "@/components/ui/text";
 import { toast } from "@/components/ui/toast";
 
 import { usePositionBroadcaster } from "@/hooks/use-position-broadcaster";
+import { useShiftState } from "@/hooks/use-shift-state";
 import { useUserLocation } from "@/hooks/use-user-location";
 
 import { getRealtimeClient } from "@/lib/realtime";
@@ -46,26 +47,6 @@ import {
 	ServiceStatus,
 } from "./pending-request-card";
 import { ScholarHeader } from "./scholar-header";
-
-// ─── Tipos ───────────────────────────────────────────────────────────────────
-
-/**
- * Estado de turno do bolsista na tela inicial.
- *
- * - "not_in_shift": Fora do horário de turno (pode solicitar turno extra)
- * - "shift_not_started": Dentro do horário de turno mas ainda não iniciou no app
- * - "shift_active": Turno iniciado (pode ver solicitações pendentes)
- */
-type ShiftState = "not_in_shift" | "shift_not_started" | "shift_active";
-
-/**
- * Mapa de labels dos turnos em português.
- */
-const shiftLabels: Record<string, string> = {
-	morning: "Turno matutino",
-	afternoon: "Turno vespertino",
-	night: "Turno noturno",
-};
 
 /**
  * Ignora a validação que impede solicitar turno extra para o próprio turno
@@ -223,67 +204,6 @@ function PreviousServicesList({ services }: { services?: Service[] }) {
 	);
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-/**
- * Determina em qual turno estamos baseado nos horários configurados.
- * Usa os shift definitions do backend ou fallback para horários padrão.
- */
-function getCurrentShiftFromSchedule(
-	definitions: Array<{
-		shift: string;
-		dayOfWeek: string;
-		startTime: string;
-		endTime: string;
-		isEnabled: boolean;
-	}>,
-): { shift: string; startTime: string; endTime: string } | null {
-	const now = new Date();
-	const dayNames = [
-		"sunday",
-		"monday",
-		"tuesday",
-		"wednesday",
-		"thursday",
-		"friday",
-		"saturday",
-	];
-	const currentDay = dayNames[now.getDay()]!;
-	const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-	const todayDefinitions = definitions.filter(
-		(def) => def.dayOfWeek === currentDay && def.isEnabled,
-	);
-
-	for (const def of todayDefinitions) {
-		const [startH, startM] = def.startTime.split(":").map(Number);
-		const [endH, endM] = def.endTime.split(":").map(Number);
-		const startMinutes = startH! * 60 + startM!;
-		const endMinutes = endH! * 60 + endM!;
-
-		if (currentMinutes >= startMinutes && currentMinutes < endMinutes) {
-			return {
-				shift: def.shift,
-				startTime: def.startTime,
-				endTime: def.endTime,
-			};
-		}
-	}
-
-	return null;
-}
-
-/**
- * Retorna uma representação legível do horário.
- */
-function formatTimeRange(startTime: string, endTime: string): string {
-	const fmt = (t: string) => {
-		const [h, m] = t.split(":");
-		return `${h}h${m !== "00" ? m : ""}`;
-	};
-	return `${fmt(startTime)} - ${fmt(endTime)}`;
-}
-
 // ─── Componente principal ────────────────────────────────────────────────────
 
 export function ScholarHome() {
@@ -291,16 +211,16 @@ export function ScholarHome() {
 
 	// ─── Queries ─────────────────────────────────────────────────────────────
 
-	// Dados do perfil do usuário logado
-	const { data: me } = trpc.profiles.me.useQuery();
-
-	// Definições de turno (horários configurados pelo gestor)
-	const { data: shiftSchedule = [] } =
-		trpc.settings.getShiftSchedule.useQuery();
-
-	// Turno ativo do bolsista
-	const { data: activeShiftLog, isLoading: isLoadingShift } =
-		trpc.shiftLogs.getActiveShift.useQuery();
+	const {
+		shiftState,
+		currentShiftInfo,
+		scholarName,
+		isLoadingShift,
+		activeShiftLog,
+		me,
+		currentShift,
+		shiftSchedule,
+	} = useShiftState();
 
 	// ─── Position broadcasting (visible to students during search) ──────────
 	const scholarLocation = useUserLocation({
@@ -435,12 +355,13 @@ export function ScholarHome() {
 		trpc.shiftLogs.startShift.useMutation({
 			onSuccess: () => {
 				utils.shiftLogs.getActiveShift.invalidate();
+				utils.shiftLogs.completedShiftForToday.invalidate();
 				utils.profiles.me.invalidate();
 			},
 			onError: (error) => {
 				console.error("[startShift] Erro:", error.message);
-				toast.error(error.message ?? "Tente novamente mais tarde.", {
-					description: "Erro ao iniciar turno",
+				toast.error("Erro ao iniciar turno", {
+					description: error.message ?? "Tente novamente mais tarde.",
 				});
 			},
 		});
@@ -449,6 +370,7 @@ export function ScholarHome() {
 		trpc.shiftLogs.endShift.useMutation({
 			onSuccess: () => {
 				utils.shiftLogs.getActiveShift.invalidate();
+				utils.shiftLogs.completedShiftForToday.invalidate();
 				utils.profiles.me.invalidate();
 			},
 		});
@@ -485,24 +407,11 @@ export function ScholarHome() {
 			},
 			onError: (error) => {
 				console.error("[acceptRequest] Erro:", error.message);
-				toast.error(error.message ?? "Tente novamente mais tarde.", {
-					description: "Erro ao aceitar solicitação",
+				toast.error("Erro ao aceitar solicitação", {
+					description: error.message ?? "Tente novamente mais tarde.",
 				});
 			},
 		});
-
-	// ─── Determinar estado do turno ──────────────────────────────────────────
-
-	const currentShift = useMemo(
-		() => getCurrentShiftFromSchedule(shiftSchedule as any[]),
-		[shiftSchedule],
-	);
-
-	const shiftState: ShiftState = useMemo(() => {
-		if (activeShiftLog) return "shift_active";
-		if (currentShift) return "shift_not_started";
-		return "not_in_shift";
-	}, [activeShiftLog, currentShift]);
 
 	// Transformação dos dados da API para o formato da UI
 	const pendingServices: Service[] = useMemo(() => {
@@ -624,38 +533,161 @@ export function ScholarHome() {
 	// Usa o dado da API se disponível, senão cai no persistido (instantâneo)
 	const currentActiveService = activeService ?? persistedActiveService;
 
-	// Nome do bolsista
-	const scholarName = useMemo(() => {
-		return me?.name?.split(" ")[0] ?? "Bolsista";
-	}, [me]);
-
-	// Horário do turno atual
-	const currentShiftInfo = useMemo(() => {
-		if (currentShift) {
-			return {
-				label: shiftLabels[currentShift.shift] ?? currentShift.shift,
-				time: formatTimeRange(
-					currentShift.startTime,
-					currentShift.endTime,
-				),
-			};
-		}
-		return null;
-	}, [currentShift]);
-
-	// Verifica se o turno atual já foi completado hoje
-	const { data: completedShiftData, isLoading: isLoadingCompleted } =
-		trpc.shiftLogs.completedShiftForToday.useQuery(
-			{
-				shift: currentShift?.shift as "morning" | "afternoon" | "night",
-			},
-			{
-				enabled: shiftState === "shift_not_started" && !!currentShift,
-			},
-		);
+	// Verifica se o turno atual já foi completado hoje.
+	// A query roda em todos os estados não-ativos (shift_not_started e
+	// not_in_shift). Quando currentShift é null (fora da janela agendada),
+	// não passa shift — o backend verifica se *algum* turno foi completado.
+	const completedShiftInput = {
+		shift: currentShift?.shift as
+			| "morning"
+			| "afternoon"
+			| "night"
+			| undefined,
+	};
+	const {
+		data: completedShiftData,
+		isLoading: isLoadingCompleted,
+		isFetching: isFetchingCompleted,
+	} = trpc.shiftLogs.completedShiftForToday.useQuery(completedShiftInput, {
+		enabled: shiftState !== "shift_active",
+	});
 
 	const isShiftCompleted = completedShiftData?.completed ?? false;
 
+	// ─── Próximo turno agendado (para exibir após completar o atual) ──────
+
+	/**
+	 * Encontra o próximo turno agendado para o bolsista, percorrendo os
+	 * dias da semana a partir de hoje (até 7 dias à frente).
+	 *
+	 * Usa o shiftSchedule (definições de horário do sistema) para obter
+	 * os horários de início de cada turno, já que a weeklySchedule do
+	 * perfil só contém { dayOfWeek, shift }.
+	 *
+	 * Retorna o primeiro turno encontrado após o horário atual / turno
+	 * corrente, ou null se não houver nenhum agendamento futuro.
+	 */
+	const nextScheduledShift = useMemo(() => {
+		const shiftOrder = ["morning", "afternoon", "night"];
+		const dayNames = [
+			"sunday",
+			"monday",
+			"tuesday",
+			"wednesday",
+			"thursday",
+			"friday",
+			"saturday",
+		];
+
+		const weeklySchedule = me?.scholarProfile?.weeklySchedule;
+		if (!weeklySchedule || !shiftSchedule) return null;
+
+		// Mapa rápido: "wednesday:morning" → { startTime, endTime }
+		const timeMap = new Map<
+			string,
+			{ startTime: string; endTime: string }
+		>();
+		for (const def of shiftSchedule) {
+			if (def.isEnabled) {
+				timeMap.set(`${def.dayOfWeek}:${def.shift}`, def);
+			}
+		}
+
+		const now = new Date();
+		const todayIndex = now.getDay();
+		const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+		// Varre até 7 dias adiante (a semana se repete)
+		for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+			const targetIndex = (todayIndex + dayOffset) % 7;
+			const targetDay = dayNames[targetIndex]!;
+
+			const dayEntries = weeklySchedule
+				.filter((entry: any) => entry.dayOfWeek === targetDay)
+				.sort(
+					(a: any, b: any) =>
+						shiftOrder.indexOf(a.shift) -
+						shiftOrder.indexOf(b.shift),
+				);
+
+			for (const entry of dayEntries) {
+				const def = timeMap.get(`${targetDay}:${entry.shift}`);
+				if (!def) continue;
+
+				const [h, m] = def.startTime.split(":").map(Number);
+				// biome-ignore lint/style/noNonNullAssertion: validated by schema (HH:mm)
+				const entryStartMinutes = h! * 60 + m!;
+
+				if (dayOffset === 0) {
+					// Hoje — descarta turnos que já passaram
+					if (currentShift) {
+						// Temos um turno corrente: só considera turnos
+						// posteriores na ordem (ex.: afternoon > morning)
+						if (
+							shiftOrder.indexOf(entry.shift) <=
+							shiftOrder.indexOf(currentShift.shift)
+						) {
+							continue;
+						}
+					} else if (entryStartMinutes <= currentMinutes) {
+						// Sem turno corrente: descarta turnos que já
+						// começaram
+						continue;
+					}
+				}
+
+				// Dias futuros: qualquer turno agendado vale
+
+				return {
+					shift: entry.shift,
+					dayOfWeek: targetDay,
+					startTime: def.startTime,
+					endTime: def.endTime,
+				};
+			}
+		}
+
+		return null;
+	}, [me?.scholarProfile?.weeklySchedule, shiftSchedule, currentShift]);
+
+	// ─── Labels dos turnos em português ────────────────────────────────────
+
+	const shiftLabels: Record<string, string> = {
+		morning: "Turno matutino",
+		afternoon: "Turno vespertino",
+		night: "Turno noturno",
+	};
+
+	const dayLabels: Record<string, string> = {
+		sunday: "Domingo",
+		monday: "Segunda-feira",
+		tuesday: "Terça-feira",
+		wednesday: "Quarta-feira",
+		thursday: "Quinta-feira",
+		friday: "Sexta-feira",
+		saturday: "Sábado",
+	};
+
+	const dayNames = [
+		"sunday",
+		"monday",
+		"tuesday",
+		"wednesday",
+		"thursday",
+		"friday",
+		"saturday",
+	];
+
+	// Aguarda a verificação de turno completado resolver antes de mostrar
+	// os botões de ação. Isso previne que um cache obsoleto
+	// ({ completed: false }) exiba o CTA errado enquanto a query refaz o
+	// fetch após encerrar um turno.
+	const isShiftCheckLoading =
+		shiftState !== "shift_active" &&
+		completedShiftData === undefined &&
+		(isLoadingCompleted || isFetchingCompleted);
+
+	const isLoading = isLoadingShift || isShiftCheckLoading;
 	// Handler para iniciar turno
 	const handleStartShift = useCallback(() => {
 		if (!currentShift) return;
@@ -721,8 +753,6 @@ export function ScholarHome() {
 		});
 	}, [startShift, me?.scholarProfile?.weeklySchedule]);
 
-	const isLoading = isLoadingShift || isLoadingCompleted;
-
 	return (
 		<ScrollView
 			contentContainerClassName="grow bg-background gap-4"
@@ -739,121 +769,7 @@ export function ScholarHome() {
 					<View className="flex-1 items-center justify-center py-12">
 						<ActivityIndicator size="large" />
 					</View>
-				) : shiftState === "not_in_shift" ? (
-					<>
-						<Button
-							size="lg"
-							variant="outline"
-							disabled={isStartingShift}
-							onPress={() => {
-								toast("Solicitação de turno extra", {
-									description:
-										"Seu turno regular ainda não começou. Caso precise compensar horas pendentes, você pode iniciar um turno extra agora.",
-									action: {
-										label: "Iniciar turno extra",
-										onClick: () =>
-											handleConfirmExtraShift(),
-									},
-									cancel: {
-										label: "Cancelar",
-										onClick: () => {},
-									},
-									duration: Infinity,
-									closeButton: true,
-								});
-							}}
-							className="rounded-full px-4 gap-2"
-						>
-							{isStartingShift ? (
-								<ActivityIndicator size={20} />
-							) : null}
-							<Text>
-								{isStartingShift
-									? "Iniciando..."
-									: "Solicitar turno extra"}
-							</Text>
-						</Button>
-
-						<EmptyStateCard>
-							<Icon
-								icon={Palmtree}
-								color="--foreground"
-								size={56}
-							/>
-							<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
-								Seu turno ainda não{"\n"}começou
-							</Text>
-							<Text className="text-center text-base leading-tight text-muted-foreground">
-								Aguarde o início do seu próximo turno para{"\n"}
-								iniciar o expediente no app.
-							</Text>
-						</EmptyStateCard>
-					</>
-				) : shiftState === "shift_not_started" ? (
-					isShiftCompleted ? (
-						<EmptyStateCard>
-							<Icon
-								icon={CheckCircle2}
-								color="--foreground"
-								size={56}
-							/>
-							<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
-								Turno já realizado
-							</Text>
-							<Text className="text-center text-base leading-tight text-muted-foreground">
-								Você já completou seu turno de hoje.
-								{"\n"}
-								Se precisar trabalhar em outro horário,
-								{"\n"}
-								solicite um turno extra.
-							</Text>
-						</EmptyStateCard>
-					) : (
-						<>
-							<Button
-								variant="default"
-								onPress={handleStartShift}
-								disabled={isStartingShift}
-								size="lg"
-								className="rounded-full gap-3"
-							>
-								{isStartingShift ? (
-									<ActivityIndicator
-										size={20}
-										color="white"
-									/>
-								) : (
-									<Icon
-										icon={LogIn}
-										size={18}
-										color="--primary-foreground"
-									/>
-								)}
-								<Text className="mb-0.5 text-base font-medium">
-									{isStartingShift
-										? "Iniciando..."
-										: "Iniciar turno"}
-								</Text>
-							</Button>
-
-							<EmptyStateCard>
-								<Icon
-									icon={Play}
-									color="--foreground"
-									size={56}
-								/>
-								<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
-									Seu turno já começou!
-								</Text>
-								<Text className="text-center text-base leading-tight text-muted-foreground">
-									Clique em "Iniciar turno" para começar a
-									{"\n"}
-									receber solicitações de deslocamento.
-								</Text>
-							</EmptyStateCard>
-						</>
-					)
-				) : (
+				) : shiftState === "shift_active" ? (
 					<>
 						<Button
 							variant="secondary"
@@ -1031,6 +947,143 @@ export function ScholarHome() {
 								/>
 							)}
 						</View>
+					</>
+				) : isShiftCompleted ? (
+					<>
+						{nextScheduledShift ? (
+							<Button
+								variant="outline"
+								size="lg"
+								disabled
+								className="rounded-full gap-3 opacity-60"
+							>
+								<Text className="text-base font-medium">
+									{(() => {
+										const dayName =
+											nextScheduledShift.dayOfWeek;
+										const todayName =
+											dayNames[new Date().getDay()];
+										return dayName === todayName
+											? `${shiftLabels[nextScheduledShift.shift] ?? nextScheduledShift.shift} — Pendente`
+											: `${dayLabels[dayName] ?? dayName} — ${shiftLabels[nextScheduledShift.shift] ?? nextScheduledShift.shift}`;
+									})()}
+								</Text>
+							</Button>
+						) : null}
+
+						<EmptyStateCard>
+							<Icon
+								icon={CheckCircle2}
+								color="--foreground"
+								size={56}
+							/>
+							<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
+								Turno{" "}
+								{currentShift?.shift
+									? "atual concluído"
+									: "já realizado"}
+							</Text>
+							<Text className="text-center text-base leading-tight text-muted-foreground">
+								{nextScheduledShift
+									? (() => {
+											const dayName =
+												nextScheduledShift.dayOfWeek;
+											const todayName =
+												dayNames[new Date().getDay()];
+											if (dayName === todayName) {
+												return `Você concluiu seu turno atual.\nEm breve você poderá iniciar seu próximo turno agendado.`;
+											}
+											return `Você concluiu seu turno atual.\nSeu próximo turno agendado é ${dayLabels[dayName] ?? dayName}.`;
+										})()
+									: `Você já completou seu turno de hoje.\nNenhum outro turno está agendado para os próximos dias.`}
+							</Text>
+						</EmptyStateCard>
+					</>
+				) : shiftState === "shift_not_started" ? (
+					<>
+						<Button
+							variant="default"
+							onPress={handleStartShift}
+							disabled={isStartingShift}
+							size="lg"
+							className="rounded-full gap-3"
+						>
+							{isStartingShift ? (
+								<ActivityIndicator size={20} color="white" />
+							) : (
+								<Icon
+									icon={LogIn}
+									size={18}
+									color="--primary-foreground"
+								/>
+							)}
+							<Text className="mb-0.5 text-base font-medium">
+								{isStartingShift
+									? "Iniciando..."
+									: "Iniciar turno"}
+							</Text>
+						</Button>
+
+						<EmptyStateCard>
+							<Icon icon={Play} color="--foreground" size={56} />
+							<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
+								Seu turno já começou!
+							</Text>
+							<Text className="text-center text-base leading-tight text-muted-foreground">
+								Clique em "Iniciar turno" para começar a{"\n"}
+								receber solicitações de deslocamento.
+							</Text>
+						</EmptyStateCard>
+					</>
+				) : (
+					<>
+						<Button
+							size="lg"
+							variant="outline"
+							disabled={isStartingShift}
+							onPress={() => {
+								toast("Solicitação de turno extra", {
+									description:
+										"Seu turno regular ainda não começou. Caso precise compensar horas pendentes, você pode iniciar um turno extra agora.",
+									action: {
+										label: "Iniciar turno extra",
+										onClick: () =>
+											handleConfirmExtraShift(),
+									},
+									cancel: {
+										label: "Cancelar",
+										onClick: () => {},
+									},
+									duration: Infinity,
+									closeButton: true,
+								});
+							}}
+							className="rounded-full px-4 gap-2"
+						>
+							{isStartingShift ? (
+								<ActivityIndicator size={20} />
+							) : null}
+							<Text>
+								{isStartingShift
+									? "Iniciando..."
+									: "Solicitar turno extra"}
+							</Text>
+						</Button>
+
+						<EmptyStateCard>
+							<Icon
+								icon={Palmtree}
+								color="--foreground"
+								size={56}
+							/>
+							<Text className="mt-6 mb-3 text-center text-2xl font-bold text-foreground">
+								Seu turno ainda não{"\n"}começou
+							</Text>
+							<Text className="text-center text-base leading-tight text-muted-foreground">
+								Aguarde o início do seu próximo turno para{"\n"}
+								iniciar o expediente no app.
+							</Text>
+						</EmptyStateCard>
 					</>
 				)}
 			</MainContentWrapper>
