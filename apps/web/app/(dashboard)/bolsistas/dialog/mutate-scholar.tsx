@@ -66,7 +66,7 @@ const FormSchema = z.object({
 	userId: z.string().optional(),
 	name: z.string().min(1, "Nome é obrigatório"),
 	email: z.string().email("E-mail inválido"),
-	enrollment: z.string().refine(
+	enrollment: z.string({ error: "Matrícula inválida" }).refine(
 		(val) => {
 			const digitsOnly = val.replace(/\D/g, "");
 			return digitsOnly.length >= 5 && digitsOnly.length <= 20;
@@ -76,11 +76,11 @@ const FormSchema = z.object({
 	campus: z.enum(campusValues, { error: "Campus deve ser selecionado" }),
 	course: z.enum(courseValues, { error: "Curso deve ser selecionado" }),
 	phone: z
-		.string()
+		.string({ error: "Telefone inválido" })
 		.regex(/^\(?\d{2}\)?[\s]?\d{4,5}[\s-]?\d{4}$/, "Telefone inválido"),
 	gender: z.enum(genderValues, { error: "Gênero deve ser selecionado" }),
 	cpf: z
-		.string()
+		.string({ error: "CPF inválido" })
 		.regex(/^(?:\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11})$/, "CPF inválido"),
 });
 

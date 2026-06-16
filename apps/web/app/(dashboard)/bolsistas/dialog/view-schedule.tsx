@@ -3,7 +3,12 @@
 import { Loader2 } from "lucide-react";
 import * as React from "react";
 
-import { Badge } from "@/components/ui/badge";
+import {
+	Schedule,
+	type ScheduleDay,
+	ScheduleHeader,
+	type ScheduleSlotType,
+} from "@/components/schedule";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -19,9 +24,9 @@ import { Separator } from "@/components/ui/separator";
 
 import { trpc } from "@/providers/trpc-provider";
 
-// ─── Mapping API enums → display labels ────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────
 
-const DAY_LABEL: Record<string, string> = {
+const WEEKDAY_LABELS: Record<string, string> = {
 	monday: "SEG",
 	tuesday: "TER",
 	wednesday: "QUA",
@@ -29,13 +34,137 @@ const DAY_LABEL: Record<string, string> = {
 	friday: "SEX",
 };
 
-const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"] as const;
-
-const SHIFTS = [
-	{ id: "morning", label: "Matutino", range: "07-12h" },
-	{ id: "afternoon", label: "Vespertino", range: "12-17h" },
-	{ id: "night", label: "Noturno", range: "17-22h" },
+const SHIFT_CONFIG = [
+	{ id: "07-12h", label: "07-12h", apiKey: "morning" },
+	{ id: "12-17h", label: "12-17h", apiKey: "afternoon" },
+	{ id: "17-22h", label: "17-22h", apiKey: "night" },
 ] as const;
+
+/** Compute Monday–Friday as ScheduleDay[] for the current week. */
+function getCurrentWeekDays(): ScheduleDay[] {
+	const today = new Date();
+	const currentDay = today.getDay();
+	const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
+	const monday = new Date(today);
+	monday.setDate(today.getDate() + mondayOffset);
+
+	const dayKeys = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+	return dayKeys.map((dayKey, index) => {
+		const date = new Date(monday);
+		date.setDate(monday.getDate() + index);
+		return {
+			weekday: WEEKDAY_LABELS[dayKey] ?? dayKey.slice(0, 3).toUpperCase(),
+			day: String(date.getDate()).padStart(2, "0"),
+		};
+	});
+}
+
+interface ApiScheduleEntry {
+	dayOfWeek: string;
+	shift: string;
+}
+
+interface ApiSchedule {
+	name: string;
+	schedule: ApiScheduleEntry[];
+}
+
+const DAY_ORDER = [
+	"sunday",
+	"monday",
+	"tuesday",
+	"wednesday",
+	"thursday",
+	"friday",
+	"saturday",
+] as const;
+
+const MON_IDX = 1; // index of monday in DAY_ORDER
+const FRI_IDX = 5; // index of friday in DAY_ORDER
+
+/**
+ * Transform API schedules into ScheduleSlotType[] for rendering.
+ * Mirrors the mobile app's transformSchedulesToSlots.
+ */
+function transformSchedulesToSlots(
+	schedules: ApiSchedule[],
+): ScheduleSlotType[] {
+	return SHIFT_CONFIG.map((shift) => {
+		// Collect which scholars work on which weekdays (mon–fri)
+		const scholarDays = schedules
+			.map((s) => {
+				const days: number[] = [];
+				for (const entry of s.schedule) {
+					if (entry.shift !== shift.apiKey) continue;
+					const idx = DAY_ORDER.indexOf(
+						entry.dayOfWeek as (typeof DAY_ORDER)[number],
+					);
+					if (idx >= MON_IDX && idx <= FRI_IDX) {
+						days.push(idx);
+					}
+				}
+				return { name: s.name, days: new Set(days) };
+			})
+			.filter((s) => s.days.size > 0);
+
+		if (scholarDays.length === 0) {
+			return { id: shift.id, label: shift.label, cells: [] };
+		}
+
+		const dayIndices = Array.from(
+			{ length: FRI_IDX - MON_IDX + 1 },
+			(_, i) => MON_IDX + i,
+		);
+		const maxPerDay = Math.max(
+			...dayIndices.map(
+				(dayIdx) =>
+					scholarDays.filter((s) => s.days.has(dayIdx)).length,
+			),
+			1,
+		);
+
+		// Greedy packing: assign each scholar to the first row without day conflicts
+		const rows: { name: string; days: Set<number> }[][] = Array.from(
+			{ length: maxPerDay },
+			() => [],
+		);
+
+		for (const scholar of scholarDays) {
+			let assigned = false;
+			for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
+				const currentRow = rows[rowIdx];
+				if (!currentRow) continue;
+				const hasConflict = currentRow.some((existing) =>
+					[...scholar.days].some((day) => existing.days.has(day)),
+				);
+				if (!hasConflict) {
+					currentRow.push(scholar);
+					assigned = true;
+					break;
+				}
+			}
+			if (!assigned) {
+				rows.push([scholar]);
+			}
+		}
+
+		return {
+			id: shift.id,
+			label: shift.label,
+			cells: rows.map((row) =>
+				Array.from({ length: FRI_IDX - MON_IDX + 1 }, (_, colIdx) => {
+					const dayIdx = MON_IDX + colIdx;
+					const scholar = row.find((s) => s.days.has(dayIdx));
+					return scholar
+						? { person: scholar.name, time: shift.label }
+						: null;
+				}),
+			),
+		};
+	});
+}
+
+// ─── Component ────────────────────────────────────────────────────────
 
 interface Props {
 	children: React.ReactNode;
@@ -45,45 +174,23 @@ export function ViewScheduleDialog({ children }: Props) {
 	const [open, setOpen] = React.useState(false);
 	const { data: schedules, isLoading } = trpc.profiles.getSchedules.useQuery(
 		undefined,
-		{ enabled: open },
+		{
+			enabled: open,
+		},
 	);
 
-	// Build lookup: dayOfWeek → shift → scholar names[]
-	const scheduleMap = React.useMemo(() => {
-		const map = new Map<
-			string,
-			Map<string, Array<{ name: string; enrollment: string }>>
-		>();
-		if (!schedules) return map;
+	const days = React.useMemo(() => getCurrentWeekDays(), []);
 
-		for (const scholar of schedules) {
-			for (const entry of scholar.schedule) {
-				let dayMap = map.get(entry.dayOfWeek);
-				if (!dayMap) {
-					dayMap = new Map();
-					map.set(entry.dayOfWeek, dayMap);
-				}
-				const list = dayMap.get(entry.shift);
-				if (list) {
-					list.push({
-						name: scholar.name,
-						enrollment: scholar.enrollment,
-					});
-				} else {
-					dayMap.set(entry.shift, [
-						{ name: scholar.name, enrollment: scholar.enrollment },
-					]);
-				}
-			}
-		}
-		return map;
-	}, [schedules]);
+	const slots: ScheduleSlotType[] = React.useMemo(
+		() => (schedules ? transformSchedulesToSlots(schedules) : []),
+		[schedules],
+	);
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{children}</DialogTrigger>
 
-			<DialogContent className="flex flex-col gap-0 overflow-hidden p-0 sm:max-w-xl">
+			<DialogContent className="flex flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl">
 				<div className="p-6 pb-0">
 					<DialogHeader>
 						<DialogTitle>Grade de bolsistas</DialogTitle>
@@ -95,7 +202,7 @@ export function ViewScheduleDialog({ children }: Props) {
 
 				<Separator className="my-4 shrink-0" />
 
-				<div className="flex-1 overflow-y-auto px-6">
+				<div className="flex-1 overflow-y-auto overflow-x-hidden">
 					{isLoading ? (
 						<div className="flex items-center justify-center py-12">
 							<Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -105,73 +212,10 @@ export function ViewScheduleDialog({ children }: Props) {
 							Nenhum bolsista cadastrado.
 						</p>
 					) : (
-						<div className="pb-6">
-							<table className="w-full border-separate border-spacing-2">
-								<thead>
-									<tr>
-										<th className="w-28 px-2 py-1 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-											Turno
-										</th>
-										{DAYS.map((day) => (
-											<th
-												key={day}
-												className="px-2 py-1 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-											>
-												{DAY_LABEL[day]}
-											</th>
-										))}
-									</tr>
-								</thead>
-								<tbody>
-									{SHIFTS.map((shift) => (
-										<tr key={shift.id}>
-											<td className="w-28 px-2 py-3 align-top">
-												<div className="flex flex-col">
-													<span className="text-sm font-medium text-foreground">
-														{shift.label}
-													</span>
-													<span className="text-xs text-muted-foreground">
-														{shift.range}
-													</span>
-												</div>
-											</td>
-											{DAYS.map((day) => {
-												const scholars =
-													scheduleMap
-														.get(day)
-														?.get(shift.id) ?? [];
-												return (
-													<td
-														key={day}
-														className="px-2 py-3 align-top"
-													>
-														{scholars.length > 0 ? (
-															<div className="flex flex-col gap-1.5">
-																{scholars.map(
-																	(s) => (
-																		<Badge
-																			key={`${s.enrollment}-${day}-${shift.id}`}
-																			variant="secondary"
-																			className="justify-start truncate rounded-md px-2 py-1 text-xs font-medium"
-																		>
-																			{
-																				s.name
-																			}
-																		</Badge>
-																	),
-																)}
-															</div>
-														) : (
-															<div className="h-8 rounded-md border border-dashed border-border" />
-														)}
-													</td>
-												);
-											})}
-										</tr>
-									))}
-								</tbody>
-							</table>
-						</div>
+						<>
+							<ScheduleHeader days={days} />
+							<Schedule slots={slots} showLegend />
+						</>
 					)}
 				</div>
 
