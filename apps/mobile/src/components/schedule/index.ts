@@ -1,4 +1,5 @@
-export { LEGEND_ORDER, PERSON_COLORS } from "./colors";
+export type { PersonColor } from "./colors";
+export { COLOR_POOL_SIZE, getPersonColor } from "./colors";
 export { Schedule } from "./schedule";
 export { ScheduleCard } from "./schedule-card";
 export { ScheduleHeader } from "./schedule-header";

@@ -1,29 +1,54 @@
-import type { PersonId } from "./types"
-
 /**
- * Static class strings per person so NativeWind can statically extract them.
- * Do NOT build these class names dynamically (e.g. `bg-[${hex}]`) — keep them literal.
+ * Color pool for scholars.
+ *
+ * Instead of a static mapping of person → color, we use a pool of visually
+ * distinct colors and assign them deterministically based on the person's
+ * identifier via `getPersonColor()`. This ensures the same person always
+ * gets the same color without needing a server-side mapping.
  */
-export const PERSON_COLORS: Record<
-  PersonId,
-  { name: string; bg: string; dot: string }
-> = {
-  ediluze: { name: "Ediluze", bg: "bg-[#C5870F]", dot: "bg-[#C5870F]" },
-  janderson: { name: "Janderson", bg: "bg-[#7FB519]", dot: "bg-[#7FB519]" },
-  carlos: { name: "Carlos", bg: "bg-[#8B3FE8]", dot: "bg-[#8B3FE8]" },
-  miguel: { name: "Miguel", bg: "bg-[#E0342A]", dot: "bg-[#E0342A]" },
-  eduarda: { name: "Eduarda", bg: "bg-[#176C8A]", dot: "bg-[#176C8A]" },
-  amanda: { name: "Amanda", bg: "bg-[#FF5BA0]", dot: "bg-[#FF5BA0]" },
-  paula: { name: "Paula", bg: "bg-[#1E97DE]", dot: "bg-[#1E97DE]" },
+
+/** A single color entry in the pool. */
+export interface PersonColor {
+	bg: string;
+	dot: string;
 }
 
-/** Order used to render the legend. */
-export const LEGEND_ORDER: PersonId[] = [
-  "ediluze",
-  "janderson",
-  "carlos",
-  "miguel",
-  "eduarda",
-  "amanda",
-  "paula",
-]
+/**
+ * Pool of visually distinct Tailwind bg-* class pairs.
+ * Keep these as literal class names so Tailwind/NativeWind can extract them.
+ */
+const COLOR_POOL: PersonColor[] = [
+	{ bg: "bg-[#C5870F]", dot: "bg-[#C5870F]" },
+	{ bg: "bg-[#7FB519]", dot: "bg-[#7FB519]" },
+	{ bg: "bg-[#8B3FE8]", dot: "bg-[#8B3FE8]" },
+	{ bg: "bg-[#E0342A]", dot: "bg-[#E0342A]" },
+	{ bg: "bg-[#176C8A]", dot: "bg-[#176C8A]" },
+	{ bg: "bg-[#FF5BA0]", dot: "bg-[#FF5BA0]" },
+	{ bg: "bg-[#1E97DE]", dot: "bg-[#1E97DE]" },
+	{ bg: "bg-[#E8853A]", dot: "bg-[#E8853A]" },
+	{ bg: "bg-[#22A699]", dot: "bg-[#22A699]" },
+	{ bg: "bg-[#B83B8A]", dot: "bg-[#B83B8A]" },
+];
+
+/** Simple hash to deterministically pick a color. */
+function hashCode(str: string): number {
+	let hash = 0;
+	for (let i = 0; i < str.length; i++) {
+		const char = str.charCodeAt(i);
+		hash = (hash << 5) - hash + char;
+		hash |= 0;
+	}
+	return Math.abs(hash);
+}
+
+/**
+ * Returns a color entry for the given person identifier.
+ * The same identifier always yields the same color.
+ */
+export function getPersonColor(person: string): PersonColor {
+	const index = hashCode(person) % COLOR_POOL.length;
+	return COLOR_POOL[index] as PersonColor;
+}
+
+/** Expose the pool size for external use. */
+export const COLOR_POOL_SIZE = COLOR_POOL.length;

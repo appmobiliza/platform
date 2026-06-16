@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 
-import { PERSON_COLORS } from "./colors";
+import { getPersonColor } from "./colors";
 import type { ScheduleEntry } from "./types";
 
 interface ScheduleCardProps {
@@ -19,7 +19,7 @@ export function ScheduleCard({ entry, onPress }: ScheduleCardProps) {
 		);
 	}
 
-	const color = PERSON_COLORS[entry.person];
+	const color = getPersonColor(entry.person);
 
 	return (
 		<button
@@ -36,7 +36,7 @@ export function ScheduleCard({ entry, onPress }: ScheduleCardProps) {
 			)}
 		>
 			<span className="text-base font-bold leading-tight text-white">
-				{color.name}
+				{entry.person}
 			</span>
 			<span className="mt-1 block text-sm font-medium text-white/90">
 				{entry.time}

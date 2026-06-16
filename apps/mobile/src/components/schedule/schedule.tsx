@@ -1,21 +1,17 @@
-import { Fragment } from "react";
+import { Fragment, useMemo } from "react";
 import { View } from "react-native";
 
 import { ScheduleLegend } from "./schedule-legend";
 import { ScheduleSlot } from "./schedule-slot";
-import type {
-	PersonId,
-	ScheduleEntry,
-	ScheduleSlot as ScheduleSlotType,
-} from "./types";
+import type { ScheduleEntry, ScheduleSlot as ScheduleSlotType } from "./types";
 
 interface ScheduleProps {
 	slots: ScheduleSlotType[];
 	onEntryPress?: (entry: ScheduleEntry) => void;
 	/** Show the color legend at the bottom. Defaults to true. */
 	showLegend?: boolean;
-	/** Restrict / order the people shown in the legend. */
-	legendPeople?: PersonId[];
+	/** Restrict / order the people shown in the legend. If omitted, derived from slots. */
+	legendPeople?: string[];
 	gutterClassName?: string;
 }
 
@@ -28,9 +24,23 @@ export function Schedule({
 	slots,
 	onEntryPress,
 	showLegend = true,
-	legendPeople,
+	legendPeople: legendPeopleProp,
 	gutterClassName = "w-16",
 }: ScheduleProps) {
+	/** Derive unique people from the slots when no explicit list is given. */
+	const legendPeople = useMemo(() => {
+		if (legendPeopleProp) return legendPeopleProp;
+		const set = new Set<string>();
+		for (const slot of slots) {
+			for (const row of slot.cells) {
+				for (const entry of row) {
+					if (entry) set.add(entry.person);
+				}
+			}
+		}
+		return Array.from(set).sort();
+	}, [slots, legendPeopleProp]);
+
 	return (
 		<View>
 			{slots.map((slot, index) => (

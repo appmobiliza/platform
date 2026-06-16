@@ -34,6 +34,17 @@ export const TAB_DEFINITIONS: TabDefinition[] = [
 		},
 	},
 	{
+		name: "history",
+		href: "/history",
+		label: "Histórico",
+		webDefaultIcon: CalendarIcon,
+		webFloatingIcon: MapIcon,
+		nativeIcon: {
+			sf: "map",
+			md: { default: "map", selected: "map" },
+		},
+	},
+	{
 		name: "schedule",
 		href: "/schedule",
 		label: "Cronograma",
@@ -44,17 +55,6 @@ export const TAB_DEFINITIONS: TabDefinition[] = [
 			md: { default: "calendar_clock", selected: "calendar_clock" },
 		},
 		scholarOnly: true,
-	},
-	{
-		name: "history",
-		href: "/history",
-		label: "Histórico",
-		webDefaultIcon: CalendarIcon,
-		webFloatingIcon: MapIcon,
-		nativeIcon: {
-			sf: "map",
-			md: { default: "map", selected: "map" },
-		},
 	},
 	{
 		name: "profile",

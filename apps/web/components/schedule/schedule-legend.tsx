@@ -1,17 +1,18 @@
-import { LEGEND_ORDER, PERSON_COLORS } from "./colors";
-import type { PersonId } from "./types";
+import { getPersonColor } from "./colors";
 
 interface ScheduleLegendProps {
-	/** Which people to show. Defaults to all, in the canonical order. */
-	people?: PersonId[];
+	/** Which people to show. Defaults to an empty array. */
+	people?: string[];
 }
 
 /** Color legend mapping each color to a person's name. */
-export function ScheduleLegend({ people = LEGEND_ORDER }: ScheduleLegendProps) {
+export function ScheduleLegend({ people = [] }: ScheduleLegendProps) {
+	if (people.length === 0) return null;
+
 	return (
 		<div className="flex flex-row flex-wrap justify-center gap-x-6 gap-y-3 px-4 py-6">
 			{people.map((person) => {
-				const color = PERSON_COLORS[person];
+				const color = getPersonColor(person);
 				return (
 					<div
 						key={person}
@@ -19,7 +20,7 @@ export function ScheduleLegend({ people = LEGEND_ORDER }: ScheduleLegendProps) {
 					>
 						<div className={`h-3 w-3 rounded-full ${color.dot}`} />
 						<span className="text-base text-muted-foreground">
-							{color.name}
+							{person}
 						</span>
 					</div>
 				);

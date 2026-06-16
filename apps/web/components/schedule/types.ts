@@ -1,11 +1,5 @@
-export type PersonId =
-	| "ediluze"
-	| "janderson"
-	| "carlos"
-	| "miguel"
-	| "eduarda"
-	| "amanda"
-	| "paula"
+/** A scholar identifier — can be a name, ID, or any string. */
+export type PersonId = string
 
 /** A single day shown in the schedule header. */
 export interface ScheduleDay {
