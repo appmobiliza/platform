@@ -183,11 +183,27 @@ export default function MapView({
 					coordinates: routePath,
 				},
 			};
-		} else if (
-			(stage === "start-confirm" || stage === "trip") &&
-			origin &&
-			destination
-		) {
+		} else if (stage === "start-confirm" && origin) {
+			if (userLocation) {
+				result = {
+					type: "Feature" as const,
+					properties: {},
+					geometry: {
+						type: "LineString" as const,
+						coordinates: [
+							[userLocation.longitude, userLocation.latitude] as [
+								number,
+								number,
+							],
+							[origin.longitude, origin.latitude] as [
+								number,
+								number,
+							],
+						],
+					},
+				};
+			}
+		} else if (stage === "trip" && origin && destination) {
 			result = {
 				type: "Feature" as const,
 				properties: {},
@@ -263,6 +279,49 @@ export default function MapView({
 			});
 		}
 	}, [mapLoaded, scholar, stage, isMoving]);
+
+	// ── Camera: center on user and origin for start-confirm (once per entry) ─
+	const hasCenteredOnStartConfirm = useRef(false);
+
+	useEffect(() => {
+		if (stage !== "start-confirm") {
+			hasCenteredOnStartConfirm.current = false;
+		}
+	}, [stage]);
+
+	useEffect(() => {
+		if (
+			mapLoaded &&
+			stage === "start-confirm" &&
+			!hasCenteredOnStartConfirm.current
+		) {
+			if (userLocation && origin) {
+				hasCenteredOnStartConfirm.current = true;
+				cameraRef.current?.flyTo({
+					center: [
+						(userLocation.longitude + origin.longitude) / 2,
+						(userLocation.latitude + origin.latitude) / 2,
+					],
+					zoom: 14.5,
+					duration: 1500,
+				});
+			} else if (userLocation) {
+				hasCenteredOnStartConfirm.current = true;
+				cameraRef.current?.flyTo({
+					center: [userLocation.longitude, userLocation.latitude],
+					zoom: 16,
+					duration: 1500,
+				});
+			} else if (origin) {
+				hasCenteredOnStartConfirm.current = true;
+				cameraRef.current?.flyTo({
+					center: [origin.longitude, origin.latitude],
+					zoom: 16,
+					duration: 1500,
+				});
+			}
+		}
+	}, [mapLoaded, stage, userLocation, origin]);
 
 	// ── Camera: center on route path in trip mode (once per entry) ──────
 	// Used when there's no scholar to follow (e.g. user→origin route).
