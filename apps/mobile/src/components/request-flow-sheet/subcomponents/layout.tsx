@@ -37,25 +37,27 @@ function SheetFrame({
 	return (
 		<>
 			<SheetHeader
-				className={cn("border-b border-border py-4 gap-1 items-start", {
-					"items-center": headerPosition === "center",
-				})}
+				className={cn(
+					"border-b border-border py-4 gap-4 items-start justify-start flex-row",
+					{
+						"items-center": headerPosition === "center",
+					},
+				)}
 			>
 				<View
 					className={cn(
-						"flex-row items-center justify-start w-full gap-2",
+						"flex-col items-start justify-start flex-1 gap-1",
 						{
-							"justify-between": !!accessory,
-							"justify-center": headerPosition === "center",
+							"items-center": headerPosition === "center",
 						},
 					)}
 				>
 					<SheetTitle>{title}</SheetTitle>
-					{accessory ? accessory : null}
+					{description ? (
+						<SheetDescription>{description}</SheetDescription>
+					) : null}
 				</View>
-				{description ? (
-					<SheetDescription>{description}</SheetDescription>
-				) : null}
+				{accessory ? accessory : null}
 			</SheetHeader>
 			{shouldWrapChildren ? (
 				<View className="p-4 gap-4">{children}</View>
