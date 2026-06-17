@@ -1,7 +1,7 @@
 import * as Location from "expo-location";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Clock, MapPin } from "lucide-react-native";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -26,6 +26,31 @@ import {
 	useNearestPoint,
 } from "@/stores/location-store";
 import { getRequestState } from "@/stores/request-store";
+
+// ─── Relative date helpers (Portuguese locale) ───────────────────────────────
+
+function formatRelativeDate(date: Date): string {
+	const now = new Date();
+	const diffMs = now.getTime() - date.getTime();
+	const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+	const hours = date.getHours().toString().padStart(2, "0");
+	const minutes = date.getMinutes().toString().padStart(2, "0");
+	const time = `${hours}h${minutes}`;
+
+	if (diffDays === 0) return `Hoje, ${time}`;
+	if (diffDays === 1) return `Ontem, ${time}`;
+	return `Há ${diffDays} dias, ${time}`;
+}
+
+function formatLastTripLabel(date: Date): string {
+	const now = new Date();
+	const diffMs = now.getTime() - date.getTime();
+	const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+	if (diffDays === 0) return "Último deslocamento hoje";
+	if (diffDays === 1) return "Último deslocamento ontem";
+	return `Último deslocamento há ${diffDays} dias`;
+}
 
 const newsItems = [
 	{
@@ -85,6 +110,14 @@ type StudentHomeProps = {
 function StudentHome({ insets }: StudentHomeProps) {
 	const router = useRouter();
 
+	const { data: historyData } = trpc.requests.studentHistory.useInfiniteQuery(
+		{ limit: 50 },
+		{
+			getNextPageParam: (lastPage) => lastPage.nextCursor,
+			staleTime: 5 * 60 * 1000,
+		},
+	);
+
 	const navigateWithDestination = useCallback(
 		(destination: string) => {
 			router.push({
@@ -94,6 +127,89 @@ function StudentHome({ insets }: StudentHomeProps) {
 		},
 		[router],
 	);
+
+	// ─── Compute recent & frequent destinations from history ─────────────
+
+	const { recentDestinations, frequentDestinations } = useMemo(() => {
+		const allItems = historyData?.pages.flatMap((page) => page.items) ?? [];
+
+		// Recent destinations: first 3 unique destination locations
+		const seenIds = new Set<string>();
+		const recent: Array<{ name: string; date: Date }> = [];
+		for (const item of allItems) {
+			const dest = item.destinationLocation;
+			if (!dest) continue;
+			const key = dest.id ?? dest.name;
+			if (seenIds.has(key)) continue;
+			seenIds.add(key);
+			recent.push({
+				name: dest.abbreviation || dest.name,
+				date: new Date(item.createdAt),
+			});
+			if (recent.length >= 3) break;
+		}
+
+		// Frequent destinations: count per destination, sorted desc
+		const freqCounts = new Map<
+			string,
+			{ name: string; count: number; lastDate: Date }
+		>();
+		for (const item of allItems) {
+			const dest = item.destinationLocation;
+			if (!dest) continue;
+			const key = dest.id ?? dest.name;
+			const existing = freqCounts.get(key);
+			const date = new Date(item.createdAt);
+			if (existing) {
+				existing.count++;
+				if (date > existing.lastDate) existing.lastDate = date;
+			} else {
+				freqCounts.set(key, {
+					name: dest.abbreviation || dest.name,
+					count: 1,
+					lastDate: date,
+				});
+			}
+		}
+
+		const frequent = Array.from(freqCounts.values())
+			.sort((a, b) => b.count - a.count)
+			.slice(0, 4);
+
+		return { recentDestinations: recent, frequentDestinations: frequent };
+	}, [historyData]);
+
+	// ─── Full name lookup for PlaceCard onPress ──────────────────────────
+	// Map abbreviation -> full name so pressing "CEDU" navigates with the
+	// full campus location name (which the request screen can match).
+
+	const campusLocationsByName = useMemo(() => {
+		const cached = getCachedCampusLocations();
+		const map = new Map<string, string>();
+		for (const loc of cached) {
+			if (loc.name) map.set(loc.name.toLowerCase(), loc.name);
+			if (loc.abbreviation)
+				map.set(loc.abbreviation.toLowerCase(), loc.name);
+		}
+		return map;
+	}, []);
+
+	const resolveFullName = useCallback(
+		(displayName: string): string => {
+			return (
+				campusLocationsByName.get(displayName.toLowerCase()) ??
+				displayName
+			);
+		},
+		[campusLocationsByName],
+	);
+
+	const hasRecentPlaces = recentDestinations.length > 0;
+	const hasFrequentRoutes = frequentDestinations.length > 0;
+
+	// Pick the first card (full width) and the rest (side by side)
+	const recentPrimary = recentDestinations[0];
+	const recentSecondary = recentDestinations.slice(1, 3);
 
 	return (
 		<ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -128,33 +244,45 @@ function StudentHome({ insets }: StudentHomeProps) {
 				</View>
 
 				{/* Locais Recentes */}
-				<View className="px-4">
-					<PlaceCard
-						title="Restaurante Universitário"
-						description="Hoje, 12h35"
-						className="mb-3"
-						icon={{ as: Clock }}
-						onPress={() =>
-							navigateWithDestination("Restaurante Universitário")
-						}
-					/>
-					<View className="flex-row gap-3">
-						<PlaceCard
-							className="flex-1"
-							title="CEDU"
-							description="Ontem, 16h12"
-							icon={{ as: Clock }}
-							onPress={() => navigateWithDestination("CEDU")}
-						/>
-						<PlaceCard
-							className="flex-1"
-							title="ICBS"
-							description="Há 2 dias, 16h24"
-							icon={{ as: Clock }}
-							onPress={() => navigateWithDestination("ICBS")}
-						/>
+				{hasRecentPlaces && (
+					<View className="px-4">
+						{recentPrimary && (
+							<PlaceCard
+								title={recentPrimary.name}
+								description={formatRelativeDate(
+									recentPrimary.date,
+								)}
+								className="mb-3"
+								icon={{ as: Clock }}
+								onPress={() =>
+									navigateWithDestination(
+										resolveFullName(recentPrimary.name),
+									)
+								}
+							/>
+						)}
+						{recentSecondary.length > 0 && (
+							<View className="flex-row gap-3">
+								{recentSecondary.map((dest) => (
+									<PlaceCard
+										key={dest.name}
+										className="flex-1"
+										title={dest.name}
+										description={formatRelativeDate(
+											dest.date,
+										)}
+										icon={{ as: Clock }}
+										onPress={() =>
+											navigateWithDestination(
+												resolveFullName(dest.name),
+											)
+										}
+									/>
+								))}
+							</View>
+						)}
 					</View>
-				</View>
+				)}
 
 				{/* Notícias */}
 				<View>
@@ -165,47 +293,30 @@ function StudentHome({ insets }: StudentHomeProps) {
 				</View>
 
 				{/* Rotas Frequentes */}
-				<View className="px-4">
-					<Text className="font-bold text-lg mb-3">
-						Rotas Frequentes
-					</Text>
-					<View className="flex-col gap-3">
-						<PlaceCard
-							title="Restaurante Universitário"
-							description="Último deslocamento há 2 dias"
-							icon={{ as: MapPin }}
-							onPress={() =>
-								navigateWithDestination(
-									"Restaurante Universitário",
-								)
-							}
-						/>
-						<PlaceCard
-							title="Reitoria"
-							description="Último deslocamento há 6 dias"
-							icon={{ as: MapPin }}
-							onPress={() => navigateWithDestination("Reitoria")}
-						/>
-						<PlaceCard
-							title="Biblioteca Central"
-							description="Último deslocamento há 10 dias"
-							icon={{ as: MapPin }}
-							onPress={() =>
-								navigateWithDestination("Biblioteca Central")
-							}
-						/>
-						<PlaceCard
-							title="Instituto de Computação"
-							description="Último deslocamento há 12 dias"
-							icon={{ as: MapPin }}
-							onPress={() =>
-								navigateWithDestination(
-									"Instituto de Computação",
-								)
-							}
-						/>
+				{hasFrequentRoutes && (
+					<View className="px-4">
+						<Text className="font-bold text-lg mb-3">
+							Rotas Frequentes
+						</Text>
+						<View className="flex-col gap-3">
+							{frequentDestinations.map((dest) => (
+								<PlaceCard
+									key={dest.name}
+									title={dest.name}
+									description={formatLastTripLabel(
+										dest.lastDate,
+									)}
+									icon={{ as: MapPin }}
+									onPress={() =>
+										navigateWithDestination(
+											resolveFullName(dest.name),
+										)
+									}
+								/>
+							))}
+						</View>
 					</View>
-				</View>
+				)}
 			</View>
 		</ScrollView>
 	);

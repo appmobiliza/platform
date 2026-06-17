@@ -46,7 +46,7 @@ export default function RootLayout() {
 	const isLoggedIn = useIsLoggedIn();
 	const hasProfile = useHasProfile();
 
-	console.log("isLoggedIn: ", isLoggedIn, " hasProfile: ", hasProfile);
+	// console.log("isLoggedIn: ", isLoggedIn, " hasProfile: ", hasProfile);
 
 	// For background we can rely on NativeWind, but if we need the RN style,
 	// we should probably derive it from the scheme.
