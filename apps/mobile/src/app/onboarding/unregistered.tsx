@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 
-import { PermissionLayout } from "@/components/permission-layout";
+import { PermissionLayout } from "@/layout/permission-layout";
+
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 

@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
 	Schedule,

@@ -1,5 +1,6 @@
 import { CircleAlert } from "lucide-react-native";
 import { View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Header } from "@/components/header";
 import { NacContact } from "@/components/nac-contact";
@@ -37,8 +38,10 @@ function PermissionLayout({
 	footer,
 	paddingTop = "pt-36",
 }: PermissionLayoutProps) {
+	const insets = useSafeAreaInsets();
+
 	return (
-		<View className="flex-1">
+		<View className="flex-1" style={{ paddingBottom: insets.bottom + 16 }}>
 			<Header href={headerHref} onClick={headerOnClick} />
 
 			<View

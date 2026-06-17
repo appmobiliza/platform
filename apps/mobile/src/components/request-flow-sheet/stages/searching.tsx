@@ -36,7 +36,7 @@ function SearchingStage({
 				<SheetFrame
 					title="Nenhum contribuinte encontrado"
 					footer={
-						<Button variant="destructive" onPress={dismissAndExit}>
+						<Button onPress={dismissAndExit}>
 							<Text>Fechar</Text>
 						</Button>
 					}

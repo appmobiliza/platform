@@ -109,7 +109,7 @@ export function PendingRequestCard({
 
 			<View className="border border-border bg-card p-5 gap-4 rounded-xl">
 				<View className="flex-row items-start justify-between">
-					<View className="flex-row items-center gap-3">
+					<View className="flex-row items-center gap-3 flex-1 min-w-0">
 						<Avatar
 							alt={`${service.student.name}'s Avatar`}
 							className="h-12 w-12"
@@ -125,16 +125,22 @@ export function PendingRequestCard({
 								</Text>
 							</AvatarFallback>
 						</Avatar>
-						<View>
-							<Text className="text-base font-bold text-foreground">
+						<View className="flex-1 min-w-0">
+							<Text
+								className="text-base font-bold text-foreground"
+								numberOfLines={1}
+							>
 								{service.student.name}
 							</Text>
-							<Text className="text-sm text-muted-foreground">
+							<Text
+								className="text-sm text-muted-foreground"
+								numberOfLines={1}
+							>
 								{service.student.disability}
 							</Text>
 						</View>
 					</View>
-					<Text className="mt-1 text-xs font-semibold text-warning-foreground">
+					<Text className="mt-1 text-xs font-semibold text-warning-foreground shrink-0 ml-6">
 						{isAccepting
 							? "Aceitando..."
 							: elapsedSeconds !== null && elapsedSeconds < 60

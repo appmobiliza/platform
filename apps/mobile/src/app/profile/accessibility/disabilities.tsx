@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 
-import ProfileLayout from "@/layout/profile";
+import ProfileLayout from "@/layout/profile-layout";
 
 import BoxOptions from "@/components/box-options";
 import { toast } from "@/components/ui/toast";

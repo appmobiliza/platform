@@ -3,7 +3,8 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Linking, View } from "react-native";
 
-import { PermissionLayout } from "@/components/permission-layout";
+import { PermissionLayout } from "@/layout/permission-layout";
+
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 

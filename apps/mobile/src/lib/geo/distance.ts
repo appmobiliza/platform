@@ -61,6 +61,31 @@ export function pointToLineDistance(point: LatLng, a: LatLng, b: LatLng): number
 	return Math.sqrt(dx * dx + dy * dy);
 }
 
+/**
+ * Calculate total distance in meters from an array of GeoJSON coordinates.
+ * Each coordinate is [longitude, latitude, unix_timestamp_ms].
+ * The timestamp is ignored for distance calculation.
+ */
+export function calculateRouteDistance(
+	coordinates: ReadonlyArray<[number, number, number]>,
+): number {
+	if (coordinates.length < 2) return 0;
+
+	let total = 0;
+	for (let i = 1; i < coordinates.length; i++) {
+		const prev = coordinates[i - 1] as [number, number, number];
+		const curr = coordinates[i] as [number, number, number];
+		total += haversineMeters(
+			prev[1], // lat
+			prev[0], // lng
+			curr[1], // lat
+			curr[0], // lng
+		);
+	}
+
+	return Math.round(total);
+}
+
 /** Format meters to a human-readable string (e.g. `"350m"` or `"1.2km"`). */
 export function formatDistance(meters: number): string {
 	if (meters < 1_000) {

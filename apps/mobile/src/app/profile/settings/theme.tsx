@@ -1,6 +1,6 @@
 import { MoonIcon, SmartphoneIcon, SunIcon } from "lucide-react-native";
 
-import ProfileLayout from "@/layout/profile";
+import ProfileLayout from "@/layout/profile-layout";
 
 import BoxOptions from "@/components/box-options";
 

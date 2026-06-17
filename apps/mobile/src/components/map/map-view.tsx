@@ -7,16 +7,15 @@ import {
 	Map as MapViewNative,
 	Marker,
 	type StyleSpecification,
-	UserLocation,
 } from "@maplibre/maplibre-react-native";
 import * as Location from "expo-location";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type NativeSyntheticEvent, Text, View } from "react-native";
 
+import { FromMarker, ToMarker } from "@/assets/route";
+
 import type { ScholarPosition } from "@/lib/geo/map-utils";
 import { useAppColorScheme } from "@/lib/theme/use-app-color-scheme";
-
-import { FromMarker, ToMarker } from "@/assets/route";
 
 import type { Place, Stage } from "../request-flow-sheet/types";
 
@@ -184,11 +183,27 @@ export default function MapView({
 					coordinates: routePath,
 				},
 			};
-		} else if (
-			(stage === "start-confirm" || stage === "trip") &&
-			origin &&
-			destination
-		) {
+		} else if (stage === "start-confirm" && origin) {
+			if (userLocation) {
+				result = {
+					type: "Feature" as const,
+					properties: {},
+					geometry: {
+						type: "LineString" as const,
+						coordinates: [
+							[userLocation.longitude, userLocation.latitude] as [
+								number,
+								number,
+							],
+							[origin.longitude, origin.latitude] as [
+								number,
+								number,
+							],
+						],
+					},
+				};
+			}
+		} else if (stage === "trip" && origin && destination) {
 			result = {
 				type: "Feature" as const,
 				properties: {},
@@ -265,6 +280,49 @@ export default function MapView({
 		}
 	}, [mapLoaded, scholar, stage, isMoving]);
 
+	// ── Camera: center on user and origin for start-confirm (once per entry) ─
+	const hasCenteredOnStartConfirm = useRef(false);
+
+	useEffect(() => {
+		if (stage !== "start-confirm") {
+			hasCenteredOnStartConfirm.current = false;
+		}
+	}, [stage]);
+
+	useEffect(() => {
+		if (
+			mapLoaded &&
+			stage === "start-confirm" &&
+			!hasCenteredOnStartConfirm.current
+		) {
+			if (userLocation && origin) {
+				hasCenteredOnStartConfirm.current = true;
+				cameraRef.current?.flyTo({
+					center: [
+						(userLocation.longitude + origin.longitude) / 2,
+						(userLocation.latitude + origin.latitude) / 2,
+					],
+					zoom: 14.5,
+					duration: 1500,
+				});
+			} else if (userLocation) {
+				hasCenteredOnStartConfirm.current = true;
+				cameraRef.current?.flyTo({
+					center: [userLocation.longitude, userLocation.latitude],
+					zoom: 16,
+					duration: 1500,
+				});
+			} else if (origin) {
+				hasCenteredOnStartConfirm.current = true;
+				cameraRef.current?.flyTo({
+					center: [origin.longitude, origin.latitude],
+					zoom: 16,
+					duration: 1500,
+				});
+			}
+		}
+	}, [mapLoaded, stage, userLocation, origin]);
+
 	// ── Camera: center on route path in trip mode (once per entry) ──────
 	// Used when there's no scholar to follow (e.g. user→origin route).
 	const hasCenteredOnRoute = useRef(false);
@@ -323,10 +381,19 @@ export default function MapView({
 
 	const showRoute =
 		stage === "start-confirm" || stage === "trip" || !!routePath;
-	const showOriginMarker = stage === "start-confirm" || stage === "trip";
-	const showDestinationMarker = stage === "trip";
+	const showOriginMarker =
+		stage === "start-confirm" || stage === "trip" || !!routePath;
+	const showDestinationMarker = stage === "trip" || !!routePath;
 
 	const primaryColor = "#005E65";
+
+	// ─── Derived marker positions (from props or route path) ──────────────
+	const originPos: [number, number] | null = origin
+		? [origin.longitude, origin.latitude]
+		: (routePath?.[0] ?? null);
+	const destPos: [number, number] | null = destination
+		? [destination.longitude, destination.latitude]
+		: (routePath?.[routePath.length - 1] ?? null);
 
 	// Camera initial view state
 	const cameraInitialState = {
@@ -358,9 +425,17 @@ export default function MapView({
 				{/* ── Camera ──────────────────────────────────────────────── */}
 				<Camera ref={cameraRef} initialViewState={cameraInitialState} />
 
-				{/* ── User location puck ────────────────────────────────── */}
-				{showUserLocation && (
-					<UserLocation animated accuracy={false} heading />
+				{/* ── User location puck (manual, avoids MapLibre native location engine) ── */}
+				{showUserLocation && userLocation && (
+					<Marker
+						id="user-location-marker"
+						lngLat={[userLocation.longitude, userLocation.latitude]}
+						anchor="center"
+					>
+						<View className="items-center justify-center">
+							<View className="size-5 rounded-full bg-blue-500 border-2 border-white" />
+						</View>
+					</Marker>
 				)}
 
 				{/* ── Route line ─────────────────────────────────────────── */}
@@ -382,10 +457,10 @@ export default function MapView({
 				)}
 
 				{/* ── Origin marker ─────────────────────────────────────── */}
-				{showOriginMarker && origin && (
+				{showOriginMarker && originPos && (
 					<Marker
 						id="origin-marker"
-						lngLat={[origin.longitude, origin.latitude]}
+						lngLat={originPos}
 						anchor="bottom"
 					>
 						<View className="items-center justify-center">
@@ -399,12 +474,8 @@ export default function MapView({
 				)}
 
 				{/* ── Destination marker ────────────────────────────────── */}
-				{showDestinationMarker && destination && (
-					<Marker
-						id="dest-marker"
-						lngLat={[destination.longitude, destination.latitude]}
-						anchor="bottom"
-					>
+				{showDestinationMarker && destPos && (
+					<Marker id="dest-marker" lngLat={destPos} anchor="bottom">
 						<View className="items-center justify-center">
 							<ToMarker
 								width={28}

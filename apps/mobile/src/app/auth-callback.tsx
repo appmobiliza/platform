@@ -11,6 +11,8 @@
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 
+import type { Place } from "@/components/request-flow-sheet/types";
+
 import { authClient } from "@/lib/auth/client";
 import {
 	cacheUserInfo,
@@ -20,6 +22,8 @@ import {
 } from "@/lib/auth/store";
 import { trpc } from "@/lib/trpc/client";
 
+import { setCachedCampusLocations } from "@/stores/location-store";
+import { hydrateRouteHistoryFromApi } from "@/stores/route-history-store";
 import { toSessionUser } from "@/types/session";
 
 /**
@@ -111,6 +115,36 @@ function usePostLogin() {
 					// Erro ao consultar perfil — assume que não existe
 					hasStudentProfile = false;
 					simplifiedInterface = false;
+				}
+
+				// Hidrata o histórico de rotas e cacheia as localizações do campus
+				// antes de navegar para a home, evitando waterfalls ao montar a
+				// tela inicial.
+				if (hasStudentProfile) {
+					try {
+						const historyData =
+							await trpcUtils.requests.studentHistory.fetchInfinite(
+								{
+									limit: 50,
+								},
+							);
+						const allItems = historyData.pages.flatMap(
+							(p) => p.items,
+						);
+						hydrateRouteHistoryFromApi(allItems);
+					} catch {
+						// Falha ao buscar histórico não impede o login.
+					}
+
+					try {
+						const locations =
+							await trpcUtils.locations.list.fetch();
+						if (locations.length > 0) {
+							setCachedCampusLocations(locations as Place[]);
+						}
+					} catch {
+						// Falha ao cachear localizações não impede o login.
+					}
 				}
 
 				// Cacheia os dados do usuário PRIMEIRO para que, quando

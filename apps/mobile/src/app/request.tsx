@@ -170,6 +170,11 @@ export default function RequestScreen() {
 				[userLocation.longitude, userLocation.latitude],
 				[origin.longitude, origin.latitude],
 			];
+		} else if (stage === "start-confirm") {
+			// For start-confirm, the map component has its own user location
+			// tracking, so it handles drawing the user→origin line.
+			// We intentionally leave path undefined here to let MapView's
+			// internal routeGeoJSON fallback handle it.
 		} else if (!isOngoing && !isFarFromOrigin && origin && destination) {
 			path = [
 				[origin.longitude, origin.latitude],
@@ -242,6 +247,7 @@ export default function RequestScreen() {
 				scholar={scholarPosition}
 				scholarPositions={allScholarPositions}
 				routePath={routePath}
+				routeDashed={stage === "start-confirm"}
 				scholarDistance={scholarDistance}
 				showCenterMarker={stage === "destination"}
 				onCenterChanged={

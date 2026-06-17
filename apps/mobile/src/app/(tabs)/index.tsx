@@ -1,13 +1,16 @@
 import * as Location from "expo-location";
+import { useNetworkState } from "expo-network";
+import * as Notifications from "expo-notifications";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Clock, MapPin } from "lucide-react-native";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Logo } from "@/assets/logo";
 
-import { NewsCarousel } from "@/components/news-carousel";
+import { NewsCarousel, type NewsItem } from "@/components/news-carousel";
+import { NoConnection } from "@/components/no-connection";
 import { PlaceCard } from "@/components/place-card";
 import type { Place } from "@/components/request-flow-sheet/types";
 import { ScholarHome } from "@/components/scholar/home";
@@ -16,34 +19,35 @@ import SimplifiedHome from "@/components/simplified-interface/home";
 import { Text } from "@/components/ui/text";
 
 import { useSimplifiedInterface, useUser, useUserRole } from "@/lib/auth/store";
+import { formatRelativeDate } from "@/lib/date";
 import { haversineMeters } from "@/lib/geo/distance";
 import { trpc } from "@/lib/trpc/client";
 
+import { newsItems as fallbackNewsItems } from "@/constants/news";
 import {
 	getCachedCampusLocations,
 	setCachedCampusLocations,
 	setNearestPoint,
 	useNearestPoint,
 } from "@/stores/location-store";
+import { getCachedNews, setCachedNews } from "@/stores/news-store";
 import { getRequestState } from "@/stores/request-store";
+import {
+	resolveRouteEntry,
+	useRouteHistory,
+} from "@/stores/route-history-store";
 
-const newsItems = [
-	{
-		image: "https://noticias.ufal.br/transparencia/noticias/2026/4/exposicao-itinerante-sobre-anfibios-chega-a-biblioteca-central-em-abril/.jpeg/@@images/image",
-		label: "28 de abril: Exposição itinerante sobre anfíbios chega à Biblioteca Central",
-		link: "https://noticias.ufal.br/transparencia/noticias/2026/4/exposicao-itinerante-sobre-anfibios-chega-a-biblioteca-central-em-abril",
-	},
-	{
-		image: "https://noticias.ufal.br/estudante/noticias/2026/4/ufal-amplia-acoes-de-acessibilidade-na-pos-para-estudantes-surdos/@@images/image-768-16882703fa5e1d332539198d6adc0c8a.jpeg",
-		label: "Ufal amplia ações de acessibilidade na pós para estudantes surdos",
-		link: "https://noticias.ufal.br/estudante/noticias/2026/4/ufal-amplia-acoes-de-acessibilidade-na-pos-para-estudantes-surdos",
-	},
-	{
-		image: "https://noticias.ufal.br/estudante/noticias/2026/3/ufal-abre-inscricoes-para-bolsistas-do-nucleo-de-acessibilidade-em-maceio/@@images/image-768-814377bd74e9a631339192ff98626ae6.jpeg",
-		label: "Ufal abre inscrições para bolsistas do Núcleo de Acessibilidade em Maceió",
-		link: "https://noticias.ufal.br/estudante/noticias/2026/3/ufal-abre-inscricoes-para-bolsistas-do-nucleo-de-acessibilidade-em-maceio",
-	},
-];
+// ─── Relative date helpers (Portuguese locale) ───────────────────────────────
+
+function formatLastTripLabel(date: Date): string {
+	const now = new Date();
+	const diffMs = now.getTime() - date.getTime();
+	const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+	if (diffDays === 0) return "Último deslocamento hoje";
+	if (diffDays === 1) return "Último deslocamento ontem";
+	return `Último deslocamento há ${diffDays} dias`;
+}
 
 const getPosition = async () => {
 	// 1. Last known position — instant, no device settings dependency
@@ -85,15 +89,75 @@ type StudentHomeProps = {
 function StudentHome({ insets }: StudentHomeProps) {
 	const router = useRouter();
 
+	const networkState = useNetworkState();
+	const hasConnection = networkState.isConnected ?? true;
+
+	// ─── News (cache-first, background refresh) ────────────────────────────
+	// Show cached news immediately to avoid layout shift. Fresh data is
+	// fetched in background and persisted to cache, but never updates the
+	// displayed state reactively — changes appear only on the next app open.
+
+	const [newsItems] = useState<NewsItem[]>(() => {
+		const cached = getCachedNews();
+		return cached.length > 0 ? cached : (fallbackNewsItems as NewsItem[]);
+	});
+
+	const { data: freshNews } = trpc.news.list.useQuery(
+		{ limit: 5 },
+		{
+			staleTime: 30 * 60 * 1000,
+			gcTime: 60 * 60 * 1000,
+		},
+	);
+
+	useEffect(() => {
+		if (!freshNews) return;
+		const mapped: NewsItem[] = freshNews.map((n) => ({
+			image: n.imageUrl ?? "",
+			label: n.title,
+			link: n.url,
+		}));
+		setCachedNews(mapped);
+	}, [freshNews]);
+
 	const navigateWithDestination = useCallback(
-		(destination: string) => {
+		(destinationId: string) => {
 			router.push({
 				pathname: "/request",
-				params: { destination },
+				params: { destinationId },
 			});
 		},
 		[router],
 	);
+
+	// ─── Read from local store ───────────────────────────────────────────
+
+	const { recent, frequent } = useRouteHistory();
+
+	const recentDestinations = useMemo(
+		() => recent.map((entry) => resolveRouteEntry(entry)),
+		[recent],
+	);
+
+	const frequentDestinations = useMemo(
+		() =>
+			frequent.map((entry) => {
+				const resolved = resolveRouteEntry(entry);
+				return {
+					id: resolved.id,
+					name: resolved.name,
+					lastDate: resolved.date,
+				};
+			}),
+		[frequent],
+	);
+
+	const hasRecentPlaces = recentDestinations.length > 0;
+	const hasFrequentRoutes = frequentDestinations.length > 0;
+
+	// Pick the first card (full width) and the rest (side by side)
+	const recentPrimary = recentDestinations[0];
+	const recentSecondary = recentDestinations.slice(1, 3);
 
 	return (
 		<ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -123,38 +187,55 @@ function StudentHome({ insets }: StudentHomeProps) {
 							"Faculdade de Letras",
 							"Instituto de Ciências Biológicas",
 						]}
+						hasConnection={hasConnection}
 						onPress={() => router.push("/request")}
 					/>
 				</View>
 
-				{/* Locais Recentes */}
-				<View className="px-4">
-					<PlaceCard
-						title="Restaurante Universitário"
-						description="Hoje, 12h35"
-						className="mb-3"
-						icon={{ as: Clock }}
-						onPress={() =>
-							navigateWithDestination("Restaurante Universitário")
-						}
-					/>
-					<View className="flex-row gap-3">
-						<PlaceCard
-							className="flex-1"
-							title="CEDU"
-							description="Ontem, 16h12"
-							icon={{ as: Clock }}
-							onPress={() => navigateWithDestination("CEDU")}
-						/>
-						<PlaceCard
-							className="flex-1"
-							title="ICBS"
-							description="Há 2 dias, 16h24"
-							icon={{ as: Clock }}
-							onPress={() => navigateWithDestination("ICBS")}
-						/>
+				{!hasConnection && (
+					<View className="px-4">
+						<NoConnection />
 					</View>
-				</View>
+				)}
+
+				{/* Locais Recentes */}
+				{hasRecentPlaces && (
+					<View className="px-4">
+						{recentPrimary && (
+							<PlaceCard
+								title={recentPrimary.name}
+								description={formatRelativeDate(
+									recentPrimary.date,
+								)}
+								className="mb-3"
+								icon={{ as: Clock }}
+								onPress={() =>
+									navigateWithDestination(recentPrimary.id)
+								}
+								disabled={!hasConnection}
+							/>
+						)}
+						{recentSecondary.length > 0 && (
+							<View className="flex-row gap-3">
+								{recentSecondary.map((dest) => (
+									<PlaceCard
+										key={dest.name}
+										className="flex-1"
+										title={dest.abbreviation ?? dest.name}
+										description={formatRelativeDate(
+											dest.date,
+										)}
+										icon={{ as: Clock }}
+										onPress={() =>
+											navigateWithDestination(dest.id)
+										}
+										disabled={!hasConnection}
+									/>
+								))}
+							</View>
+						)}
+					</View>
+				)}
 
 				{/* Notícias */}
 				<View>
@@ -165,47 +246,29 @@ function StudentHome({ insets }: StudentHomeProps) {
 				</View>
 
 				{/* Rotas Frequentes */}
-				<View className="px-4">
-					<Text className="font-bold text-lg mb-3">
-						Rotas Frequentes
-					</Text>
-					<View className="flex-col gap-3">
-						<PlaceCard
-							title="Restaurante Universitário"
-							description="Último deslocamento há 2 dias"
-							icon={{ as: MapPin }}
-							onPress={() =>
-								navigateWithDestination(
-									"Restaurante Universitário",
-								)
-							}
-						/>
-						<PlaceCard
-							title="Reitoria"
-							description="Último deslocamento há 6 dias"
-							icon={{ as: MapPin }}
-							onPress={() => navigateWithDestination("Reitoria")}
-						/>
-						<PlaceCard
-							title="Biblioteca Central"
-							description="Último deslocamento há 10 dias"
-							icon={{ as: MapPin }}
-							onPress={() =>
-								navigateWithDestination("Biblioteca Central")
-							}
-						/>
-						<PlaceCard
-							title="Instituto de Computação"
-							description="Último deslocamento há 12 dias"
-							icon={{ as: MapPin }}
-							onPress={() =>
-								navigateWithDestination(
-									"Instituto de Computação",
-								)
-							}
-						/>
+				{hasFrequentRoutes && (
+					<View className="px-4">
+						<Text className="font-bold text-lg mb-3">
+							Rotas Frequentes
+						</Text>
+						<View className="flex-col gap-3">
+							{frequentDestinations.map((dest) => (
+								<PlaceCard
+									key={dest.name}
+									title={dest.name}
+									description={formatLastTripLabel(
+										dest.lastDate,
+									)}
+									icon={{ as: MapPin }}
+									onPress={() =>
+										navigateWithDestination(dest.id)
+									}
+									disabled={!hasConnection}
+								/>
+							))}
+						</View>
 					</View>
-				</View>
+				)}
 			</View>
 		</ScrollView>
 	);
@@ -255,6 +318,14 @@ export default function Home() {
 
 				if (status !== "granted") {
 					router.replace("/location-permission");
+					return;
+				}
+
+				const notificationStatus =
+					await Notifications.getPermissionsAsync();
+
+				if (notificationStatus.status !== "granted") {
+					router.replace("/notification-permission");
 					return;
 				}
 

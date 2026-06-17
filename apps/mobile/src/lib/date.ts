@@ -89,3 +89,16 @@ export function getDateKey(date: Date): string {
 	const day = date.getDate().toString().padStart(2, "0");
 	return `${date.getFullYear()}-${month}-${day}`;
 }
+
+export function formatRelativeDate(date: Date): string {
+	const now = new Date();
+	const diffMs = now.getTime() - date.getTime();
+	const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+	const hours = date.getHours().toString().padStart(2, "0");
+	const minutes = date.getMinutes().toString().padStart(2, "0");
+	const time = `${hours}h${minutes}`;
+
+	if (diffDays === 0) return `Hoje, ${time}`;
+	if (diffDays === 1) return `Ontem, ${time}`;
+	return `Há ${diffDays} dias, ${time}`;
+}

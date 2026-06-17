@@ -1,6 +1,7 @@
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import type * as React from "react";
 import { View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
 	SheetDescription,
@@ -36,25 +37,27 @@ function SheetFrame({
 	return (
 		<>
 			<SheetHeader
-				className={cn("border-b border-border py-4 gap-1 items-start", {
-					"items-center": headerPosition === "center",
-				})}
+				className={cn(
+					"border-b border-border py-4 gap-4 items-start justify-start flex-row",
+					{
+						"items-center": headerPosition === "center",
+					},
+				)}
 			>
 				<View
 					className={cn(
-						"flex-row items-center justify-start w-full gap-2",
+						"flex-col items-start justify-start flex-1 gap-1",
 						{
-							"justify-between": !!accessory,
-							"justify-center": headerPosition === "center",
+							"items-center": headerPosition === "center",
 						},
 					)}
 				>
 					<SheetTitle>{title}</SheetTitle>
-					{accessory ? accessory : null}
+					{description ? (
+						<SheetDescription>{description}</SheetDescription>
+					) : null}
 				</View>
-				{description ? (
-					<SheetDescription>{description}</SheetDescription>
-				) : null}
+				{accessory ? accessory : null}
 			</SheetHeader>
 			{shouldWrapChildren ? (
 				<View className="p-4 gap-4">{children}</View>
@@ -89,6 +92,7 @@ function StageSheet({
 	children,
 	colorScheme,
 }: StageSheetProps) {
+	const insets = useSafeAreaInsets();
 	const isDynamic = snapPoints.length === 0;
 
 	return (
@@ -102,6 +106,9 @@ function StageSheet({
 			backgroundStyle={{ backgroundColor: THEME[colorScheme].card }}
 			handleIndicatorStyle={{
 				backgroundColor: THEME[colorScheme].muted,
+			}}
+			style={{
+				paddingBottom: insets.bottom,
 			}}
 		>
 			{isDynamic ? (

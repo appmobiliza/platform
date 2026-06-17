@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 
-import ProfileLayout from "@/layout/profile";
+import ProfileLayout from "@/layout/profile-layout";
 
 import { SelectField } from "@/components/ui/select-field";
 

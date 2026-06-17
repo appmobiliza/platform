@@ -4,7 +4,7 @@
  * Cenários:
  * - create: estudante inativo, sem perfil, origem=destino, conflito
  * - create: sucesso
- * - cancel: não dono, status não pending, sucesso
+ * - cancel: não dono, já concluída, em andamento, sucesso
  * - accept: bolsista não aprovado, indisponível, race condition
  * - start: sem atendimento, sucesso
  * - complete: sem start, sucesso
@@ -191,16 +191,21 @@ describe("requestsRouter", () => {
 			).rejects.toMatchObject({ code: "FORBIDDEN" });
 		});
 
-		it("deve falhar quando status não é pending", async () => {
+		it("deve falhar quando solicitação já foi concluída", async () => {
 			// Arrange
 			const student = await seedUser({ role: "student" });
+			const scholar = await seedUser({ role: "scholar" });
 			const profile = await seedStudentProfile(student.id);
+			const scholarProfile = await seedScholarProfile(scholar.id);
 			const loc1 = await seedCampusLocation();
 			const loc2 = await seedCampusLocation();
 			const request = await seedServiceRequest(profile.id, {
-				status: "ongoing",
+				status: "completed",
 				originLocationId: loc1.id,
 				destinationLocationId: loc2.id,
+			});
+			await seedServiceAttendance(request.id, scholarProfile.id, {
+				completedAt: new Date(),
 			});
 			const session = createStudentSession({ id: student.id });
 			caller = appRouter.createCaller(() => session);
@@ -211,6 +216,36 @@ describe("requestsRouter", () => {
 					requestId: request.id,
 				}),
 			).rejects.toMatchObject({ code: "BAD_REQUEST" });
+		});
+
+		it("deve cancelar solicitação em andamento", async () => {
+			// Arrange
+			const student = await seedUser({ role: "student" });
+			const scholar = await seedUser({ role: "scholar" });
+			const profile = await seedStudentProfile(student.id);
+			const scholarProfile = await seedScholarProfile(scholar.id);
+			const loc1 = await seedCampusLocation();
+			const loc2 = await seedCampusLocation();
+			const request = await seedServiceRequest(profile.id, {
+				status: "ongoing",
+				originLocationId: loc1.id,
+				destinationLocationId: loc2.id,
+			});
+			await seedServiceAttendance(request.id, scholarProfile.id, {
+				startedAt: new Date(),
+			});
+			const session = createStudentSession({ id: student.id });
+			caller = appRouter.createCaller(() => session);
+
+			// Act
+			const result = await caller.requests.cancel({
+				requestId: request.id,
+			});
+
+			// Assert
+			expect(result).toMatchObject({
+				status: "cancelled",
+			});
 		});
 
 		it("deve cancelar solicitação com sucesso", async () => {

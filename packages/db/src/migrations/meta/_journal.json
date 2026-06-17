@@ -15,6 +15,13 @@
       "when": 1781421519340,
       "tag": "0001_lively_vision",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781680126318,
+      "tag": "0002_old_tusk",
+      "breakpoints": true
     }
   ]
 }

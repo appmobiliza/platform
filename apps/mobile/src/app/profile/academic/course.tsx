@@ -5,7 +5,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 
-import ProfileLayout from "@/layout/profile";
+import ProfileLayout from "@/layout/profile-layout";
 
 import { SelectField } from "@/components/ui/select-field";
 import { toast } from "@/components/ui/toast";

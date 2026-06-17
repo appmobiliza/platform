@@ -13,6 +13,11 @@ import * as SecureStore from "expo-secure-store";
 
 export const authClient = createAuthClient({
 	baseURL: `${process.env.EXPO_PUBLIC_BETTER_AUTH_URL}/api/auth`,
+	sessionOptions: {
+		refetchOnWindowFocus: false,     // ← stop refetching on tab focus
+		refetchInterval: 0,              // keep disabled (no polling)
+		refetchWhenOffline: false,       // keep disabled
+	},
 	plugins: [
 		expoClient({
 			scheme: "mobiliza",

@@ -1,23 +1,24 @@
 import { Pressable, Text, View } from "react-native";
 
-import { getPersonColor } from "./colors";
+import { getPersonColor, type PersonColor } from "./colors";
 import type { ScheduleEntry } from "./types";
 
 interface ScheduleCardProps {
 	/** When null, renders an empty dashed placeholder. */
 	entry: ScheduleEntry | null;
 	onPress?: (entry: ScheduleEntry) => void;
+	colorMap?: Map<string, PersonColor>;
 }
 
 /** A single grid cell: either a colored person card or an empty placeholder. */
-export function ScheduleCard({ entry, onPress }: ScheduleCardProps) {
+export function ScheduleCard({ entry, onPress, colorMap }: ScheduleCardProps) {
 	if (!entry) {
 		return (
 			<View className="min-h-24 flex-1 rounded-2xl border border-dashed border-border" />
 		);
 	}
 
-	const color = getPersonColor(entry.person);
+	const color = getPersonColor(entry.person, colorMap);
 
 	return (
 		<Pressable

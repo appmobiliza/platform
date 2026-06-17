@@ -2,6 +2,7 @@ import { Fragment, useMemo } from "react";
 
 import { Separator } from "@/components/ui/separator";
 
+import { buildColorMap } from "./colors";
 import { ScheduleLegend } from "./schedule-legend";
 import { ScheduleSlot } from "./schedule-slot";
 import type { ScheduleEntry, ScheduleSlot as ScheduleSlotType } from "./types";
@@ -42,6 +43,9 @@ export function Schedule({
 		return Array.from(set).sort();
 	}, [slots, legendPeopleProp]);
 
+	/** Build a deterministic color map so each person gets a unique color. */
+	const colorMap = useMemo(() => buildColorMap(legendPeople), [legendPeople]);
+
 	return (
 		<div>
 			{slots.map((slot, index) => (
@@ -50,6 +54,7 @@ export function Schedule({
 						slot={slot}
 						onEntryPress={onEntryPress}
 						gutterClassName={gutterClassName}
+						colorMap={colorMap}
 					/>
 					{index < slots.length - 1 ? (
 						<Separator className="mx-4" />
@@ -57,7 +62,9 @@ export function Schedule({
 				</Fragment>
 			))}
 
-			{showLegend ? <ScheduleLegend people={legendPeople} /> : null}
+			{showLegend ? (
+				<ScheduleLegend people={legendPeople} colorMap={colorMap} />
+			) : null}
 		</div>
 	);
 }

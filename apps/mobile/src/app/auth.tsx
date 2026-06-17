@@ -7,6 +7,7 @@ import GoogleIcon from "@/assets/google";
 import { Logo } from "@/assets/logo";
 
 import { NacContact } from "@/components/nac-contact";
+import type { Place } from "@/components/request-flow-sheet/types";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { toast } from "@/components/ui/toast";
@@ -20,6 +21,8 @@ import {
 } from "@/lib/auth/store";
 import { trpc } from "@/lib/trpc/client";
 
+import { setCachedCampusLocations } from "@/stores/location-store";
+import { hydrateRouteHistoryFromApi } from "@/stores/route-history-store";
 import { toSessionUser } from "@/types/session";
 
 export default function Auth() {
@@ -127,6 +130,33 @@ export default function Auth() {
 				)?.simplifiedInterface === true;
 
 			console.log("hasStudentProfile: ", hasStudentProfile);
+
+			// Hidrata o histórico de rotas e cacheia as localizações do campus
+			// antes de navegar para a home, evitando waterfalls de requisição
+			// ao montar a tela inicial.
+			if (hasStudentProfile) {
+				try {
+					const historyData =
+						await trpcUtils.requests.studentHistory.fetchInfinite({
+							limit: 50,
+						});
+					const allItems = historyData.pages.flatMap((p) => p.items);
+					hydrateRouteHistoryFromApi(allItems);
+				} catch {
+					// Falha ao buscar histórico não impede o login;
+					// o histórico será construído localmente com as viagens futuras.
+				}
+
+				try {
+					const locations = await trpcUtils.locations.list.fetch();
+					if (locations.length > 0) {
+						setCachedCampusLocations(locations as Place[]);
+					}
+				} catch {
+					// Falha ao cachear localizações não impede o login;
+					// os dados serão buscados ao montar a tela inicial.
+				}
+			}
 
 			// Cacheia os dados do usuário e o estado do perfil, depois
 			// redireciona explicitamente para o destino correto.

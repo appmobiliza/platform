@@ -1,5 +1,6 @@
 import { Text, View } from "react-native";
 
+import type { PersonColor } from "./colors";
 import { ScheduleCard } from "./schedule-card";
 import type { ScheduleEntry, ScheduleSlot as ScheduleSlotType } from "./types";
 
@@ -7,6 +8,7 @@ interface ScheduleSlotProps {
 	slot: ScheduleSlotType;
 	onEntryPress?: (entry: ScheduleEntry) => void;
 	gutterClassName?: string;
+	colorMap?: Map<string, PersonColor>;
 }
 
 /**
@@ -17,6 +19,7 @@ export function ScheduleSlot({
 	slot,
 	onEntryPress,
 	gutterClassName = "w-16",
+	colorMap,
 }: ScheduleSlotProps) {
 	return (
 		<View className="flex-row px-4 py-4">
@@ -39,6 +42,7 @@ export function ScheduleSlot({
 								key={`${slot.id}-${rowIndex}-${colIndex}`}
 								entry={entry}
 								onPress={onEntryPress}
+								colorMap={colorMap}
 							/>
 						))}
 					</View>

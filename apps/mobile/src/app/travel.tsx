@@ -2,12 +2,13 @@ import { disabilityTypeLabels } from "@mobiliza/contracts";
 
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, Clock, MapIcon } from "lucide-react-native";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddressRoute } from "@/components/address";
 import MapView from "@/components/map/map-view";
+import { StatCard } from "@/components/stat-card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -16,10 +17,12 @@ import { toast } from "@/components/ui/toast";
 
 import { useOsrmRoute } from "@/hooks/use-osrm-route";
 import { usePositionBroadcaster } from "@/hooks/use-position-broadcaster";
+import { useRouteTracking } from "@/hooks/use-route-tracking";
 import { useStudentTripPosition } from "@/hooks/use-student-trip-position";
 import { useUserLocation } from "@/hooks/use-user-location";
 
 import { haversineMeters } from "@/lib/geo/distance";
+import { getRealtimeClient } from "@/lib/realtime";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 
@@ -155,6 +158,16 @@ export default function TravelScreen() {
 	const isDuring = !!attendance?.startedAt;
 	const hasCompleted = !!attendance?.completedAt;
 
+	// ─── Route tracking ─────────────────────────────────────────────────────────
+	// Accumulate GPS points while the attendance is in progress.
+	// Provides simplified GeoJSON and total distance on completion.
+
+	const { getRouteGeojson, getDistanceMeters, resetRoute } = useRouteTracking(
+		{
+			enabled: isDuring && !hasCompleted,
+		},
+	);
+
 	// ─── Scholar location tracking ────────────────────────────────────────────
 
 	const userLocation = useUserLocation({ enabled: !hasCompleted });
@@ -175,6 +188,53 @@ export default function TravelScreen() {
 		enabled: !!requestId && !hasCompleted && !isDuring,
 		requestId,
 	});
+
+	const scholarCancelledRef = useRef(false);
+
+	// ─── Listen for student cancellation ───────────────────────────────────────
+	// When the student cancels the trip while the scholar is on this screen,
+	// the backend publishes a request:cancelled event on the request channel.
+	// Without this subscription, the scholar remains stuck with no notification.
+
+	useEffect(() => {
+		if (!requestId || hasCompleted) return;
+
+		let cancelled = false;
+
+		const setup = async () => {
+			const client = await getRealtimeClient();
+			if (cancelled) return;
+
+			const unsub = client.subscribe(
+				`request:${requestId}`,
+				"request:cancelled",
+				() => {
+					// If the scholar themselves initiated the cancellation,
+					// the onSuccess handler already shows a toast and navigates back.
+					if (scholarCancelledRef.current) return;
+
+					clearActiveAttendance();
+					utils.requests.getAttendanceById.invalidate({ requestId });
+					utils.requests.pending.invalidate();
+					utils.requests.active.setData(undefined, null);
+					utils.requests.scholarHistory.invalidate();
+					toast.info("Deslocamento cancelado", {
+						description: "O estudante cancelou o deslocamento.",
+					});
+					router.back();
+				},
+			);
+
+			return unsub;
+		};
+
+		const unsubPromise = setup();
+
+		return () => {
+			cancelled = true;
+			unsubPromise.then((unsub) => unsub?.());
+		};
+	}, [requestId, hasCompleted, utils, router]);
 
 	// ─── Distances ────────────────────────────────────────────────────────────
 
@@ -205,6 +265,60 @@ export default function TravelScreen() {
 		distanceToDestination !== null &&
 		distanceToDestination > 100;
 
+	// ─── Elapsed timer ───────────────────────────────────────────────────────
+
+	const [elapsedMs, setElapsedMs] = useState(0);
+	const startedAtTime = useMemo(() => {
+		if (!attendance?.startedAt) return null;
+		return new Date(attendance.startedAt).getTime();
+	}, [attendance?.startedAt]);
+
+	useEffect(() => {
+		if (!startedAtTime) {
+			setElapsedMs(0);
+			return;
+		}
+
+		const tick = () => setElapsedMs(Date.now() - startedAtTime);
+		tick();
+		const interval = setInterval(tick, 1000);
+		return () => clearInterval(interval);
+	}, [startedAtTime]);
+
+	const formatTime = (ms: number): string => {
+		if (ms <= 0) return "00:00";
+		const totalSeconds = Math.floor(ms / 1000);
+		const hours = Math.floor(totalSeconds / 3600);
+		const minutes = Math.floor((totalSeconds % 3600) / 60);
+		const seconds = totalSeconds % 60;
+		if (hours > 0) {
+			return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+		}
+		return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+	};
+
+	const elapsedText = formatTime(elapsedMs);
+
+	// ─── Derived display values ──────────────────────────────────────────────
+
+	const startTimeText = useMemo(() => {
+		if (!attendance?.startedAt) return "...";
+		const d = new Date(attendance.startedAt);
+		return `${d.getHours().toString().padStart(2, "0")}h${d.getMinutes().toString().padStart(2, "0")}`;
+	}, [attendance?.startedAt]);
+
+	const remainingDistance = isDuring
+		? distanceToDestination
+		: distanceToOrigin;
+
+	const remainingDistanceText = useMemo(() => {
+		if (remainingDistance === null || remainingDistance === undefined)
+			return "...";
+		if (remainingDistance < 1000)
+			return `${Math.round(remainingDistance)}m`;
+		return `${(remainingDistance / 1000).toFixed(1)}km`;
+	}, [remainingDistance]);
+
 	// ─── Map state ────────────────────────────────────────────────────────────
 
 	const [showMap, setShowMap] = useState(false);
@@ -232,16 +346,43 @@ export default function TravelScreen() {
 		| Array<[number, number]>
 		| undefined;
 
+	// ─── Cache the route path so it persists across map toggles ─────────────
+
+	const [cachedRoutePath, setCachedRoutePath] =
+		useState<Array<[number, number]>>();
+
+	useEffect(() => {
+		if (routePath && routePath.length >= 2) {
+			setCachedRoutePath(routePath);
+		}
+	}, [routePath]);
+
+	// When the map is hidden, useCache so the route doesn't disappear;
+	// when visible, prefer fresh data (may briefly fall back to cache
+	// while useOsrmRoute re-fetches after being re-enabled).
+	const stableRoutePath =
+		routePath && routePath.length >= 2 ? routePath : cachedRoutePath;
+
 	// ─── Handlers ─────────────────────────────────────────────────────────────
 
 	const handleStart = () => {
 		if (!requestId) return;
+		resetRoute();
 		startAttendance({ requestId });
 	};
 
 	const handleComplete = () => {
 		if (!requestId) return;
-		completeAttendance({ requestId });
+
+		const routeGeojson = getRouteGeojson();
+		const distanceMeters = getDistanceMeters();
+
+		completeAttendance({
+			requestId,
+			routeGeojson:
+				routeGeojson.coordinates.length > 0 ? routeGeojson : undefined,
+			distanceMeters: distanceMeters > 0 ? distanceMeters : undefined,
+		});
 	};
 
 	const handleRequest = () => {
@@ -298,7 +439,10 @@ export default function TravelScreen() {
 				"Se houver algum problema com este deslocamento, você pode cancelá-lo.",
 			action: {
 				label: "Cancelar atendimento",
-				onClick: () => reportIssue({ requestId }),
+				onClick: () => {
+					scholarCancelledRef.current = true;
+					reportIssue({ requestId });
+				},
 			},
 			cancel: {
 				label: "Voltar",
@@ -351,17 +495,38 @@ export default function TravelScreen() {
 	}
 
 	return (
-		<View className="flex-1 bg-background">
+		<View
+			className="flex-1 bg-background"
+			style={{
+				paddingBottom: insets.bottom + 16,
+			}}
+		>
 			<View
-				className="bg-primary px-6 pb-8 gap-6"
-				style={{ paddingTop: insets.top + 24 }}
+				className="bg-primary px-6 gap-6 pb-8"
+				style={{
+					paddingTop: insets.top + 24,
+				}}
 			>
 				<View className="flex-row items-center justify-between">
-					<ChevronLeft
-						color="#FFFFFF"
-						size={32}
-						onPress={() => router.back()}
-					/>
+					<View className="flex-row items-center justify-between w-full">
+						<ChevronLeft
+							color="#FFFFFF"
+							size={32}
+							onPress={() => router.back()}
+						/>
+						{startedAtTime && (
+							<View className="bg-accent/50 rounded-full px-4 py-2 flex-row gap-2.5 items-center justify-center">
+								<Clock
+									color="#FFFFFF"
+									size={16}
+									className="mr-1.5"
+								/>
+								<Text className="text-white text-base font-normal">
+									{elapsedText}
+								</Text>
+							</View>
+						)}
+					</View>
 
 					{isDuring && !hasCompleted && (
 						<View className="bg-primary-foreground/20 px-3 py-1.5 rounded-full flex-row items-center">
@@ -399,94 +564,127 @@ export default function TravelScreen() {
 				</View>
 			</View>
 
-			{showMap ? (
-				<View className="flex-1 px-6 pt-6">
-					<View className="flex-1 rounded-lg overflow-hidden border border-border">
-						<MapView
-							stage="trip"
-							origin={
-								originCoords
-									? {
-											name: originName,
-											latitude: originCoords.latitude,
-											longitude: originCoords.longitude,
-										}
-									: undefined
-							}
-							destination={
-								destinationCoords
-									? {
-											name: destinationName,
-											latitude:
-												destinationCoords.latitude,
-											longitude:
-												destinationCoords.longitude,
-										}
-									: undefined
-							}
-							routePath={routePath}
-							showUserLocation
-							studentPosition={studentPosition}
-						/>
-					</View>
+			{/* Map content — always mounted so camera state is preserved */}
+			<View
+				className="flex-1 px-6 pt-6 gap-4"
+				style={{ display: showMap ? "flex" : "none" }}
+			>
+				<View className="flex flex-row items-center gap-4 w-full">
+					<StatCard title="Início" value={startTimeText} />
+					<StatCard
+						title="Distância restante"
+						value={remainingDistanceText}
+					/>
 				</View>
-			) : (
-				<ScrollView
-					className="flex-1 px-6 pt-6"
-					contentContainerClassName="gap-4"
-					showsVerticalScrollIndicator={false}
+				<Button
+					size="lg"
+					onPress={() => setShowMap((prev) => !prev)}
+					className="w-full rounded-xl"
 				>
-					<View className="p-5 bg-card border border-border rounded-lg">
+					<Icon
+						icon={MapIcon}
+						size={16}
+						color="--primary-foreground"
+					/>
+					<Text className="ml-2">
+						{showMap ? "Ocultar mapa" : "Ver no mapa"}
+					</Text>
+				</Button>
+				<View className="flex-1 rounded-lg overflow-hidden border border-border">
+					<MapView
+						stage="trip"
+						origin={
+							originCoords
+								? {
+										name: originName,
+										latitude: originCoords.latitude,
+										longitude: originCoords.longitude,
+									}
+								: undefined
+						}
+						destination={
+							destinationCoords
+								? {
+										name: destinationName,
+										latitude: destinationCoords.latitude,
+										longitude: destinationCoords.longitude,
+									}
+								: undefined
+						}
+						routePath={stableRoutePath}
+						showUserLocation
+						studentPosition={studentPosition}
+					/>
+				</View>
+			</View>
+
+			{/* Scroll content — always mounted */}
+			<ScrollView
+				className="flex-1"
+				contentContainerClassName="gap-4 px-6 pt-6"
+				showsVerticalScrollIndicator={false}
+				style={{ display: showMap ? "none" : "flex" }}
+			>
+				<View className="p-5 bg-card border border-border rounded-lg">
+					<Text className="text-muted-foreground font-semibold text-xs mb-3 tracking-widest uppercase">
+						PERCURSO
+					</Text>
+					<AddressRoute
+						from={{
+							label: originName,
+							description: "Ponto de partida",
+						}}
+						to={{
+							label: destinationName,
+							description: "Destino",
+						}}
+						shouldShowRoute
+						size="lg"
+					/>
+				</View>
+
+				{observation && isDuring ? (
+					<View className="bg-card p-4 border border-border rounded-lg">
 						<Text className="text-muted-foreground font-semibold text-xs mb-3 tracking-widest uppercase">
-							PERCURSO
+							OBSERVAÇÃO DO ESTUDANTE
 						</Text>
-						<AddressRoute
-							from={{
-								label: originName,
-								description: "Ponto de partida",
-							}}
-							to={{
-								label: destinationName,
-								description: "Destino",
-							}}
-							shouldShowRoute
-							size="lg"
+						<Text className="text-foreground leading-relaxed font-medium">
+							"{observation}"
+						</Text>
+					</View>
+				) : (
+					<View className="flex flex-row items-center gap-4 w-full">
+						<StatCard title="Início" value={startTimeText} />
+						<StatCard
+							title="Distância restante"
+							value={remainingDistanceText}
 						/>
 					</View>
-
-					{observation && (
-						<View className="bg-card p-4 border border-border rounded-lg">
-							<Text className="text-muted-foreground font-semibold text-xs mb-3 tracking-widest uppercase">
-								OBSERVAÇÃO DO ESTUDANTE
-							</Text>
-							<Text className="text-foreground leading-relaxed font-medium">
-								"{observation}"
-							</Text>
-						</View>
-					)}
-				</ScrollView>
-			)}
-
-			<View className="px-6 pb-8 pt-4 gap-2">
+				)}
 				{!hasCompleted && (
 					<Button
-						variant="outline"
-						size="sm"
+						size="lg"
 						onPress={() => setShowMap((prev) => !prev)}
 						className="w-full rounded-xl"
 					>
-						<Icon icon={MapIcon} size={16} color="--foreground" />
+						<Icon
+							icon={MapIcon}
+							size={16}
+							color="--primary-foreground"
+						/>
 						<Text className="ml-2">
 							{showMap ? "Ocultar mapa" : "Ver no mapa"}
 						</Text>
 					</Button>
 				)}
+			</ScrollView>
 
+			<View className="px-6 pt-4 gap-2">
 				<Button
 					size="lg"
 					onPress={handleRequest}
 					disabled={isPending}
-					className={cn("w-full rounded-xl", {
+					className={cn("w-full rounded-xl py-4", {
 						"opacity-50": isDuring && isFarFromDestination,
 					})}
 				>

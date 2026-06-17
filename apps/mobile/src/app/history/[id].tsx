@@ -3,7 +3,7 @@ import { Clock, ClockAlert } from "lucide-react-native";
 import { useMemo } from "react";
 import { ActivityIndicator, View } from "react-native";
 
-import { HistoryDetailLayout } from "@/layout/history-details";
+import { HistoryDetailLayout } from "@/layout/history-details-layout";
 
 import ScholarHistoryDetails from "@/components/scholar/history-details";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -94,10 +94,20 @@ function StudentHistoryDetails() {
 		!!request.destinationLocation?.latitude &&
 		!!request.destinationLocation?.longitude;
 
+	// Extract stored route path if available (GeoJSON LineString),
+	// stripping the timestamp (3rd coordinate) from each point.
+	const routeGeojson = attendance?.routeGeojson as
+		| { type: "LineString"; coordinates: Array<[number, number, number]> }
+		| null
+		| undefined;
+	const storedRoutePath: Array<[number, number]> | undefined =
+		routeGeojson?.coordinates?.map(([lng, lat]) => [lng, lat]);
+
 	return (
 		<HistoryDetailLayout
 			title={title}
 			subtitle={subtitle}
+			routePath={storedRoutePath}
 			mapOrigin={
 				hasLocations
 					? {

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 import { requestStatusEnum } from "./enums";
 import { campusLocation } from "./locations";
@@ -86,6 +86,26 @@ export const serviceAttendance = pgTable("service_attendance", {
 	 * evitar recálculos em queries de relatório.
 	 */
 	durationSeconds: integer("duration_seconds"),
+
+	/*
+	 * Rota percorrida pelo bolsista durante o atendimento em formato
+	 * GeoJSON LineString com timestamps como terceira coordenada.
+	 *
+	 * Formato: { type: "LineString", coordinates: [[lng, lat, unix_ms], ...] }
+	 *
+	 * Armazenado como JSONB para consumo direto pelo MapLibre.
+	 * Os pontos são simplificados com Ramer-Douglas-Peucker antes do
+	 * salvamento para reduzir redundância (~80% de redução).
+	 */
+	routeGeojson: jsonb("route_geojson"),
+
+	/*
+	 * Distância total percorrida em metros durante o deslocamento,
+	 * calculada a partir dos pontos da rota no momento da conclusão.
+	 * Armazenada em coluna própria para consultas de relatório sem
+	 * necessidade de desserializar o GeoJSON.
+	 */
+	distanceMeters: integer("distance_meters"),
 
 	/*
 	 * Avaliação do estudante sobre o atendimento (1-5).

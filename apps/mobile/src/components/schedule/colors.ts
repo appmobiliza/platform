@@ -3,8 +3,8 @@
  *
  * Instead of a static mapping of person → color, we use a pool of visually
  * distinct colors and assign them deterministically based on the person's
- * identifier via `getPersonColor()`. This ensures the same person always
- * gets the same color without needing a server-side mapping.
+ * identifier. Colors are assigned to ensure no two people in the same view
+ * share the same color (up to the pool size).
  */
 
 /** A single color entry in the pool. */
@@ -30,23 +30,42 @@ const COLOR_POOL: PersonColor[] = [
 	{ bg: "bg-[#B83B8A]", dot: "bg-[#B83B8A]" },
 ];
 
-/** Simple hash to deterministically pick a color. */
-function hashCode(str: string): number {
-	let hash = 0;
-	for (let i = 0; i < str.length; i++) {
-		const char = str.charCodeAt(i);
-		hash = (hash << 5) - hash + char;
-		hash |= 0;
+/**
+ * Build a deterministic color map for a set of people.
+ * People are sorted alphabetically first, then colors are assigned
+ * round-robin from the pool. This guarantees unique colors for up to
+ * `COLOR_POOL.length` people in the set.
+ */
+export function buildColorMap(people: string[]): Map<string, PersonColor> {
+	const sorted = [...people].sort();
+	const map = new Map<string, PersonColor>();
+	for (let i = 0; i < sorted.length; i++) {
+		map.set(sorted[i] as string, COLOR_POOL[i % COLOR_POOL.length] as PersonColor);
 	}
-	return Math.abs(hash);
+	return map;
 }
 
 /**
  * Returns a color entry for the given person identifier.
- * The same identifier always yields the same color.
+ * Prefer passing a color map from `buildColorMap()` to guarantee unique
+ * colors within a view. Falls back to a hash-based pick when no map is
+ * available.
  */
-export function getPersonColor(person: string): PersonColor {
-	const index = hashCode(person) % COLOR_POOL.length;
+export function getPersonColor(
+	person: string,
+	colorMap?: Map<string, PersonColor>,
+): PersonColor {
+	if (colorMap) {
+		return colorMap.get(person) ?? COLOR_POOL[0] as PersonColor;
+	}
+	// Legacy fallback — simple hash to deterministically pick a color.
+	let hash = 0;
+	for (let i = 0; i < person.length; i++) {
+		const char = person.charCodeAt(i);
+		hash = (hash << 5) - hash + char;
+		hash |= 0;
+	}
+	const index = Math.abs(hash) % COLOR_POOL.length;
 	return COLOR_POOL[index] as PersonColor;
 }
 

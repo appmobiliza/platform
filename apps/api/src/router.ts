@@ -26,6 +26,7 @@ import { router } from "@mobiliza/trpc";
 import { favoritesRouter } from "./routers/favorites.js";
 import { locationsRouter } from "./routers/locations.js";
 import { metricsRouter } from "./routers/metrics.js";
+import { newsRouter } from "./routers/news.js";
 import { notificationsRouter } from "./routers/notifications.js";
 import { profilesRouter } from "./routers/profiles/index.js";
 import { requestsRouter } from "./routers/requests/index.js";
@@ -41,6 +42,7 @@ export const appRouter = router({
 	favorites: favoritesRouter,
 	settings: settingsRouter,
 	shiftLogs: shiftLogsRouter,
+	news: newsRouter,
 });
 
 export type AppRouter = typeof appRouter;

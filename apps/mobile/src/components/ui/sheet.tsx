@@ -8,6 +8,7 @@ import { CheckIcon } from "lucide-react-native";
 import * as React from "react";
 import type { PressableProps, ViewProps } from "react-native";
 import { Pressable, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/components/ui/text";
 
@@ -270,8 +271,14 @@ function SheetHeader({ className, ...props }: ViewProps) {
 }
 
 function SheetFooter({ className, ...props }: ViewProps) {
+	const insets = useSafeAreaInsets();
+	console.log(insets);
 	return (
-		<View className={cn("gap-3 px-4 pb-4 pt-2", className)} {...props} />
+		<View
+			className={cn("gap-3 px-4 pt-2", className)}
+			{...props}
+			style={{ paddingBottom: insets.bottom + 16 }}
+		/>
 	);
 }
 

@@ -84,5 +84,5 @@ export function formatArrivalTime(durationSeconds: number): string {
 	const arrival = new Date(now.getTime() + durationSeconds * 1000);
 	const hours = arrival.getHours().toString().padStart(2, "0");
 	const minutes = arrival.getMinutes().toString().padStart(2, "0");
-	return `Chegada às ${hours}:${minutes}`;
+	return `${hours}:${minutes}`;
 }

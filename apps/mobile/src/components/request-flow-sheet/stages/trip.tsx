@@ -138,8 +138,11 @@ function TripStage({
 
 		if (destinationEta) {
 			accessory = (
-				<View className="bg-primary rounded-md px-3 py-1.5">
-					<Text className="text-primary-foreground text-sm font-semibold">
+				<View className="bg-primary rounded-md px-3 py-1.5 items-center justify-center">
+					<Text className="text-primary-foreground text-xs font-normal">
+						Chegada às
+					</Text>
+					<Text className="text-primary-foreground text-base font-semibold">
 						{destinationEta}
 					</Text>
 				</View>

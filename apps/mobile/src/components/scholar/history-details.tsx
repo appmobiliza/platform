@@ -2,7 +2,7 @@ import { Clock, Edit3, Trash2 } from "lucide-react-native";
 import { useState } from "react";
 import { View } from "react-native";
 
-import { HistoryDetailLayout } from "@/layout/history-details";
+import { HistoryDetailLayout } from "@/layout/history-details-layout";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -76,10 +76,20 @@ export default function ScholarHistoryDetails({ attendance }: DetailProps) {
 		!!request.destinationLocation?.latitude &&
 		!!request.destinationLocation?.longitude;
 
+	// Extract stored route path if available (GeoJSON LineString),
+	// stripping the timestamp (3rd coordinate) from each point.
+	const routeGeojson = attendance.routeGeojson as
+		| { type: "LineString"; coordinates: Array<[number, number, number]> }
+		| null
+		| undefined;
+	const storedRoutePath: Array<[number, number]> | undefined =
+		routeGeojson?.coordinates?.map(([lng, lat]) => [lng, lat]);
+
 	return (
 		<HistoryDetailLayout
 			title={title}
 			subtitle={subtitle}
+			routePath={storedRoutePath}
 			mapOrigin={
 				hasLocations
 					? {
