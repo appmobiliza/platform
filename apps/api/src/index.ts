@@ -15,7 +15,7 @@
 import { auth } from "@mobiliza/auth";
 import { getSession } from "@mobiliza/auth/server";
 import { db } from "@mobiliza/db/client";
-import { notifyUnansweredRequests } from "@mobiliza/domain";
+import { cancelStaleRequests, notifyUnansweredRequests } from "@mobiliza/domain";
 import { apiEnv } from "@mobiliza/env/api";
 import { realtimeEnv } from "@mobiliza/env/realtime";
 import { createTRPCContext, getRealtimeAdapter } from "@mobiliza/trpc";
@@ -103,13 +103,17 @@ app.get("/api/cron/check-timeouts", async (c) => {
 		return c.json({ error: "Unauthorized" }, 401);
 	}
 
-	const result = await notifyUnansweredRequests(
-		db,
-		await getRealtimeAdapter(),
-	);
+	const realtime = await getRealtimeAdapter();
+
+	const [timeoutResult, staleResult] = await Promise.all([
+		notifyUnansweredRequests(db, realtime),
+		cancelStaleRequests(db, realtime),
+	]);
+
 	return c.json({
 		success: true,
-		...result,
+		...timeoutResult,
+		...staleResult,
 		timestamp: new Date().toISOString(),
 	});
 });

@@ -71,6 +71,11 @@ type ScholarPerformanceOutput = Awaited<
 	ReturnType<TRPCCaller["metrics"]["scholarPerformance"]>
 >;
 
+/** Tipo do retorno de `locations.list` */
+type LocationsListOutput = Awaited<
+	ReturnType<TRPCCaller["locations"]["list"]>
+>;
+
 // ─── Funções cacheadas ──────────────────────────────────────────────────────────
 
 /**
@@ -129,6 +134,18 @@ export async function getCachedManagerList(
 	cacheTag("manager-requests");
 
 	return cacheCaller.requests.managerList({ limit });
+}
+
+/**
+ * Locais ativos do campus (público — sem autenticação).
+ * Cache: 10s stale + 30s revalidate — evita sumir ao navegar entre seções.
+ */
+export async function getCachedLocations(): Promise<LocationsListOutput> {
+	"use cache";
+	cacheLife({ stale: 10, revalidate: 30, expire: 120 });
+	cacheTag("locations");
+
+	return cacheCaller.locations.list();
 }
 
 /**

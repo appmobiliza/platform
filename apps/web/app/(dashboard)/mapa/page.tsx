@@ -1,47 +1,41 @@
-"use client";
-import type { CampusLocation } from "@mobiliza/db/schema";
-
 import { MapPin } from "lucide-react";
+import type { Metadata } from "next";
 
 import { CampusMap } from "@/components/map/campus-map";
 
-import { trpc } from "@/providers/trpc-provider";
+import { getCachedLocations } from "@/lib/cached-data";
 
-// export const metadata: Metadata = {
-// 	title: "Ao vivo",
-// };
+export const metadata: Metadata = {
+	title: "Ao vivo",
+};
 
-export default function MapaPage() {
-	const { data: _locations = [] } = trpc.locations.list.useQuery();
-	const locations = _locations as unknown as CampusLocation[];
+export default async function MapaPage() {
+	const locations = await getCachedLocations();
 
 	return (
 		<section className="flex min-w-0 flex-1 flex-col bg-background">
-			<header className="border-b border-border p-4 md:p-6 flex flex-col items-start gap-1 justify-between bg-card">
+			<header className="flex flex-col items-start gap-0 border-b border-border bg-card p-4 md:p-6">
 				<div className="flex items-center gap-2">
-					<MapPin className="size-5 text-foreground" />
+					<MapPin className="size-4 text-foreground" />
 					<h1 className="font-heading text-lg font-medium">
-						Mapa do campus
+						Ao vivo
 					</h1>
 				</div>
 				<p className="text-sm text-muted-foreground">
-					Visualize os pontos de referência cadastrados no campus.
+					Acompanhe os pontos de referência cadastrados em tempo real
 				</p>
 			</header>
 
-			{/* ── Map ────────────────────────────────────────────────────── */}
-			<div className="flex flex-1 px-4 py-4 md:px-6 md:py-6">
-				<div className="relative flex flex-1 overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm">
-					{locations.length === 0 ? (
-						<div className="flex flex-1 items-center justify-center">
-							<p className="text-sm text-muted-foreground">
-								Nenhum local cadastrado.
-							</p>
-						</div>
-					) : (
-						<CampusMap locations={locations} className="flex-1" />
-					)}
-				</div>
+			<div className="flex flex-1">
+				{locations.length === 0 ? (
+					<div className="flex flex-1 items-center justify-center">
+						<p className="text-sm text-muted-foreground">
+							Nenhum local cadastrado.
+						</p>
+					</div>
+				) : (
+					<CampusMap locations={locations} className="flex-1" />
+				)}
 			</div>
 
 			{/* ── Legend ─────────────────────────────────────────────────── */}

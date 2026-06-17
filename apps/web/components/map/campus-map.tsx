@@ -91,6 +91,21 @@ export function CampusMap({
 		);
 	}, [locations, mapLoaded]);
 
+	const [mapKey, setMapKey] = useState(0);
+
+	useEffect(() => {
+		// Force a full MapGL remount each time this component mounts
+		setMapKey((k) => k + 1);
+	}, []);
+
+	// ─── Cleanup: remove map on unmount to prevent WebGL context loss ──────────
+	useEffect(() => {
+		return () => {
+			setMapLoaded(false);
+			mapRef.current?.getMap().remove();
+		};
+	}, []);
+
 	// ─── Map click handler (selection mode or dismiss popup) ────────────
 
 	const handleMapClick = useCallback(
@@ -131,10 +146,7 @@ export function CampusMap({
 
 	return (
 		<div
-			className={cn(
-				"relative h-full w-full overflow-hidden rounded-xl",
-				className,
-			)}
+			className={cn("relative h-full w-full overflow-hidden", className)}
 			data-map-wrapper
 		>
 			{/* Override maplibre popup styles to match the theme */}
@@ -164,6 +176,7 @@ export function CampusMap({
 				}
 			`}</style>
 			<MapGL
+				key={mapKey}
 				ref={mapRef}
 				mapStyle={mapStyle}
 				initialViewState={DEFAULT_VIEW}
@@ -260,13 +273,13 @@ export function CampusMap({
 			</MapGL>
 
 			{/* ── Selection mode hint ──────────────────────────────────── */}
-			{selectionMode && (
+			{/*{selectionMode && (
 				<div className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center">
 					<div className="flex flex-col items-center">
 						<MapPin className="size-6 text-destructive drop-shadow-lg" />
 					</div>
 				</div>
-			)}
+			)}*/}
 		</div>
 	);
 }
