@@ -36,7 +36,7 @@ export default async function SettingsPage() {
 											</span>
 										</AvatarFallback>
 										<AvatarImage
-											src={user?.image}
+											src={user?.image ?? undefined}
 											alt={user?.name}
 										/>
 									</Avatar>
