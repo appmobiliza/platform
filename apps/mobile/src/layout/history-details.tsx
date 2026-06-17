@@ -14,6 +14,13 @@ type HistoryDetailLayoutProps = {
 	/** Optional coordinates to render the route on the map */
 	mapOrigin?: { latitude: number; longitude: number } | null;
 	mapDestination?: { latitude: number; longitude: number } | null;
+	/**
+	 * Optional pre-computed route path to render on the map.
+	 * When provided, it takes precedence over the straight line
+	 * between origin and destination.
+	 * Each entry is [longitude, latitude].
+	 */
+	routePath?: Array<[number, number]>;
 	mapBadges?: ReactNode;
 	profile?: ReactNode;
 	route: AddressRouteProps;
@@ -26,6 +33,7 @@ export function HistoryDetailLayout({
 	subtitle,
 	mapOrigin,
 	mapDestination,
+	routePath,
 	mapBadges,
 	profile,
 	route,
@@ -33,12 +41,17 @@ export function HistoryDetailLayout({
 	contentClassName,
 }: HistoryDetailLayoutProps) {
 	const hasMap = !!mapOrigin && !!mapDestination;
-	const routePath: Array<[number, number]> | undefined = hasMap
-		? [
-				[mapOrigin!.longitude, mapOrigin!.latitude],
-				[mapDestination!.longitude, mapDestination!.latitude],
-			]
-		: undefined;
+
+	// Build route path: prefer stored route (routePath prop), fall back to
+	// a straight line between origin and destination.
+	const mapRoutePath: Array<[number, number]> | undefined =
+		routePath ??
+		(hasMap
+			? [
+					[mapOrigin!.longitude, mapOrigin!.latitude],
+					[mapDestination!.longitude, mapDestination!.latitude],
+				]
+			: undefined);
 
 	return (
 		<View className="flex-1 gap-4">
@@ -52,7 +65,7 @@ export function HistoryDetailLayout({
 				<View className="h-48 w-full rounded-md overflow-hidden">
 					{hasMap ? (
 						<MapView
-							routePath={routePath}
+							routePath={mapRoutePath}
 							interactive={false}
 							showUserLocation={false}
 							initialViewState={{

@@ -2,12 +2,13 @@ import { disabilityTypeLabels } from "@mobiliza/contracts";
 
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, Clock, MapIcon } from "lucide-react-native";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddressRoute } from "@/components/address";
 import MapView from "@/components/map/map-view";
+import { StatCard } from "@/components/stat-card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -216,9 +217,22 @@ export default function TravelScreen() {
 		distanceToDestination !== null &&
 		distanceToDestination > 100;
 
-	// ─── Map state ────────────────────────────────────────────────────────────
+	// ─── Elapsed timer ───────────────────────────────────────────────────────
 
-	const [showMap, setShowMap] = useState(false);
+	const [elapsedMs, setElapsedMs] = useState(0);
+	const startedAtTime = useMemo(() => {
+		if (!attendance?.startedAt) return null;
+		return new Date(attendance.startedAt).getTime();
+	}, [attendance?.startedAt]);
+
+	useEffect(() => {
+		if (!startedAtTime) {
+			setElapsedMs(0);
+			return;
+		}
+
+		const tick = () => setElapsedMs(Date.now() - startedAtTime);
+		tickhowMap, setShowMap] = useState(false);
 
 	// ─── Route path for map (OSRM) ────────────────────────────────────────
 
@@ -372,17 +386,36 @@ export default function TravelScreen() {
 	}
 
 	return (
-		<View className="flex-1 bg-background">
+		<View
+			className="flex-1 bg-background"
+			style={{
+				paddingBottom: insets.bottom + 16,
+			}}
+		>
 			<View
-				className="bg-primary px-6 pb-8 gap-6"
-				style={{ paddingTop: insets.top + 24 }}
+				className="bg-primary px-6 gap-6 pb-8"
+				style={{
+					paddingTop: insets.top + 24,
+				}}
 			>
 				<View className="flex-row items-center justify-between">
-					<ChevronLeft
-						color="#FFFFFF"
-						size={32}
-						onPress={() => router.back()}
-					/>
+					<View className="flex-row items-center justify-between w-full">
+						<ChevronLeft
+							color="#FFFFFF"
+							size={32}
+							onPress={() => router.back()}
+						/>
+						<View className="bg-accent/50 rounded-full px-4 py-2 flex-row gap-2.5 items-center justify-center">
+							<Clock
+								color="#FFFFFF"
+								size={16}
+								className="mr-1.5"
+							/>
+							<Text className="text-white text-base font-normal">
+								00:00
+							</Text>
+						</View>
+					</View>
 
 					{isDuring && !hasCompleted && (
 						<View className="bg-primary-foreground/20 px-3 py-1.5 rounded-full flex-row items-center">
@@ -421,7 +454,36 @@ export default function TravelScreen() {
 			</View>
 
 			{showMap ? (
-				<View className="flex-1 px-6 pt-6">
+				<View className="flex-1 px-6 pt-6 gap-4">
+					<View className="flex flex-row items-center gap-4 w-full">
+						<StatCard
+							title="Início"
+							value={
+								attendance?.startedAt?.toLocaleString() ?? "..."
+							}
+						/>
+						<StatCard
+							title="Distância restante"
+							value={
+								attendance?.distanceRemaining?.toLocaleString() ??
+								"..."
+							}
+						/>
+					</View>
+					<Button
+						size="lg"
+						onPress={() => setShowMap((prev) => !prev)}
+						className="w-full rounded-xl"
+					>
+						<Icon
+							icon={MapIcon}
+							size={16}
+							color="--primary-foreground"
+						/>
+						<Text className="ml-2">
+							{showMap ? "Ocultar mapa" : "Ver no mapa"}
+						</Text>
+					</Button>
 					<View className="flex-1 rounded-lg overflow-hidden border border-border">
 						<MapView
 							stage="trip"
@@ -475,7 +537,7 @@ export default function TravelScreen() {
 						/>
 					</View>
 
-					{observation && (
+					{observation && isDuring ? (
 						<View className="bg-card p-4 border border-border rounded-lg">
 							<Text className="text-muted-foreground font-semibold text-xs mb-3 tracking-widest uppercase">
 								OBSERVAÇÃO DO ESTUDANTE
@@ -484,30 +546,49 @@ export default function TravelScreen() {
 								"{observation}"
 							</Text>
 						</View>
+					) : (
+						<View className="flex flex-row items-center gap-4 w-full">
+							<StatCard
+								title="Início"
+								value={
+									attendance?.startedAt?.toLocaleString() ??
+									"..."
+								}
+							/>
+							<StatCard
+								title="Distância restante"
+								value={
+									attendance?.distanceRemaining?.toLocaleString() ??
+									"..."
+								}
+							/>
+						</View>
+					)}
+					{!hasCompleted && (
+						<Button
+							size="lg"
+							onPress={() => setShowMap((prev) => !prev)}
+							className="w-full rounded-xl"
+						>
+							<Icon
+								icon={MapIcon}
+								size={16}
+								color="--primary-foreground"
+							/>
+							<Text className="ml-2">
+								{showMap ? "Ocultar mapa" : "Ver no mapa"}
+							</Text>
+						</Button>
 					)}
 				</ScrollView>
 			)}
 
-			<View className="px-6 pb-8 pt-4 gap-2">
-				{!hasCompleted && (
-					<Button
-						variant="outline"
-						size="sm"
-						onPress={() => setShowMap((prev) => !prev)}
-						className="w-full rounded-xl"
-					>
-						<Icon icon={MapIcon} size={16} color="--foreground" />
-						<Text className="ml-2">
-							{showMap ? "Ocultar mapa" : "Ver no mapa"}
-						</Text>
-					</Button>
-				)}
-
+			<View className="px-6 pt-4 gap-2">
 				<Button
 					size="lg"
 					onPress={handleRequest}
 					disabled={isPending}
-					className={cn("w-full rounded-xl", {
+					className={cn("w-full rounded-xl py-4", {
 						"opacity-50": isDuring && isFarFromDestination,
 					})}
 				>

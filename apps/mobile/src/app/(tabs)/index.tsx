@@ -89,7 +89,7 @@ function StudentHome({ insets }: StudentHomeProps) {
 	const router = useRouter();
 
 	const networkState = useNetworkState();
-	const hasConnection = networkState.isConnected;
+	const hasConnection = networkState.isConnected ?? true;
 
 	// ─── News (cache-first, background refresh) ────────────────────────────
 	// Show cached news immediately to avoid layout shift. Fresh data is
@@ -110,7 +110,6 @@ function StudentHome({ insets }: StudentHomeProps) {
 	);
 
 	useEffect(() => {
-		console.log("freshNews", freshNews);
 		if (!freshNews) return;
 		const mapped: NewsItem[] = freshNews.map((n) => ({
 			image: n.imageUrl ?? "",
