@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Logo } from "@/assets/logo";
 
-import { NewsCarousel, type NewsItem } from "@/components/news-carousel";
+import { NewsCarousel } from "@/components/news-carousel";
 import { NoConnection } from "@/components/no-connection";
 import { PlaceCard } from "@/components/place-card";
 import type { Place } from "@/components/request-flow-sheet/types";
@@ -28,7 +28,6 @@ import {
 	setNearestPoint,
 	useNearestPoint,
 } from "@/stores/location-store";
-import { getCachedNews, setCachedNews } from "@/stores/news-store";
 import { getRequestState } from "@/stores/request-store";
 import {
 	resolveRouteEntry,
@@ -89,31 +88,6 @@ function StudentHome({ insets }: StudentHomeProps) {
 
 	const networkState = useNetworkState();
 	const hasConnection = networkState.isConnected;
-
-	// ─── News (cache-first, background refresh) ────────────────────────────
-	// Show cached news immediately to avoid layout shift. Fresh data is
-	// fetched in background and persisted to cache, but never updates the
-	// displayed state reactively — changes appear only on the next app open.
-
-	const [newsItems] = useState<NewsItem[]>(() => getCachedNews());
-
-	const { data: freshNews } = trpc.news.list.useQuery(
-		{ limit: 5 },
-		{
-			staleTime: 30 * 60 * 1000,
-			gcTime: 60 * 60 * 1000,
-		},
-	);
-
-	useEffect(() => {
-		if (!freshNews) return;
-		const mapped: NewsItem[] = freshNews.map((n) => ({
-			image: n.imageUrl ?? "",
-			label: n.title,
-			link: n.url,
-		}));
-		setCachedNews(mapped);
-	}, [freshNews]);
 
 	const navigateWithDestination = useCallback(
 		(destinationId: string) => {
@@ -237,7 +211,7 @@ function StudentHome({ insets }: StudentHomeProps) {
 					<Text className="font-bold text-lg mb-3 pl-4">
 						Notícias
 					</Text>
-					<NewsCarousel items={newsItems} autoScroll />
+					<NewsCarousel autoScroll />
 				</View>
 
 				{/* Rotas Frequentes */}
