@@ -16,6 +16,7 @@ import { toast } from "@/components/ui/toast";
 
 import { useOsrmRoute } from "@/hooks/use-osrm-route";
 import { usePositionBroadcaster } from "@/hooks/use-position-broadcaster";
+import { useRouteTracking } from "@/hooks/use-route-tracking";
 import { useStudentTripPosition } from "@/hooks/use-student-trip-position";
 import { useUserLocation } from "@/hooks/use-user-location";
 
@@ -155,6 +156,16 @@ export default function TravelScreen() {
 	const isDuring = !!attendance?.startedAt;
 	const hasCompleted = !!attendance?.completedAt;
 
+	// ─── Route tracking ─────────────────────────────────────────────────────────
+	// Accumulate GPS points while the attendance is in progress.
+	// Provides simplified GeoJSON and total distance on completion.
+
+	const { getRouteGeojson, getDistanceMeters, resetRoute } = useRouteTracking(
+		{
+			enabled: isDuring && !hasCompleted,
+		},
+	);
+
 	// ─── Scholar location tracking ────────────────────────────────────────────
 
 	const userLocation = useUserLocation({ enabled: !hasCompleted });
@@ -236,12 +247,22 @@ export default function TravelScreen() {
 
 	const handleStart = () => {
 		if (!requestId) return;
+		resetRoute();
 		startAttendance({ requestId });
 	};
 
 	const handleComplete = () => {
 		if (!requestId) return;
-		completeAttendance({ requestId });
+
+		const routeGeojson = getRouteGeojson();
+		const distanceMeters = getDistanceMeters();
+
+		completeAttendance({
+			requestId,
+			routeGeojson:
+				routeGeojson.coordinates.length > 0 ? routeGeojson : undefined,
+			distanceMeters: distanceMeters > 0 ? distanceMeters : undefined,
+		});
 	};
 
 	const handleRequest = () => {
