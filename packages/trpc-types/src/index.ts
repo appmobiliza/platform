@@ -5,10 +5,12 @@
  * para type-safety de ponta a ponta sem arrastar dependências de servidor.
  */
 
+import type { AppRouter } from "@mobiliza/api/router";
+
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 
 // Re-exporta apenas o tipo AppRouter — "import type" é removido em runtime
-export type { AppRouter } from "@mobiliza/api/router";
+export type { AppRouter };
 
 // Utilitários de tipo para o cliente
 export type RouterInputs = inferRouterInputs<AppRouter>;
