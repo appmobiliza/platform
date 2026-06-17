@@ -488,6 +488,23 @@ function useRequestFlow() {
 		// searchState (searching, unattended ou error). Isso evita que uma
 		// solicitação órfã no backend bloqueie a criação de uma nova.
 		if (activeRequestId) {
+			const stage = activeStageRef.current;
+
+			if (stage === "trip") {
+				toast.info("Deslocamento cancelado", {
+					description:
+						"Seu deslocamento foi cancelado.",
+				});
+			} else if (
+				stage === "searching" ||
+				stage === "start-confirm"
+			) {
+				toast.info("Solicitação cancelada", {
+					description:
+						"Sua solicitação de deslocamento foi cancelada.",
+				});
+			}
+
 			safeCancelRequest(activeRequestId);
 		}
 
@@ -531,6 +548,10 @@ function useRequestFlow() {
 				// Cancela a solicitação no backend se o usuário fechou a busca
 				// (inclui unattended e error, não apenas searching)
 				if (stage === "searching" && activeRequestId) {
+					toast.info("Solicitação cancelada", {
+						description:
+							"Sua solicitação de deslocamento foi cancelada.",
+					});
 					safeCancelRequest(activeRequestId);
 				}
 
