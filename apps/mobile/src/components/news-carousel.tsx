@@ -24,10 +24,6 @@ import { Text } from "@/components/ui/text";
 
 import { useAccessibilityPreferences } from "@/hooks/use-accessibility-preferences";
 
-import { trpc } from "@/lib/trpc/client";
-
-import { getCachedNews, setCachedNews } from "@/stores/news-store";
-
 export type NewsItem = {
 	image: string;
 	label: string;
@@ -35,10 +31,9 @@ export type NewsItem = {
 };
 
 interface NewsCarouselProps {
-	items?: NewsItem[];
+	items: NewsItem[];
 	autoScroll?: boolean;
 	autoScrollIntervalMs?: number;
-	limit?: number;
 }
 
 const HORIZONTAL_PADDING = 16;
@@ -74,41 +69,10 @@ function getNextIndex(currentIndex: number, lastIndex: number) {
 }
 
 export const NewsCarousel = ({
-	items: propItems,
+	items,
 	autoScroll = false,
 	autoScrollIntervalMs = DEFAULT_AUTO_SCROLL_INTERVAL_MS,
-	limit = 5,
 }: NewsCarouselProps) => {
-	// ─── Cache-first data fetching ───────────────────────────────────────
-	// When no items are passed as props, the carousel owns the data:
-	// cached items are shown immediately (avoiding layout shift), while a
-	// background query refreshes the cache for next launch.
-
-	const [cachedItems] = useState<NewsItem[]>(
-		() => propItems ?? getCachedNews(),
-	);
-
-	const { data: freshNews } = trpc.news.list.useQuery(
-		{ limit },
-		{
-			staleTime: 30 * 60 * 1000,
-			gcTime: 60 * 60 * 1000,
-			enabled: !propItems,
-		},
-	);
-
-	useEffect(() => {
-		if (!freshNews || propItems) return;
-		const mapped: NewsItem[] = freshNews.map((n) => ({
-			image: n.imageUrl ?? "",
-			label: n.title,
-			link: n.url,
-		}));
-		setCachedNews(mapped);
-	}, [freshNews, propItems]);
-
-	const items = propItems ?? cachedItems;
-
 	const isWeb = Platform.OS === "web";
 	const webScrollSnapStyle = getWebScrollSnapStyle(isWeb);
 	const { width } = useWindowDimensions();
