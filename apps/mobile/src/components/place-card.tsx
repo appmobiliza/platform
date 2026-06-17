@@ -20,6 +20,7 @@ interface PlaceCardProps {
 	size?: "default" | "accessibility";
 	onPress?: () => void;
 	children?: React.ReactNode;
+	disabled?: boolean;
 }
 
 export const PlaceCard = ({
@@ -31,6 +32,7 @@ export const PlaceCard = ({
 	size = "default",
 	onPress,
 	children,
+	disabled,
 }: PlaceCardProps) => {
 	const {
 		as: IconComponent = MapPin,
@@ -47,10 +49,14 @@ export const PlaceCard = ({
 			accessibilityLabel={`${title}: ${description}`}
 			accessibilityHint="Duplo toque para ver detalhes"
 			accessibilityRole="button"
+			disabled={disabled}
 			className={cn(
-				"bg-card rounded-lg flex-row items-center justify-between active:opacity-70",
-				isAccessibility ? "p-5 gap-5" : "p-3 gap-4",
-				variant === "bordered" && "border border-border",
+				"bg-card rounded-lg flex-row items-center justify-between active:opacity-70 p-3 gap-4",
+				{
+					"p-5 gap-5": isAccessibility,
+					"border border-border": variant === "bordered",
+					"opacity-50": disabled,
+				},
 				className,
 			)}
 		>

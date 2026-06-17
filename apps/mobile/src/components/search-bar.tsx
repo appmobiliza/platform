@@ -1,8 +1,10 @@
-import { Search } from "lucide-react-native";
+import { Search, SearchAlert } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { useAccessibilityPreferences } from "@/hooks/use-accessibility-preferences";
+
+import { cn } from "@/lib/utils";
 
 import { Icon } from "./ui/icon";
 
@@ -14,30 +16,45 @@ interface SearchBarProps {
 	examples?: string[];
 	placeholder?: string;
 	onPress?: () => void;
+	hasConnection?: boolean;
 }
 
 interface SearchBarContentProps {
 	text: string;
 	onPress?: () => void;
 	accessibilityHint: string;
+	disabled?: boolean;
 }
 
 function SearchBarContent({
 	text,
 	onPress,
 	accessibilityHint,
+	disabled,
 }: SearchBarContentProps) {
 	return (
 		<Pressable
 			onPress={onPress}
+			disabled={disabled}
 			accessibilityRole="button"
-			accessibilityLabel="Abrir busca"
+			accessibilityLabel={
+				disabled
+					? "Busca indisponível pois não há conexão com a internet"
+					: "Abrir busca"
+			}
 			accessibilityHint={accessibilityHint}
 			className="w-full"
 		>
-			<View className="relative h-14 w-full flex-row items-center rounded-full border border-border bg-card px-4 shadow-sm shadow-black/5 dark:border-transparent dark:bg-input/50">
+			<View
+				className={cn(
+					"relative h-14 w-full flex-row items-center rounded-full border border-border bg-card px-4 shadow-sm shadow-black/5 dark:border-transparent dark:bg-input/50",
+					{
+						"opacity-50": disabled,
+					},
+				)}
+			>
 				<Icon
-					icon={Search}
+					icon={disabled ? SearchAlert : Search}
 					size={20}
 					color="--foreground"
 					style={{ marginRight: 12 }}
@@ -48,7 +65,7 @@ function SearchBarContent({
 					numberOfLines={1}
 					ellipsizeMode="tail"
 				>
-					{text}
+					{disabled ? "Sem conexão com a internet" : text}
 				</Text>
 			</View>
 		</Pressable>
@@ -119,7 +136,12 @@ function AnimatedSearchBar({
 	);
 }
 
-export function SearchBar({ examples, placeholder, onPress }: SearchBarProps) {
+export function SearchBar({
+	examples,
+	placeholder,
+	onPress,
+	hasConnection = true,
+}: SearchBarProps) {
 	const activeExamples = examples?.length ? examples : [];
 
 	const { reduceMotionEnabled, screenReaderEnabled } =
@@ -132,12 +154,13 @@ export function SearchBar({ examples, placeholder, onPress }: SearchBarProps) {
 
 	const accessibilityHint = "Abre a tela de solicitação";
 
-	if (useStaticPlaceholder) {
+	if (useStaticPlaceholder || !hasConnection) {
 		return (
 			<SearchBarContent
 				text={placeholder ?? DEFAULT_PLACEHOLDER}
 				onPress={onPress}
 				accessibilityHint={accessibilityHint}
+				disabled={!hasConnection}
 			/>
 		);
 	}

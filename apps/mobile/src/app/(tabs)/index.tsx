@@ -1,4 +1,5 @@
 import * as Location from "expo-location";
+import { useNetworkState } from "expo-network";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Clock, MapPin } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -8,6 +9,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Logo } from "@/assets/logo";
 
 import { NewsCarousel } from "@/components/news-carousel";
+import { NoConnection } from "@/components/no-connection";
 import { PlaceCard } from "@/components/place-card";
 import type { Place } from "@/components/request-flow-sheet/types";
 import { ScholarHome } from "@/components/scholar/home";
@@ -116,6 +118,9 @@ type StudentHomeProps = {
 function StudentHome({ insets }: StudentHomeProps) {
 	const router = useRouter();
 
+	const networkState = useNetworkState();
+	const hasConnection = networkState.isConnected;
+
 	// ─── Hydrate from API on first launch (existing user, new install) ────
 	const hydrationDoneRef = useRef(false);
 
@@ -212,9 +217,16 @@ function StudentHome({ insets }: StudentHomeProps) {
 							"Faculdade de Letras",
 							"Instituto de Ciências Biológicas",
 						]}
+						hasConnection={hasConnection}
 						onPress={() => router.push("/request")}
 					/>
 				</View>
+
+				{!hasConnection && (
+					<View className="px-4">
+						<NoConnection />
+					</View>
+				)}
 
 				{/* Locais Recentes */}
 				{hasRecentPlaces && (
@@ -230,6 +242,7 @@ function StudentHome({ insets }: StudentHomeProps) {
 								onPress={() =>
 									navigateWithDestination(recentPrimary.id)
 								}
+								disabled={!hasConnection}
 							/>
 						)}
 						{recentSecondary.length > 0 && (
@@ -246,6 +259,7 @@ function StudentHome({ insets }: StudentHomeProps) {
 										onPress={() =>
 											navigateWithDestination(dest.id)
 										}
+										disabled={!hasConnection}
 									/>
 								))}
 							</View>
@@ -279,6 +293,7 @@ function StudentHome({ insets }: StudentHomeProps) {
 									onPress={() =>
 										navigateWithDestination(dest.id)
 									}
+									disabled={!hasConnection}
 								/>
 							))}
 						</View>
