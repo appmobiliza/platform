@@ -22,6 +22,7 @@ import { formatRelativeDate } from "@/lib/date";
 import { haversineMeters } from "@/lib/geo/distance";
 import { trpc } from "@/lib/trpc/client";
 
+import { newsItems as fallbackNewsItems } from "@/constants/news";
 import {
 	getCachedCampusLocations,
 	setCachedCampusLocations,
@@ -95,7 +96,10 @@ function StudentHome({ insets }: StudentHomeProps) {
 	// fetched in background and persisted to cache, but never updates the
 	// displayed state reactively — changes appear only on the next app open.
 
-	const [newsItems] = useState<NewsItem[]>(() => getCachedNews());
+	const [newsItems] = useState<NewsItem[]>(() => {
+		const cached = getCachedNews();
+		return cached.length > 0 ? cached : (fallbackNewsItems as NewsItem[]);
+	});
 
 	const { data: freshNews } = trpc.news.list.useQuery(
 		{ limit: 5 },
@@ -106,6 +110,7 @@ function StudentHome({ insets }: StudentHomeProps) {
 	);
 
 	useEffect(() => {
+		console.log("freshNews", freshNews);
 		if (!freshNews) return;
 		const mapped: NewsItem[] = freshNews.map((n) => ({
 			image: n.imageUrl ?? "",

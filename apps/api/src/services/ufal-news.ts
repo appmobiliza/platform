@@ -20,22 +20,14 @@ export interface FetchUfalNewsOptions {
 	limit?: number
 }
 
-const DEFAULT_TAGS = ["acessibilidade", "inclusÃo", "surdo", "PcD", "política de acessibilidade", "NAC"];
+const DEFAULT_TAGS = ["acessibilidade", "inclusão", "surdo", "PcD", "política de acessibilidade", "NAC"];
 
-/**
- * Busca notícias do portal da UFAL.
- *
- * Faz uma requisição GET para o endpoint `@search` do Plone, que retorna
- * JSON com os campos solicitados via `metadata_fields`. A resposta inclui
- * `image_scales` com URLs de thumbnails.
- */
 export async function fetchUfalNews(
 	options: FetchUfalNewsOptions = {},
 ): Promise<UfalNews[]> {
 	const { tags = DEFAULT_TAGS, limit = 10 } = options;
 
 	const params = new URLSearchParams({
-		portal_type: "Noticia",
 		sort_on: "Date",
 		sort_order: "reverse",
 		b_size: String(limit),
@@ -43,14 +35,11 @@ export async function fetchUfalNews(
 	});
 
 	for (const tag of tags) {
-		params.append("Subject:list", tag);
+		params.append("Subject", tag);
 	}
 
 	const url = `https://noticias.ufal.br/@search?${params}`;
-
-	const res = await fetch(url, {
-		headers: { Accept: "application/json" },
-	});
+	const res = await fetch(url, { headers: { Accept: "application/json" } });
 
 	if (!res.ok) {
 		throw new Error(`Falha ao buscar notícias UFAL: ${res.status} ${res.statusText}`);
@@ -62,26 +51,23 @@ export async function fetchUfalNews(
 			title: string;
 			image_scales?: {
 				image?: Array<{
-					download: string;
-					width: number;
-					height: number;
+					scales: Record<string, { download: string; width: number; height: number }>;
 				}>;
 			};
 		}>;
 	};
 
 	return data.items.map((item): UfalNews => {
-		const scales = item.image_scales?.image ?? [];
-		// Pega a primeira thumbnail com largura <= 400px (ideal para mobile),
-		// ou a primeira disponível se nenhuma for pequena.
-		const thumb = scales.find((s) => s.width <= 400) ?? scales[0];
+		const scales = item.image_scales?.image?.[0]?.scales ?? {};
+
+		// Preferência: preview (400px) > mini (200px) > teaser (600px) > qualquer um
+		const thumb =
+			scales["preview"] ?? scales["mini"] ?? scales["teaser"] ?? Object.values(scales)[0];
 
 		return {
 			title: item.title,
 			url: item["@id"],
-			imageUrl: thumb
-				? `${item["@id"]}/${thumb.download}`
-				: null,
+			imageUrl: thumb ? `${item["@id"]}/${thumb.download}` : null,
 		};
 	});
 }
