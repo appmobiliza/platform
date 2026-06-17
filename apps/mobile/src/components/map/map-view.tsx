@@ -381,10 +381,19 @@ export default function MapView({
 
 	const showRoute =
 		stage === "start-confirm" || stage === "trip" || !!routePath;
-	const showOriginMarker = stage === "start-confirm" || stage === "trip";
-	const showDestinationMarker = stage === "trip";
+	const showOriginMarker =
+		stage === "start-confirm" || stage === "trip" || !!routePath;
+	const showDestinationMarker = stage === "trip" || !!routePath;
 
 	const primaryColor = "#005E65";
+
+	// ─── Derived marker positions (from props or route path) ──────────────
+	const originPos: [number, number] | null = origin
+		? [origin.longitude, origin.latitude]
+		: (routePath?.[0] ?? null);
+	const destPos: [number, number] | null = destination
+		? [destination.longitude, destination.latitude]
+		: (routePath?.[routePath.length - 1] ?? null);
 
 	// Camera initial view state
 	const cameraInitialState = {
@@ -448,10 +457,10 @@ export default function MapView({
 				)}
 
 				{/* ── Origin marker ─────────────────────────────────────── */}
-				{showOriginMarker && origin && (
+				{showOriginMarker && originPos && (
 					<Marker
 						id="origin-marker"
-						lngLat={[origin.longitude, origin.latitude]}
+						lngLat={originPos}
 						anchor="bottom"
 					>
 						<View className="items-center justify-center">
@@ -465,12 +474,8 @@ export default function MapView({
 				)}
 
 				{/* ── Destination marker ────────────────────────────────── */}
-				{showDestinationMarker && destination && (
-					<Marker
-						id="dest-marker"
-						lngLat={[destination.longitude, destination.latitude]}
-						anchor="bottom"
-					>
+				{showDestinationMarker && destPos && (
+					<Marker id="dest-marker" lngLat={destPos} anchor="bottom">
 						<View className="items-center justify-center">
 							<ToMarker
 								width={28}

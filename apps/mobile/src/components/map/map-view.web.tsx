@@ -13,13 +13,14 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View } from "react-native";
 
+import _dark from "@/assets/map-styles/dark.json";
+
 import { Text } from "@/components/ui/text";
 
 import { useMapLogic } from "@/hooks/use-map-logic";
+
 import type { ScholarPosition } from "@/lib/geo/map-utils";
 import { useAppColorScheme } from "@/lib/theme/use-app-color-scheme";
-
-import _dark from "@/assets/map-styles/dark.json";
 
 const dark = _dark as StyleSpecification;
 
@@ -292,35 +293,49 @@ export default function MapView({
 						</Source>
 					)}
 
-				{/* ── Origin marker (start-confirm / route) ──────────────── */}
-				{(stage === "start-confirm" || stage === "trip") && origin && (
-					<Marker
-						longitude={origin.longitude}
-						latitude={origin.latitude}
-						anchor="bottom"
-					>
-						<FromMarker
-							width={28}
-							height={34}
-							fill="var(--primary)"
-						/>
-					</Marker>
-				)}
+				{/* ── Origin marker (start-confirm / route / routePath) ──── */}
+				{(stage === "start-confirm" || stage === "trip" || routePath) &&
+					(origin || routePath) && (
+						<Marker
+							longitude={
+								origin?.longitude ?? routePath?.[0]?.[0] ?? 0
+							}
+							latitude={
+								origin?.latitude ?? routePath?.[0]?.[1] ?? 0
+							}
+							anchor="bottom"
+						>
+							<FromMarker
+								width={28}
+								height={34}
+								fill="var(--primary)"
+							/>
+						</Marker>
+					)}
 
-				{/* ── Destination marker (trip / route) ──────────────────── */}
-				{stage === "trip" && destination && (
-					<Marker
-						longitude={destination.longitude}
-						latitude={destination.latitude}
-						anchor="bottom"
-					>
-						<ToMarker
-							width={28}
-							height={34}
-							fill="var(--primary)"
-						/>
-					</Marker>
-				)}
+				{/* ── Destination marker (trip / routePath) ──────────────── */}
+				{(stage === "trip" || routePath) &&
+					(destination || routePath) && (
+						<Marker
+							longitude={
+								destination?.longitude ??
+								routePath?.[routePath.length - 1]?.[0] ??
+								0
+							}
+							latitude={
+								destination?.latitude ??
+								routePath?.[routePath.length - 1]?.[1] ??
+								0
+							}
+							anchor="bottom"
+						>
+							<ToMarker
+								width={28}
+								height={34}
+								fill="var(--primary)"
+							/>
+						</Marker>
+					)}
 
 				{/* ── Scholar positions (searching / trip) ───────────────── */}
 				{allScholarPositions.map((sp) => {
