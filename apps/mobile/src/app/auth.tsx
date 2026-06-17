@@ -20,6 +20,7 @@ import {
 } from "@/lib/auth/store";
 import { trpc } from "@/lib/trpc/client";
 
+import { hydrateRouteHistoryFromApi } from "@/stores/route-history-store";
 import { toSessionUser } from "@/types/session";
 
 export default function Auth() {
@@ -127,6 +128,22 @@ export default function Auth() {
 				)?.simplifiedInterface === true;
 
 			console.log("hasStudentProfile: ", hasStudentProfile);
+
+			// Hidrata o histórico de rotas antes de navegar para a home,
+			// evitando um waterfall extra de requisição ao montar a tela inicial.
+			if (hasStudentProfile) {
+				try {
+					const historyData =
+						await trpcUtils.requests.studentHistory.fetchInfinite({
+							limit: 50,
+						});
+					const allItems = historyData.pages.flatMap((p) => p.items);
+					hydrateRouteHistoryFromApi(allItems);
+				} catch {
+					// Falha ao buscar histórico não impede o login;
+					// o histórico será construído localmente com as viagens futuras.
+				}
+			}
 
 			// Cacheia os dados do usuário e o estado do perfil, depois
 			// redireciona explicitamente para o destino correto.

@@ -31,8 +31,6 @@ import {
 import { getCachedNews, setCachedNews } from "@/stores/news-store";
 import { getRequestState } from "@/stores/request-store";
 import {
-	getRouteHistory,
-	hydrateRouteHistoryFromApi,
 	resolveRouteEntry,
 	useRouteHistory,
 } from "@/stores/route-history-store";
@@ -116,35 +114,6 @@ function StudentHome({ insets }: StudentHomeProps) {
 		}));
 		setCachedNews(mapped);
 	}, [freshNews]);
-
-	// ─── Hydrate from API on first launch (existing user, new install) ────
-	const hydrationDoneRef = useRef(false);
-
-	const { data: hydrationData } =
-		trpc.requests.studentHistory.useInfiniteQuery(
-			{ limit: 50 },
-			{
-				getNextPageParam: (lastPage) => lastPage.nextCursor,
-				enabled:
-					!getRouteHistory().hydrated && !hydrationDoneRef.current,
-				staleTime: Infinity,
-				gcTime: 0,
-			},
-		);
-
-	useEffect(() => {
-		if (
-			hydrationData?.pages &&
-			!hydrationDoneRef.current &&
-			!getRouteHistory().hydrated
-		) {
-			const allItems = hydrationData.pages.flatMap((p) => p.items);
-			if (allItems.length > 0) {
-				hydrateRouteHistoryFromApi(allItems);
-			}
-			hydrationDoneRef.current = true;
-		}
-	}, [hydrationData]);
 
 	const navigateWithDestination = useCallback(
 		(destinationId: string) => {
