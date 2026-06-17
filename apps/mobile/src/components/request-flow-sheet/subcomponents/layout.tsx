@@ -1,6 +1,7 @@
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import type * as React from "react";
 import { View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
 	SheetDescription,
@@ -89,6 +90,7 @@ function StageSheet({
 	children,
 	colorScheme,
 }: StageSheetProps) {
+	const insets = useSafeAreaInsets();
 	const isDynamic = snapPoints.length === 0;
 
 	return (
@@ -102,6 +104,9 @@ function StageSheet({
 			backgroundStyle={{ backgroundColor: THEME[colorScheme].card }}
 			handleIndicatorStyle={{
 				backgroundColor: THEME[colorScheme].muted,
+			}}
+			style={{
+				paddingBottom: insets.bottom,
 			}}
 		>
 			{isDynamic ? (

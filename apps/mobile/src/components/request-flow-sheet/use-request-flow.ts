@@ -20,6 +20,7 @@ import {
 	getRequestState,
 	setRequestState,
 } from "@/stores/request-store";
+import { addRouteToHistory } from "@/stores/route-history-store";
 
 import type { Place, Stage } from "./types";
 
@@ -67,10 +68,10 @@ function useRequestFlow() {
 	const [destination, setDestination] = React.useState<Place | null>(null);
 
 	// ─── Pre-set destination from URL query param (from PlaceCard on Home) ──
-	const { destination: destinationParam } = useLocalSearchParams<{
-		destination?: string;
+	const { destinationId } = useLocalSearchParams<{
+		destinationId?: string;
 	}>();
-	const preselectedDestRef = React.useRef(destinationParam ?? undefined);
+	const preselectedDestRef = React.useRef(destinationId ?? undefined);
 	const [message, setMessage] = React.useState("");
 
 	// Estado da busca
@@ -424,9 +425,7 @@ function useRequestFlow() {
 						await utils.requests.studentHistory.fetchInfinite({
 							limit: 50,
 						});
-					const allItems = history.pages.flatMap(
-						(p) => p.items,
-					);
+					const allItems = history.pages.flatMap((p) => p.items);
 					const active = allItems.find(
 						(item) =>
 							item.status === "pending" ||
@@ -457,7 +456,16 @@ function useRequestFlow() {
 				cancelAllNotifications();
 			}
 		},
-		[createRequest, message, transitionTo, origin, destination, utils, cancelRequest, clearTimers],
+		[
+			createRequest,
+			message,
+			transitionTo,
+			origin,
+			destination,
+			utils,
+			cancelRequest,
+			clearTimers,
+		],
 	);
 
 	const exitFlow = React.useCallback(() => {
@@ -587,6 +595,10 @@ function useRequestFlow() {
 
 	// ─── Inscrição em eventos de realtime ──────────────────────────────────
 
+	// Ref para capturar o destination sem disparar re-efeitos
+	const destinationRef_ = React.useRef(destination);
+	destinationRef_.current = destination;
+
 	React.useEffect(() => {
 		if (!activeRequestId) return;
 
@@ -628,6 +640,16 @@ function useRequestFlow() {
 			const onCompleted = () => {
 				setActiveRequestId(null);
 				utils.requests.studentHistory.invalidate();
+
+				// Update local route history store
+				const currentDest = destinationRef_.current;
+				if (currentDest) {
+					addRouteToHistory(
+						currentDest.id ?? currentDest.name,
+						currentDest.abbreviation || currentDest.name,
+					);
+				}
+
 				toast.success("Deslocamento concluído", {
 					description:
 						"Seu deslocamento foi finalizado com sucesso. Obrigado por usar o Mobiliza!",
@@ -725,16 +747,36 @@ function useRequestFlow() {
 		[campusLocationItems],
 	);
 
+	// Map by ID for direct lookup from PlaceCard navigation
+	const campusLocationsById = React.useMemo(
+		() => new Map(campusLocations.map((l) => [l.id, l])),
+		[campusLocations],
+	);
+
 	// ─── Auto-set destination when a name was passed via URL (from Home PlaceCard) ──
 	//
 	// Inserted before the stage-opening openStage call so the sheet presents
 	// with the destination already filled.
 	React.useEffect(() => {
-		const name = preselectedDestRef.current;
-		if (!name || destination) return;
+		const preselected = preselectedDestRef.current;
+		if (!preselected || destination) return;
 
-		// Try exact name match first, then abbreviation match
-		const byName = campusLocationsByName.get(name);
+		// 1. Try exact ID match first (most reliable)
+		const byId = campusLocationsById.get(preselected);
+		if (byId) {
+			setDestination({
+				id: byId.id,
+				name: byId.name,
+				abbreviation: byId.abbreviation,
+				latitude: byId.latitude,
+				longitude: byId.longitude,
+			});
+			preselectedDestRef.current = undefined;
+			return;
+		}
+
+		// 2. Try exact name match
+		const byName = campusLocationsByName.get(preselected);
 		if (byName) {
 			setDestination({
 				name: byName.name,
@@ -746,9 +788,9 @@ function useRequestFlow() {
 			return;
 		}
 
-		// Fallback to matching by abbreviation
+		// 3. Fallback to matching by abbreviation
 		const byAbbrev = campusLocationItems.find(
-			(l) => l.abbreviation?.toLowerCase() === name.toLowerCase(),
+			(l) => l.abbreviation?.toLowerCase() === preselected.toLowerCase(),
 		);
 		if (byAbbrev) {
 			setDestination({
@@ -759,7 +801,7 @@ function useRequestFlow() {
 			});
 			preselectedDestRef.current = undefined;
 		}
-	}, [destination, campusLocationsByName, campusLocationItems]);
+	}, [destination, campusLocationsByName, campusLocationItems, campusLocationsById]);
 
 	// Only open the initial stage if we are NOT restoring a session
 	React.useEffect(() => {

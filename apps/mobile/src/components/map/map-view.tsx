@@ -7,16 +7,15 @@ import {
 	Map as MapViewNative,
 	Marker,
 	type StyleSpecification,
-	UserLocation,
 } from "@maplibre/maplibre-react-native";
 import * as Location from "expo-location";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type NativeSyntheticEvent, Text, View } from "react-native";
 
+import { FromMarker, ToMarker } from "@/assets/route";
+
 import type { ScholarPosition } from "@/lib/geo/map-utils";
 import { useAppColorScheme } from "@/lib/theme/use-app-color-scheme";
-
-import { FromMarker, ToMarker } from "@/assets/route";
 
 import type { Place, Stage } from "../request-flow-sheet/types";
 
@@ -358,9 +357,17 @@ export default function MapView({
 				{/* ── Camera ──────────────────────────────────────────────── */}
 				<Camera ref={cameraRef} initialViewState={cameraInitialState} />
 
-				{/* ── User location puck ────────────────────────────────── */}
-				{showUserLocation && (
-					<UserLocation animated accuracy={false} heading />
+				{/* ── User location puck (manual, avoids MapLibre native location engine) ── */}
+				{showUserLocation && userLocation && (
+					<Marker
+						id="user-location-marker"
+						lngLat={[userLocation.longitude, userLocation.latitude]}
+						anchor="center"
+					>
+						<View className="items-center justify-center">
+							<View className="size-5 rounded-full bg-blue-500 border-2 border-white" />
+						</View>
+					</Marker>
 				)}
 
 				{/* ── Route line ─────────────────────────────────────────── */}

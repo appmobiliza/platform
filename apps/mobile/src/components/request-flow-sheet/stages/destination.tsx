@@ -35,6 +35,13 @@ function DestinationStage({
 	// pre-fill the destination before the user interacts.
 	const hasAppliedInitial = useRef(false);
 
+	// Ref to read current destination inside the effect without
+	// having it in the dependency array. Otherwise, when the
+	// auto-set effect (from PlaceCard URL param) changes destination,
+	// this effect would re-fire and overwrite it with the nearest point.
+	const destinationRef = useRef(destination);
+	destinationRef.current = destination;
+
 	// Auto-set destination when user pans the page-level map
 	useEffect(() => {
 		if (!hasAppliedInitial.current) {
@@ -42,10 +49,13 @@ function DestinationStage({
 			return;
 		}
 
-		if (nearestPoint && nearestPoint.name !== destination?.name) {
+		if (
+			nearestPoint &&
+			nearestPoint.name !== destinationRef.current?.name
+		) {
 			setDestination(nearestPoint);
 		}
-	}, [nearestPoint, setDestination, destination?.name]);
+	}, [nearestPoint, setDestination]);
 
 	return (
 		<StageSheet

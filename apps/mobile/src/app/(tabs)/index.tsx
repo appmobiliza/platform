@@ -26,6 +26,12 @@ import {
 	useNearestPoint,
 } from "@/stores/location-store";
 import { getRequestState } from "@/stores/request-store";
+import {
+	getRouteHistory,
+	hydrateRouteHistoryFromApi,
+	resolveRouteEntry,
+	useRouteHistory,
+} from "@/stores/route-history-store";
 
 // ─── Relative date helpers (Portuguese locale) ───────────────────────────────
 
@@ -110,98 +116,65 @@ type StudentHomeProps = {
 function StudentHome({ insets }: StudentHomeProps) {
 	const router = useRouter();
 
-	const { data: historyData } = trpc.requests.studentHistory.useInfiniteQuery(
-		{ limit: 50 },
-		{
-			getNextPageParam: (lastPage) => lastPage.nextCursor,
-			staleTime: 5 * 60 * 1000,
-		},
-	);
+	// ─── Hydrate from API on first launch (existing user, new install) ────
+	const hydrationDoneRef = useRef(false);
+
+	const { data: hydrationData } =
+		trpc.requests.studentHistory.useInfiniteQuery(
+			{ limit: 50 },
+			{
+				getNextPageParam: (lastPage) => lastPage.nextCursor,
+				enabled:
+					!getRouteHistory().hydrated && !hydrationDoneRef.current,
+				staleTime: Infinity,
+				gcTime: 0,
+			},
+		);
+
+	useEffect(() => {
+		if (
+			hydrationData?.pages &&
+			!hydrationDoneRef.current &&
+			!getRouteHistory().hydrated
+		) {
+			const allItems = hydrationData.pages.flatMap((p) => p.items);
+			if (allItems.length > 0) {
+				hydrateRouteHistoryFromApi(allItems);
+			}
+			hydrationDoneRef.current = true;
+		}
+	}, [hydrationData]);
 
 	const navigateWithDestination = useCallback(
-		(destination: string) => {
+		(destinationId: string) => {
 			router.push({
 				pathname: "/request",
-				params: { destination },
+				params: { destinationId },
 			});
 		},
 		[router],
 	);
 
-	// ─── Compute recent & frequent destinations from history ─────────────
+	// ─── Read from local store ───────────────────────────────────────────
 
-	const { recentDestinations, frequentDestinations } = useMemo(() => {
-		const allItems = historyData?.pages.flatMap((page) => page.items) ?? [];
+	const { recent, frequent } = useRouteHistory();
 
-		// Recent destinations: first 3 unique destination locations
-		const seenIds = new Set<string>();
-		const recent: Array<{ name: string; date: Date }> = [];
-		for (const item of allItems) {
-			const dest = item.destinationLocation;
-			if (!dest) continue;
-			const key = dest.id ?? dest.name;
-			if (seenIds.has(key)) continue;
-			seenIds.add(key);
-			recent.push({
-				name: dest.abbreviation || dest.name,
-				date: new Date(item.createdAt),
-			});
-			if (recent.length >= 3) break;
-		}
+	const recentDestinations = useMemo(
+		() => recent.map((entry) => resolveRouteEntry(entry)),
+		[recent],
+	);
 
-		// Frequent destinations: count per destination, sorted desc
-		const freqCounts = new Map<
-			string,
-			{ name: string; count: number; lastDate: Date }
-		>();
-		for (const item of allItems) {
-			const dest = item.destinationLocation;
-			if (!dest) continue;
-			const key = dest.id ?? dest.name;
-			const existing = freqCounts.get(key);
-			const date = new Date(item.createdAt);
-			if (existing) {
-				existing.count++;
-				if (date > existing.lastDate) existing.lastDate = date;
-			} else {
-				freqCounts.set(key, {
-					name: dest.abbreviation || dest.name,
-					count: 1,
-					lastDate: date,
-				});
-			}
-		}
-
-		const frequent = Array.from(freqCounts.values())
-			.sort((a, b) => b.count - a.count)
-			.slice(0, 4);
-
-		return { recentDestinations: recent, frequentDestinations: frequent };
-	}, [historyData]);
-
-	// ─── Full name lookup for PlaceCard onPress ──────────────────────────
-	// Map abbreviation -> full name so pressing "CEDU" navigates with the
-	// full campus location name (which the request screen can match).
-
-	const campusLocationsByName = useMemo(() => {
-		const cached = getCachedCampusLocations();
-		const map = new Map<string, string>();
-		for (const loc of cached) {
-			if (loc.name) map.set(loc.name.toLowerCase(), loc.name);
-			if (loc.abbreviation)
-				map.set(loc.abbreviation.toLowerCase(), loc.name);
-		}
-		return map;
-	}, []);
-
-	const resolveFullName = useCallback(
-		(displayName: string): string => {
-			return (
-				campusLocationsByName.get(displayName.toLowerCase()) ??
-				displayName
-			);
-		},
-		[campusLocationsByName],
+	const frequentDestinations = useMemo(
+		() =>
+			frequent.map((entry) => {
+				const resolved = resolveRouteEntry(entry);
+				return {
+					id: resolved.id,
+					name: resolved.name,
+					lastDate: resolved.date,
+				};
+			}),
+		[frequent],
 	);
 
 	const hasRecentPlaces = recentDestinations.length > 0;
@@ -255,9 +228,7 @@ function StudentHome({ insets }: StudentHomeProps) {
 								className="mb-3"
 								icon={{ as: Clock }}
 								onPress={() =>
-									navigateWithDestination(
-										resolveFullName(recentPrimary.name),
-									)
+									navigateWithDestination(recentPrimary.id)
 								}
 							/>
 						)}
@@ -267,15 +238,13 @@ function StudentHome({ insets }: StudentHomeProps) {
 									<PlaceCard
 										key={dest.name}
 										className="flex-1"
-										title={dest.name}
+										title={dest.abbreviation ?? dest.name}
 										description={formatRelativeDate(
 											dest.date,
 										)}
 										icon={{ as: Clock }}
 										onPress={() =>
-											navigateWithDestination(
-												resolveFullName(dest.name),
-											)
+											navigateWithDestination(dest.id)
 										}
 									/>
 								))}
@@ -308,9 +277,7 @@ function StudentHome({ insets }: StudentHomeProps) {
 									)}
 									icon={{ as: MapPin }}
 									onPress={() =>
-										navigateWithDestination(
-											resolveFullName(dest.name),
-										)
+										navigateWithDestination(dest.id)
 									}
 								/>
 							))}
