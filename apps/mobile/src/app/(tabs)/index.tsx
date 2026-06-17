@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Logo } from "@/assets/logo";
 
-import { NewsCarousel } from "@/components/news-carousel";
+import { NewsCarousel, type NewsItem } from "@/components/news-carousel";
 import { NoConnection } from "@/components/no-connection";
 import { PlaceCard } from "@/components/place-card";
 import type { Place } from "@/components/request-flow-sheet/types";
@@ -18,6 +18,7 @@ import SimplifiedHome from "@/components/simplified-interface/home";
 import { Text } from "@/components/ui/text";
 
 import { useSimplifiedInterface, useUser, useUserRole } from "@/lib/auth/store";
+import { formatRelativeDate } from "@/lib/date";
 import { haversineMeters } from "@/lib/geo/distance";
 import { trpc } from "@/lib/trpc/client";
 
@@ -27,6 +28,7 @@ import {
 	setNearestPoint,
 	useNearestPoint,
 } from "@/stores/location-store";
+import { getCachedNews, setCachedNews } from "@/stores/news-store";
 import { getRequestState } from "@/stores/request-store";
 import {
 	getRouteHistory,
@@ -37,19 +39,6 @@ import {
 
 // ─── Relative date helpers (Portuguese locale) ───────────────────────────────
 
-function formatRelativeDate(date: Date): string {
-	const now = new Date();
-	const diffMs = now.getTime() - date.getTime();
-	const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-	const hours = date.getHours().toString().padStart(2, "0");
-	const minutes = date.getMinutes().toString().padStart(2, "0");
-	const time = `${hours}h${minutes}`;
-
-	if (diffDays === 0) return `Hoje, ${time}`;
-	if (diffDays === 1) return `Ontem, ${time}`;
-	return `Há ${diffDays} dias, ${time}`;
-}
-
 function formatLastTripLabel(date: Date): string {
 	const now = new Date();
 	const diffMs = now.getTime() - date.getTime();
@@ -59,24 +48,6 @@ function formatLastTripLabel(date: Date): string {
 	if (diffDays === 1) return "Último deslocamento ontem";
 	return `Último deslocamento há ${diffDays} dias`;
 }
-
-const newsItems = [
-	{
-		image: "https://noticias.ufal.br/transparencia/noticias/2026/4/exposicao-itinerante-sobre-anfibios-chega-a-biblioteca-central-em-abril/.jpeg/@@images/image",
-		label: "28 de abril: Exposição itinerante sobre anfíbios chega à Biblioteca Central",
-		link: "https://noticias.ufal.br/transparencia/noticias/2026/4/exposicao-itinerante-sobre-anfibios-chega-a-biblioteca-central-em-abril",
-	},
-	{
-		image: "https://noticias.ufal.br/estudante/noticias/2026/4/ufal-amplia-acoes-de-acessibilidade-na-pos-para-estudantes-surdos/@@images/image-768-16882703fa5e1d332539198d6adc0c8a.jpeg",
-		label: "Ufal amplia ações de acessibilidade na pós para estudantes surdos",
-		link: "https://noticias.ufal.br/estudante/noticias/2026/4/ufal-amplia-acoes-de-acessibilidade-na-pos-para-estudantes-surdos",
-	},
-	{
-		image: "https://noticias.ufal.br/estudante/noticias/2026/3/ufal-abre-inscricoes-para-bolsistas-do-nucleo-de-acessibilidade-em-maceio/@@images/image-768-814377bd74e9a631339192ff98626ae6.jpeg",
-		label: "Ufal abre inscrições para bolsistas do Núcleo de Acessibilidade em Maceió",
-		link: "https://noticias.ufal.br/estudante/noticias/2026/3/ufal-abre-inscricoes-para-bolsistas-do-nucleo-de-acessibilidade-em-maceio",
-	},
-];
 
 const getPosition = async () => {
 	// 1. Last known position — instant, no device settings dependency
@@ -120,6 +91,31 @@ function StudentHome({ insets }: StudentHomeProps) {
 
 	const networkState = useNetworkState();
 	const hasConnection = networkState.isConnected;
+
+	// ─── News (cache-first, background refresh) ────────────────────────────
+	// Show cached news immediately to avoid layout shift. Fresh data is
+	// fetched in background and persisted to cache, but never updates the
+	// displayed state reactively — changes appear only on the next app open.
+
+	const [newsItems] = useState<NewsItem[]>(() => getCachedNews());
+
+	const { data: freshNews } = trpc.news.list.useQuery(
+		{ limit: 5 },
+		{
+			staleTime: 30 * 60 * 1000,
+			gcTime: 60 * 60 * 1000,
+		},
+	);
+
+	useEffect(() => {
+		if (!freshNews) return;
+		const mapped: NewsItem[] = freshNews.map((n) => ({
+			image: n.imageUrl ?? "",
+			label: n.title,
+			link: n.url,
+		}));
+		setCachedNews(mapped);
+	}, [freshNews]);
 
 	// ─── Hydrate from API on first launch (existing user, new install) ────
 	const hydrationDoneRef = useRef(false);
