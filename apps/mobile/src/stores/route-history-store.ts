@@ -7,6 +7,8 @@ import { storage } from "@/lib/storage";
 export interface RouteHistoryEntry {
 	id: string;
 	lastTravel: string; // ISO timestamp
+	name?: string;
+	abbreviation?: string | null;
 }
 
 interface FrequentEntry extends RouteHistoryEntry {
@@ -90,21 +92,21 @@ export function markRouteHistoryHydrated() {
  */
 export function addRouteToHistory(
 	destinationId: string,
-	_destinationName: string,
+	destinationName: string,
 	now = new Date(),
 ) {
 	const lastTravel = now.toISOString();
 
 	// ── Recent ──────────────────────────────────────────────────────────────
 	let recent = data.recent.filter((e) => e.id !== destinationId);
-	recent.unshift({ id: destinationId, lastTravel });
+	recent.unshift({ id: destinationId, lastTravel, name: destinationName });
 	if (recent.length > 3) recent = recent.slice(0, 3);
 
 	// ── Frequent ────────────────────────────────────────────────────────────
 	let frequent = data.frequent.filter((e) => e.id !== destinationId);
 	const existingEntry = data.frequent.find((e) => e.id === destinationId);
 	const count = (existingEntry?.count ?? 0) + 1;
-	frequent.push({ id: destinationId, lastTravel, count });
+	frequent.push({ id: destinationId, lastTravel, count, name: destinationName });
 	frequent.sort((a, b) => b.count - a.count || (a.lastTravel > b.lastTravel ? -1 : 1));
 	if (frequent.length > 5) frequent = frequent.slice(0, 5);
 
@@ -129,10 +131,10 @@ export function hydrateRouteHistoryFromApi(
 	const seenIds = new Set<string>();
 	const recent: RouteHistoryEntry[] = [];
 
-	// Frequency map: id → { name, count, lastTravel }
+	// Frequency map: id → { name, abbreviation, count, lastTravel }
 	const freqMap = new Map<
 		string,
-		{ name: string; count: number; lastTravel: string }
+		{ name: string; abbreviation: string | null; count: number; lastTravel: string }
 	>();
 
 	for (const item of items) {
@@ -140,7 +142,6 @@ export function hydrateRouteHistoryFromApi(
 		if (!dest) continue;
 
 		const id = dest.id;
-		const displayName = dest.abbreviation || dest.name;
 		const travelDate =
 			typeof item.createdAt === "string"
 				? item.createdAt
@@ -149,7 +150,12 @@ export function hydrateRouteHistoryFromApi(
 		// Recent (first 3 unique)
 		if (!seenIds.has(id)) {
 			seenIds.add(id);
-			recent.push({ id, lastTravel: travelDate });
+			recent.push({
+				id,
+				lastTravel: travelDate,
+				name: dest.name,
+				abbreviation: dest.abbreviation,
+			});
 			if (recent.length >= 3) break;
 		}
 
@@ -161,7 +167,12 @@ export function hydrateRouteHistoryFromApi(
 				existing.lastTravel = travelDate;
 			}
 		} else {
-			freqMap.set(id, { name: displayName, count: 1, lastTravel: travelDate });
+			freqMap.set(id, {
+				name: dest.name,
+				abbreviation: dest.abbreviation,
+				count: 1,
+				lastTravel: travelDate,
+			});
 		}
 	}
 
@@ -205,18 +216,22 @@ function getLocationData(
  * Resolve a RouteHistoryEntry into a display-friendly object.
  *
  * - `id`        – campus location ID (for programmatic lookup / navigation)
- * - `name`      – full name of the location
+ * - `name`      – display name (abbreviation first, then full name)
  * - `abbreviation` – abbreviation, or `null` if none
  * - `date`      – Date object of the last travel
  */
 export function resolveRouteEntry(
 	entry: RouteHistoryEntry,
 ): { id: string; name: string; abbreviation: string | null; date: Date } {
-	const data = getLocationData(entry.id);
+	// Priority for name: cached campus full name > stored entry name > raw ID
+	// Priority for abbreviation: cached campus abbreviation > stored entry abbreviation > null
+	const cached = getLocationData(entry.id);
+	const name = cached?.name ?? entry.name ?? entry.id;
+	const abbreviation = cached?.abbreviation ?? entry.abbreviation ?? null;
 	return {
 		id: entry.id,
-		name: data?.name ?? entry.id,
-		abbreviation: data?.abbreviation ?? null,
+		name,
+		abbreviation,
 		date: new Date(entry.lastTravel),
 	};
 }

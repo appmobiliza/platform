@@ -11,6 +11,8 @@
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 
+import type { Place } from "@/components/request-flow-sheet/types";
+
 import { authClient } from "@/lib/auth/client";
 import {
 	cacheUserInfo,
@@ -20,6 +22,7 @@ import {
 } from "@/lib/auth/store";
 import { trpc } from "@/lib/trpc/client";
 
+import { setCachedCampusLocations } from "@/stores/location-store";
 import { hydrateRouteHistoryFromApi } from "@/stores/route-history-store";
 import { toSessionUser } from "@/types/session";
 
@@ -114,7 +117,9 @@ function usePostLogin() {
 					simplifiedInterface = false;
 				}
 
-				// Hidrata o histórico de rotas antes de navegar para a home.
+				// Hidrata o histórico de rotas e cacheia as localizações do campus
+				// antes de navegar para a home, evitando waterfalls ao montar a
+				// tela inicial.
 				if (hasStudentProfile) {
 					try {
 						const historyData =
@@ -129,6 +134,16 @@ function usePostLogin() {
 						hydrateRouteHistoryFromApi(allItems);
 					} catch {
 						// Falha ao buscar histórico não impede o login.
+					}
+
+					try {
+						const locations =
+							await trpcUtils.locations.list.fetch();
+						if (locations.length > 0) {
+							setCachedCampusLocations(locations as Place[]);
+						}
+					} catch {
+						// Falha ao cachear localizações não impede o login.
 					}
 				}
 
