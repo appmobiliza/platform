@@ -1,6 +1,6 @@
 import { disabilityTypeLabels } from "@mobiliza/contracts";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View } from "react-native";
 
 import { SettingsButton } from "@/components/settings-button";
@@ -15,14 +15,28 @@ export default function AccessibilityProfile() {
 	const utils = trpc.useUtils();
 
 	const studentProfile = userData?.studentProfile;
+	const serverSimplifiedInterface = studentProfile?.simplifiedInterface;
+	const serverVoiceProcessingOnline = studentProfile?.voiceProcessingOnline;
 
 	const [simplifiedInterface, setSimplifiedInterface] = useState(
-		studentProfile?.simplifiedInterface ?? false,
+		serverSimplifiedInterface ?? false,
 	);
 
 	const [voiceProcessingOnline, setVoiceProcessingOnline] = useState(
-		studentProfile?.voiceProcessingOnline ?? true,
+		serverVoiceProcessingOnline ?? true,
 	);
+
+	useEffect(() => {
+		if (
+			serverSimplifiedInterface === undefined &&
+			serverVoiceProcessingOnline === undefined
+		) {
+			return;
+		}
+
+		setSimplifiedInterface(serverSimplifiedInterface ?? false);
+		setVoiceProcessingOnline(serverVoiceProcessingOnline ?? true);
+	}, [serverSimplifiedInterface, serverVoiceProcessingOnline]);
 
 	const handleSimplifiedInterfaceChange = async (value: boolean) => {
 		setSimplifiedInterface(value);
