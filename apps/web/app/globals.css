@@ -316,3 +316,210 @@
 	-ms-overflow-style: none; /* IE and Edge */
 	scrollbar-width: none; /* Firefox */
 }
+
+.report-print-header,
+.report-pdf-footer {
+	display: none;
+}
+
+@media print {
+	@page {
+		size: A4;
+		margin: 12mm 11mm 22mm;
+	}
+
+	* {
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+	}
+
+	html,
+	body {
+		background: #ffffff;
+		color: #1a1f1f;
+		min-height: auto;
+	}
+
+	[data-slot="sidebar"],
+	[data-slot="sidebar-gap"],
+	[data-slot="sidebar-wrapper"] > main > header,
+	.report-controls,
+	.report-export-section {
+		display: none;
+	}
+
+	[data-slot="sidebar-wrapper"],
+	main {
+		display: block;
+		min-height: auto;
+		width: 100%;
+	}
+
+	.report-print-area {
+		display: block;
+		width: 100%;
+		background: #ffffff;
+	}
+
+	.report-print-content {
+		display: block;
+		padding: 0 0 12mm;
+	}
+
+	.report-print-header {
+		display: block;
+		margin-bottom: 7mm;
+		overflow: hidden;
+		border-radius: 14px;
+		background:
+			linear-gradient(135deg, rgba(0, 94, 101, 0.96), #032f32 72%),
+			#005e65;
+		color: #ffffff;
+	}
+
+	.report-print-kicker {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12mm;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+		padding: 5mm 6mm 4mm;
+		font-size: 9pt;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	.report-print-title {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 8mm;
+		padding: 8mm 6mm;
+	}
+
+	.report-print-title h1 {
+		margin: 0;
+		font-size: 25pt;
+		font-weight: 760;
+		line-height: 1;
+	}
+
+	.report-print-title p,
+	.report-print-meta span {
+		margin: 2mm 0 0;
+		color: rgba(255, 255, 255, 0.76);
+		font-size: 9pt;
+	}
+
+	.report-print-meta {
+		display: grid;
+		gap: 2mm;
+		min-width: 42mm;
+		text-align: right;
+	}
+
+	.report-stat-grid {
+		display: grid;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+		gap: 3mm;
+		margin-bottom: 4mm;
+	}
+
+	.report-insight-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 3mm;
+		margin-bottom: 4mm;
+	}
+
+	.report-card {
+		break-inside: avoid;
+		page-break-inside: avoid;
+		margin-bottom: 4mm;
+		border: 1px solid #d8d8d4;
+		background: #ffffff;
+		box-shadow: none;
+		color: #1a1f1f;
+	}
+
+	.report-stat-card {
+		margin-bottom: 0;
+		padding: 4mm;
+	}
+
+	.report-stat-card p:first-child,
+	.report-card [data-slot="card-description"],
+	.report-card .text-muted-foreground {
+		color: #5a6060;
+	}
+
+	.report-card [data-slot="card-title"] {
+		color: #1a1f1f;
+		font-size: 10pt;
+	}
+
+	.report-stat-card .text-2xl,
+	.report-stat-card .md\:text-3xl {
+		font-size: 18pt;
+		letter-spacing: 0;
+	}
+
+	.report-insight {
+		margin-bottom: 0;
+		border-left: 4px solid #005e65;
+		padding: 4mm;
+	}
+
+	.report-insight p {
+		margin: 0;
+	}
+
+	.report-insight p + p {
+		margin-top: 2mm;
+	}
+
+	.recharts-wrapper,
+	.recharts-surface {
+		max-width: 100%;
+	}
+
+	.report-pdf-footer {
+		position: fixed;
+		right: 0;
+		bottom: -12mm;
+		left: 0;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8mm;
+		min-height: 15mm;
+		padding: 3mm 5mm;
+		background:
+			linear-gradient(
+				90deg,
+				rgba(3, 47, 50, 0.92),
+				rgba(0, 94, 101, 0.72)
+			),
+			#032f32;
+		color: rgba(255, 255, 255, 0.78);
+		font-size: 8pt;
+	}
+
+	.report-pdf-footer p {
+		position: relative;
+		z-index: 1;
+		margin: 0;
+		text-align: right;
+	}
+
+	.report-footer-watermark {
+		position: absolute;
+		right: 6mm;
+		bottom: -1mm;
+		z-index: 0;
+		width: 58mm;
+		height: auto;
+		opacity: 0.08;
+	}
+}

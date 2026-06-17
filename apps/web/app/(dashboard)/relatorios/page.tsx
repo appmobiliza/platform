@@ -1,6 +1,8 @@
-import { FileDown, FileSpreadsheet, InfoIcon } from "lucide-react";
+import { FileSpreadsheet, InfoIcon } from "lucide-react";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+
+import Logo from "@/assets/icons/logo";
 
 import { ComboboxMultiple } from "@/components/combobox-multiple";
 import { DatePickerWithRange } from "@/components/date-range-picker";
@@ -34,6 +36,8 @@ import {
 	toDate,
 } from "@/lib/dashboard-data";
 import { getInitials } from "@/lib/utils";
+
+import { PdfExportButton } from "./pdf-export-button";
 
 export const metadata: Metadata = {
 	title: "Relatórios",
@@ -83,7 +87,7 @@ function StatCard({
 	valueClassName?: string;
 }) {
 	return (
-		<Card className="gap-2 px-4 py-4 md:px-6">
+		<Card className="report-card report-stat-card gap-2 px-4 py-4 md:px-6">
 			<p className="text-sm font-medium text-muted-foreground">{title}</p>
 			<div className="space-y-1">
 				<p
@@ -112,7 +116,7 @@ function SectionCard({
 	children: ReactNode;
 }) {
 	return (
-		<Card className="gap-4 p-4 md:p-6">
+		<Card className="report-card gap-4 p-4 md:p-6">
 			<CardHeader className="space-y-1 p-0">
 				<CardTitle className="text-sm font-medium">{title}</CardTitle>
 				{description ? (
@@ -226,7 +230,7 @@ function ExportCard({
 	description: string;
 }) {
 	return (
-		<Card className="gap-4 p-4 flex md:flex-row">
+		<Card className="report-export-card gap-4 p-4 flex md:flex-row">
 			<CardHeader className="space-y-1 p-0 flex-1">
 				<CardTitle className="text-sm font-medium">{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
@@ -236,12 +240,76 @@ function ExportCard({
 					<FileSpreadsheet className="size-4" />
 					CSV
 				</Button>
-				<Button className="gap-2">
-					<FileDown className="size-4" />
-					PDF
-				</Button>
+				<PdfExportButton>PDF</PdfExportButton>
 			</CardFooter>
 		</Card>
+	);
+}
+
+function InsightCard({
+	label,
+	value,
+	caption,
+}: {
+	label: string;
+	value: string;
+	caption: string;
+}) {
+	return (
+		<div className="report-card report-insight rounded-xl bg-card p-4 text-sm shadow-xs ring-1 ring-foreground/10">
+			<p className="text-xs font-semibold uppercase text-primary">
+				{label}
+			</p>
+			<p className="mt-2 text-lg font-semibold text-foreground">
+				{value}
+			</p>
+			<p className="mt-1 text-sm leading-5 text-muted-foreground">
+				{caption}
+			</p>
+		</div>
+	);
+}
+
+function ReportPrintHeader({
+	reportMonth,
+	generatedAt,
+}: {
+	reportMonth: string;
+	generatedAt: string;
+}) {
+	return (
+		<div className="report-print-header">
+			<div className="report-print-kicker">
+				<Logo className="h-5 w-32 fill-white" />
+				<span>Relatório operacional</span>
+			</div>
+			<div className="report-print-title">
+				<div>
+					<h1>Dashboard Mobiliza</h1>
+					<p>Atendimentos NAC · Campus A.C. Simões</p>
+				</div>
+				<div className="report-print-meta">
+					<span>{reportMonth}</span>
+					<span>Gerado em {generatedAt}</span>
+				</div>
+			</div>
+		</div>
+	);
+}
+
+function ReportPdfFooter({ generatedAt }: { generatedAt: string }) {
+	return (
+		<footer className="report-pdf-footer">
+			<Logo
+				className="report-footer-watermark fill-white"
+				aria-hidden="true"
+			/>
+			<Logo className="h-5 w-32 fill-white opacity-80" />
+			<div>
+				<p>Mobiliza · Relatório gerado pelo dashboard web</p>
+				<p>{generatedAt}</p>
+			</div>
+		</footer>
 	);
 }
 
@@ -303,6 +371,10 @@ export default async function ReportsPage() {
 		month: "long",
 		year: "numeric",
 	});
+	const generatedAt = new Date().toLocaleString("pt-BR", {
+		dateStyle: "short",
+		timeStyle: "short",
+	});
 	const weekdayCounts = countBy(requests, (request) =>
 		toDate(request.createdAt).toLocaleDateString("pt-BR", {
 			weekday: "short",
@@ -331,6 +403,9 @@ export default async function ReportsPage() {
 	const peakHour = getTopItem(hourlyChartData);
 	const topWeekday = getTopItem(weekdayProgress);
 	const topShift = getTopItem(shiftProgress);
+	const topShiftPercent =
+		shiftProgress.find((item) => item.label === topShift.label)?.percent ??
+		0;
 	const stats = [
 		{
 			title: "Total de atendimentos",
@@ -374,8 +449,12 @@ export default async function ReportsPage() {
 	).slice(0, 5);
 
 	return (
-		<section className="min-w-0 flex-1">
-			<header className="flex flex-row items-center justify-between border-b border-border bg-card p-4 md:p-6">
+		<section className="report-print-area min-w-0 flex-1">
+			<ReportPrintHeader
+				reportMonth={reportMonth}
+				generatedAt={generatedAt}
+			/>
+			<header className="report-controls flex flex-row items-center justify-between border-b border-border bg-card p-4 md:p-6">
 				<div className="space-y-1">
 					<h1 className="text-base font-semibold">Relatórios</h1>
 					<h2 className="text-sm text-muted-foreground">
@@ -383,15 +462,12 @@ export default async function ReportsPage() {
 					</h2>
 				</div>
 				<div className="flex items-center gap-3">
-					<Button className="gap-2 px-4 py-5">
-						<FileDown className="size-4" />
-						Exportar PDF
-					</Button>
+					<PdfExportButton className="px-4 py-5" />
 				</div>
 			</header>
 
-			<div className="flex flex-col gap-4 p-4 md:p-6">
-				<div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+			<div className="report-print-content flex flex-col gap-4 p-4 md:p-6">
+				<div className="report-controls grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
 					<div className="md:col-span-2 xl:col-span-1">
 						<DatePickerWithRange className="w-full bg-card" />
 					</div>
@@ -421,10 +497,28 @@ export default async function ReportsPage() {
 					/>
 				</div>
 
-				<div className="grid grid-cols-2 gap-4 xl:grid-cols-5">
+				<div className="report-stat-grid grid grid-cols-2 gap-4 xl:grid-cols-5">
 					{stats.map((stat) => (
 						<StatCard key={stat.title} {...stat} />
 					))}
+				</div>
+
+				<div className="report-insight-grid grid gap-3 md:grid-cols-3">
+					<InsightCard
+						label="Janela crítica"
+						value={`${peakHour.label} · ${peakHour.value} solicitações`}
+						caption="Pico operacional usado para dimensionar cobertura e resposta rápida."
+					/>
+					<InsightCard
+						label="Dia de maior demanda"
+						value={topWeekday.label}
+						caption={`${topWeekday.value} registros concentrados no dia com maior pressão do período.`}
+					/>
+					<InsightCard
+						label="Turno dominante"
+						value={topShift.label}
+						caption={`${topShiftPercent}% dos atendimentos aparecem neste turno no recorte atual.`}
+					/>
 				</div>
 
 				<div className="grid gap-4 xl:grid-cols-2">
@@ -487,7 +581,7 @@ export default async function ReportsPage() {
 					/>
 				</div>
 
-				<div className="space-y-3">
+				<div className="report-export-section space-y-3">
 					<p className="text-sm font-medium text-foreground">
 						Exportar relatório
 					</p>
@@ -502,6 +596,7 @@ export default async function ReportsPage() {
 					</div>
 				</div>
 			</div>
+			<ReportPdfFooter generatedAt={generatedAt} />
 		</section>
 	);
 }
