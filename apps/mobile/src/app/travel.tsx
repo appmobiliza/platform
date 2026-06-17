@@ -80,7 +80,6 @@ export default function TravelScreen() {
 	const { mutate: reportIssue, isPending: isReporting } =
 		trpc.requests.reportIssue.useMutation({
 			onSuccess: () => {
-				scholarCancelledRef.current = true;
 				clearActiveAttendance();
 				utils.requests.getAttendanceById.invalidate({ requestId });
 				utils.requests.pending.invalidate();
@@ -440,7 +439,10 @@ export default function TravelScreen() {
 				"Se houver algum problema com este deslocamento, você pode cancelá-lo.",
 			action: {
 				label: "Cancelar atendimento",
-				onClick: () => reportIssue({ requestId }),
+				onClick: () => {
+					scholarCancelledRef.current = true;
+					reportIssue({ requestId });
+				},
 			},
 			cancel: {
 				label: "Voltar",
