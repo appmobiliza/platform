@@ -106,8 +106,8 @@ function calculateRouteDistance(
 	let totalMeters = 0;
 
 	for (let i = 1; i < coordinates.length; i++) {
-		const [, lat1, lon1] = coordinates[i - 1];
-		const [, lat2, lon2] = coordinates[i];
+		const [, lat1, lon1] = coordinates[i - 1]!;
+		const [, lat2, lon2] = coordinates[i]!;
 
 		const φ1 = toRad(lat1);
 		const φ2 = toRad(lat2);
