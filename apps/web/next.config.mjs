@@ -8,16 +8,16 @@ const nextConfig = {
 		},
 	},
 	async rewrites() {
-	    if (process.env.NODE_ENV === 'development') {
-	        return [{
-	            source: '/api/auth/:path*',
-	            destination: 'http://localhost:3001/api/auth/:path*',
-	        }];
-	    }
-	    return [{
-	        source: '/api/auth/:path*',
-	        destination: 'https://api-appmobiliza.vercel.app/api/auth/:path*',
-	    }];
+		if (process.env.NODE_ENV === 'development') {
+			return [{
+				source: '/api/:path*',
+				destination: 'http://localhost:3001/api/:path*',
+			}];
+		}
+		return [{
+			source: '/api/:path*',
+			destination: 'https://api-appmobiliza.vercel.app/api/:path*',
+		}];
 	},
 };
 
