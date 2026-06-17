@@ -2,7 +2,7 @@ import { Clock, Edit3, Trash2 } from "lucide-react-native";
 import { useState } from "react";
 import { View } from "react-native";
 
-import { HistoryDetailLayout } from "@/layout/history-details";
+import { HistoryDetailLayout } from "@/layout/history-details-layout";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";

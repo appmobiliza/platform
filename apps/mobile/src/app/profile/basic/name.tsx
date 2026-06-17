@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { View } from "react-native";
 
-import ProfileLayout from "@/layout/profile";
+import ProfileLayout from "@/layout/profile-layout";
 
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";

@@ -304,44 +304,19 @@ function ToastItem({ data }: { data: ToastData }) {
 			)}
 		>
 			{/* Icon + heading */}
-			<View className="flex-row items-start gap-3">
-				<View className="mt-1">
-					{data.variant === "loading" ? (
-						<ActivityIndicator size={20} />
-					) : data.icon ? (
-						data.icon
-					) : config.icon ? (
-						<Icon
-							icon={config.icon}
-							size={20}
-							color={config.color}
-						/>
-					) : null}
-				</View>
+			<View className="flex-col justify-start items-start gap-3">
+				{data.variant === "loading" ? (
+					<ActivityIndicator size={20} />
+				) : data.icon ? (
+					data.icon
+				) : config.icon ? (
+					<Icon icon={config.icon} size={20} color={config.color} />
+				) : null}
 
-				<View className="flex-1 gap-1">
-					<View className="flex-row items-center justify-between w-full">
-						<Text className="text-foreground text-lg font-semibold leading-none">
-							{data.title}
-						</Text>
-						{/* Close button */}
-						{data.dismissible && data.closeButton && (
-							<Pressable
-								onPress={handleDismiss}
-								hitSlop={12}
-								accessibilityLabel="Fechar"
-								accessibilityRole="button"
-								className={cn(
-									"rounded opacity-70 active:opacity-100",
-									Platform.select({
-										web: "cursor-pointer transition-opacity hover:opacity-100 ",
-									}),
-								)}
-							>
-								<Icon icon={X} size={24} color="--foreground" />
-							</Pressable>
-						)}
-					</View>
+				<View className="flex-col gap-2">
+					<Text className="text-foreground text-lg font-semibold leading-none">
+						{data.title}
+					</Text>
 					{data.description &&
 						(typeof data.description === "string" ? (
 							<Text className="text-muted-foreground text-sm">
@@ -355,12 +330,8 @@ function ToastItem({ data }: { data: ToastData }) {
 				</View>
 			</View>
 
-			{/*<Button accessibilityRole="button" onPress={handleDismiss}>
-				<Text>Fechar</Text>
-			</Button>*/}
-
 			{/* Actions */}
-			{(data.action || data.cancel) && (
+			{data.action || data.cancel ? (
 				<View className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
 					{isToastAction(data.cancel) && (
 						<Pressable
@@ -408,7 +379,17 @@ function ToastItem({ data }: { data: ToastData }) {
 					)}
 					{!isToastAction(data.action) && data.action}
 				</View>
-			)}
+			) : data.dismissible && data.closeButton ? (
+				<View>
+					<Button
+						accessibilityRole="button"
+						onPress={handleDismiss}
+						variant={"secondary"}
+					>
+						<Text>Fechar</Text>
+					</Button>
+				</View>
+			) : null}
 		</View>
 	);
 

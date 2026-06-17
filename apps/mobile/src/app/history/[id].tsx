@@ -3,7 +3,7 @@ import { Clock, ClockAlert } from "lucide-react-native";
 import { useMemo } from "react";
 import { ActivityIndicator, View } from "react-native";
 
-import { HistoryDetailLayout } from "@/layout/history-details";
+import { HistoryDetailLayout } from "@/layout/history-details-layout";
 
 import ScholarHistoryDetails from "@/components/scholar/history-details";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

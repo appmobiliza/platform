@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 
-import ProfileLayout from "@/layout/profile";
+import ProfileLayout from "@/layout/profile-layout";
 
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";

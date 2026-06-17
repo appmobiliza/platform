@@ -1,11 +1,11 @@
 import { useNavigation } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { ScrollView, View } from "react-native";
 
-import { ExitConfirmDialog } from "@/components/exit-confirm-dialog";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import { toast } from "@/components/ui/toast";
 
 import { useLightStatusBar } from "@/hooks/use-light-status-bar";
 
@@ -27,38 +27,42 @@ export default function ProfileLayout({
 	isDirty,
 }: Props) {
 	const navigation = useNavigation();
-	const [showExitDialog, setShowExitDialog] = useState(false);
-	const [pendingAction, setPendingAction] = useState<{
-		type: string;
-		payload?: object;
-	} | null>(null);
+	const exitConfirmedRef = useRef(false);
 
 	useLightStatusBar();
 
 	useEffect(() => {
 		const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+			if (exitConfirmedRef.current) {
+				exitConfirmedRef.current = false;
+				return;
+			}
+
 			if (isSaving || isDirty) {
 				e.preventDefault();
-				setPendingAction(e.data.action);
-				setShowExitDialog(true);
+
+				toast.warning("Você possui alterações não salvas", {
+					description:
+						"Tem certeza de que deseja sair sem salvar suas alterações?",
+					duration: Infinity,
+					id: "exit-confirmation",
+					action: {
+						label: "Sair sem salvar",
+						onClick: () => {
+							exitConfirmedRef.current = true;
+							navigation.dispatch(e.data.action);
+						},
+					},
+					cancel: {
+						label: "Cancelar",
+						onClick: () => {},
+					},
+				});
 			}
 		});
 
 		return unsubscribe;
 	}, [navigation, isSaving, isDirty]);
-
-	const handleConfirmExit = () => {
-		setShowExitDialog(false);
-		if (pendingAction) {
-			navigation.dispatch(pendingAction);
-		}
-		setPendingAction(null);
-	};
-
-	const handleCancelExit = () => {
-		setShowExitDialog(false);
-		setPendingAction(null);
-	};
 
 	return (
 		<View className="flex-1">
@@ -91,13 +95,6 @@ export default function ProfileLayout({
 					</Button>
 				)}
 			</ScrollView>
-
-			<ExitConfirmDialog
-				open={showExitDialog}
-				onOpenChange={setShowExitDialog}
-				onConfirm={handleConfirmExit}
-				onCancel={handleCancelExit}
-			/>
 		</View>
 	);
 }
