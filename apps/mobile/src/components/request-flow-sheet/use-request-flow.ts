@@ -469,6 +469,7 @@ function useRequestFlow() {
 	);
 
 	const exitFlow = React.useCallback(() => {
+		console.log("[exitFlow] Saindo do flow",);
 		clearTimers();
 		setSearchState("idle");
 		setElapsedSeconds(0);

@@ -1,6 +1,7 @@
 import { Fragment, useMemo } from "react";
 import { View } from "react-native";
 
+import { buildColorMap } from "./colors";
 import { ScheduleLegend } from "./schedule-legend";
 import { ScheduleSlot } from "./schedule-slot";
 import type { ScheduleEntry, ScheduleSlot as ScheduleSlotType } from "./types";
@@ -41,6 +42,9 @@ export function Schedule({
 		return Array.from(set).sort();
 	}, [slots, legendPeopleProp]);
 
+	/** Build a deterministic color map so each person gets a unique color. */
+	const colorMap = useMemo(() => buildColorMap(legendPeople), [legendPeople]);
+
 	return (
 		<View>
 			{slots.map((slot, index) => (
@@ -49,6 +53,7 @@ export function Schedule({
 						slot={slot}
 						onEntryPress={onEntryPress}
 						gutterClassName={gutterClassName}
+						colorMap={colorMap}
 					/>
 					{index < slots.length - 1 ? (
 						<View className="mx-4 h-px bg-border" />
@@ -56,7 +61,9 @@ export function Schedule({
 				</Fragment>
 			))}
 
-			{showLegend ? <ScheduleLegend people={legendPeople} /> : null}
+			{showLegend ? (
+				<ScheduleLegend people={legendPeople} colorMap={colorMap} />
+			) : null}
 		</View>
 	);
 }

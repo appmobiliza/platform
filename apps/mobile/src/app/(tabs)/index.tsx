@@ -1,5 +1,6 @@
 import * as Location from "expo-location";
 import { useNetworkState } from "expo-network";
+import * as Notifications from "expo-notifications";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Clock, MapPin } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -317,6 +318,14 @@ export default function Home() {
 
 				if (status !== "granted") {
 					router.replace("/location-permission");
+					return;
+				}
+
+				const notificationStatus =
+					await Notifications.getPermissionsAsync();
+
+				if (notificationStatus.status !== "granted") {
+					router.replace("/notification-permission");
 					return;
 				}
 
