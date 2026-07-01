@@ -34,7 +34,6 @@ let caller: ReturnType<typeof appRouter.createCaller>;
 
 describe("requestsRouter", () => {
 	beforeEach(async () => {
-		// no-op: transactions not supported with neon-http
 		caller = appRouter.createCaller(() => createMockTRPCContext());
 	});
 
