@@ -5,4 +5,4 @@
  * Os hooks reales estao em setup.ts via beforeAll/afterAll/afterEach.
  */
 
-export { getDb, rollbackTransaction } from "./setup";
+export { rollbackTransaction } from "./setup";

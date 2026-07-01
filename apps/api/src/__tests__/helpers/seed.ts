@@ -1,10 +1,8 @@
 /**
- * Helpers de seed para testes com banco Neon real.
+ * Helpers de seed para testes com banco de dados.
  * Cada funcao insere dados no banco e retorna o objeto criado.
- * As operacoes sao parte da transaction do teste - rollback desfaz tudo.
  */
 
-// Use the same db instance as routers (mocked in tests via @mobiliza/db/client mapping)
 import { db } from "@mobiliza/db/client";
 import type {
 	CampusLocation,
@@ -35,10 +33,8 @@ import {
 	user,
 } from "@mobiliza/db/schema";
 
-import { sql } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 
-// Use db from @mobiliza/db/client (mocked in tests)
 // All seed operations use the same mocked db as the routers under test
 
 // ─── User ─────────────────────────────────────────────────────────────────────
@@ -238,10 +234,4 @@ export async function seedStudentDisability(
 		})
 		.returning();
 	return created;
-}
-
-// ─── Cleanup helper ────────────────────────────────────────────────────────────
-
-export async function clearTable(tableName: string): Promise<void> {
-	await db.execute(sql`DELETE FROM ${sql.identifier(tableName)}`);
 }
