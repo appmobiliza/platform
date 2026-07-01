@@ -728,7 +728,7 @@ describe("requestsRouter", () => {
 			// Assert
 			expect(result.items).toHaveLength(2);
 			expect(result.totalDurationSeconds).toBe(1800);
-			expect(result.items[0].request).toBeDefined();
+			expect(result.items[0]?.request).toBeDefined();
 		});
 
 		it("deve falhar se estudante tentar acessar histórico de bolsista", async () => {

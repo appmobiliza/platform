@@ -18,7 +18,7 @@ describe("Security/Stability: Realtime Outage", () => {
 	test("create request should succeed even if realtime.publish fails", async () => {
 		// 1. Setup mock data
 		const uniqueId = uuidv7();
-		const studentUser = await db
+		const [studentUser] = await db
 			.insert(user)
 			.values({
 				id: uniqueId,
@@ -26,10 +26,10 @@ describe("Security/Stability: Realtime Outage", () => {
 				email: `stability_${uniqueId}@test.com`,
 				role: "student",
 			})
-			.returning()
-			.then((r) => r[0]);
+			.returning();
+		if (!studentUser) throw new Error("Failed to insert user");
 
-		const sProfile = await db
+		const [sProfile] = await db
 			.insert(studentProfile)
 			.values({
 				id: uniqueId,
@@ -41,10 +41,10 @@ describe("Security/Stability: Realtime Outage", () => {
 				enrollment: `ENROLL_${uniqueId}`,
 				phone: "82999999999",
 			})
-			.returning()
-			.then((r) => r[0]);
+			.returning();
+		if (!sProfile) throw new Error("Failed to insert student profile");
 
-		const loc1 = await db
+		const [loc1] = await db
 			.insert(campusLocation)
 			.values({
 				id: `loc1_${uniqueId}`,
@@ -54,10 +54,10 @@ describe("Security/Stability: Realtime Outage", () => {
 				longitude: 0,
 				isActive: true,
 			})
-			.returning()
-			.then((r) => r[0]);
+			.returning();
+		if (!loc1) throw new Error("Failed to insert loc1");
 
-		const loc2 = await db
+		const [loc2] = await db
 			.insert(campusLocation)
 			.values({
 				id: `loc2_${uniqueId}`,
@@ -67,8 +67,8 @@ describe("Security/Stability: Realtime Outage", () => {
 				longitude: 1,
 				isActive: true,
 			})
-			.returning()
-			.then((r) => r[0]);
+			.returning();
+		if (!loc2) throw new Error("Failed to insert loc2");
 
 		// 2. Mock context with FAILING realtime
 		const ctx = createMockTRPCContext({

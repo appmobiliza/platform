@@ -11,7 +11,7 @@ import { createScholarSession, createStudentSession } from "../mocks/context";
 describe("Profiles: Update Mutations", () => {
 	test("updateStudent should update profile fields and disabilities", async () => {
 		// 1. Setup mock data
-		const studentUser = await db
+		const [studentUser] = await db
 			.insert(user)
 			.values({
 				id: uuidv7(),
@@ -19,10 +19,10 @@ describe("Profiles: Update Mutations", () => {
 				email: `update_student_${uuidv7()}@test.com`,
 				role: "student",
 			})
-			.returning()
-			.then((r) => r[0]);
+			.returning();
+		if (!studentUser) throw new Error("Failed to insert user");
 
-		const sProfile = await db
+		const [sProfile] = await db
 			.insert(studentProfile)
 			.values({
 				id: uuidv7(),
@@ -34,8 +34,8 @@ describe("Profiles: Update Mutations", () => {
 				enrollment: `ENROLL_${uuidv7()}`,
 				phone: "82999999999",
 			})
-			.returning()
-			.then((r) => r[0]);
+			.returning();
+		if (!sProfile) throw new Error("Failed to insert student profile");
 
 		// 2. Mock context
 		const caller = appRouter.createCaller(
@@ -63,12 +63,12 @@ describe("Profiles: Update Mutations", () => {
 		expect(updated?.phone).toBe("82900000000");
 		expect(updated?.nickname).toBe("Mariazinha");
 		expect(updated?.disabilities.length).toBe(1);
-		expect(updated?.disabilities[0].disabilityType).toBe("blindness");
+		expect(updated?.disabilities[0]?.disabilityType).toBe("blindness");
 	});
 
 	test("updateScholar should allow updating shift and course", async () => {
 		// 1. Setup mock data
-		const scholarUser = await db
+		const [scholarUser] = await db
 			.insert(user)
 			.values({
 				id: uuidv7(),
@@ -76,10 +76,10 @@ describe("Profiles: Update Mutations", () => {
 				email: `update_scholar_${uuidv7()}@test.com`,
 				role: "scholar",
 			})
-			.returning()
-			.then((r) => r[0]);
+			.returning();
+		if (!scholarUser) throw new Error("Failed to insert scholar user");
 
-		const schProfile = await db
+		const [schProfile] = await db
 			.insert(scholarProfile)
 			.values({
 				id: uuidv7(),
@@ -94,8 +94,8 @@ describe("Profiles: Update Mutations", () => {
 					.padStart(11, "0"),
 				isAvailable: false,
 			})
-			.returning()
-			.then((r) => r[0]);
+			.returning();
+		if (!schProfile) throw new Error("Failed to insert scholar profile");
 
 		// 2. Mock context
 		const caller = appRouter.createCaller(

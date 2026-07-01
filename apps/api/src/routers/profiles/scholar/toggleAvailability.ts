@@ -4,7 +4,6 @@ import * as schema from "@mobiliza/db/schema";
 import { scholarProcedure } from "@mobiliza/trpc";
 
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 
 export const toggleAvailability = scholarProcedure
 	.mutation(async ({ ctx }) => {
@@ -23,5 +22,6 @@ export const toggleAvailability = scholarProcedure
 			.where(eq(schema.scholarProfile.id, profile.id))
 			.returning();
 
+		if (!updated) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 		return updated;
 	});

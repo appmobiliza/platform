@@ -58,5 +58,10 @@ export const createScholarAsManager = managerProcedure
 			})
 			.returning();
 
+		if (!profile)
+			throw new TRPCError({
+				code: "INTERNAL_SERVER_ERROR",
+				message: "Falha ao criar o perfil.",
+			});
 		return profile;
 	});

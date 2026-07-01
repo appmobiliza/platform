@@ -13,7 +13,6 @@ import {
 	seedUser,
 } from "../helpers/seed";
 import { createMockTRPCContext, createStudentSession } from "../mocks/context";
-import { rollbackTransaction } from "../setup";
 
 let caller: ReturnType<typeof appRouter.createCaller>;
 
@@ -155,8 +154,9 @@ describe("favoritesRouter", () => {
 				originLocationId: loc1.id,
 				destinationLocationId: loc2.id,
 			});
-			expect(list[0].originLocation).toBeDefined();
-			expect(list[0].destinationLocation).toBeDefined();
+			const firstItem = list[0];
+			expect(firstItem?.originLocation).toBeDefined();
+			expect(firstItem?.destinationLocation).toBeDefined();
 		});
 
 		it("deve retornar lista vazia se estudante não tiver perfil", async () => {

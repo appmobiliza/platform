@@ -15,7 +15,7 @@ import { appRouter } from "../../router";
 describe("Security: PII Leak in requests.pending", () => {
 	test("Pending requests should not expose student email or full name", async () => {
 		// 1. Setup mock data
-		const studentUser = await db
+		const [studentUser] = await db
 			.insert(user)
 			.values({
 				email: "student.pii@test.com",
@@ -23,10 +23,10 @@ describe("Security: PII Leak in requests.pending", () => {
 				id: "student-pii-1",
 				role: "student",
 			})
-			.returning()
-			.then((r) => r[0]);
+			.returning();
+		if (!studentUser) throw new Error("Failed to insert user");
 
-		const sProfile = await db
+		const [sProfile] = await db
 			.insert(studentProfile)
 			.values({
 				id: "sp-pii-1",
@@ -38,10 +38,10 @@ describe("Security: PII Leak in requests.pending", () => {
 				enrollment: "123456",
 				phone: "82999999999",
 			})
-			.returning()
-			.then((r) => r[0]);
+			.returning();
+		if (!sProfile) throw new Error("Failed to insert student profile");
 
-		const scholarUser = await db
+		const [scholarUser] = await db
 			.insert(user)
 			.values({
 				email: "scholar.pii@test.com",
@@ -49,8 +49,8 @@ describe("Security: PII Leak in requests.pending", () => {
 				id: "scholar-pii-1",
 				role: "scholar",
 			})
-			.returning()
-			.then((r) => r[0]);
+			.returning();
+		if (!scholarUser) throw new Error("Failed to insert scholar user");
 
 		await db.insert(scholarProfile).values({
 			id: "scp-pii-1",
@@ -64,7 +64,7 @@ describe("Security: PII Leak in requests.pending", () => {
 			cpf: "12345678901",
 		});
 
-		const origin = await db
+		const [origin] = await db
 			.insert(campusLocation)
 			.values({
 				id: "loc-pii-1",
@@ -74,10 +74,10 @@ describe("Security: PII Leak in requests.pending", () => {
 				longitude: 0,
 				isActive: true,
 			})
-			.returning()
-			.then((r) => r[0]);
+			.returning();
+		if (!origin) throw new Error("Failed to insert origin location");
 
-		const destination = await db
+		const [destination] = await db
 			.insert(campusLocation)
 			.values({
 				id: "loc-pii-2",
@@ -87,8 +87,8 @@ describe("Security: PII Leak in requests.pending", () => {
 				longitude: 1,
 				isActive: true,
 			})
-			.returning()
-			.then((r) => r[0]);
+			.returning();
+		if (!destination) throw new Error("Failed to insert destination location");
 
 		await db.insert(serviceRequest).values({
 			id: "req-pii-1",
@@ -117,8 +117,8 @@ describe("Security: PII Leak in requests.pending", () => {
 			(r) => r.studentProfileId === sProfile.id,
 		);
 		expect(request).toBeDefined();
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const studentUserResult = request!.studentProfile.user;
+		if (!request) throw new Error("Request not found in pending list");
+		const studentUserResult = request.studentProfile.user;
 		expect(studentUserResult).toBeDefined();
 		// Drizzle's `columns` config excludes PII — verify they are NOT present
 		expect("email" in studentUserResult).toBe(false);

@@ -55,6 +55,7 @@ export async function seedUser(
 			...overrides,
 		})
 		.returning();
+	if (!created) throw new Error("Failed to seed user");
 	return created;
 }
 
@@ -84,6 +85,7 @@ export async function seedStudentProfile(
 			...overrides,
 		})
 		.returning();
+	if (!created) throw new Error("Failed to seed student profile");
 	return created;
 }
 
@@ -113,6 +115,7 @@ export async function seedScholarProfile(
 			...overrides,
 		})
 		.returning();
+	if (!created) throw new Error("Failed to seed scholar profile");
 	return created;
 }
 
@@ -134,6 +137,7 @@ export async function seedCampusLocation(
 			...overrides,
 		})
 		.returning();
+	if (!created) throw new Error("Failed to seed campus location");
 	return created;
 }
 
@@ -168,6 +172,7 @@ export async function seedServiceRequest(
 			...overrides,
 		})
 		.returning();
+	if (!created) throw new Error("Failed to seed service request");
 	return created;
 }
 
@@ -193,6 +198,7 @@ export async function seedServiceAttendance(
 			...overrides,
 		})
 		.returning();
+	if (!created) throw new Error("Failed to seed service attendance");
 	return created;
 }
 
@@ -215,6 +221,7 @@ export async function seedNotification(
 			...overrides,
 		})
 		.returning();
+	if (!created) throw new Error("Failed to seed notification");
 	return created;
 }
 
@@ -233,5 +240,6 @@ export async function seedStudentDisability(
 			...overrides,
 		})
 		.returning();
+	if (!created) throw new Error("Failed to seed student disability");
 	return created;
 }
