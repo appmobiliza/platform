@@ -25,7 +25,6 @@ const config = {
 		"^@mobiliza/env/loader$": "<rootDir>/src/__tests__/mocks/env-loader.ts",
 		"^@mobiliza/realtime$": "<rootDir>/src/__tests__/mocks/realtime.ts",
 		"^@/(.*)$": "<rootDir>/src/$1",
-		"^(\\.{1,2}/.*)\\.js$": "$1",
 	},
 	testPathIgnorePatterns: ["/node_modules/", "/dist/"],
 	transform: {
@@ -37,7 +36,6 @@ const config = {
 			},
 		],
 	},
-	transformIgnorePatterns: ["node_modules/(?!(@t3-oss|better-auth)/)"],
 	verbose: true,
 };
 
