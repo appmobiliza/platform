@@ -22,6 +22,7 @@ const config = {
 	},
 	setupFilesAfterEnv: ["<rootDir>/src/__tests__/setup.ts"],
 	moduleNameMapper: {
+		"^@mobiliza/env/loader$": "<rootDir>/src/__tests__/mocks/env-loader.ts",
 		"^@mobiliza/realtime$": "<rootDir>/src/__tests__/mocks/realtime.ts",
 		"^@/(.*)$": "<rootDir>/src/$1",
 		"^(\\.{1,2}/.*)\\.js$": "$1",

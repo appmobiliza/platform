@@ -4,52 +4,14 @@
  * Configura ambiente Jest antes de cada suite de teste.
  */
 
+import "./mocks/env-loader";
+
 import * as schema from "@mobiliza/db/schema";
 
 import { afterAll, afterEach, beforeAll } from "@jest/globals";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 
-import * as fs from "node:fs";
-import * as path from "node:path";
-
-// ─── Load .env BEFORE any checks ─────────────────────────────────────────────
-
-const envPath = path.resolve(process.cwd(), "../../.env");
-if (fs.existsSync(envPath)) {
-	const content = fs.readFileSync(envPath, "utf-8");
-	for (const line of content.split("\n")) {
-		const trimmed = line.trim();
-		if (!trimmed || trimmed.startsWith("#")) continue;
-		const eqIndex = trimmed.indexOf("=");
-		if (eqIndex === -1) continue;
-		const key = trimmed.slice(0, eqIndex).trim();
-		const value = trimmed
-			.slice(eqIndex + 1)
-			.trim()
-			.replace(/^["']|["']$/g, "");
-		if (key && !process.env[key]) {
-			process.env[key] = value;
-		}
-	}
-	console.log("[setup] .env loaded from", envPath);
-} else {
-	console.warn("[setup] .env not found at", envPath);
-}
-
-// ─── Default test env vars (only if not already set) ─────────────────────────
-
-if (!process.env.DATABASE_URL) {
-	process.env.DATABASE_URL =
-		"postgresql://test:test@localhost:5432/mobiliza_test";
-}
-
-process.env.NODE_ENV = "test";
-process.env.REALTIME_PROVIDER = "mock";
-process.env.GOOGLE_CLIENT_ID = "test-google-client-id";
-process.env.GOOGLE_CLIENT_SECRET = "test-google-client-secret";
-process.env.BETTER_AUTH_SECRET = "test-better-auth-secret-min-32-chars-long!!";
-process.env.TRUSTED_ORIGINS = "http://localhost:3000";
 // ─── DB Instances ─────────────────────────────────────────────────────────────
 
 let db: ReturnType<typeof drizzle> | null = null;
@@ -71,7 +33,6 @@ async function setupDatabase(): Promise<void> {
 			db = drizzle(sqlClient, { schema });
 			// Test connection with a simple query
 			await sqlClient`SELECT 1`;
-			console.log("[setup] Conexao com Neon estabelecida");
 			return;
 		} catch (error) {
 			console.warn(

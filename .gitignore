@@ -9,6 +9,7 @@ node_modules
 # Local env files
 **/.env*
 !.env.example
+!.env.test.example
 .env.template
 .venv/
 
