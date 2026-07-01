@@ -19,6 +19,10 @@
 			"types": "./dist/realtime.d.ts",
 			"default": "./dist/realtime.js"
 		},
+		"./loader": {
+			"types": "./dist/loader.d.ts",
+			"default": "./dist/loader.js"
+		},
 		"./shared": {
 			"types": "./dist/shared.d.ts",
 			"default": "./dist/shared.js"
