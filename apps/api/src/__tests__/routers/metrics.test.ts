@@ -9,7 +9,6 @@
  */
 
 import { appRouter } from "../../router";
-import { rollbackTransaction } from "../db-setup";
 import {
 	seedCampusLocation,
 	seedScholarProfile,
@@ -30,10 +29,6 @@ describe("metricsRouter", () => {
 	beforeEach(async () => {
 		// no-op: transactions not supported with neon-http
 		caller = appRouter.createCaller(() => createMockTRPCContext());
-	});
-
-	afterEach(async () => {
-		await rollbackTransaction();
 	});
 
 	// Helper para criar range de datas

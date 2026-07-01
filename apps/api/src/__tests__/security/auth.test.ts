@@ -29,13 +29,8 @@ let caller: ReturnType<typeof appRouter.createCaller>;
 
 describe("auth", () => {
 	beforeEach(async () => {
-		await rollbackTransaction();
 		jest.clearAllMocks();
 		caller = appRouter.createCaller(() => createMockTRPCContext());
-	});
-
-	afterEach(async () => {
-		await rollbackTransaction();
 	});
 
 	// ─── Session hijacking prevention ─────────────────────────────────────────

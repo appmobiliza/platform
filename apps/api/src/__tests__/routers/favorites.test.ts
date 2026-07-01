@@ -1,5 +1,4 @@
 import {
-	afterEach,
 	beforeEach,
 	describe,
 	expect,
@@ -20,13 +19,8 @@ let caller: ReturnType<typeof appRouter.createCaller>;
 
 describe("favoritesRouter", () => {
 	beforeEach(async () => {
-		await rollbackTransaction();
 		jest.clearAllMocks();
 		caller = appRouter.createCaller(() => createMockTRPCContext());
-	});
-
-	afterEach(async () => {
-		await rollbackTransaction();
 	});
 
 	describe("create", () => {

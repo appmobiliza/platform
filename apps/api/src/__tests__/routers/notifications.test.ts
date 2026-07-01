@@ -8,7 +8,6 @@
  */
 
 import { appRouter } from "../../router";
-import { rollbackTransaction } from "../db-setup";
 import { seedNotification, seedUser } from "../helpers/seed";
 import { createMockTRPCContext, createStudentSession } from "../mocks/context";
 
@@ -18,10 +17,6 @@ describe("notificationsRouter", () => {
 	beforeEach(async () => {
 		// no-op: transactions not supported with neon-http
 		caller = appRouter.createCaller(() => createMockTRPCContext());
-	});
-
-	afterEach(async () => {
-		await rollbackTransaction();
 	});
 
 	// ─── list ───────────────────────────────────────────────────────────────────

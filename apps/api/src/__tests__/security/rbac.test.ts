@@ -30,7 +30,6 @@ let caller: ReturnType<typeof appRouter.createCaller>;
 
 describe("rbac", () => {
 	beforeEach(async () => {
-		await rollbackTransaction();
 		jest.clearAllMocks();
 		caller = appRouter.createCaller(() => createMockTRPCContext());
 	});

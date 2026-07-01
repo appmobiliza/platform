@@ -16,7 +16,6 @@
 import { TRPCError } from "@trpc/server";
 
 import { appRouter } from "../../router";
-import { rollbackTransaction } from "../db-setup";
 import {
 	seedCampusLocation,
 	seedScholarProfile,
@@ -37,10 +36,6 @@ describe("requestsRouter", () => {
 	beforeEach(async () => {
 		// no-op: transactions not supported with neon-http
 		caller = appRouter.createCaller(() => createMockTRPCContext());
-	});
-
-	afterEach(async () => {
-		await rollbackTransaction();
 	});
 
 	// ─── create ─────────────────────────────────────────────────────────────────
