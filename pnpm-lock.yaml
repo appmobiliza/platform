@@ -91,7 +91,7 @@ importers:
         specifier: ^8.5.1
         version: 8.5.1(jiti@2.7.0)(postcss@8.5.15)(tsx@4.22.4)(typescript@6.0.3)(yaml@2.9.0)
       tsx:
-        specifier: ^4.22.2
+        specifier: ^4.22.4
         version: 4.22.4
 
   apps/mobile:
@@ -472,8 +472,8 @@ importers:
         specifier: workspace:*
         version: link:../../config/typescript
       typescript:
-        specifier: ^5.9.0
-        version: 5.9.3
+        specifier: ^6.0.3
+        version: 6.0.3
 
   packages/db:
     dependencies:
@@ -525,8 +525,8 @@ importers:
         specifier: ^25.9.1
         version: 25.9.3
       typescript:
-        specifier: ^5.9.0
-        version: 5.9.3
+        specifier: ^6.0.3
+        version: 6.0.3
 
   packages/env:
     dependencies:
@@ -612,11 +612,11 @@ importers:
         specifier: ^25.8.0
         version: 25.9.3
       tsx:
-        specifier: ^4.19.0
+        specifier: ^4.22.4
         version: 4.22.4
       typescript:
-        specifier: ^5.9.0
-        version: 5.9.3
+        specifier: ^6.0.3
+        version: 6.0.3
 
   packages/trpc:
     dependencies:
@@ -630,6 +630,9 @@ importers:
         specifier: ^11.17.0
         version: 11.17.0(typescript@6.0.3)
     devDependencies:
+      '@mobiliza/typescript-config':
+        specifier: workspace:*
+        version: link:../../config/typescript
       '@types/node':
         specifier: ^25.9.0
         version: 25.9.3
@@ -638,14 +641,17 @@ importers:
     dependencies:
       '@trpc/server':
         specifier: ^11.17.0
-        version: 11.17.0(typescript@5.9.3)
+        version: 11.17.0(typescript@6.0.3)
     devDependencies:
       '@mobiliza/api':
         specifier: workspace:*
         version: link:../../apps/api
+      '@mobiliza/typescript-config':
+        specifier: workspace:*
+        version: link:../../config/typescript
       typescript:
-        specifier: ^5.9.0
-        version: 5.9.3
+        specifier: ^6.0.3
+        version: 6.0.3
 
 packages:
 
@@ -7750,11 +7756,6 @@ packages:
     resolution: {integrity: sha512-faYHw0anBbc/kWF3zFTEnxSFOAGUX9GFbOBthvDdLsIlEoWOFOtS0zgCiQYwIskL9iGXZL3kAXD8OoZ4GmMATA==}
     engines: {node: '>= 18'}
 
-  typescript@5.9.3:
-    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
-    engines: {node: '>=14.17'}
-    hasBin: true
-
   typescript@6.0.3:
     resolution: {integrity: sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==}
     engines: {node: '>=14.17'}
@@ -11074,10 +11075,6 @@ snapshots:
       '@trpc/server': 11.17.0(typescript@6.0.3)
       react: 19.2.3
       typescript: 6.0.3
-
-  '@trpc/server@11.17.0(typescript@5.9.3)':
-    dependencies:
-      typescript: 5.9.3
 
   '@trpc/server@11.17.0(typescript@6.0.3)':
     dependencies:
@@ -16512,8 +16509,6 @@ snapshots:
       content-type: 2.0.0
       media-typer: 1.1.0
       mime-types: 3.0.2
-
-  typescript@5.9.3: {}
 
   typescript@6.0.3: {}
 

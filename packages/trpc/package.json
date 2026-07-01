@@ -28,6 +28,7 @@
 		"@trpc/server": "^11.17.0"
 	},
 	"devDependencies": {
+		"@mobiliza/typescript-config": "workspace:*",
 		"@types/node": "^25.9.0"
 	}
 }

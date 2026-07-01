@@ -1,24 +1,5 @@
 {
-	"compilerOptions": {
-		"target": "ES2020",
-		"module": "ESNext",
-		"lib": ["ES2020"],
-		"outDir": "./dist",
-		"rootDir": "./src",
-		"strict": false,
-		"noImplicitAny": false,
-		"strictNullChecks": false,
-		"strictFunctionTypes": false,
-		"isolatedModules": true,
-		"esModuleInterop": true,
-		"skipLibCheck": true,
-		"moduleResolution": "bundler",
-		"ignoreDeprecations": "6.0",
-		"types": ["jest", "node"],
-		"allowSyntheticDefaultImports": true,
-		"forceConsistentCasingInFileNames": true,
-		"resolveJsonModule": true
-	},
+	"extends": "./tsconfig.json",
 	"include": ["src/__tests__/**/*", "src/__tests__/types/**/*"],
 	"exclude": ["node_modules", "dist"]
 }

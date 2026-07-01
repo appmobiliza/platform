@@ -5,7 +5,6 @@
 		"moduleResolution": "bundler",
 		"outDir": "dist",
 		"rootDir": ".",
-		"strictNullChecks": true,
 		"types": ["node"]
 	},
 	"include": ["src", "./drizzle.config.ts"],

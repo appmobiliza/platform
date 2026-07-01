@@ -3,9 +3,7 @@
 	"compilerOptions": {
 		"outDir": "dist",
 		"rootDir": "src",
-		"strictNullChecks": true,
 		"types": ["node", "jest"],
-		"skipLibCheck": true,
 		"moduleResolution": "bundler",
 		"module": "ESNext"
 	},

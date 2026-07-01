@@ -11,6 +11,7 @@
 		"noUncheckedIndexedAccess": true,
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
 		"strict": true,
 		"target": "ES2022",
 		"ignoreDeprecations": "6.0"
