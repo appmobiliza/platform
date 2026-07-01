@@ -1,3 +1,5 @@
+import "@mobiliza/env/loader";
+
 import { apiEnv } from "@mobiliza/env/api";
 
 console.log(apiEnv);

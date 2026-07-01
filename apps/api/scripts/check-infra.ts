@@ -1,3 +1,5 @@
+import "@mobiliza/env/loader";
+
 import { db } from "@mobiliza/db/client";
 import * as schema from "@mobiliza/db/schema";
 import { apiEnv } from "@mobiliza/env/api";

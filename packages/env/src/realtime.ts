@@ -1,10 +1,7 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
-import { loadEnv } from "./loader";
 import { optionalString, requireEnvVar } from "./shared";
-
-loadEnv();
 
 export const realtimeEnv = createEnv({
 	server: {

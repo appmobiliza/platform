@@ -1,3 +1,5 @@
+import "@mobiliza/env/loader";
+
 import { realtimeEnv } from "@mobiliza/env/realtime";
 
 import Ably from "ably";

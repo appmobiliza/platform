@@ -12,6 +12,8 @@
  *   GET  /api/cron/*        → cron jobs (disparados pela Vercel)
  */
 
+import "@mobiliza/env/loader";
+
 import { auth } from "@mobiliza/auth";
 import { getSession } from "@mobiliza/auth/server";
 import { db } from "@mobiliza/db/client";
@@ -155,18 +157,20 @@ const trpcHandler = trpcServer({
 	onError:
 		apiEnv.NODE_ENV === "development"
 			? ({ path, error }) => {
-				// Ignora probes no endpoint raiz (sem path)
-				if (!path && error.code === "NOT_FOUND") return;
-				console.error(
-					`[tRPC error] ${path ?? "unknown"}:`,
-					error,
-				);
-			}
+					// Ignora probes no endpoint raiz (sem path)
+					if (!path && error.code === "NOT_FOUND") return;
+					console.error(`[tRPC error] ${path ?? "unknown"}:`, error);
+				}
 			: undefined,
 });
 
 app.use("/trpc", async (c, next) => {
-	console.log("Agent:", c.req.header("User-Agent"), "IP:", c.req.header("User-Agent"));
+	console.log(
+		"Agent:",
+		c.req.header("User-Agent"),
+		"IP:",
+		c.req.header("User-Agent"),
+	);
 	return trpcHandler(c, next);
 });
 app.use("/trpc/*", trpcHandler);

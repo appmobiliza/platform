@@ -7,35 +7,9 @@
  *   cd apps/api && npx tsx src/__tests__/db-health-check.ts
  */
 
+import "@mobiliza/env/loader";
+
 import { neon } from "@neondatabase/serverless";
-
-import * as fs from "node:fs";
-import * as path from "node:path";
-
-// ─── Env Loading ───────────────────────────────────────────────────────────────
-
-function loadEnvFile(): void {
-	// Go up 2 levels from apps/api/src/__tests__ to project root
-	const envPath = path.resolve(process.cwd(), "../../.env");
-	if (!fs.existsSync(envPath)) {
-		throw new Error(`.env not found at ${envPath}`);
-	}
-	const content = fs.readFileSync(envPath, "utf-8");
-	for (const line of content.split("\n")) {
-		const trimmed = line.trim();
-		if (!trimmed || trimmed.startsWith("#")) continue;
-		const eqIndex = trimmed.indexOf("=");
-		if (eqIndex === -1) continue;
-		const key = trimmed.slice(0, eqIndex).trim();
-		const value = trimmed
-			.slice(eqIndex + 1)
-			.trim()
-			.replace(/^["']|["']$/g, "");
-		if (key) {
-			process.env[key] = value;
-		}
-	}
-}
 
 // ─── Health Check ──────────────────────────────────────────────────────────────
 
@@ -136,17 +110,6 @@ async function checkDatabaseHealth(): Promise<HealthStatus> {
 
 async function main() {
 	console.log("🔍 Mobiliza DB Health Check\n");
-
-	// Load env
-	try {
-		loadEnvFile();
-		console.log("✅ Environment loaded from .env");
-	} catch (error) {
-		console.log(
-			`❌ Failed to load .env: ${error instanceof Error ? error.message : String(error)}`,
-		);
-		process.exit(1);
-	}
 
 	// Run health check
 	const status = await checkDatabaseHealth();
